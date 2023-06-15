@@ -24,7 +24,7 @@ options { tokenVocab = MongoDBSchemaLexerGrammar; }
 
 unquotedIdentifier:                     VALID_STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                        | BYTE_STREAM_FUNCTION  //ABOVE FROM M3LEXER
+                                        | TO_BYTES_FUNCTION  //ABOVE FROM M3LEXER
                                         | DATABASE | COLLECTION
                                         | JSON_SCHEMA
                                         | VALIDATION_LEVEL | VALIDATION_ACTION

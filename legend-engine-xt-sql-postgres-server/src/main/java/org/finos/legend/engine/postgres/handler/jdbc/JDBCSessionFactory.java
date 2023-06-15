@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -36,8 +37,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
-
-    private Connection connection;
     private final String connectionString;
     private final String user;
     private final String password;
@@ -51,32 +50,8 @@ public class JDBCSessionFactory implements SessionsFactory
 
     @Override
     public Session createSession(String defaultSchema, Identity identity)
-            throws Exception
     {
-        return new Session(new SessionHandler()
-        {
-            @Override
-            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-            {
-                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
-            }
-
-            @Override
-            public PostgresStatement createStatement() throws SQLException
-            {
-                return new JDBCPostgresStatement(getConnection().createStatement());
-            }
-        });
-    }
-
-
-    private Connection getConnection() throws SQLException
-    {
-        if (connection == null)
-        {
-            this.connection = DriverManager.getConnection(connectionString, user, password);
-        }
-        return connection;
+        return new Session(new JDBCSessionHandler(connectionString, user, password), null);
     }
 
     private static class JDBCPostgresStatement implements PostgresStatement
@@ -229,6 +204,42 @@ public class JDBCSessionFactory implements SessionsFactory
         }
     }
 
+    public static class JDBCSessionHandler implements SessionHandler
+    {
+        private Connection connection;
+        private final String connectionString;
+        private final String user;
+        private final String password;
+
+        public JDBCSessionHandler(String connectionString, String user, String password)
+        {
+            this.connectionString = connectionString;
+            this.user = user;
+            this.password = password;
+        }
+
+        @Override
+        public PostgresPreparedStatement prepareStatement(String query) throws SQLException
+        {
+            return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
+        }
+
+        @Override
+        public PostgresStatement createStatement() throws SQLException
+        {
+            return new JDBCPostgresStatement(getConnection().createStatement());
+        }
+
+        private Connection getConnection() throws SQLException
+        {
+            if (connection == null)
+            {
+                this.connection = DriverManager.getConnection(connectionString, user, password);
+            }
+            return connection;
+        }
+    }
+
 
     public static void main(String[] args) throws Exception
     {
@@ -237,4 +248,4 @@ public class JDBCSessionFactory implements SessionsFactory
         Session session = sessionFactory.createSession(null, null);
         session.executeSimple("select * from public.demo");
     }
-}   
+}

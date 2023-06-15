@@ -233,7 +233,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -304,7 +304,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -393,7 +393,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -464,7 +464,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -555,12 +555,12 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#,\n" +
                         "            assert2:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -631,12 +631,12 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#,\n" +
                         "            assert2:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -728,7 +728,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        },\n" +
@@ -740,7 +740,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -816,7 +816,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id2\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id2\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        },\n" +
@@ -828,7 +828,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -857,7 +857,7 @@ public class TestServiceTestSuite
         Assert.assertEquals(1, ((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(0)).assertStatuses.size());
         Assert.assertTrue(((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(0)).assertStatuses.get(0) instanceof AssertFail);
         Assert.assertEquals("assert1", ((AssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(0)).assertStatuses.get(0)).id);
-        Assert.assertEquals("Expected : {\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id2\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}, Found : {\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}", ((AssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(0)).assertStatuses.get(0)).message);
+        Assert.assertEquals("expected:{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id2\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}, Found : {\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}", ((AssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(0)).assertStatuses.get(0)).message);
 
         Assert.assertTrue(serviceStoreTestResultsWithMultipleTests2.get(1) instanceof TestExecuted);
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) serviceStoreTestResultsWithMultipleTests2.get(1)).testExecutionStatus);
@@ -909,7 +909,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        }\n" +
@@ -938,7 +938,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -1062,7 +1062,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"stringParam\":\"dummy\",\"integerParam\":1,\"floatParam\":1.123,\"booleanParam\":false}';\n" +
+                        "                expected:'{\"stringParam\":\"dummy\",\"integerParam\":1,\"floatParam\":1.123,\"booleanParam\":false}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        }\n" +
@@ -1170,7 +1170,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"stringParam\":\"dummy\",\"integerParam\":1,\"floatParam\":1.123,\"booleanParam\":false}';\n" +
+                        "                expected:'{\"stringParam\":\"dummy\",\"integerParam\":1,\"floatParam\":1.123,\"booleanParam\":false}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        }\n" +
@@ -1250,7 +1250,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -1325,7 +1325,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1509,7 +1509,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1585,7 +1585,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1793,7 +1793,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1828,7 +1828,7 @@ public class TestServiceTestSuite
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "    query: data: Byte[*]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +
@@ -1840,14 +1840,14 @@ public class TestServiceTestSuite
                 "        {\n" +
                 "          parameters:\n" +
                 "          [\n" +
-                "            data = byteStream('[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]')\n" +
+                "            data = toBytes('[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]')\n" +
                 "          ]\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1901,7 +1901,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1987,7 +1987,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -2436,7 +2436,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -2535,7 +2535,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -2633,7 +2633,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -3302,7 +3302,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualTo\n" +
                         "              #{\n" +
-                        "                expected : '{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
+                        "                expected:'{\"kerberos\":\"dummy kerberos\",\"employeeID\":\"dummy id\",\"title\":\"dummy title\",\"firstName\":\"dummy firstName\",\"lastName\":\"dummy lastname\",\"countryCode\":\"dummy countryCode\"}';\n" +
                         "              }#\n" +
                         "          ]\n" +
                         "        },\n" +
@@ -3314,7 +3314,7 @@ public class TestServiceTestSuite
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -3569,7 +3569,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -3586,7 +3586,7 @@ public class TestServiceTestSuite
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +

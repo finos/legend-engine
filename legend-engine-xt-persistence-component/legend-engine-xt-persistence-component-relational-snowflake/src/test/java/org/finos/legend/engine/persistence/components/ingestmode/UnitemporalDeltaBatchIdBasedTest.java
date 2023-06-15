@@ -40,4 +40,24 @@ public class UnitemporalDeltaBatchIdBasedTest extends org.finos.legend.engine.pe
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
 
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithStagingFilters(String stagingFilters)
+    {
+        return "INSERT INTO batch_metadata " +
+                "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"staging_filters\") " +
+                "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
+                "'2000-01-01 00:00:00',SYSDATE(),'DONE'," +
+                String.format("PARSE_JSON('%s'))", stagingFilters);
+    }
+
 }

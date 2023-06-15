@@ -21,6 +21,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.plan.execution.stores.mongodb.test.MongoTestContainer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL_Impl;
@@ -28,10 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.utility.DockerImageName;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -101,27 +99,10 @@ public class MongoDBCommands
 
     private static GenericContainer<MongoDBContainer> createContainer(String imageTag)
     {
-
-        GenericContainer<MongoDBContainer> container =
-                new GenericContainer<>(DockerImageName.parse("mongo:" + imageTag));
-
-        List<String> list = new ArrayList<>();
-        list.add("MONGO_INITDB_ROOT_USERNAME=" + DB_ROOT_USERNAME);
-        list.add("MONGO_INITDB_ROOT_PASSWORD=" + DB_ROOT_PASSWORD);
-        list.add("MONGO_INITDB_DATABASE=" + "admin");
-
-        container.setEnv(list);
-        container.withExposedPorts(MONGO_PORT);
         long start = System.currentTimeMillis();
-        container.start();
-
-        Integer runningPort = container.getMappedPort(MONGO_PORT);
-        String host = container.getHost();
-        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(host, runningPort);
-
-
-        MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
-        userDatabase.createCollection(DB_USER_DB_PERSON_COLLECTION);
+        MongoTestContainer mongoTestContainer = new MongoTestContainer();
+        mongoTestContainer.run();
+        GenericContainer<MongoDBContainer> container = mongoTestContainer.getContainer();
 
         LOGGER.info("MongoDB Test cluster for version {} running on {}.  Took {}ms to start.", imageTag, container.getHost(), System.currentTimeMillis() - start);
         return container;

@@ -25,6 +25,7 @@ import java.util.List;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 public class LegendResultSet implements PostgresResultSet
 {
@@ -60,17 +61,20 @@ public class LegendResultSet implements PostgresResultSet
     public Object getObject(int i) throws Exception
     {
         LegendColumn legendColumn = columns.get(i - 1);
-        String value = currentRow.get(i - 1);
+        Object value = currentRow.get(i - 1);
+        if (value == null)
+        {
+            return null;
+        }
         switch (legendColumn.getType())
         {
-            case "StrictDate":
-                LocalDate localDate = ISO_LOCAL_DATE.parse(value, LocalDate::from);
+            case STRICT_DATE:
+                LocalDate localDate = ISO_LOCAL_DATE.parse((String) value, LocalDate::from);
                 long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                System.out.println("actual : " + toEpochMilli);
                 return toEpochMilli;
-            case "Date":
-            case "DateTime":
-                TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest(value, Instant::from, LocalDate::from);
+            case DATE:
+            case DATE_TIME:
+                TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
                 if (temporalAccessor instanceof Instant)
                 {                    //if date is a valid time stamp
                     return ((Instant) temporalAccessor).toEpochMilli();
@@ -80,14 +84,14 @@ public class LegendResultSet implements PostgresResultSet
                     //if date is a date parse as date and convert to time tamp
                     return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 }
-            case "Integer":
-                return Integer.parseInt(value);
-            case "Float":
-                return Float.parseFloat(value);
-            case "Number":
-                return Double.parseDouble(value);
-            case "Boolean":
-                return Boolean.parseBoolean(value);
+            case INTEGER:
+                return ((Number) value).intValue();
+            case FLOAT:
+                return ((Number) value).floatValue();
+            case NUMBER:
+                return ((Number) value).doubleValue();
+            case BOOLEAN:
+                return (Boolean) value;
             default:
                 return value;
         }

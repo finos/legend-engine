@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
 {
-    private static long DEFAULT_MAX_SCHEMA_OBJECT_SIZE = 50 * 1024 * 1024;
     private static final String CONTENT_TYPE = "application/x.flatdata";
 
     @Override
@@ -56,8 +55,8 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
-            // TODO Allow size to vary when run from jar
-            specifics.setMaximumSchemaObjectSize(DEFAULT_MAX_SCHEMA_OBJECT_SIZE);
+
+            specifics.setMaximumSchemaObjectSize(executionState.getGraphFetchBatchMemoryLimit());
 
             FlatDataContext<?> context = specifics.createContext();
             FlatDataReader<?> deserializer = new FlatDataReader<>(context, inputStream);

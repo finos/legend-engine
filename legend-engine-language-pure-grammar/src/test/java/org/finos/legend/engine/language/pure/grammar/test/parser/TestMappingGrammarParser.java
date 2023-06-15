@@ -325,6 +325,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
+                "      doc: 'myDoc';\n" +
                 "      data:\n" +
                 "      [\n" +
                 "        ModelStore: ModelStore\n" +
@@ -340,7 +341,8 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          query: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
+                "          doc: 'my test';\n" +
+                "          function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -356,58 +358,31 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "          ];\n" +
                 "        }\n" +
                 "      ];\n" +
-                "    }\n" +
-                "  ]\n" +
-                ")");
-        test("###Mapping\n" +
-                "Mapping testing::mapping\n" +
-                "(\n" +
-                "  *testing::Person[testing_Person]: Pure\n" +
-                "  {\n" +
-                "    ~src testing::other::NPerson\n" +
-                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
-                "  }\n" +
-                "\n" +
-                "  testSuites:\n" +
-                "  []\n", "PARSER error at [12:0]: Unexpected token");
-        test("###Mapping\n" +
-                "Mapping testing::mapping\n" +
-                "(\n" +
-                "  *testing::Person[testing_Person]: Pure\n" +
-                "  {\n" +
-                "    ~src testing::other::NPerson\n" +
-                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
-                "  }\n" +
-                "\n" +
-                "  testSuites:\n" +
-                "  [\n" +
-                "    testSuite1:\n" +
+                "    },\n" +
+                "    testSuite2:\n" +
                 "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "        ModelStore: ModelStore\n" +
-                "        #{\n" +
-                "           test::example::model:\n" +
-                "              Reference \n" +
-                "              #{ \n" +
-                "                testMapping::TestData \n" +
-                "              }#\n" +
-                "         }#,\n" +
-                "        test::db:\n" +
-                "        Reference \n" +
-                "        #{ \n" +
-                "           testMapping::relational::TestData \n" +
-                "        }#\n" +
-                "      ];\n" +
+               "       function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
+                "      doc: 'myDoc';\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          query: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
+                "          doc: 'my test';\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore: ModelStore\n" +
+                "            #{\n" +
+                "               test::example::model:\n" +
+                "               Reference \n" +
+                "               #{ \n" +
+                "                testMapping::TestData \n" +
+                "               }#\n" +
+                "            }#\n" +
+                "          ];\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
-                "              EqualToJson\n" +
+                "            EqualToJson\n" +
                 "              #{\n" +
                 "                expected : \n" +
                 "                  ExternalFormat\n" +
@@ -450,56 +425,9 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          query: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
+                "          function: |testing::Person.all();\n" +
                 "          asserts:\n" +
                 "          [\n" +
-                "            assert1:\n" +
-                "              EqualToJson\n" +
-                "              #{\n" +
-                "                expected : \n" +
-                "                  ExternalFormat\n" +
-                "                  #{\n" +
-                "                    contentType: 'application/json';\n" +
-                "                    data: '{\"fullName\":[\"john doe\"]';\n" +
-                "                  }#;\n" +
-                "              }#\n" +
-                "          ];\n" +
-                "        }\n" +
-                "      ];\n" +
-                "    }\n" +
-                "  ]\n" +
-                ")");
-        test("###Mapping\n" +
-                "Mapping testing::mapping\n" +
-                "(\n" +
-                "  *testing::Person[testing_Person]: Pure\n" +
-                "  {\n" +
-                "    ~src testing::other::NPerson\n" +
-                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
-                "  }\n" +
-                "\n" +
-                "  testSuites:\n" +
-                "  [\n" +
-                "    testSuite1:\n" +
-                "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "        ModelStore: ModelStore\n" +
-                "        #{\n" +
-                "           test::example::model:\n" +
-                "              Reference \n" +
-                "              #{ \n" +
-                "                testMapping::TestData \n" +
-                "              }#\n" +
-                "         }#\n" +
-                "      ];\n" +
-                "      tests:\n" +
-                "      [\n" +
-                "        test1:\n" +
-                "        {\n" +
-                "          query: |testing::Person.all();\n" +
-                "          asserts:\n" +
-                "          [\n" +       //need to provide atleast one assert
                 "          ];\n" +
                 "        }\n" +
                 "      ];\n" +
@@ -516,14 +444,14 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  }\n" +
                 "\n" +
                 "  testSuites:\n" +
-                "  [\n" +                           //no test data provided
+                "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          query: |testing::Person.all();\n" +
+                "          function: |testing::Person.all();\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -538,10 +466,10 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "              }#\n" +
                 "          ];\n" +
                 "        }\n" +
-                "      ]\n" +
+                "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                ")","PARSER error at [14:7-11]: Unexpected token 'tests'");
+                ")","PARSER error at [12:5-34:5]: Mapping Test Suites expects either data or function as setup");
     }
 
     @Test

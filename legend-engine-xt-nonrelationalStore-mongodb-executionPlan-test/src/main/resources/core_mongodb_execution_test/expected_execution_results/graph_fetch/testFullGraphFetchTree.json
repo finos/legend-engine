@@ -2,64 +2,58 @@
   "values":   {
     "firstName": "Coralie",
     "lastName": "Batie",
+    "legallyCompetent": false,
     "firm":     {
       "legalName": "Devpoint",
-      "industrySectors": [
-"Technology",
-"Consumer Durables",
-"Miscellaneous",
-"n\/a"
-      ],
       "address":       {
-        "country":         {
-          "continent": "America",
-          "countryCode": "US"
-        },
+        "lastUpdated": "2022-01-01T21:10:00.000",
         "city": "Saint Paul",
-        "street": "974 Sunbrook Crossing",
-        "postalCode": "55103"
+        "buildingNumber": 974,
+        "isActive": true
       },
-      "dateFounded": "2018-01-14T00:36:08Z"
+      "public": false,
+      "dateFounded": "2018-01-14T00:36:08.000",
+      "department": [
+        {
+          "dateCreated": "2017-09-11T21:10:22.000",
+          "name": "Communication",
+          "isActive": true,
+          "numberOfEmployees": 5
+        },
+        {
+          "dateCreated": "2013-12-13T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 40
+        },
+        {
+          "dateCreated": "2014-12-14T21:10:22.000",
+          "name": "Sales",
+          "isActive": true,
+          "numberOfEmployees": 6
+        }
+      ],
+      "numberOfEmployees": 50
     },
-    "phoneNumber": "+1 501 883 4607",
     "address":     {
-      "country":       {
-        "continent": "America",
-        "countryCode": "US"
-      },
+      "lastUpdated": "2022-06-06T21:10:00.000",
       "city": "Little Rock",
-      "street": "99 Bonner Plaza",
-      "postalCode": "72215"
+      "buildingNumber": 99,
+      "isActive": true
     },
-    "car": [
-      {
-        "model": "Almera",
-        "manufacturer":         {
-          "country":           {
-            "continent": "Asia",
-            "countryCode": "JP"
-          },
-          "name": "Nissan"
-        }
-      },
-      {
-        "model": "Primera",
-        "manufacturer":         {
-          "country":           {
-            "continent": "Asia",
-            "countryCode": "JP"
-          },
-          "name": "Nissan"
-        }
-      }
-    ],
     "otherPhoneNumbers": [
 "+1 571 689 6039",
 "+1 303 278 3547",
 "+1 414 760 1884"
     ],
-    "age": 23,
-    "email": "cbatie2@amazon.co.jp"
+    "department":     {
+      "dateCreated": "2017-09-11T21:10:22.000",
+      "name": "Communication",
+      "isActive": true,
+      "numberOfEmployees": 5
+    },
+    "birthDate": "1980-04-04T07:12:12.000",
+    "age": 23
   },
   "builder":   {
     "_type": "json"

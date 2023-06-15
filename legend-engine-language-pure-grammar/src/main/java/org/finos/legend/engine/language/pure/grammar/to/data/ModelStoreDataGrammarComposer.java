@@ -17,8 +17,8 @@ package org.finos.legend.engine.language.pure.grammar.to.data;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -75,43 +75,59 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     public String compose(ModelStoreData data)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(
-                data.instances.keySet().stream().map(type ->
-                {
-                    String indentString = context.getIndentationString() + PureGrammarComposerUtility.getTabString();
-
-                    StringBuilder str = new StringBuilder();
-                    str.append(context.getIndentationString());
-                    str.append(type).append(":\n");
-
-                    ValueSpecification vs = data.instances.get(type);
-                    if (vs instanceof PackageableElementPtr)
-                    {
-                        DataElementReference reference = new DataElementReference();
-                        reference.dataElement = ((PackageableElementPtr) vs).fullPath;
-                        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
-                    }
-                    else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)
-                    {
-                        str.append(indentString).append("[\n");
-
-                        indentLevel++;
-                        str.append(indentString).append(PureGrammarComposerUtility.getTabString());
-                        str.append(data.instances.get(type).accept(this));
-                        str.append("\n");
-                        indentLevel--;
-
-                        str.append(indentString).append("]");
-                    }
-                    else
-                    {
-                        str.append(indentString);
-                        str.append(data.instances.get(type).accept(this));
-                    }
-                    return str.toString();
-                }).collect(Collectors.joining(",\n")));
-
+        if (data.modelData != null && !data.modelData.isEmpty())
+        {
+           String modelDataString =  data.modelData.stream().map(this::compose).collect(Collectors.joining(",\n"));
+           builder.append(modelDataString);
+        }
         return builder.toString();
+    }
+
+
+    public String compose(ModelTestData data)
+    {
+        StringBuilder str = new StringBuilder();
+        String indentString = context.getIndentationString() + PureGrammarComposerUtility.getTabString();
+        String type = data.model;
+        str.append(context.getIndentationString());
+        str.append(type).append(":\n");
+        if (data instanceof ModelInstanceTestData)
+        {
+            ModelInstanceTestData modelInstanceData = (ModelInstanceTestData)  data;
+            ValueSpecification vs = modelInstanceData.instances;
+            if (vs instanceof PackageableElementPtr)
+            {
+                DataElementReference reference = new DataElementReference();
+                reference.dataElement = ((PackageableElementPtr) vs).fullPath;
+                str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
+            }
+            else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)
+            {
+                str.append(indentString).append("[\n");
+
+                indentLevel++;
+                str.append(indentString).append(PureGrammarComposerUtility.getTabString());
+                str.append(vs.accept(this));
+                str.append("\n");
+                indentLevel--;
+
+                str.append(indentString).append("]");
+            }
+            else
+            {
+                str.append(indentString);
+                str.append(vs.accept(this));
+            }
+            return str.toString();
+        }
+        else if (data instanceof ModelEmbeddedTestData)
+        {
+            ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
+            str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(modelEmbeddedData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
+            return str.toString();
+        }
+        throw new UnsupportedOperationException("Model Data class '" + data.getClass().getName() + "' not supported");
+
     }
 
     @Override
@@ -163,7 +179,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     }
 
     @Override
-    public String visit(CByteStream cByteStream)
+    public String visit(CByteArray cByteArray)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }

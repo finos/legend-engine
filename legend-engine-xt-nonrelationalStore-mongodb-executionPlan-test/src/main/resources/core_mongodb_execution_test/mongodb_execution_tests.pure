@@ -21,7 +21,6 @@ import meta::pure::test::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
 import meta::external::store::mongodb::executionTest::utils::*;
-import meta::external::store::mongodb::executionPlan::legendJava::test::*;
 
 import meta::external::store::mongodb::executionTest::*;
 import meta::external::store::mongodb::executionTest::utils::*;
@@ -91,40 +90,37 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
         firstName,
         lastName,
         age,
-        email,
-        phoneNumber,
+        birthDate,
+        legallyCompetent,
         otherPhoneNumbers,
-        car {
-          model,
-          manufacturer {
-            name,
-            country {
-              countryCode,
-              continent
-            }
-          }
-        },
         address {
-          country {
-            continent,
-            countryCode
-          },
-          street,
           city,
-          postalCode
+          buildingNumber,
+          isActive,
+          lastUpdated
+        },
+        department {
+          name,
+          numberOfEmployees,
+          dateCreated,
+          isActive
         },
         firm {
           legalName,
+          public,
           dateFounded,
-          industrySectors,
+          numberOfEmployees,
           address {
-            country {
-              continent,
-              countryCode
-            },
-            street,
             city,
-            postalCode
+            buildingNumber,
+            isActive,
+            lastUpdated
+          },
+          department {
+            name,
+            numberOfEmployees,
+            dateCreated,
+            isActive
           }
         }
       }
@@ -136,7 +132,7 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
 // TODO: Add ability to start/stop MongoDB dockerized instance
 
 
-// TESTS 
+// TESTS
 
 
 // Filters
@@ -168,9 +164,9 @@ function <<paramTest.Test>>
 }
 
 
-function 
+function
   <<paramTest.Ignore>>
-  {doc.doc = 'Failing'} 
+  {doc.doc = 'Failing'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectConstantPredicate(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
 {
   let filterLambda = {x: Person[1] | 'a' == 'a'};
@@ -236,7 +232,7 @@ function <<paramTest.Test>>
 
 function
  <<paramTest.Ignore>>
-{doc.doc = 'Failing'} 
+{doc.doc = 'Failing'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanWithArithmetic(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { p: Person[1] | (((($p.age->toOne() - 5) * -3.0) + 4) / 2) > -45 };
@@ -263,7 +259,7 @@ function <<paramTest.Test>>
 
 function
  <<paramTest.Ignore>>
-{doc.doc = 'Failing'} 
+{doc.doc = 'Failing'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanWithArithmetic(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { p: Person[1] | (((($p.age->toOne() - 5) * -3.0) + 4) / 2) > -45 };
@@ -288,6 +284,36 @@ function <<paramTest.Test>>
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNumber.json', personTreeSmall());
 }
 
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNestedNumber(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { x: Person[1] | $x.firm.numberOfEmployees >= 100 };
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedNumber.json', personTreeSmall());
+}
+
+// Filters - Dates
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testDateBetweenWithGTandLT(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { x: Person[1] | ($x.birthDate > %1969-01-01) && ($x.birthDate < %1971-04-04T18:09:35)};
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testDatesBetweenWithGTandLT.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testDateBetweenWithGTEandLTE(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { x: Person[1] | ($x.birthDate >= %1980-04-04T07:12:12) && ($x.birthDate <= %1983-05-06T00:12:12)};
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testDatesBetweenWithGTEandLTE.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testNestedDateBetweenWithGTEandLTE(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { x: Person[1] | ($x.firm.dateFounded >= %2014-04-04T07:12:12) };
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedDate.json', personTreeSmall());
+}
+
 // GraphFetch
 
 
@@ -308,9 +334,7 @@ function <<paramTest.Test>>
           firstName,
           lastName,
           age,
-          phoneNumber,
-          otherPhoneNumbers,
-          email
+          otherPhoneNumbers
           }
         }#;
 
@@ -326,10 +350,10 @@ function <<paramTest.Test>>
           Person {
             firm {
               address {
-                country {
-                  continent,
-                  countryCode
-                }
+                city,
+                buildingNumber,
+                isActive,
+                lastUpdated
               }
             }
           }
@@ -349,9 +373,9 @@ function <<paramTest.Test>>
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testMultipleSelectEqualFilters.json', personTreeSmall());
 }
 
-function 
+function
 <<paramTest.Ignore>>
-{doc.doc = 'Failing'} 
+{doc.doc = 'Failing'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleSelectEqualFilters_2(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] |  ($x.firstName == 'Coralie' && $x.lastName == 'Batie') || ($x.firstName == 'Franz' && $x.lastName == 'Stiant')  };
@@ -361,13 +385,13 @@ function
 function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedSelectEqualFilters(config:TestConfig[1]):Boolean[1]
 {
-  let filterLambda = { x: Person[1] | $x.firm.legalName == 'Devpoint' && $x.address.country.countryCode == 'US'};
+  let filterLambda = { x: Person[1] | $x.firm.legalName == 'Devpoint' && $x.address.city == 'Little Rock'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testMultipleNestedSelectEqualFilters.json', personTreeFull());
 }
 
 
 function <<paramTest.Test>>
-{doc.doc = 'Test multiple nested level Filters'} 
+{doc.doc = 'Test multiple nested level Filters'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testSelectNotEqualNotAnd(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { p: Person[1] | !(($p.firstName == 'Jefferey') && ($p.lastName != 'Raye')) };
@@ -378,7 +402,7 @@ function <<paramTest.Test>>
 {doc.doc = 'Test multiple nested level Filters with an And'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedFiltersWithAnd(config:TestConfig[1]):Boolean[1]
 {
-  let filterLambda = { p: Person[1] | ($p.firm.address.country.countryCode == 'UK') && ($p.firstName == 'Franz') && ($p.age > 60) && ($p.address.city == 'Sacramento') && ($p.firm.legalName == 'Voolia') && ($p.address.street == '540 Arrowood Trail') };
+  let filterLambda = { p: Person[1] | ($p.firm.address.city == 'London') && ($p.firstName == 'Franz') && ($p.age > 60) && ($p.address.buildingNumber == 540) && ($p.firm.legalName == 'Voolia') && ($p.department.name == 'HR') && ($p.firm.numberOfEmployees > 1900) && ($p.firm.dateFounded >= %1993-10-07T04:40:27) && ($p.firm.address.buildingNumber > 37) };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testMultipleAndNestedFilters.json', personTreeFull());
 }
 

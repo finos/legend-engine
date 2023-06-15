@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mutation::*;
+import meta::pure::router::metamodel::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::metamodel::path::*;
@@ -201,13 +203,48 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
    );     
 }
 
-function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], depth:Integer[1], debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
+function meta::pure::router::clustering::specializedFunctionExpressionClustering() : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[1], Mapping[1], Map<String, List<Any>>[1], ExecutionContext[1], Integer[1], DebugContext[1], AnalyticsDecision[0..1], meta::pure::extension::Extension[*]->ClusterResponse[1]}>>[*]
 {
-   $v->match([f:FunctionExpression[1]|if($f.func->in([agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
+  [
+    pair(fe:FunctionExpression[1] | $fe.func->in(mutationFunctions()),
+        {f:FunctionExpression[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], depth:Integer[1], debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
+          let childClustersResponse = $f.parametersValues->evaluateAndDeactivate()->map(v | $v->cluster($mapping, $openVariables, $exeCtx,  $depth+1, $debug, $analyticsDecision, $extensions));
+          let params = $childClustersResponse.cluster->evaluateAndDeactivate();
+
+          let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->cast(@Runtime)->toOne();
+          let store = $runtime.connections.element->cast(@meta::pure::store::Store)->toOne();
+          ^ClusterResponse(
+            cluster = ^StoreMappingClusteredValueSpecification(
+                        openVars = $openVariables,
+                        multiplicity = $f.multiplicity,
+                        store = $store,
+                        runtime = $runtime,
+                        s = $extensions->meta::pure::extension::storeContractFromStore($store),
+                        genericType = $f.genericType,
+                        mapping = $mapping,
+                        val = ^$f(parametersValues = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreMappingClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a]))),
+                        executable = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreMappingClusteredValueSpecification[1]|$c.executable;, a:ValueSpecification[1]|[]]))->concatenate(false)->toOneMany()->or()));
+        }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                        agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                        col_Function_1__String_1__BasicColumnSpecification_1_,
                                                        col_Function_1__String_1__String_1__BasicColumnSpecification_1_]),
-                                       | ^ClusterResponse(cluster=$f),
+        {f:FunctionExpression[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], depth:Integer[1], debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*] |
+          ^ClusterResponse(cluster=$f)
+        }
+    )
+  ]
+}
+
+
+function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], depth:Integer[1], debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
+{
+   $v->match([f:FunctionExpression[1]|
+                                      let specializedFunctionProcessor = specializedFunctionExpressionClustering()->filter(spec | $spec.first->eval($f->evaluateAndDeactivate())).second;
+                                      if($specializedFunctionProcessor->isNotEmpty(),
+                                       | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
+                                         $specializedFunctionProcessor->toOne()->evaluate([list($f->evaluateAndDeactivate()), list($mapping), list($openVariables), list($exeCtx), list($depth), list($debug), list($analyticsDecision), list($extensions)])->toOne()->cast(@ClusterResponse);,
                                        | let childClustersResponse = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($mapping, $openVariables, $exeCtx,  $depth+1, $debug, $analyticsDecision, $extensions));
                                          let pre_params = $childClustersResponse.cluster->evaluateAndDeactivate();
                                          let paramsExecutablePairs = if($analyticsDecision->isNotEmpty(),
@@ -251,7 +288,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                               | let varName = $p-> meta::pure::router::clustering::createVarExpName($params,$depth);
                                                                                                 meta::pure::router::clustering::createVariableExpression($p,$varName);,
                                                                                               | $p)->cast(@ValueSpecification));
-
+    
                                                         print(if($debug.debug,| $updatedParams->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+' '))->joinStrings('  ')->debug($debug.space+'updated Function Parameters:'),|''));
                                                         let updatedUnique = getDistinctClusterVSByStore($updatedParams, $extensions);
                                                         if($updatedUnique->size()==1,
@@ -268,7 +305,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                                       executable   = true
                                                                                                     );,
                                                                                                  | [];));
-
+    
                                                               print(if($debug.debug, |$newLetFns->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+'Generated Lets:'))->joinStrings(''), |''));
                                                               let updatedOne = $updatedUnique->toOne();
                                                               let updatedCluster = ^$updatedOne(
@@ -287,7 +324,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                                                                                   |$p))),
                                                                                           executable=true
                                                                                         ));
-
+    
                                                           );,
                                                       | ^ClusterResponse(cluster=^PlatformClusteredValueSpecification(
                                                                                     genericType  = $f.genericType,
@@ -399,7 +436,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                 val = $t,
                                                                                 exeCtx = $t.executionContext,
                                                                                 executable = true
-                                                                              ))
+                                                                              )),
+               e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
+              
       ]
    )->cast(@ClusterResponse);
 }

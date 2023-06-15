@@ -5,65 +5,46 @@ Class meta::external::store::mongodb::executionTest::domain::Person
   firstName:         String[0..1];
   lastName:          String[1];
   age:               Integer[0..1];
-  phoneNumber:       String[1];
+  birthDate:         DateTime[1];
   otherPhoneNumbers: String[0..*];
-  email:             String[1];
-  address:           Address[0..1];
+  legallyCompetent:  Boolean[1];
+  address:           Address[1];
+  firm:              Firm[0..1];
 }
 
 Class meta::external::store::mongodb::executionTest::domain::Firm
 {
-  legalName :      String[0..1];
-  dateFounded:     String[1];
-  industrySectors: String[0..*];
-  address:         Address[1];
+  legalName:         String[0..1];
+  numberOfEmployees: Integer[1];
+  dateFounded:       DateTime[1];
+  address:           Address[0..1];
+  public:            Boolean[0..1];
 }
-
 
 Class meta::external::store::mongodb::executionTest::domain::Address
 {
-  street:     String[1];
-  city:       String[0..1];
-  postalCode: String[1];
-  country:    Country[0..1];
+  city:             String[1];
+  buildingNumber:   Integer[0..1];
+  isActive:         Boolean[0..1];
+  lastUpdated:      DateTime[1];
 }
 
-Class meta::external::store::mongodb::executionTest::domain::Country
+Class meta::external::store::mongodb::executionTest::domain::Department
 {
-  continent:   String[0..1];
-  countryCode: String[1];
+  name:              String[1];
+  numberOfEmployees: Integer[0..1];
+  dateCreated:       DateTime[1];
+  isActive:          Boolean[1];
 }
 
-Class meta::external::store::mongodb::executionTest::domain::Car
+Association meta::external::store::mongodb::executionTest::domain::Person_Department
 {
-  model:        String[1];
+  person:     meta::external::store::mongodb::executionTest::domain::Person[0..1];
+  department: meta::external::store::mongodb::executionTest::domain::Department[0..1];
 }
 
-Class meta::external::store::mongodb::executionTest::domain::Manufacturer
+Association meta::external::store::mongodb::executionTest::domain::Firm_Department
 {
-  name:    String[0..1];
-}
-
-Association meta::external::store::mongodb::executionTest::domain::Person_Car
-{
-  person:  meta::external::store::mongodb::executionTest::domain::Person[1];
-  car:     meta::external::store::mongodb::executionTest::domain::Car[1..*];
-}
-
-Association meta::external::store::mongodb::executionTest::domain::Car_Manufacturer
-{
-  manufacturer:  meta::external::store::mongodb::executionTest::domain::Manufacturer[1];
-  car:           meta::external::store::mongodb::executionTest::domain::Car[1];
-}
-
-Association meta::external::store::mongodb::executionTest::domain::Country_Manufacturer
-{
-  manufacturer:  meta::external::store::mongodb::executionTest::domain::Manufacturer[0..1];
-  country:       meta::external::store::mongodb::executionTest::domain::Country[1];
-}
-
-Association meta::external::store::mongodb::executionTest::domain::Person_Firm
-{
-  person:  meta::external::store::mongodb::executionTest::domain::Person[1];
-  firm:       meta::external::store::mongodb::executionTest::domain::Firm[0..1];
+  firm:         meta::external::store::mongodb::executionTest::domain::Firm[0..1];
+  department:   meta::external::store::mongodb::executionTest::domain::Department[*];
 }

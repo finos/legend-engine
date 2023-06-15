@@ -190,7 +190,8 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             accountType = if($s.accountType->isEmpty(),|[],
                              |extractEnumValue(meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType, $s.accountType->toOne())),
             organization = $s.organization,
-            role = $s.role
+            role = $s.role,
+            enableQueryTags = $s.enableQueryTags
         ),
       d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
           ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(

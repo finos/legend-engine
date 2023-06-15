@@ -43,8 +43,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
@@ -275,16 +273,6 @@ public class ServiceTestGenerationHelper
             }
             testXmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(connectionTestData.getBytes(StandardCharsets.UTF_8));
             return Optional.of(testXmlModelConnection);
-        }
-        if (connection instanceof ExternalFormatConnection)
-        {
-            ExternalFormatConnection conn = (ExternalFormatConnection) connection;
-            ExternalFormatConnection testConn = new ExternalFormatConnection();
-            testConn.element = conn.element;
-            UrlStreamExternalSource source = new UrlStreamExternalSource();
-            source.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(idTestDataAccessorResult.getBytes(StandardCharsets.UTF_8));
-            testConn.externalSource = source;
-            return Optional.of(testConn);
         }
         if (connection instanceof ModelChainConnection)
         {

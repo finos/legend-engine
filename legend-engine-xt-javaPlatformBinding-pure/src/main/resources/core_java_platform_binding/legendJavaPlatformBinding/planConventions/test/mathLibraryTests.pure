@@ -75,7 +75,7 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('%s == 5L')
       ->addTest('Integer Binary plus', {|7+5}, 'java.util.Arrays.asList(7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
          ->assert('%s == 12L')
-      ->addTest('Integer Modulo', {|mod(10,3)}, '10L % 3L', javaLong())
+      ->addTest('Integer Modulo', {|mod(10,3)}, 'Math.floorMod(10L, 3L)', javaLong())
          ->assert('%s == 1L')
       ->addTest('Integer n\'ary plus', {|[6, 7, 5]->plus()}, 'java.util.Arrays.asList(6L, 7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
          ->assert('%s == 18L')
@@ -109,6 +109,21 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('(%s).doubleValue() == 25.0')
       ->addTest('Number Pow (integer numbers)', {|pow(4, 3)}, '(Number) new Double(StrictMath.pow(new Long(4L).doubleValue(), new Long(3L).doubleValue()))', javaNumber())
          ->assert('(%s).doubleValue() == 64.0')
+      
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testExpLog() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Log 1', {|log(100)}, 'Math.log(new Long(100L).doubleValue())', javaDouble())
+        ->assert('%s < 4.60518')
+        ->assert('%s > 4.60517')
+      ->addTest('Exp 1', {|exp(4.60517)}, 'Math.exp(new Double(4.60517).doubleValue())', javaDouble())
+        ->assert('%s < 100')
+        ->assert('%s > 99')  
       ->runTests();
 }
 
@@ -117,9 +132,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testSqrt() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
-      ->addTest('Sqrt (integer root)', {|sqrt(16.0d)}, 'Math.sqrt(new java.math.BigDecimal("16.0").doubleValue())', javaDouble())
+      ->addTest('Sqrt (integer root)', {|sqrt(16.0d)}, 'org.finos.legend.engine.plan.dependencies.util.Library.sqrt(new java.math.BigDecimal("16.0"))', javaDouble())
          ->assert('%s == 4.0d')
-      ->addTest('Sqrt (real root)', {|sqrt(3.0d)}, 'Math.sqrt(new java.math.BigDecimal("3.0").doubleValue())', javaDouble())
+      ->addTest('Sqrt (real root)', {|sqrt(3.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.sqrt(3.0)', javaDouble())
          ->assert('%s > 1.732d')
          ->assert('%s < 1.7321d')
       ->runTests();
@@ -148,8 +163,12 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('%s == 2L')
       ->addTest('Number Round 2', {| round(3.5)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(3.5)', javaLong())
          ->assert('%s == 4L')
-      ->addTest('Number Round scale', {|round(3.14159d, 2)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(new java.math.BigDecimal("3.14159"), 2L)', javaBigDecimal())
+      ->addTest('Number Round scale 1', {|round(3.14159d, 2)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(new java.math.BigDecimal("3.14159"), 2L)', javaBigDecimal())
          ->assert('%s.equals(new java.math.BigDecimal("3.14"))')
+      ->addTest('Number Round scale 2', {|round(3.14159, 0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(3.14159, 0L)', javaDouble())
+         ->assert('%s == 3.0')
+      ->addTest('Number Round scale 3', {|round(3.14159, 2)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(3.14159, 2L)', javaDouble())
+         ->assert('%s == 3.14')         
       ->runTests();
 }
 
@@ -230,6 +249,30 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
       ->addTest('Number Cos 3', {| cos(-3.14159d)}, 'Math.cos(new java.math.BigDecimal("3.14159").negate().doubleValue())', javaDouble())
          ->assert('%s > -1.0d')
          ->assert('%s < -0.99999d')
+      ->addTest('Number ArcSin 1', {| asin(0)}, 'Math.asin(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s == 0.0d')   
+      ->addTest('Number ArcSin 2', {| asin(1)}, 'Math.asin(new Long(1L).doubleValue())', javaDouble())
+         ->assert('%s > 1.57079d')     
+         ->assert('%s < 1.57080d')     
+      ->addTest('Number ArcCos 1', {| acos(1)}, 'Math.acos(new Long(1L).doubleValue())', javaDouble())
+         ->assert('%s == 0.0d')   
+      ->addTest('Number ArcCos 2', {| acos(0)}, 'Math.acos(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s > 1.57079d')     
+         ->assert('%s < 1.57080d') 
+       ->addTest('Number Tan 1', {| tan(0)}, 'Math.tan(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s == 0.0d')     
+       ->addTest('Number Tan 2', {| tan(0.78539d)}, 'Math.tan(new java.math.BigDecimal("0.78539").doubleValue())', javaDouble())
+         ->assert('%s < 1.0d')  
+         ->assert('%s > 0.9999d')  
+       ->addTest('Number atan 1', {| atan(0)}, 'Math.atan(new Long(0L).doubleValue())', javaDouble())
+         ->assert('%s == 0.0d')     
+       ->addTest('Number atan 2', {| atan(1)}, 'Math.atan(new Long(1L).doubleValue())', javaDouble())
+         ->assert('%s < 0.78540d')  
+         ->assert('%s > 0.78539d')  
+       ->addTest('Number atan2 1', {| atan2(2, 2)}, 'Math.atan2(new Long(2L).doubleValue(),       new Long(2L).doubleValue())', javaDouble())
+         ->assert('%s < 0.78540d')  
+         ->assert('%s > 0.78539d')          
+
       ->runTests();
 }
 

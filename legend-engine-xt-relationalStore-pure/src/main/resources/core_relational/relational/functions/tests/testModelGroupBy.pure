@@ -695,8 +695,8 @@ function <<test.Test>> meta::relational::tests::groupBy::testAggToManyWithAverag
    let row = $result.values.rows->toOne();
    assertEquals(GeographicEntityType.CITY, $row.get('Address Type'));
    assertEquals(7, $row.get('Count of Firms'));
-   assertEqWithinTolerance(25.71428571428571, $row.getFloat('Average Age of Employees'), 0.00000000000001);
-   assertEqWithinTolerance(59.57142857142857, $row.getFloat('Sum of Age of Employees Averaged'), 0.00000000000001);
+   assertEqWithinTolerance(25.71428571428571, $row.getFloat('Average Age of Employees'), 0.00000000001);
+   assertEqWithinTolerance(59.57142857142857, $row.getFloat('Sum of Age of Employees Averaged'), 0.00000000001);
    assertEquals(35, $row.get('Max Age of Employees'));
    assertEquals(79, $row.get('Max of Sum of Age of Employees'));
 

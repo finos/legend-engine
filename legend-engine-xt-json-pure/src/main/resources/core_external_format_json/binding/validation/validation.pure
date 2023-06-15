@@ -86,10 +86,10 @@ function <<access.private>> meta::external::format::json::binding::validation::m
        let actualMultiplicity = $propertyMatchedByName->toOne()->functionReturnMultiplicity();
       
        if( !subsumesType($actualReturnType, $requiredReturnType) && !subsumesType($requiredReturnType, $actualReturnType), 
-          |^FailedBindingDetail(errorMessages = 'Incompatible return type for json schema property(' + $propertyToBeMatched.name->orElse('Unknown property name') + '). Expected : ' + $requiredReturnType->elementToPath() + ', Found : ' + $actualReturnType->elementToPath() + '.'),
+          |^FailedBindingDetail(errorMessages = 'Incompatible return type for json schema property(' + $propertyToBeMatched.name->orElse('Unknown property name') + '). expected:' + $requiredReturnType->elementToPath() + ', Found : ' + $actualReturnType->elementToPath() + '.'),
           |
        if( !multiplicitySubsumes($actualMultiplicity, $requiredMultiplicity), 
-          |^FailedBindingDetail(errorMessages = 'Incompatible multiplicity for json schema property(' + $propertyToBeMatched.name->orElse('Unknown property name') + '). Expected : ' + $requiredMultiplicity->printMultiplicity() + ', Found : ' + $actualMultiplicity->printMultiplicity() + '.'),
+          |^FailedBindingDetail(errorMessages = 'Incompatible multiplicity for json schema property(' + $propertyToBeMatched.name->orElse('Unknown property name') + '). expected:' + $requiredMultiplicity->printMultiplicity() + ', Found : ' + $actualMultiplicity->printMultiplicity() + '.'),
           |[];));
    );
 }

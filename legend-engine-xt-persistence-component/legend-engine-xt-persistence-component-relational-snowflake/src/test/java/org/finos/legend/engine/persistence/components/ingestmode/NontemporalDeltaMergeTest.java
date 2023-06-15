@@ -248,7 +248,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
             "USING " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE stage.\"legend_persistence_row_num\" = 1) as stage " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"snapshot_id\" > 18972) as stage WHERE stage.\"legend_persistence_row_num\" = 1) as stage " +
             "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
             "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
             "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\" " +
@@ -257,7 +257,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
 
-        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"snapshot_id\" > 18972";
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
@@ -272,7 +272,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
 
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
             "USING " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"snapshot_id\" > 18972) as stage " +
             "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
             "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
             "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\" " +
@@ -281,7 +281,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
 
-        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"snapshot_id\" > 18972";
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));

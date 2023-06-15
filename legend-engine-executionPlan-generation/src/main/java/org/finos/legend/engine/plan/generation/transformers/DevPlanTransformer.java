@@ -40,7 +40,7 @@ public class DevPlanTransformer implements PlanTransformer
         try
         {
             //org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_executionPlan.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__Extension_MANY__ExecutionPlan_1_()
-            Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
+            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
             Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__Extension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, purePlan, extensions, executionSupport);
         }

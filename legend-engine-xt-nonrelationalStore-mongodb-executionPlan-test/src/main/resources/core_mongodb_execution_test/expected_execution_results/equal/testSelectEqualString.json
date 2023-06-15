@@ -2,61 +2,56 @@
   "values":   {
     "firstName": "Gelya",
     "lastName": "Bowhay",
+    "legallyCompetent": true,
     "firm":     {
       "legalName": "Babblestorm",
-      "industrySectors": [
-"Finance",
-"Consumer Services",
-"Consumer Non-Durables"
-      ],
       "address":       {
-        "country":         {
-          "continent": "America",
-          "countryCode": "US"
-        },
+        "lastUpdated": "2022-01-01T21:10:00.000",
         "city": "Boston",
-        "street": "1 Farmco Road",
-        "postalCode": "02208"
+        "buildingNumber": 145,
+        "isActive": true
       },
-      "dateFounded": "1998-07-05T18:09:35Z"
+      "public": false,
+      "dateFounded": "1998-07-05T18:09:35.000",
+      "department": [
+        {
+          "dateCreated": "2013-01-01T21:10:22.000",
+          "name": "Sales",
+          "isActive": true,
+          "numberOfEmployees": 2
+        },
+        {
+          "dateCreated": "2012-11-01T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 4
+        },
+        {
+          "dateCreated": "2011-11-01T21:10:22.000",
+          "name": "Product",
+          "isActive": true,
+          "numberOfEmployees": 4
+        }
+      ],
+      "numberOfEmployees": 10
     },
-    "phoneNumber": "+1 202 704 9709",
     "address":     {
-      "country":       {
-        "continent": "America",
-        "countryCode": "US"
-      },
+      "lastUpdated": "2018-01-01T21:10:00.000",
       "city": "Washington",
-      "street": "0459 Kings Crossing",
-      "postalCode": "20508"
+      "buildingNumber": 40,
+      "isActive": true
     },
-    "car": [
-      {
-        "model": "Model X",
-        "manufacturer":         {
-          "country":           {
-            "continent": "America",
-            "countryCode": "US"
-          },
-          "name": "Tesla"
-        }
-      },
-      {
-        "model": "Leon",
-        "manufacturer":         {
-          "country":           {
-            "continent": "Europe",
-            "countryCode": "Spain"
-          },
-          "name": "Seat"
-        }
-      }
-    ],
     "otherPhoneNumbers": [
 "+1 347 336 3704"
     ],
-    "age": 25,
-    "email": "gbowhay0@1688.com"
+    "department":     {
+      "dateCreated": "2013-01-01T21:10:22.000",
+      "name": "Sales",
+      "isActive": true,
+      "numberOfEmployees": 2
+    },
+    "birthDate": "1983-05-05T00:12:12.000",
+    "age": 25
   },
   "builder":   {
     "_type": "json"

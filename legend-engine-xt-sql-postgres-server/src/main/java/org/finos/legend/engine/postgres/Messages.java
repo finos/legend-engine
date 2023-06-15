@@ -27,6 +27,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
@@ -178,7 +179,7 @@ public class Messages
     static void sendAuthenticationError(Channel channel, String message)
     {
         LOGGER.warn(message);
-        byte[] msg = message != null ? message.getBytes(StandardCharsets.UTF_8) : "Unknown Auth Error".getBytes(StandardCharsets.UTF_8);
+        byte[] msg = (message != null ? message : "Unknown Auth Error").getBytes(StandardCharsets.UTF_8);
         byte[] errorCode = PGErrorStatus.INVALID_AUTHORIZATION_SPECIFICATION.code()
                 .getBytes(StandardCharsets.UTF_8);
 
@@ -410,23 +411,24 @@ public class Messages
      * @param channel    The channel to write the parameter description to.
      * @param parameters A {@link SortedSet} containing the parameters from index 1 upwards.
      */
-    static void sendParameterDescription(Channel channel, ParameterMetaData parameters)
+    static void sendParameterDescription(Channel channel, ParameterMetaData parameters) throws SQLException
     {
-        throw new UnsupportedOperationException("Not supported feature");
-      /*  final int messageByteSize = 4 + 2 + parameters.length * 4;
+        final int messageByteSize = 4 + 2 + parameters.getParameterCount() * 4;
         ByteBuf buffer = channel.alloc().buffer(messageByteSize);
         buffer.writeByte('t');
         buffer.writeInt(messageByteSize);
-        if (parameters.length > Short.MAX_VALUE) {
+        if (parameters.getParameterCount() > Short.MAX_VALUE)
+        {
             buffer.release();
             throw new IllegalArgumentException("Too many parameters. Max supported: " + Short.MAX_VALUE);
         }
-        buffer.writeShort(parameters.length);
-        for (DataType dataType : parameters) {
-            int pgTypeId = PGTypes.get(dataType).oid();
+        buffer.writeShort(parameters.getParameterCount());
+        for (int i = 0; i < parameters.getParameterCount(); i++)
+        {
+            int pgTypeId = PGTypes.get(parameters.getParameterType(i), parameters.getScale(i)).oid();
             buffer.writeInt(pgTypeId);
         }
-        channel.write(buffer);*/
+        channel.write(buffer);
     }
 
  /*   private static boolean isRefWithPosition(Symbol symbol) {

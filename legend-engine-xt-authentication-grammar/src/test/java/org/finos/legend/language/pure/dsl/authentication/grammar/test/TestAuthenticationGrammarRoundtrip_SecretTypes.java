@@ -23,7 +23,6 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     public void propertiesSecret()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -40,7 +39,6 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     public void environmentSecret()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -57,7 +55,6 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     public void systemPropertiesSecret()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -74,7 +71,6 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     public void awsSecretsManagerSecret_WithDefaultCredentials()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -96,7 +92,6 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     public void awsSecretsManagerSecret_WithStaticCredentials()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -125,9 +120,7 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
     @Test
     public void awsSecretsManagerSecret_WithSTSAssumeRoleCredentials()
     {
-        test("" +
-                "###AuthenticationDemo\n" +
-                "import test::*;\n" +
+        test("###AuthenticationDemo\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::library::assert::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
@@ -28,8 +29,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::assert
          fc2(assert_Boolean_1__Function_1__Boolean_1_,         {ctx,test,message     | $library->j_invoke('pureAssert', [$test, $message], javaBoolean())}),
          fc1(assert_Boolean_1__Boolean_1_,                     {ctx,test             | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, j_string('Assert failed'))], javaBoolean())}),
          fc3(assert_Boolean_1__String_1__Any_MANY__Boolean_1_, {ctx,test,format,args | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $library->j_invoke('format', [$format, $args->j_listOf(javaList(javaObject()))], javaString()))], javaBoolean())}),
-         fc2(assert_Boolean_1__String_1__Boolean_1_,           {ctx,test,message     | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $message)], javaBoolean())})
+         fc2(assert_Boolean_1__String_1__Boolean_1_,           {ctx,test,message     | $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $message)], javaBoolean())}),
+         fc1(assertEmpty_Any_MANY__Boolean_1_,                 {ctx,collection       | assertEmptyCoder($ctx, $collection, $library, $noParams)})
       ]);
 
    $conventions->registerLibrary($lib);
+}
+
+function  meta::pure::executionPlan::platformBinding::legendJava::library::assert::assertEmptyCoder(ctx:FuncCoderContext[1], collection:Code[1], library: meta::external::language::java::metamodel::Class[1], noParams: Code[*]): Code[1]
+{
+  let test = if($collection.type->isJavaList(), |$collection->j_invoke('isEmpty', []), |$collection->j_cast($collection.type->toBoxed())->j_eq(j_null()));
+  let format = j_string('%s is not empty');
+  $library->j_invoke('pureAssert', [$test, j_lambda($noParams, $library->j_invoke('format', [$format, $collection->j_listOf(javaList(javaObject()))], javaString()))], javaBoolean());
 }

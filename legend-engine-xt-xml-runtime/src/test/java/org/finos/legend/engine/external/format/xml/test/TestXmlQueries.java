@@ -47,7 +47,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->checked()->serialize(" + firmTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->checked()->serialize(" + firmTree() + ")",
                 Maps.mutable.with("data", resource("queries/oneFirm.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
@@ -86,7 +86,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 Maps.mutable.with("data", resource("queries/manyFirmsElements.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsObjectResult.json")));
@@ -103,7 +103,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         try
         {
             runTest(modelData,
-                    "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetch(" + positionTree + ")->serialize(" + positionTree + ")",
+                    "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetch(" + positionTree + ")->serialize(" + positionTree + ")",
                     Maps.mutable.with("data", resource("queries/positions.xml")));
             Assert.fail("Expected exception to be raised. Not found any");
         }
@@ -123,7 +123,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
 
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchChecked(" + positionTree + ")->serialize(" + positionTree + ")",
+                "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchChecked(" + positionTree + ")->serialize(" + positionTree + ")",
                 Maps.mutable.with("data", resource("queries/positions.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchCheckedResult.json")));
@@ -139,7 +139,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
 
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
+                "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
                 Maps.mutable.with("data", resource("queries/positions.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchUnexpandedResult.json")));
@@ -155,7 +155,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
 
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchCheckedUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
+                "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::firm::Binding, $data)->graphFetchCheckedUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
                 Maps.mutable.with("data", resource("queries/positions.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchCheckedUnexpandedResult.json")));
@@ -168,7 +168,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 Maps.mutable.with("data", resource("queries/manyFirmsAttributes.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsAttributesCheckedResult.json")));
@@ -181,7 +181,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 Maps.mutable.with("data", resource("queries/manyFirmsElements.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsCheckedResult.json")));
@@ -194,7 +194,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 Maps.mutable.with("data", resource("queries/manyFirmsElements.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsObjectResult.json")));
@@ -207,7 +207,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/fullFirm.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmCheckedResult.json")));
@@ -220,7 +220,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/fullFirm.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmUnwrappedResult.json")));
@@ -233,13 +233,13 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result1 = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/firmInvalidRanking.xml")));
 
         MatcherAssert.assertThat(result1, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidRankingCheckedResult.json")));
 
         String result2 = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/firmInvalidLongitude.xml")));
 
         MatcherAssert.assertThat(result2, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidLongitudeCheckedResult.json")));
@@ -252,7 +252,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/firmLongitudeConstraintViolation.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmLongitudeConstraintViolationCheckedResult.json")));
@@ -265,7 +265,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                "data:Byte[*]|test::firm::model::Firm->internalize(test::firm::Binding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 Maps.mutable.with("data", resource("queries/firmWithXsiNil.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmWithXsiNilCheckedResult.json")));
@@ -278,7 +278,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
 
         String result = runTest(modelData,
-                "data:ByteStream[1]|test::model::AllDataType->internalize(test::model::Binding, $data)->serialize(#{test::model::AllDataType{string, integer, boolean, float, decimal, date, dateTime}}#)",
+                "data:Byte[*]|test::model::AllDataType->internalize(test::model::Binding, $data)->serialize(#{test::model::AllDataType{string, integer, boolean, float, decimal, date, dateTime}}#)",
                 Maps.mutable.with("data", resource("queries/allDataType.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/allDataTypeResult.json")));

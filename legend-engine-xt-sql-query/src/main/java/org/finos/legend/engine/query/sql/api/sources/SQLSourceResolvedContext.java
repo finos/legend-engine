@@ -15,24 +15,36 @@
 
 package org.finos.legend.engine.query.sql.api.sources;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 
 import java.util.List;
 
 public class SQLSourceResolvedContext
 {
-    private final PureModelContext pureModelContext;
+    private final List<PureModelContext> pureModelContexts;
     private final List<SQLSource> sources;
 
     public SQLSourceResolvedContext(PureModelContext pureModelContext, List<SQLSource> sources)
     {
-        this.pureModelContext = pureModelContext;
+        this(FastList.newListWith(pureModelContext), sources);
+    }
+
+    public SQLSourceResolvedContext(List<PureModelContext> pureModelContexts, List<SQLSource> sources)
+    {
+        this.pureModelContexts = pureModelContexts != null ? pureModelContexts : FastList.newList();
         this.sources = sources;
     }
 
+    @Deprecated
     public PureModelContext getPureModelContext()
     {
-        return pureModelContext;
+        return pureModelContexts.get(0);
+    }
+
+    public List<PureModelContext> getPureModelContexts()
+    {
+        return pureModelContexts;
     }
 
     public List<SQLSource> getSources()

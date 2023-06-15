@@ -24,8 +24,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -72,15 +74,63 @@ public class RelationalDatabaseConnectionParseTreeWalker
         // quoteIdentifiers (optional)
         RelationalDatabaseConnectionParserGrammar.DbQuoteIdentifiersContext quoteIdentifiersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dbQuoteIdentifiers(), "quoteIdentifiers", connectionValue.sourceInformation);
         connectionValue.quoteIdentifiers = quoteIdentifiersContext != null ? Boolean.parseBoolean(quoteIdentifiersContext.BOOLEAN().getText()) : null;
-        // datasource specification
-        RelationalDatabaseConnectionParserGrammar.RelationalDBDatasourceSpecContext dspCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.relationalDBDatasourceSpec(), "specification", connectionValue.sourceInformation);
-        connectionValue.datasourceSpecification = this.visitRelationalDatabaseConnectionDatasourceSpecification(dspCtx);
-        // authentication strategy
-        RelationalDatabaseConnectionParserGrammar.RelationalDBAuthContext authCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.relationalDBAuth(), "auth", connectionValue.sourceInformation);
-        connectionValue.authenticationStrategy = this.visitRelationalDatabaseConnectionAuthenticationStrategy(authCtx);
         //post processors
         RelationalDatabaseConnectionParserGrammar.RelationalPostProcessorsContext postProcessorsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.relationalPostProcessors(), "postProcessors", connectionValue.sourceInformation);
         connectionValue.postProcessors = postProcessorsContext != null ? this.visitRelationalPostProcessors(postProcessorsContext) : null;
+
+        RelationalDatabaseConnectionParserGrammar.ConnectionModeContext connectionModeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionMode(), "mode", connectionValue.sourceInformation);
+        String localMode = connectionModeContext != null ? PureGrammarParserUtility.fromIdentifier(connectionModeContext.identifier()) : null;
+        if ("local".equals(localMode))
+        {
+            // HACKY: assign dummy the datasource spec and authentication strategy if the connection mode is local
+            // TODO: revert this change after we have a more well-thought out strategy for handling local connection
+            this.handleLocalMode(connectionValue);
+        }
+        else
+        {
+            // datasource specification
+            RelationalDatabaseConnectionParserGrammar.RelationalDBDatasourceSpecContext dspCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.relationalDBDatasourceSpec(), "specification", connectionValue.sourceInformation);
+            connectionValue.datasourceSpecification = this.visitRelationalDatabaseConnectionDatasourceSpecification(dspCtx);
+            // authentication strategy
+            RelationalDatabaseConnectionParserGrammar.RelationalDBAuthContext authCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.relationalDBAuth(), "auth", connectionValue.sourceInformation);
+            connectionValue.authenticationStrategy = this.visitRelationalDatabaseConnectionAuthenticationStrategy(authCtx);
+        }
+    }
+
+    private String normalizeName(String elementName, String localPrefix)
+    {
+        String normalized = elementName.replaceAll("::", "-");
+        return localPrefix + "-" + normalized;
+    }
+
+    private void handleLocalMode(RelationalDatabaseConnection connectionValue)
+    {
+        DatabaseType databaseType = connectionValue.type;
+        if (databaseType == null)
+        {
+            databaseType = connectionValue.databaseType;
+        }
+        if (databaseType != DatabaseType.Snowflake)
+        {
+            throw new UnsupportedOperationException("'local' mode not supported for database type '" + databaseType + "'");
+        }
+
+        String elementName = connectionValue.element;
+        connectionValue.localMode = true;
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
+        snowflakeDatasourceSpecification.accountName = this.normalizeName(elementName,"legend-local-snowflake-accountName");
+        snowflakeDatasourceSpecification.databaseName = this.normalizeName(elementName,"legend-local-snowflake-databaseName");
+        snowflakeDatasourceSpecification.role = this.normalizeName(elementName,"legend-local-snowflake-role");
+        snowflakeDatasourceSpecification.warehouseName = this.normalizeName(elementName,"legend-local-snowflake-warehouseName");
+        snowflakeDatasourceSpecification.region = this.normalizeName(elementName,"legend-local-snowflake-region");
+        snowflakeDatasourceSpecification.cloudType = this.normalizeName(elementName,"legend-local-snowflake-cloudType");
+        connectionValue.datasourceSpecification = snowflakeDatasourceSpecification;
+
+        SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy();
+        authenticationStrategy.privateKeyVaultReference = this.normalizeName(elementName,"legend-local-snowflake-privateKeyVaultReference");
+        authenticationStrategy.passPhraseVaultReference = this.normalizeName(elementName,"legend-local-snowflake-passphraseVaultReference");
+        authenticationStrategy.publicUserName = this.normalizeName(elementName,"legend-local-snowflake-publicuserName");
+        connectionValue.authenticationStrategy = authenticationStrategy;
     }
 
     private List<PostProcessor> visitRelationalPostProcessors(RelationalDatabaseConnectionParserGrammar.RelationalPostProcessorsContext postProcessorsContext)

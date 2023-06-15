@@ -15,18 +15,14 @@
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import io.opentracing.Span;
-import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
-import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -37,25 +33,19 @@ import org.slf4j.Logger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.function.Consumer;
 
-public class SQLExecutionResult extends Result implements StoreExecutable
+public class SQLExecutionResult extends SQLResult
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
     private final org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode SQLExecutionNode;
-    private final String databaseType;
     private final String databaseTimeZone;
     private final Calendar calendar;
-    private final List<String> temporaryTables;
 
-    private final Connection connection;
-    private final Statement statement;
     private final ResultSet resultSet;
     private final ResultSetMetaData resultSetMetaData;
     private final String executedSql;
@@ -64,7 +54,6 @@ public class SQLExecutionResult extends Result implements StoreExecutable
     private final List<String> columnNames = FastList.newList();
     private final List<ResultColumn> resultColumns = FastList.newList();
     private final List<SQLResultColumn> sqlResultColumns;
-    private final RequestContext requestContext;
     public Span topSpan;
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
@@ -74,33 +63,28 @@ public class SQLExecutionResult extends Result implements StoreExecutable
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
     {
-        super("success", activities);
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, requestContext, true);
+    }
+
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
+    {
+        super("success", connection, activities, databaseType, temporaryTables, requestContext);
         this.SQLExecutionNode = SQLExecutionNode;
-        this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
-        this.temporaryTables = temporaryTables;
         this.topSpan = topSpan;
-        this.requestContext = requestContext;
         try
         {
-            this.connection = connection;
-            this.statement = connection.createStatement();
-            if (DatabaseType.MemSQL.name().equals(databaseType))
-            {
-                this.statement.setFetchSize(100);
-            }
-
             long start = System.currentTimeMillis();
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
             String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
-            if (this.requestContext != null)
+            String logMessage = logSQLWithParamValues ? sql : SQLExecutionNode.sqlQuery();
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
+            if (this.getRequestContext() != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(requestContext, this);
+                StoreExecutableManager.INSTANCE.addExecutable(this.getRequestContext(), this);
             }
-
-            this.resultSet = this.statement.executeQuery(sql);
+            this.resultSet = this.getStatement().executeQuery(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
 
@@ -117,9 +101,9 @@ public class SQLExecutionResult extends Result implements StoreExecutable
                 this.resultColumns.add(new ResultColumn(i, col.label, col.dataType, this.resultSetMetaData.getColumnType(i)));
             }
 
-            if (this.requestContext != null)
+            if (this.getRequestContext() != null)
             {
-                StoreExecutableManager.INSTANCE.removeExecutable(requestContext, this);
+                StoreExecutableManager.INSTANCE.removeExecutable(this.getRequestContext(), this);
             }
         }
         catch (Throwable e)
@@ -143,34 +127,20 @@ public class SQLExecutionResult extends Result implements StoreExecutable
         return ((RelationalResultVisitor<T>) resultVisitor).visit(this);
     }
 
+    @Override
+    public List<AutoCloseable> getAdditionalCloseables()
+    {
+        return Lists.fixedSize.with(this.resultSet);
+    }
+
     public SQLExecutionNode getSQLExecutionNode()
     {
         return this.SQLExecutionNode;
     }
 
-    public String getDatabaseType()
-    {
-        return this.databaseType;
-    }
-
     public String getDatabaseTimeZone()
     {
         return this.databaseTimeZone;
-    }
-
-    public List<String> getTemporaryTables()
-    {
-        return temporaryTables;
-    }
-
-    public Connection getConnection()
-    {
-        return this.connection;
-    }
-
-    public Statement getStatement()
-    {
-        return this.statement;
     }
 
     public ResultSet getResultSet()
@@ -218,63 +188,4 @@ public class SQLExecutionResult extends Result implements StoreExecutable
         ResultColumn resultColumn = this.getResultColumns().get(columnIndex - 1);
         return resultColumn.getTransformedValue(this.getResultSet(), calendar);
     }
-
-    public RequestContext getRequestContext()
-    {
-        return this.requestContext;
-    }
-
-    @Override
-    public void close()
-    {
-        DatabaseManager databaseManager = DatabaseManager.fromString(this.SQLExecutionNode.getDatabaseTypeName());
-        if (this.temporaryTables != null && this.statement != null)
-        {
-            this.temporaryTables.forEach((Consumer<? super String>) table ->
-            {
-                try
-                {
-                    statement.execute(databaseManager.relationalDatabaseSupport().dropTempTable(table));
-                }
-                catch (Exception ignored)
-                {
-                }
-            });
-        }
-
-        Consumer<AutoCloseable> closingFunction = (AutoCloseable c) ->
-        {
-            if (c != null)
-            {
-                try
-                {
-                    c.close();
-                }
-                catch (Exception ignored)
-                {
-                }
-            }
-        };
-
-        FastList.newListWith(this.resultSet, this.statement, this.connection).forEach((Procedure<AutoCloseable>) closingFunction::accept);
-    }
-
-    @Override
-    public void cancel()
-    {
-        try
-        {
-            if (!statement.isClosed())
-            {
-                statement.cancel();
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + RequestContext.getSessionID(this.requestContext)).toString());
-
-            }
-        }
-        catch (Exception e)
-        {
-            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + RequestContext.getSessionID(this.requestContext) + " " + e.getMessage()).toString());
-        }
-    }
-
 }

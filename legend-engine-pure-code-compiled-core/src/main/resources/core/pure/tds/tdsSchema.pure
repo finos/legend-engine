@@ -16,7 +16,7 @@ import meta::pure::tds::schema::*;
 
 function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
-   let es = $f->evaluateAndDeactivate().expressionSequence;
+   let es = $f->evaluateAndDeactivate().expressionSequence->last();
    assertEquals(1, $es->size());
 
    resolveSchema($es->toOne(), $f->openVariableValues(), $extensions);
@@ -305,6 +305,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
       ));
 
    let handlerMatches = $handlers->filter(p|$p.first == $fe.func).second;
+
    assertNotEmpty($handlerMatches, 'Failed to find handler for function ' + $fe.func->elementToPath());
    assertEquals(1, $handlerMatches->size());
 

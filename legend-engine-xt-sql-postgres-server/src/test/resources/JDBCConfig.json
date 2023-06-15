@@ -7,5 +7,6 @@
     "user": "postgres",
     "password": "password",
     "type": "JDBC"
-  }
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
 }

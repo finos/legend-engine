@@ -2,10 +2,10 @@
   "values":   {
     "firm":     {
       "address":       {
-        "country":         {
-          "continent": "America",
-          "countryCode": "US"
-        }
+        "lastUpdated": "2022-01-01T21:10:00.000",
+        "city": "Saint Paul",
+        "buildingNumber": 974,
+        "isActive": true
       }
     }
   },

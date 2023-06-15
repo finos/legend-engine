@@ -22,11 +22,13 @@ public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesT
 {
     public FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits)
     {
+
         switch (typeName)
         {
             case CHAR:
                 return FieldType.builder().dataType(DataType.CHAR).length(columnSize).build();
             case VARCHAR:
+            case CHARACTER_VARYING:
                 return FieldType.builder().dataType(DataType.VARCHAR).length(columnSize).build();
             case CLOB:
                 return FieldType.builder().dataType(DataType.LONGTEXT).length(columnSize).build();

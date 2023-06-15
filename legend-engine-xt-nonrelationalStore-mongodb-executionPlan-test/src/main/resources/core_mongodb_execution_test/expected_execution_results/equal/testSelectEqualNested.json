@@ -2,60 +2,57 @@
   "values":   {
     "firstName": "Jefferey",
     "lastName": "Raye",
+    "legallyCompetent": true,
     "firm":     {
       "legalName": "Yodoo",
-      "industrySectors": [
-"Technology"
-      ],
       "address":       {
-        "country":         {
-          "continent": "America",
-          "countryCode": "US"
-        },
+        "lastUpdated": "2013-01-01T21:10:00.000",
         "city": "Pueblo",
-        "street": "382 Towne Plaza",
-        "postalCode": "81010"
+        "buildingNumber": 382,
+        "isActive": true
       },
-      "dateFounded": "1994-03-10T15:24:54Z"
+      "public": false,
+      "dateFounded": "2015-01-11T00:36:08.000",
+      "department": [
+        {
+          "dateCreated": "2015-05-05T21:10:22.000",
+          "name": "Engineering",
+          "isActive": true,
+          "numberOfEmployees": 40
+        },
+        {
+          "dateCreated": "2015-05-05T21:10:22.000",
+          "name": "Business",
+          "isActive": true,
+          "numberOfEmployees": 60
+        },
+        {
+          "dateCreated": "2011-05-05T21:10:22.000",
+          "name": "Sales",
+          "isActive": false,
+          "numberOfEmployees": 10
+        }
+      ],
+      "numberOfEmployees": 100
     },
-    "phoneNumber": "+1 301 842 7614",
     "address":     {
-      "country":       {
-        "continent": "America",
-        "countryCode": "US"
-      },
+      "lastUpdated": "2023-01-01T21:10:00.000",
       "city": "Hyattsville",
-      "street": "338 Evergreen Place",
-      "postalCode": "20784"
+      "buildingNumber": 33,
+      "isActive": false
     },
-    "car": [
-      {
-        "model": "Auris",
-        "manufacturer":         {
-          "country":           {
-            "continent": "Asia",
-            "countryCode": "JP"
-          },
-          "name": "Toyota"
-        }
-      },
-      {
-        "model": "Polo",
-        "manufacturer":         {
-          "country":           {
-            "continent": "Europe",
-            "countryCode": "DE"
-          },
-          "name": "Volkswagen"
-        }
-      }
-    ],
     "otherPhoneNumbers": [
 "+44 774 643 2334",
 "+1 515 165 0534"
     ],
-    "age": 45,
-    "email": "jraye1@ted.com"
+    "department":     {
+      "dateCreated": "2015-05-05T21:10:22.000",
+      "name": "Engineering",
+      "isActive": true,
+      "numberOfEmployees": 40
+    },
+    "birthDate": "2023-05-15T12:48:19.000",
+    "age": 45
   },
   "builder":   {
     "_type": "json"

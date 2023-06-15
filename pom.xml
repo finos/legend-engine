@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.11.2-SNAPSHOT</version>
+    <version>4.15.8-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -110,6 +110,7 @@
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
         <module>legend-engine-xt-relationalStore-test-server</module>
+        <module>legend-engine-xt-relationalStore-mutation-executionPlan-test</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
@@ -172,6 +173,16 @@
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
+
+        <module>legend-engine-xt-functionActivator-api</module>
+        <module>legend-engine-xt-functionActivator-pure</module>
+        <module>legend-engine-xt-functionActivator-protocol</module>
+
+        <module>legend-engine-xt-snowflakeApp-compiler</module>
+        <module>legend-engine-xt-snowflakeApp-pure</module>
+        <module>legend-engine-xt-snowflakeApp-protocol</module>
+        <module>legend-engine-xt-snowflakeApp-grammar</module>
+        <module>legend-engine-xt-snowflakeApp-api</module>
 
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
@@ -290,8 +301,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.1</legend.pure.version>
-        <legend.shared.version>0.23.3</legend.shared.version>
+        <legend.pure.version>4.5.7</legend.pure.version>
+        <legend.shared.version>0.23.7</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -320,7 +331,7 @@
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
-        <h2.version>1.4.200</h2.version>
+        <h2.version>2.1.214</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
         <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
@@ -380,6 +391,8 @@
         <wiremock.version>2.27.2</wiremock.version>
         <io.netty.version>4.1.52.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
+        <opencsv.version>4.6</opencsv.version>
+        <logback.version>1.2.3</logback.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -395,7 +408,7 @@
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
@@ -734,7 +747,51 @@
                 <version>1.26</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+
             <!-- ENGINE -->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -1746,6 +1803,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-ide-light-metadata-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1833,6 +1895,12 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-query</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-query</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -2247,6 +2315,16 @@
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
             <!-- LOGGING -->
 
             <!-- OPEN TRACING -->
@@ -2543,6 +2621,11 @@
                 <version>${prometheus.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.prometheus.jmx</groupId>
+                <artifactId>jmx_prometheus_javaagent</artifactId>
+                <version>0.18.0</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
@@ -2657,7 +2740,6 @@
                 <version>${jetty.version}</version>
             </dependency>
             <!-- Jetty -->
-
 
             <!-- Database -->
             <dependency>
@@ -2791,6 +2873,28 @@
                 <artifactId>netty-all</artifactId>
                 <version>${io.netty.version}</version>
             </dependency>
+
+            <!-- Open CSV -->
+            <dependency>
+                <groupId>com.opencsv</groupId>
+                <artifactId>opencsv</artifactId>
+                <version>${opencsv.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-collections4</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>

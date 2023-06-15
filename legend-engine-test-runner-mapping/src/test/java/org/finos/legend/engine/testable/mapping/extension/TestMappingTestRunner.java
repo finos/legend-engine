@@ -30,39 +30,41 @@ import java.util.List;
 
 public class TestMappingTestRunner
 {
-    String grammar1 = "###Pure\n" +
-            "Class test::model\n" +
-            "{\n" +
-            "    name: String[1];\n" +
-            "    id: String[1];\n" +
-            "}\n" +
-            "\n" +
-            "Class test::changedModel" +
-            "{" +
-            "    name: String[1];" +
-            "    id: Integer[1];" +
-            "}" +
-            "\n" +
-            "###Data\n" +
-            "Data test::data::MyData\n" +
-            "{\n" +
-            "  ExternalFormat\n" +
-            "  #{\n" +
-            "    contentType: 'application/json';\n" +
-            "    data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
-            "  }#\n" +
-            "}\n" +
-            "\n" +
-            "###Mapping\n" +
-            "Mapping test::modelToModelMapping\n" +
-            "(\n" +
-            "    *test::changedModel: Pure\n" +
-            "{\n" +
-            "    ~src test::model\n" +
-            "    name: $src.name,\n" +
-            "    id: $src.id->parseInteger()\n" +
-            "}\n" +
-            "  testSuites:\n" +
+
+    private String getGrammar1MappingSuite(String TEST_SUITE_GRAMMAR)
+    {
+        return "###Pure\n" +
+                "Class test::model\n" +
+                "{\n" +
+                "    name: String[1];\n" +
+                "    id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::changedModel{    name: String[1];    id: Integer[1];}\n" +
+                "###Data\n" +
+                "Data test::data::MyData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::modelToModelMapping\n" +
+                "(\n" +
+                "    *test::changedModel: Pure\n" +
+                "{\n" +
+                "    ~src test::model\n" +
+                "    name: $src.name,\n" +
+                "    id: $src.id->parseInteger()\n" +
+                "}\n" +
+                "\n" + TEST_SUITE_GRAMMAR + '\n' +
+                ")\n";
+    }
+
+    String TEST_SUITE_1 = getGrammar1MappingSuite("  testSuites:\n" +
             "  [\n" +
             "    testSuite1:\n" +
             "    {\n" +
@@ -71,8 +73,8 @@ public class TestMappingTestRunner
             "       ModelStore: ModelStore\n" +
             "        #{\n" +
             "           test::model:\n" +
-            "            Reference \n" +
-            "            #{ \n" +
+            "            Reference\n" +
+            "            #{\n" +
             "              test::data::MyData\n" +
             "            }#\n" +
             "        }#\n" +
@@ -81,13 +83,13 @@ public class TestMappingTestRunner
             "      [\n" +
             "        test1:\n" +
             "        {\n" +
-            "          query: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+            "          function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
             "              EqualToJson\n" +
             "              #{\n" +
-            "                expected : \n" +
+            "                expected :\n" +
             "                  ExternalFormat\n" +
             "                  #{\n" +
             "                    contentType: 'application/json';\n" +
@@ -98,9 +100,75 @@ public class TestMappingTestRunner
             "        }\n" +
             "      ];\n" +
             "    }\n" +
-            "  ]\n" +
-            ")\n" +
-            "\n";
+            "  ]\n");
+
+
+    String TEST_SUITE_2 = getGrammar1MappingSuite("  testSuites:\n" +
+            "  [\n" +
+            "    testSuite1:\n" +
+            "    {\n" +
+            "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+            "      tests:\n" +
+            "      [\n" +
+            "        test1:\n" +
+            "        {\n" +
+            "          data:\n" +
+            "          [\n" +
+            "           ModelStore: ModelStore\n" +
+            "            #{\n" +
+            "               test::model:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  test::data::MyData\n" +
+            "                }#\n" +
+            "            }#\n" +
+            "          ];\n" +
+            "          asserts:\n" +
+            "          [\n" +
+            "            assert1:\n" +
+            "              EqualToJson\n" +
+            "              #{\n" +
+            "                expected :\n" +
+            "                  ExternalFormat\n" +
+            "                  #{\n" +
+            "                    contentType: 'application/json';\n" +
+            "                    data: '{\"id\" : 77, \"name\" : \"john doe\"}';\n" +
+            "                  }#;\n" +
+            "              }#\n" +
+            "          ];\n" +
+            "        },\n" +
+            "        test2:\n" +
+            "        {\n" +
+            "          data:\n" +
+            "          [\n" +
+            "           ModelStore: ModelStore\n" +
+            "            #{\n" +
+            "               test::model:\n" +
+            "               ExternalFormat\n" +
+            "               #{\n" +
+            "                 contentType: 'application/json';\n" +
+            "                 data: '{\"name\":\"john doe2\",\"id\":\"77\"}';\n" +
+            "               }#\n" +
+            "            }#\n" +
+            "          ];\n" +
+            "          asserts:\n" +
+            "          [\n" +
+            "            assert1:\n" +
+            "              EqualToJson\n" +
+            "              #{\n" +
+            "                expected :\n" +
+            "                  ExternalFormat\n" +
+            "                  #{\n" +
+            "                    contentType: 'application/json';\n" +
+            "                    data: '{\"id\" : 77, \"name\" : \"john doe2\"}';\n" +
+            "                  }#;\n" +
+            "              }#\n" +
+            "          ];\n" +
+            "        }\n" +
+            "      ];\n" +
+            "    }\n" +
+            "  ]");
+
 
     String grammar2 = "###Data\n" +
             "Data test::data::MyTestData\n" +
@@ -188,7 +256,7 @@ public class TestMappingTestRunner
             "      [\n" +
             "        test1:\n" +
             "        {\n" +
-            "          query: |test::PersonModel.all()->graphFetch(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#)->serialize(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#);\n" +
+            "          function: |test::PersonModel.all()->graphFetch(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#)->serialize(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#);\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -208,13 +276,16 @@ public class TestMappingTestRunner
             "  ]\n" +
             ")\n";
 
+
+
+
     @Test
     public void testMappingTestSuiteForM2MUsecase()
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
         mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
 
-        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar1);
+        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_1);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -250,7 +321,7 @@ public class TestMappingTestRunner
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
         mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
-        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar1 + grammar2);
+        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_1 + grammar2);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest1 = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelTestMapping");
         List<TestResult> mappingTestResults1 = mappingTestableRunnerExtension.executeAllTest(mappingToTest1, pureModelWithReferenceData, modelDataWithReferenceData);
@@ -272,4 +343,34 @@ public class TestMappingTestRunner
         Assert.assertEquals("testSuite1", mappingTestResults2.get(0).testSuiteId);
         Assert.assertEquals("test1", mappingTestResults2.get(0).atomicTestId);
     }
+
+    @Test
+    public void testM2MMappingSuiteWithMultiInputData()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+
+        PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_2);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelMapping");
+        List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
+
+        Assert.assertEquals(2, mappingTestResults.size());
+        Assert.assertEquals(2, mappingTestResults.stream().filter(e -> e instanceof TestExecuted).count());
+        TestExecuted test1 = (TestExecuted) mappingTestResults.get(0);
+        Assert.assertEquals("test::modelToModelMapping", test1.testable);
+        Assert.assertEquals("testSuite1", test1.testSuiteId);
+        Assert.assertEquals("test1", test1.atomicTestId);
+        Assert.assertEquals(1, test1.assertStatuses.size());
+
+        TestExecuted test2 = (TestExecuted) mappingTestResults.get(1);
+        Assert.assertEquals("test::modelToModelMapping", test2.testable);
+        Assert.assertEquals("testSuite1", test2.testSuiteId);
+        Assert.assertEquals("test2", test2.atomicTestId);
+        Assert.assertEquals(1, test2.assertStatuses.size());
+
+    }
+
+
 }
+

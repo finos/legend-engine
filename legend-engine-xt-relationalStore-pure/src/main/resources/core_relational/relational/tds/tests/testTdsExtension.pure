@@ -14,6 +14,8 @@
 
 import meta::pure::tds::extensions::*;
 import meta::relational::tests::csv::*;
+import meta::protocols::tds::preeval::router::prerouting::*;
+import meta::relational::tests::model::simple::*;
 
 function <<test.Test>>
    meta::pure::tds::tests::extensions::iqrClassifyTest() : Boolean[1]
@@ -49,4 +51,434 @@ function <<test.Test>>
    println($summary->toCSV());
 
    assertEquals([-1000, 1001], $summary->columnValues('score'));
+}
+
+function  <<test.BeforePackage>> meta::pure::tds::tests::setup() : Boolean[1]
+{
+   meta::relational::tests::createTablesAndFillDb();
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::columnValueDifferenceTest() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let rawTradeDate = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )
+            ->extend(col(x:TDSRow[1]|$x.isNotNull('tradeDate'), 'isNullTradeDate'))
+            ->sort(asc('tradeDate'))
+         }, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   
+   let rawPrevTradeDateR = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )
+               ->sort(asc('tradeDate'))}, $mapping, $runtime, meta::relational::extension::relationalExtensions() );
+   let rawPrevTradeDate = $rawPrevTradeDateR.values;
+   
+   println('raw data, trade date:');
+   println($rawTradeDate.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($rawTradeDate->toCSV());
+   println($rawTradeDate);
+
+   println('raw data, prev date:');
+   println($rawPrevTradeDate.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($rawPrevTradeDate->toCSV());
+
+   
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )  
+            ->extend(col(x:TDSRow[1]|$x.isNotNull('tradeDate'), 'isNullTradeDate'))
+            ->sort(asc('tradeDate'))      
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+                        [
+                           agg(x | $x.quantity, y | $y->sum()), 
+                           agg(x | $x.id, y | $y->count())
+                        ], 
+                        ['tradeDate', 'quantity', 'count']
+                        )               
+                  ,               
+                  ['tradeDate'], ['quantity', 'count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions() );
+
+   println('Relational results:');
+   println($r.activities);
+
+   let relationalResult = $r.values;
+   
+   println($relationalResult.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($relationalResult->toCSV());
+
+   assertNotEmpty($relationalResult.rows);
+
+   let inMemoryResult = $rawTradeDate->columnValueDifference($rawPrevTradeDate, ['tradeDate'], ['quantity', 'count'])
+      ->sort('tradeDate');
+
+   println('In memory results:');
+   println($inMemoryResult->toCSV());
+
+   assertNotEmpty($inMemoryResult.rows);
+
+   assertEquals($relationalResult->toCSV(), $inMemoryResult->toCSV());
+
+   assertEquals('2014-12-01|true|356.0|TDSNull|356.0|3|TDSNull|3;2014-12-02|true|55.0|356.0|-301.0|2|3|-1;2014-12-03|true|71.0|55.0|16.0|2|2|0;2014-12-04|true|105.0|71.0|34.0|3|2|1;2014-12-05|true|5.0|105.0|-100.0|1|3|-2;2014-12-06|TDSNull|TDSNull|5.0|-5.0|TDSNull|1|-1',
+      $relationalResult.rows->map(r|$r.values->makeString('|'))->joinStrings(';')); 
+}
+
+function <<test.Test, test.AlloyOnly>>
+   meta::pure::tds::tests::extensions::columnValueDifferenceWithoutPrevalTest() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let rawTradeDate = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'quantity', 'count']
+               )
+            ->extend(col(x:TDSRow[1]|$x.isNotNull('tradeDate'), 'isNullTradeDate'))
+            ->sort(asc('tradeDate'))
+         }, $mapping, $runtime,  meta::relational::extension::relationalExtensions()).values;
+
+   let rawPrevTradeDateR = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'quantity', 'count']
+               )
+               ->sort(asc('tradeDate'))}, $mapping, $runtime, meta::relational::extension::relationalExtensions() );
+   let rawPrevTradeDate = $rawPrevTradeDateR.values;
+
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'quantity', 'count']
+               )
+            ->extend(col(x:TDSRow[1]|$x.isNotNull('tradeDate'), 'isNullTradeDate'))
+            ->sort(asc('tradeDate'))
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)],
+                        [
+                           agg(x | $x.quantity, y | $y->sum()),
+                           agg(x | $x.id, y | $y->count())
+                        ],
+                        ['tradeDate', 'quantity', 'count']
+                        )
+                  ,
+                  ['tradeDate'], ['quantity', 'count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime,meta::relational::extension::relationalExtensions() );
+
+   let relationalResult = $r.values;
+
+   assertNotEmpty($relationalResult.rows);
+
+   let inMemoryResult = $rawTradeDate->columnValueDifference($rawPrevTradeDate, ['tradeDate'], ['quantity', 'count'])
+      ->sort('tradeDate');
+
+   assertNotEmpty($inMemoryResult.rows);
+
+   assertEquals($relationalResult->toCSV(), $inMemoryResult->toCSV());
+
+   assertEquals('2014-12-01T00:00:00.000000000+0000|true|356.0|TDSNull|356.0|3|TDSNull|3;2014-12-02T00:00:00.000000000+0000|true|55.0|356.0|-301.0|2|3|-1;2014-12-03T00:00:00.000000000+0000|true|71.0|55.0|16.0|2|2|0;2014-12-04T00:00:00.000000000+0000|true|105.0|71.0|34.0|3|2|1;2014-12-05T00:00:00.000000000+0000|true|5.0|105.0|-100.0|1|3|-2;2014-12-06T00:00:00.000000000+0000|TDSNull|TDSNull|5.0|-5.0|TDSNull|1|-1',
+      $relationalResult.rows->map(r|$r.values->makeString('|'))->joinStrings(';'));
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::columnValueDifference_DupeJoinKeys_Test() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )  
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+                        [
+                           agg(x | $x.quantity, y | $y->sum()), 
+                           agg(x | $x.id, y | $y->count())
+                        ], 
+                        ['tradeDate', 'quantity', 'count']
+                        )               
+                  ,               
+                  ['tradeDate', 'tradeDate'], ['quantity', 'count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['tradeDate', 'quantity_1', 'quantity_2', 'quantity_valueDifference', 'count_1', 'count_2', 'count_valueDifference'], $r.values.columns.name);
+}
+
+function <<test.Test, test.AlloyOnly>>
+   meta::pure::tds::tests::extensions::columnValueDifferenceWithoutPreval_DupeJoinKeys_Test() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'quantity', 'count']
+               )
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)],
+                        [
+                           agg(x | $x.quantity, y | $y->sum()),
+                           agg(x | $x.id, y | $y->count())
+                        ],
+                        ['tradeDate', 'quantity', 'count']
+                        )
+                  ,
+                  ['tradeDate', 'tradeDate'], ['quantity', 'count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['tradeDate', 'quantity_1', 'quantity_2', 'quantity_valueDifference', 'count_1', 'count_2', 'count_valueDifference'], $r.values.columns.name);
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::columnValueDifference_ExtraCols_Test() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'leftQty', 'count']
+               )  
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+                        [
+                           agg(x | $x.quantity, y | $y->sum()), 
+                           agg(x | $x.id, y | $y->count())
+                        ], 
+                        ['tradeDate', 'rightQuantity', 'count']
+                        )               
+                  ,               
+                  ['tradeDate', 'tradeDate'], ['count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['tradeDate', 'leftQty', 'rightQuantity', 'count_1', 'count_2', 'count_valueDifference'], $r.values.columns.name);
+}
+
+function <<test.Test, test.AlloyOnly>>
+   meta::pure::tds::tests::extensions::columnValueDifferenceWithoutPreval_ExtraCols_Test() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)],
+               [
+                  agg(x | $x.quantity, y | $y->sum()),
+                  agg(x | $x.id, y | $y->count())
+               ],
+               ['tradeDate', 'leftQty', 'count']
+               )
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)],
+                        [
+                           agg(x | $x.quantity, y | $y->sum()),
+                           agg(x | $x.id, y | $y->count())
+                        ],
+                        ['tradeDate', 'rightQuantity', 'count']
+                        )
+                  ,
+                  ['tradeDate', 'tradeDate'], ['count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['tradeDate', 'leftQty', 'rightQuantity', 'count_1', 'count_2', 'count_valueDifference'], $r.values.columns.name);
+}
+
+function /* This should fail, so can't be enabled as a test */
+   meta::pure::tds::tests::extensions::columnValueDifference_DuplicateNonKeyCols_Test() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )  
+            ->columnValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+                        [
+                           agg(x | $x.quantity, y | $y->sum()), 
+                           agg(x | $x.id, y | $y->count())
+                        ], 
+                        ['tradeDate', 'quantity', 'count']
+                        )               
+                  ,               
+                  ['tradeDate', 'tradeDate'], ['count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['tradeDate', 'leftQty', 'rightQuantity', 'count_1', 'count_2', 'count_valueDifference'], $r.values.columns.name);
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::rowValueDifferenceTest() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let rawTradeDate = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )
+            ->extend(col(x:TDSRow[1]|$x.isNotNull('tradeDate'), 'isNullTradeDate'))
+            ->sort(asc('tradeDate'))
+         }, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   
+   let rawPrevTradeDateR = execute({|
+            Trade.all()
+            ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )
+               ->sort(asc('tradeDate'))}, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+   let rawPrevTradeDate = $rawPrevTradeDateR.values;
+   
+   println('raw data, trade date:');
+   println($rawTradeDate.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($rawTradeDate->toCSV());
+   println($rawTradeDate);
+
+   println('raw data, prev date:');
+   println($rawPrevTradeDate.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($rawPrevTradeDate->toCSV());
+
+   
+   let q = {|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [
+                  agg(x | $x.quantity, y | $y->sum()), 
+                  agg(x | $x.id, y | $y->count())
+               ], 
+               ['tradeDate', 'quantity', 'count']
+               )  
+            ->rowValueDifference(
+                  Trade.all()
+                     ->groupBy([x|$x.date->adjust(1, DurationUnit.DAYS)], 
+                        [
+                           agg(x | $x.quantity, y | $y->sum()), 
+                           agg(x | $x.id, y | $y->count())
+                        ], 
+                        ['tradeDate', 'quantity', 'count']
+                        )               
+                  ,               
+                  ['tradeDate'], ['quantity', 'count'])
+            ->sort(asc('tradeDate'))
+         };
+
+   let r = execute($q, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   println('Relational results:');
+   println($r.activities);
+
+   let relationalResult = $r.values;
+   
+   println($relationalResult.columns->map(c|$c.name + ':' + $c.type->toOne()->elementToPath())->joinStrings(','));
+   println($relationalResult->toCSV());
+
+   assertNotEmpty($relationalResult.rows);
+
+   let inMemoryResult = $rawTradeDate->rowValueDifference($rawPrevTradeDate, ['tradeDate'], ['quantity', 'count'])
+      ->sort('tradeDate');
+
+   println('In memory results:');
+   println($inMemoryResult->toCSV());
+
+   assertNotEmpty($inMemoryResult.rows);
+
+   assertEquals($relationalResult->toCSV(), $inMemoryResult->toCSV());
+
+   assertEquals('2014-12-01|356.0|3|TDSNull|TDSNull|false|false|false,2014-12-02|55.0|2|356.0|3|false|false|false,2014-12-03|71.0|2|55.0|2|false|true|false,2014-12-04|105.0|3|71.0|2|false|false|false,2014-12-05|5.0|1|105.0|3|false|false|false,2014-12-06|TDSNull|TDSNull|5.0|1|false|false|false',
+      $relationalResult.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
 }

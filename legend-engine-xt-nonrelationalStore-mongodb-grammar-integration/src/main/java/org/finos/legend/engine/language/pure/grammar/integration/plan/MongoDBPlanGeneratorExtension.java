@@ -15,24 +15,16 @@
 package org.finos.legend.engine.language.pure.grammar.integration.plan;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension;
 
 public class MongoDBPlanGeneratorExtension implements PlanGeneratorExtension
 {
     @Override
-    public MutableList<PlanTransformer> getExtraPlanTransformers()
-    {
-        return PlanGeneratorExtension.super.getExtraPlanTransformers();
-    }
-
-    @Override
     public RichIterable<? extends Root_meta_pure_extension_Extension> getExtraExtensions(PureModel pureModel)
     {
-        return core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension.Root_meta_external_store_mongodb_executionPlan_platformBinding_legendJava_mongoDBLegendJavaPlatformBindingExtensions__Extension_MANY_(pureModel.getExecutionSupport());
+        return core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension.Root_meta_external_store_mongodb_executionPlan_platformBinding_legendJava_mongoDBOnlyLegendJavaPlatformBindingExtensions__Extension_MANY_(pureModel.getExecutionSupport());
     }
 }

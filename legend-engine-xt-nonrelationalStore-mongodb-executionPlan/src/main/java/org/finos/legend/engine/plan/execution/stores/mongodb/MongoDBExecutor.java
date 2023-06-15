@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -26,9 +24,10 @@ import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreCo
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
+
+import java.util.function.Supplier;
 
 public class MongoDBExecutor
 {
@@ -41,21 +40,19 @@ public class MongoDBExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public MongoDBResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
+    public MongoDBResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection, Identity serviceIdentity)
     {
         try
         {
             MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
             MongoDBConnectionSpecification mongoDBConnectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
-            Identity serviceIdentity = new Identity("serviceAccount", new AnonymousCredential());
-            MongoClient mongoClient = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
+            Supplier<MongoClient> mongoClientSupplier = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
+            MongoClient mongoClient = mongoClientSupplier.get();
             MongoDatabase mongoDatabase = mongoClient.getDatabase(dbConnection.dataSourceSpecification.databaseName);
 
             Document bsonCmd = Document.parse(dbCommand);
 
 
-            ObjectMapper mapper = new ObjectMapper();
-            ArrayNode arrayNode = mapper.createArrayNode();
             MongoDBResult mongoDBResult;
             try
             {

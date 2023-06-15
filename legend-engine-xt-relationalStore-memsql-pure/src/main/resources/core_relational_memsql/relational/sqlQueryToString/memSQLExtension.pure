@@ -32,12 +32,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
-      tableNameToIdentifier = tableNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
-      schemaNameToIdentifier = schemaNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslator()
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+      processTempTableName = processTempTableNameDefault_String_1__String_1_
    );
 }
 
@@ -234,6 +234,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    '::')))));
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
+{
+  // Map of Column to Literals of VarPlaceHolder
+  let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
+  let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+
+  let primaryKeyColumnNames = $upsertQuery.data.primaryKey->map(pk | $pk.name);
+  let nonPrimaryKeyKeyValues = $keyValues->filter(kv | !$kv.first->in($primaryKeyColumnNames))
+                                          ->map(kv | $kv.first + ' = ' + meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))
+                                          ->joinStrings(', ');
+
+  'insert into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ') on duplicate key update ' + $nonPrimaryKeyKeyValues;
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
@@ -256,17 +271,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::schemaNameToIdentifierForMemSQL(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
-{
-  // Leave default un-processed, will be ignored in 'meta::relational::functions::sqlQueryToString::tableToString'
-  if($schemaName == 'default', |$schemaName, |$dbConfig.identifierProcessor($schemaName));
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::tableNameToIdentifierForMemSQL(tableName: String[1], dbConfig: DbConfig[1]): String[1]
-{
-   $dbConfig.identifierProcessor($tableName);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
@@ -280,31 +284,34 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateSchemaStatementMemSQL(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $createSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateDropSchemaStatementMemSQL(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dropSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ';');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateDropTableStatementMemSQL(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t = $dropTableSQL.table;
-  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig) + ';';
+  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name) + ';';
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-  let t= $createTableSQL.table;
-  let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig)+
-      + '('
-      + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
-        ->joinStrings(',')
-      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
-      +');';
+  if($createTableSQL.isTempTable->isTrue(),|
+   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->toOne() + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
+                                                                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
+  ,|let t= $createTableSQL.table;
+    let applyConstraints = $createTableSQL.applyConstraints;
+    'Create Table '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name)+
+        + '('
+        + $t.columns->cast(@meta::relational::metamodel::Column)
+          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+          ->joinStrings(',')
+        + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
+        +');';);
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
@@ -317,11 +324,14 @@ function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSql
 
 function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$loadTableSQL.table.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $loadTableSQL.table.name->tableNameToIdentifierForMemSQL($dbConfig) + ' ('
+  if($loadTableSQL.absolutePathToFile->isNotEmpty(),|
+  'LOAD DATA LOCAL INFILE \'' + $loadTableSQL.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\' \nINTO TABLE `' + $loadTableSQL.table->tableToString($dbConfig) + '` \nIGNORE 1 LINES;';
+   ,|$loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$dbConfig.identifierProcessor($loadTableSQL.table.schema.name) + '.') + $dbConfig.identifierProcessor($loadTableSQL.table.name) + ' ('
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
             + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
             + ');';
-   );
+    );
+  );
 }

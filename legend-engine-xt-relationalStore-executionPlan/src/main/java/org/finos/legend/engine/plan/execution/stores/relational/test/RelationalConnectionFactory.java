@@ -96,7 +96,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store testStore, EmbeddedData data, List<DataElement> dataElementList)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store testStore, EmbeddedData data)
     {
         if (testStore instanceof Database)
         {

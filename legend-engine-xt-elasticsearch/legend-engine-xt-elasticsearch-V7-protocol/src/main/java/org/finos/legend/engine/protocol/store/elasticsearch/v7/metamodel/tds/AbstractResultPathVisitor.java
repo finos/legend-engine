@@ -32,6 +32,18 @@ public abstract class AbstractResultPathVisitor<T> implements ResultPathVisitor<
     }
 
     @Override
+    public T visit(_IDResultPath val)
+    {
+        return this.defaultValue(val);
+    }
+
+    @Override
+    public T visit(FieldResultPath val)
+    {
+        return this.defaultValue(val);
+    }
+
+    @Override
     public T visit(SourceFieldResultPath val)
     {
         return defaultValue(val);

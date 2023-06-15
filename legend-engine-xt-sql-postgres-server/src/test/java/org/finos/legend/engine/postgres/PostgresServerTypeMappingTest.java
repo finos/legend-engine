@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.sql.Connection;
 import java.sql.Date;
@@ -25,27 +27,20 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.util.TimeZone;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
+import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
+
 
 public class PostgresServerTypeMappingTest
 {
@@ -55,11 +50,9 @@ public class PostgresServerTypeMappingTest
     private static TestPostgresServer testPostgresServer;
 
     @BeforeClass
-    public static void setUpClass() throws Exception
+    public static void setUpClass()
     {
-        CookieStore cookieStore = new BasicCookieStore();
-        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", String.valueOf(wireMockRule.port()));
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
@@ -74,20 +67,39 @@ public class PostgresServerTypeMappingTest
 
 
     @Test
+    public void testString() throws Exception
+    {
+        validate(STRING, "\"foo\"", "varchar", "foo");
+        validate(STRING, "\"foo\"", "varchar", "foo");
+        validate(STRING, "null", "varchar", null);
+        validate(STRING, "\"\"", "varchar", "");
+    }
+
+    @Test
+    public void testEnum() throws Exception
+    {
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "null", "varchar", null);
+    }
+
+    @Test
     public void testBoolean() throws Exception
     {
-        validate("Boolean", "true", "bool", Boolean.TRUE);
-        validate("Boolean", "false", "bool", Boolean.FALSE);
+        validate(BOOLEAN, "true", "bool", Boolean.TRUE);
+        validate(BOOLEAN, "false", "bool", Boolean.FALSE);
+        validate(BOOLEAN, "null", "bool", null);
     }
 
     @Test
     public void testDateTime() throws Exception
     {
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
-        Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
+        Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
-        validate("DateTime", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE_TIME, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE_TIME, "null", "timestamp", null);
     }
 
     @Test
@@ -96,7 +108,7 @@ public class PostgresServerTypeMappingTest
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
         Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
-        validate("Date", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
 
@@ -107,7 +119,7 @@ public class PostgresServerTypeMappingTest
         LocalDate temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, LocalDate::from);
         Timestamp expected = new Timestamp(temporalAccessor.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
 
-        validate("Date", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
     @Test
@@ -119,32 +131,35 @@ public class PostgresServerTypeMappingTest
         long toEpochDay = localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli();
         Date expected = new Date(toEpochDay);
 
-        validate("StrictDate", "\"" + date + "\"", "date", expected);
+        validate(STRICT_DATE, "\"" + date + "\"", "date", expected);
+        validate(STRICT_DATE, "null", "date", null);
     }
 
 
     @Test
     public void testFloat() throws Exception
     {
-        validate("Float", "5.5", "float4", 5.5F);
+        validate(FLOAT, "5.5", "float4", 5.5F);
+        validate(FLOAT, "null", "float4", null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
-        validate("Integer", "5", "int4", 5);
+        validate(INTEGER, "5", "int4", 5);
+        validate(INTEGER, "null", "int4", null);
     }
 
     @Test
     public void testNumberAsInteger() throws Exception
     {
-        validate("Number", "5", "float8", 5.0D);
+        validate(NUMBER, "5", "float8", 5.0D);
     }
 
     @Test
     public void testNumberAsDouble() throws Exception
     {
-        validate("Number", "5.5", "float8", 5.5D);
+        validate(NUMBER, "5.5", "float8", 5.5D);
     }
 
 

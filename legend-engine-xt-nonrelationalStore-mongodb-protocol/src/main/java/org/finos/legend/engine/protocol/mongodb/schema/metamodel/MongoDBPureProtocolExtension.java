@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.mongodb.schema.metamodel;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 
 import java.util.List;
+import java.util.Map;
 
 public class MongoDBPureProtocolExtension implements PureProtocolExtension
 {
@@ -55,6 +57,12 @@ public class MongoDBPureProtocolExtension implements PureProtocolExtension
                         .withSubtype(RootMongoDBClassMapping.class, "MongoDB")
                         .build()
         ));
+    }
+
+    @Override
+    public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
+    {
+        return Maps.mutable.with(MongoDatabase.class, "meta::external::store::mongodb::metamodel::pure::MongoDatabase");
     }
 }
 

@@ -15,10 +15,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ServiceLoader;
 import net.javacrumbs.jsonunit.JsonAssert;
 import net.javacrumbs.jsonunit.core.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -36,15 +32,23 @@ import org.finos.legend.engine.plan.execution.stores.elasticsearch.test.shared.E
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ServiceLoader;
 
 public class TestElasticsearchExecutionPlanFromGrammarIntegration
 {
@@ -88,9 +92,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
 
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = extensions.flatCollect(e -> e.getExtraExtensions(PURE_MODEL));
-        MutableList<PlanTransformer> planTransformers = LegendPlanTransformers.transformers;
-
-        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, planTransformers);
+        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, LegendPlanTransformers.transformers);
         return PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(plan);
     }
 
@@ -104,7 +106,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
             result.stream(outputStream, SerializationFormat.DEFAULT);
             String resultString = outputStream.toString(StandardCharsets.UTF_8.name());
             JsonAssert.assertJsonEquals(
-                    "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
+                    "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}, {\"name\":\"_id\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\", \"_id\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
                     resultString,
                     Configuration.empty().whenIgnoringPaths("activities"));
         }

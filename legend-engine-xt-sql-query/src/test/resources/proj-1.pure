@@ -12,18 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-Class demo::employee
-{
-  id: Integer[1];
-  name: String[1];
-  type: demo::employeeType[1];
-}
+###Relational
+Database demo::H2DemoDataBase
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table EmployeeTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    name VARCHAR(200),
+    country_id INTEGER,
+    type VARCHAR(25)
+  )
+  Table CountryTable
+  (
+    id INTEGER PRIMARY KEY,
+    country_name VARCHAR(200)
+  )
 
-Enum demo::employeeType
-{
-    Type1, Type2
-}
+  Join FirmEmployee(EmployeeTable.firm_id = FirmTable.id)
+  Join EmployeeCountry(EmployeeTable.country_id = CountryTable.id)
+)
+
 
 ###Service
 Service demo::H2DemoService
@@ -39,21 +53,98 @@ Service demo::H2DemoService
   execution: Single
   {
     query: |demo::employee.all()->project(
-  [
-    x|$x.id,
-    x|$x.name,
-    x|$x.type
-  ],
-  [
-    'Id',
-    'Name',
-    'Employee Type'
-  ]
-);
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    );
     mapping: demo::DemoRelationalMapping;
     runtime: demo::H2DemoRuntime;
   }
 }
+
+Service demo::H2PersonService
+{
+  pattern: '/personService';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    );
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+
+###Pure
+Enum demo::employeeType
+{
+  Type1,
+  Type2
+}
+
+Class demo::employee
+{
+  id: Integer[1];
+  name: String[1];
+  type: demo::employeeType[1];
+}
+
+
+###Mapping
+Mapping demo::DemoRelationalMapping
+(
+  *demo::employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::H2DemoDataBase]EmployeeTable.id
+    )
+    ~mainTable [demo::H2DemoDataBase]EmployeeTable
+    id: [demo::H2DemoDataBase]EmployeeTable.id,
+    name: [demo::H2DemoDataBase]EmployeeTable.name,
+    type: [demo::H2DemoDataBase]EmployeeTable.type
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection demo::H2DemoConnection
+{
+  store: demo::H2DemoDataBase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25));\nInsert into EmployeeTable (id, firm_id, name, country_id, type) values (101,202, \'Alice\', 303, \'Type1\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type) values (102,203, \'Bob\', 304, \'Type2\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type) values (103,204, \'Curtis\', 305, \'Type2\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type) values (104,205, \'Danielle\', 306, \'Typ1\');\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
 
 ###Runtime
 Runtime demo::H2DemoRuntime
@@ -70,57 +161,3 @@ Runtime demo::H2DemoRuntime
     ]
   ];
 }
-
-###Relational
-Database demo::H2DemoDataBase
-(
-  Table FirmTable
-  (
-    id INTEGER PRIMARY KEY,
-    legal_name VARCHAR(200)
-  )
-  Table EmployeeTable
-  (
-    id INTEGER PRIMARY KEY,
-    firm_id INTEGER,
-    name VARCHAR(200),
-    country_id INTEGER
-  )
-  Table CountryTable
-  (
-    id INTEGER PRIMARY KEY,
-    country_name VARCHAR(200)
-  )
-
-  Join FirmEmployee(EmployeeTable.firm_id = FirmTable.id)
-  Join EmployeeCountry(EmployeeTable.country_id = CountryTable.id)
-)
-
-###Connection
-RelationalDatabaseConnection demo::H2DemoConnection
-{
-  store: demo::H2DemoDataBase;
-  type: H2;
-  specification: Static
-  {
-    name: '~/testH2';
-    host: 'localhost';
-    port: 9092;
-  };
-  auth: DefaultH2;
-}
-
-###Mapping
-Mapping demo::DemoRelationalMapping
-(
-  *demo::employee: Relational
-  {
-    ~primaryKey
-    (
-      [demo::H2DemoDataBase]EmployeeTable.id
-    )
-    ~mainTable [demo::H2DemoDataBase]EmployeeTable
-    id: [demo::H2DemoDataBase]EmployeeTable.id,
-    name: [demo::H2DemoDataBase]EmployeeTable.name
-  }
-)

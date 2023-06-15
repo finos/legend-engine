@@ -14,41 +14,73 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.sql.SQLException;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.postgres.handler.jdbc.JDBCSessionFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.h2.tools.Server;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.SQLException;
 
 public class LegendSessionFactory implements SessionsFactory
 {
 
-    private LegendExecutionClient legendExecutionClient;
+    private final LegendExecutionClient legendExecutionClient;
+    private final JDBCSessionFactory.JDBCSessionHandler metadataSessionHandler;
 
     public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
     {
         this.legendExecutionClient = legendExecutionClient;
+        try
+        {
+            File h2ServerTempDir = Files.createTempDirectory("legendSqlH2Server").toFile();
+            h2ServerTempDir.deleteOnExit();
+            String h2ServerTempDirPath = h2ServerTempDir.getAbsolutePath();
+            Server h2PgServer = Server.createPgServer("-baseDir", h2ServerTempDirPath, "-ifNotExists");
+            h2PgServer.start();
+            String url = "jdbc:postgresql://localhost:" + h2PgServer.getPort() + "/legendSQLMetadata;" +
+                    "INIT=CREATE SCHEMA service\\;CREATE TABLE service.emptytable(id varchar(10));";
+            this.metadataSessionHandler = new JDBCSessionFactory.JDBCSessionHandler(url, "sa", "");
+        }
+        catch (IOException | SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Session createSession(String defaultSchema, Identity identity)
-            throws Exception
     {
-        return new Session(new SessionHandler()
-        {
-            @Override
-            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-            {
-                return new LegendPreparedStatement(query, legendExecutionClient, identity);
-            }
+        return new Session(new LegendSessionHandler(legendExecutionClient, identity), metadataSessionHandler);
+    }
 
-            @Override
-            public PostgresStatement createStatement() throws SQLException
-            {
-                return new LegendStatement(legendExecutionClient, identity);
-            }
-        });
+    private static class LegendSessionHandler implements SessionHandler
+    {
+        private final LegendExecutionClient legendExecutionClient;
+        private final Identity identity;
+
+        public LegendSessionHandler(LegendExecutionClient legendExecutionClient, Identity identity)
+        {
+            this.legendExecutionClient = legendExecutionClient;
+            this.identity = identity;
+        }
+
+        @Override
+        public PostgresPreparedStatement prepareStatement(String query)
+        {
+            return new LegendPreparedStatement(query, legendExecutionClient, identity);
+        }
+
+        @Override
+        public PostgresStatement createStatement()
+        {
+            return new LegendStatement(legendExecutionClient, identity);
+        }
     }
 }

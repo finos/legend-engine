@@ -127,13 +127,13 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+                "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            shouldPass:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +

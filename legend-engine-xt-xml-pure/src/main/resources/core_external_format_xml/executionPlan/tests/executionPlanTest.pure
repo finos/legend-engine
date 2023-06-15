@@ -87,7 +87,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::xml::execut
   let tree = #{Person {firstName, lastName}}#;
 
   let plan = executionPlan(
-    data:ByteStream[1]|Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding),
+    data:Byte[*]|Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding, checked($tree, $binding)),
     ^ExecutionContext(),
     $extensions,
     noDebug()
@@ -102,7 +102,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::xml::execut
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Externalize\n' +
                 '    (\n' +
@@ -124,7 +124,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::xml::execut
                 '          (\n' +
                 '            VariableResolution\n' +
                 '            (\n' +
-                '              type = ByteStream\n' +
+                '              type = Byte\n' +
                 '              varName = data\n' +
                 '\n' +
                 '            )\n' +

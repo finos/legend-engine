@@ -23,7 +23,9 @@ import java.util.List;
 public class RelationalTempTableGraphFetchExecutionNode extends RelationalGraphFetchExecutionNode
 {
     public String tempTableName;
+    public String processedTempTableName;
     public List<SQLResultColumn> columns;
+    public TempTableStrategy tempTableStrategy;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

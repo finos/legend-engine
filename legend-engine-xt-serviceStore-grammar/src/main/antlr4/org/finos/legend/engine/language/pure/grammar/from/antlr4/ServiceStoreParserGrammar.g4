@@ -12,7 +12,7 @@ options
 
 unquotedIdentifier:                         VALID_STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                            | BYTE_STREAM_FUNCTION      // from M3Parser
+                                            | TO_BYTES_FUNCTION      // from M3Parser
                                             | SERVICE_STORE
                                             | DESCRIPTION | SERVICE_GROUP | SERVICE
                                             | PATH | REQUEST_BODY | METHOD | PARAMETERS | RESPONSE | SECURITY_SCHEME

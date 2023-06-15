@@ -18,12 +18,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -39,33 +43,28 @@ public class LegendTdsClient implements LegendExecutionClient
     private final String protocol;
     private final String host;
     private final String port;
-    private final CookieStore cookieStore;
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendTdsClient.class);
 
-
-    public LegendTdsClient(String protocol, String host, String port, CookieStore cookieStore)
+    public LegendTdsClient(String protocol, String host, String port)
     {
 
         this.protocol = protocol;
         this.host = host;
         this.port = port;
-        this.cookieStore = cookieStore;
     }
 
     @Override
     public List<LegendColumn> getSchema(String query)
     {
-        try
+        JsonNode jsonNode = this.executeSchemaApi(query);
+        if (jsonNode.get("columns") != null)
         {
-            JsonNode jsonNode = this.executeQueryApi(query);
-            return getSchemaFromExecutionResponse(jsonNode);
+            ArrayNode columns = (ArrayNode) jsonNode.get("columns");
+            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
         }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -92,10 +91,10 @@ public class LegendTdsClient implements LegendExecutionClient
         }
     }
 
-    private JsonNode executeQueryApi(String query)
+    protected JsonNode executeQueryApi(String query)
     {
         LOGGER.info("executing query " + query);
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
+        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()))
         {
             String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString";
             HttpPost req = new HttpPost(uri);
@@ -121,6 +120,37 @@ public class LegendTdsClient implements LegendExecutionClient
         }
     }
 
+
+    protected JsonNode executeSchemaApi(String query)
+    {
+        LOGGER.info("executing schema query " + query);
+        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()))
+        {
+            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/getSchemaFromQueryString";
+            HttpPost req = new HttpPost(uri);
+
+            StringEntity stringEntity = new StringEntity(query);
+            stringEntity.setContentType("text/plain");
+            req.setEntity(stringEntity);
+
+            try (CloseableHttpResponse res = client.execute(req))
+            {
+                JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
+                if (res.getStatusLine().getStatusCode() != 200)
+                {
+                    String message = "Failed to execute schema query " + query + "\n Cause: " + response.toPrettyString();
+                    LOGGER.info(message);
+                }
+                return response;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
     {
         if (jsonNode.get("builder") != null)
@@ -137,8 +167,37 @@ public class LegendTdsClient implements LegendExecutionClient
         if (jsonNode.get("result") != null)
         {
             ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
-            return LazyIterate.collect(result, a -> columIndex -> a.get("values").get(columIndex).asText());
+            return LazyIterate.collect(result, a -> columIndex ->
+            {
+                JsonNode node = a.get("values").get(columIndex);
+                if (node.isNull())
+                {
+                    return null;
+                }
+                if (node.isInt())
+                {
+                    return node.intValue();
+                }
+                if (node.isFloat())
+                {
+                    return node.floatValue();
+                }
+                if (node.isDouble())
+                {
+                    return node.doubleValue();
+                }
+                if (node.isNumber())
+                {
+                    return node.doubleValue();
+                }
+                if (node.isBoolean())
+                {
+                    return node.booleanValue();
+                }
+                return node.asText();
+            });
         }
         return Collections.emptyList();
     }
+
 }

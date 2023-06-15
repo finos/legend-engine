@@ -121,8 +121,14 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
                                                                                  vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
    assert($fe.func->in(graphFetchFunctions()) || $fe->isUnionOnGraphFetch(true));
    let clusteredTreePreFilter  = $fe.parametersValues->evaluateAndDeactivate()->at(1)->cast(@InstanceValue).values->at(0)->cast(@ClusteredGraphFetchTree);
+   
+   let chainConnection = if ($sq.store->instanceOf(ModelStore),
+                             | $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->instanceOf(ModelChainConnection));,
+                             | []
+                         );
+   
    let possibleFilter =  $fe->graphFetchFilter()->evaluateAndDeactivate();
-   let  clusteredTree = if($possibleFilter->isNotEmpty()  && $sq.store-> instanceOf(ModelStore),
+   let clusteredTree = if($possibleFilter->isNotEmpty()  && $sq.store-> instanceOf(ModelStore) && $chainConnection->isEmpty(),
                               |  meta::pure::graphFetch::executionPlan::enrichTargetTreeForFilterProperties($clusteredTreePreFilter,$possibleFilter->toOne(),$mapping, $exeCtx,$runtime,$extensions,$debug);,
                               |$clusteredTreePreFilter
                           );
@@ -178,7 +184,7 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
 
 function meta::pure::graphFetch::executionPlan::enrichTargetTreeForFilterProperties(originalTree: ClusteredGraphFetchTree[1], fe: SimpleFunctionExpression[1], mapping: Mapping[1], context:ExecutionContext[1] ,runtime: Runtime[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ClusteredGraphFetchTree[1]
 {
-    
+
    let class = $originalTree.tree->cast(@RoutedRootGraphFetchTree<Any>).class;
    let tree = $originalTree.tree->meta::pure::graphFetch::ensureFunctionRequirementsFromLambda($class,$fe->toOne().parametersValues->at(1)->cast(@FunctionRoutedValueSpecification).originalFunction,[],true)->cast(@RootGraphFetchTree<Any>);
    let routedTrees = $tree->deepByPassRouterInfo()->cast(@RootGraphFetchTree<Any>)->routeRootGraphFetchTree($originalTree.tree.sets->at(0),$mapping,$context,$extensions);
@@ -459,7 +465,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::findAllCluste
    let thisLevel = $g->match([
       c : ClusteredGraphFetchTree[1] | pair($c, list($parent)),
       r : RoutedGraphFetchTree[1] | [],
-      s: SystemGeneratedPropertyGraphFetchTree[1] | []  
+      s: SystemGeneratedPropertyGraphFetchTree[1] | []
    ]);
    let subClusterTrees = $g->byPassClusteringInfo().subTrees->map(k | $k->findAllClusterTreesWithParents($g->byPassClusteringInfo()->cast(@RoutedGraphFetchTree)));
    $thisLevel->concatenate($subClusterTrees);

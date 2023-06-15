@@ -152,7 +152,7 @@ public class ResultToPureResultVisitor implements RelationalResultVisitor<Root_m
     }
 
     @Override
-    public Root_meta_pure_mapping_Result<Object> visit(SQLExecutionResult sqlExecutionResult)
+    public Root_meta_pure_mapping_Result<Object> visit(SQLResult sqlExecutionResult)
     {
         return null;
     }

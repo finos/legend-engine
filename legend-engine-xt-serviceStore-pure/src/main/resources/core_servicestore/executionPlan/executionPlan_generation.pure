@@ -38,8 +38,11 @@ import meta::pure::router::utils::*;
 
 import meta::pure::store::*;
 
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::router::extension::*;
+import meta::external::shared::format::utils::*;
 
 import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::executionPlan::generation::*;
@@ -58,7 +61,9 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    let fe          = $sq.fe->evaluateAndDeactivate();
    
    let rootTree    = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
-   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), | 1);
+   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_, 
+                      | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), 
+                      | 1);
 
    let connection  = $runtime->connectionByElement($store);
    
@@ -317,6 +322,7 @@ function meta::external::store::service::executionPlan::generation::getServiceRe
                                               resultSizeRange = PureOne,
                                               checked         = false,
                                               binding         = $requestBodyType->toOne()->cast(@ComplexTypeReference).binding,
+                                              tree            = generateRootTreeFromBinding($requestBodyType->toOne()->cast(@ComplexTypeReference).type, $requestBodyType->toOne()->cast(@ComplexTypeReference).binding, $extensions),
                                               executionNodes  = $requestBodyResolutionNode
                                           );
 
@@ -324,6 +330,30 @@ function meta::external::store::service::executionPlan::generation::getServiceRe
                                 executionNodes = $serializedRequestBody,
                                 resultType     = ^VoidResultType(type = meta::pure::router::store::routing::Void));
    );   
+}
+
+function <<access.private>> meta::external::store::service::executionPlan::generation::generateRootTreeFromBinding(classIn:meta::pure::metamodel::type::Class<Any>[1], binding:Binding[1], extensions:Extension[*]): RootGraphFetchTree<Any>[1]
+{
+  let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType);
+  let bindingDetail          = $externalFormatContract.validateBinding($binding);
+  
+  assert($bindingDetail->instanceOf(SuccessfulBindingDetail), | 'Binding validation failed.\n' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
+
+  let propertiesInScope      = $bindingDetail->cast(@SuccessfulBindingDetail).mappedPropertiesForClass($classIn);
+  let subTrees               = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($bindingDetail->cast(@SuccessfulBindingDetail)));
+
+  ^RootGraphFetchTree<Any>(class=$classIn, subTrees = $subTrees);
+}
+
+function <<access.private>> meta::external::store::service::executionPlan::generation::generatePropertyTreeForProperty(property:AbstractProperty<Any>[1], detail:SuccessfulBindingDetail[1]): PropertyGraphFetchTree[1]
+{
+   let returnType           = $property->functionReturnType().rawType->toOne();
+   let isPropertyPrimitive  = $returnType->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $returnType->instanceOf(meta::pure::metamodel::type::Enumeration) ;
+
+   let subPropertiesInScope = if($isPropertyPrimitive, | [], | $detail.mappedPropertiesForClass($returnType->cast(@meta::pure::metamodel::type::Class<Any>)));
+   let subTrees             = $subPropertiesInScope->map(p | $p->generatePropertyTreeForProperty($detail));
+
+   ^PropertyGraphFetchTree(property=$property, subTrees = $subTrees);
 }
 
 function meta::external::store::service::executionPlan::generation::findAndReplacePropertyPathsInValueSpecification(vs:ValueSpecification[1], propertiesInCurrentPath:AbstractProperty<Any>[*]):Pair<Any, List<String>>[0..1]

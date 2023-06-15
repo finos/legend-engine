@@ -33,6 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.N
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Real;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.SmallInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TinyInt;
@@ -114,6 +115,9 @@ public class AnsiDatatypeMapping implements DataTypeMapping
                 break;
             case BIT:
                 dataType = new Bit();
+                break;
+            case JSON:
+                dataType = new Json();
                 break;
             case LONGVARCHAR:
             case LONGVARBINARY:

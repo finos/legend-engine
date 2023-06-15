@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -25,6 +26,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
@@ -52,10 +54,14 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.nodes.state.GraphExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
+import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
@@ -72,8 +78,10 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.ResultCol
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLUpdateResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RealizedRelationalResultCSVSerializer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
@@ -92,10 +100,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalDataTypeInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalRelationDataInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromTempFileTempTableStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromResultSetAsValueTuplesTempTableStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromSubQueryTempTableStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalClassQueryTempTableGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootGraphFetchExecutionNode;
@@ -280,7 +292,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", relationalExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("sql", relationalExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.profiles, this.executionState);
-                if (result instanceof RelationalResult)
+                if (result instanceof RelationalResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((RelationalResult) result).executedSQl);
                 }
@@ -301,11 +313,56 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
-                if (result instanceof SQLExecutionResult)
+                if (result instanceof SQLExecutionResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                 }
                 return result;
+            }
+        }
+        else if (executionNode instanceof RelationalSaveNode)
+        {
+            RelationalSaveNode relationalSaveNode = (RelationalSaveNode) executionNode;
+            Result sources = Iterate.getOnly(relationalSaveNode.childNodes()).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            if (!(sources instanceof StreamingObjectResult))
+            {
+                throw new RuntimeException("Only StreamingObjectResults can be save sources!");
+            }
+            StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult<?>) sources;
+            try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true))
+            {
+                // TODO HSO: Handle many, need to handle other result types?
+                Iterator<?> sourcesIterator = streamingObjectResult.getObjectStream().iterator();
+                if (!sourcesIterator.hasNext())
+                {
+                    throw new RuntimeException("No sources to save found!");
+                }
+                Object source = sourcesIterator.next();
+                if (sourcesIterator.hasNext())
+                {
+                    throw new RuntimeException("Only a single save source is currently supported!");
+                }
+
+                // Process each object on stream using generated variable name
+                this.executionState.addResult(relationalSaveNode.getGeneratedVariableName(), new ConstantResult(source));
+                MapAdapter.adapt(relationalSaveNode.getColumnValueGenerators())
+                        .forEachKeyValue((columnName, node) ->
+                        {
+                            Result columnValue = node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                            Result realizedColumnValue = columnValue.realizeInMemory();
+                            this.executionState.addResult(columnName, realizedColumnValue);
+                        });
+
+                this.executionState.topSpan = GlobalTracer.get().activeSpan();
+                scope.span().setTag("databaseType", relationalSaveNode.getDatabaseTypeName());
+                scope.span().setTag("executionTraceID", this.executionState.execID);
+                scope.span().setTag("sql", relationalSaveNode.sqlQuery());
+                SQLUpdateResult sqlUpdateResult = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalSaveNode, profiles, executionState);
+                return new ConstantResult(String.format("Success - %d rows updated!", sqlUpdateResult.getUpdateCount()));
+            }
+            finally
+            {
+                streamingObjectResult.getObjectStream().close();
             }
         }
         else if (executionNode instanceof RelationalTdsInstantiationExecutionNode)
@@ -803,6 +860,86 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             blockConnection.addRollbackQuery(databaseManager.relationalDatabaseSupport().dropTempTable(tempTableName));
             blockConnection.close();
         }
+    }
+
+    private void createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone)
+    {
+        try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseType).startActive(true))
+        {
+            RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational);
+            relationalStoreExecutionState.setRetainConnection(true);
+
+            if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
+            {
+                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            }
+            else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
+            {
+                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone);
+            }
+            else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
+            {
+                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+
+                String requestId = new RequestIdGenerator().generateId();
+                String fileName = tempTableName + requestId;
+                try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
+                {
+                    CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);
+                    tempFile.writeFile(csvSerializer);
+                    prepareExecutionStateForTempTableExecution("csv_file_location", this.executionState, tempFile.getTemporaryPathForFile());
+                    node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                }
+                catch (Exception e)
+                {
+                    throw new RuntimeException("Could not create Temp table", e);
+                }
+            }
+            else
+            {
+                throw new RuntimeException("Unsupported temp table strategy");
+            }
+
+            String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
+            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, this.profiles);
+            blockConnection.addCommitQuery(dropTempTableSqlQuery);
+            blockConnection.addRollbackQuery(dropTempTableSqlQuery);
+            blockConnection.close();
+        }
+    }
+
+    private void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String databaseTimeZone)
+    {
+        final Function<Object, String> normalizer = v ->
+        {
+            if (v == null)
+            {
+                return "null";
+            }
+            if (v instanceof Number)
+            {
+                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
+            }
+            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+        };
+
+        Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
+        while (rowBatchIterator.hasNext())
+        {
+            String valuesTuples = rowBatchIterator.next()
+                    .stream()
+                    .map(row -> row.stream().map(normalizer).collect(Collectors.joining(",", "(", ")")))
+                    .collect(Collectors.joining(",", "", ""));
+            prepareExecutionStateForTempTableExecution("temp_table_rows_from_result_set", this.executionState, valuesTuples);
+            node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+        }
+    }
+
+    public static void prepareExecutionStateForTempTableExecution(String key, ExecutionState state, String result)
+    {
+        state.addResult(key, new ConstantResult(result));
     }
 
     private void addKeyRowToRealizedRelationalResult(Object obj, List<Method> keyGetters, RealizedRelationalResult realizedRelationalResult) throws InvocationTargetException, IllegalAccessException
@@ -1613,7 +1750,45 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         parentToChildMap.put(parentObject, new ArrayList<>());
                     }
 
-                    this.executionState.addResult(node.parentTempTableName, parentRealizedRelationalResult);
+                    if (node.parentTempTableStrategy != null)
+                    {
+                        try (Scope ignored1 = GlobalTracer.get().buildSpan("create temp table").withTag("parent tempTableName", node.parentTempTableName).withTag("databaseType", ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTypeName()).startActive(true))
+                        {
+                            String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
+                            if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
+                            {
+                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, databaseTimeZone);
+                            }
+                            else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
+                            {
+                                node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+
+                                String requestId = new RequestIdGenerator().generateId();
+                                String fileName = node.parentTempTableName + requestId;
+                                try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
+                                {
+                                    CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(parentRealizedRelationalResult, databaseTimeZone, true, false);
+                                    tempFile.writeFile(csvSerializer);
+                                    prepareExecutionStateForTempTableExecution("csv_file_location", this.executionState, tempFile.getTemporaryPathForFile());
+                                    node.parentTempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                }
+                                catch (Exception e)
+                                {
+                                    throw new RuntimeException("Could not create Temp table", e);
+                                }
+                            }
+                            else
+                            {
+                                throw new RuntimeException("Unsupported temp table strategy for parent temp table");
+                            }
+                            this.executionState.addResult(node.parentTempTableName, new PreparedTempTableResult(node.processedParentTempTableName));
+                        }
+                    }
+                    else
+                    {
+                        this.executionState.addResult(node.parentTempTableName, parentRealizedRelationalResult);
+                    }
 
                     childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
                     SQLExecutionResult childSqlResult = (SQLExecutionResult) childResult;
@@ -1683,6 +1858,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     childResult.close();
                     childResult = null;
 
+                    if (node.parentTempTableStrategy != null)
+                    {
+                        node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                    }
+
                     /* Execute store local children */
                     if (!isLeaf)
                     {
@@ -1739,8 +1919,17 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
         else
         {
-            String tempTableName = DatabaseManager.fromString(databaseType).relationalDatabaseSupport().processTempTableName(node.tempTableName);
-            RelationalExecutionNodeExecutor.this.createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone);
+            String tempTableName;
+            if (node.tempTableStrategy != null)
+            {
+                tempTableName = node.processedTempTableName;
+                RelationalExecutionNodeExecutor.this.createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(node, realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone);
+            }
+            else
+            {
+                tempTableName = DatabaseManager.fromString(databaseType).relationalDatabaseSupport().processTempTableName(node.tempTableName);
+                RelationalExecutionNodeExecutor.this.createTempTableFromRealizedRelationalResultInBlockConnection(realizedRelationalResult, tempTableName, databaseConnection, databaseType, databaseTimeZone);
+            }
             state.addResult(node.tempTableName, new PreparedTempTableResult(tempTableName));
 
             relationalGraphObjectsBatch.setNodeObjectsHashMap(node.nodeIndex, nodeObjectsMap);

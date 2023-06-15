@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
@@ -35,7 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -110,6 +106,11 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormat;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.strictTime.StrictTimeFormat;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_;
 
@@ -389,12 +390,12 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     }
 
     @Override
-    public ValueSpecification visit(CByteStream cByteStream)
+    public ValueSpecification visit(CByteArray cByteArray)
     {
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
-                ._genericType(this.context.pureModel.getGenericType("ByteStream"))
-                ._multiplicity(this.context.pureModel.getMultiplicity(cByteStream.multiplicity))
-                ._values(FastList.newListWith(new ByteArrayInputStream(cByteStream.value.getBytes(cByteStream.charset))));
+                ._genericType(this.context.pureModel.getGenericType("Byte"))
+                ._multiplicity(this.context.pureModel.getMultiplicity("zeroMany"))
+                ._values(FastList.newListWith(new ByteArrayInputStream(cByteArray.value)));
     }
 
     public ValueSpecification processClassInstance(SerializationConfig serializationConfig)
@@ -562,12 +563,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         SimpleFunctionExpression result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
-
-        if (result instanceof FunctionExpression)
-        {
-            FunctionExpression exp = result;
-            exp._resolvedTypeParameters(result._genericType()._typeArguments());
-        }
 
         return result;
     }

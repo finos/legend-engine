@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -69,6 +71,7 @@ public class H2Sink extends AnsiSqlSink
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(HashFunction.class, new HashFunctionVisitor());
+        logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());
         logicalPlanVisitorByClass.put(LoadCsv.class, new LoadCsvVisitor());
         logicalPlanVisitorByClass.put(CsvExternalDatasetReference.class, new CsvExternalDatasetReferenceVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);

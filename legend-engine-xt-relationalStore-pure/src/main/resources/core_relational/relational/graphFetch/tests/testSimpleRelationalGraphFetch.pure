@@ -179,6 +179,35 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
    );
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::simple::testSelfJoinWithFilterOnPropertyHavingSameDatatypeAsRootInGraphFetchTree(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         lastName,
+         address {
+            name
+         },
+         manager {
+            lastName,
+            address {
+               name
+            }
+         }
+      }
+   }#;
+   let query = {|Person.all()->filter(x | $x.manager.age <= 22)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   assertJsonStringsEqual(
+      '[{"lastName":"Smith","address":{"name":"Hoboken"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}},' +
+      '{"lastName":"Johnson","address":{"name":"New York"},"manager":{"lastName":"Allen","address":{"name":"New York"}}},' +
+      '{"lastName":"Hill","address":{"name":"New York"},"manager":{"lastName":"Johnson","address":{"name":"New York"}}}]',
+      $result
+   );
+}
+
 function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSortOrderAtTopPreserved(): Boolean[1]
 {
    let tree = #{
@@ -326,6 +355,35 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
       '{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}]',
       $result
    );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchCheckedWithSize(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetchChecked($tree, 2)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"defects":[],"value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}}},' +
+      '{"defects":[],"value":{"firstName":"John","lastName":"Johnson","firm":{"legalName":"Firm X"}}},' +
+      '{"defects":[],"value":{"firstName":"John","lastName":"Hill","firm":{"legalName":"Firm X"}}},' +
+      '{"defects":[],"value":{"firstName":"Anthony","lastName":"Allen","firm":{"legalName":"Firm X"}}},' +
+      '{"defects":[],"value":{"firstName":"Fabrice","lastName":"Roberts","firm":{"legalName":"Firm A"}}},' +
+      '{"defects":[],"value":{"firstName":"Oliver","lastName":"Hill","firm":{"legalName":"Firm B"}}},' +
+      '{"defects":[],"value":{"firstName":"David","lastName":"Harris","firm":{"legalName":"Firm C"}}}]',
+      $result
+    );
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_20_0'} meta::relational::graphFetch::tests::simple::testRelationalGraphFetchWithAlloySerializationConfig(): Boolean[1]

@@ -15,8 +15,6 @@
 
 package org.finos.legend.engine.query.sql.api.sources;
 
-import io.dropwizard.testing.ResourceHelpers;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -27,25 +25,29 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TestSQLSourceProvider implements SQLSourceProvider
 {
     private static final PureModelContextData pureModelContextData;
-    private static String service = "service";
+    private static final String service = "service";
 
     static
     {
 
-        try
+        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("proj-1.pure");
+             InputStreamReader pureProjectReader = new InputStreamReader(Objects.requireNonNull(pureProjectInputStream), StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(pureProjectReader))
         {
-            String pureProject1 = ResourceHelpers.resourceFilePath("proj-1.pure");
-            String pureProject1Contents = FileUtils.readFileToString(Paths.get(pureProject1).toFile(), Charset.defaultCharset());
-
+            String pureProject1Contents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
             pureModelContextData = PureModelContextData.newBuilder().withOrigin(null).withSerializer(null).withPureModelContextData(PureGrammarParser.newInstance().parseModel(pureProject1Contents)).build();
         }
         catch (IOException e)
@@ -95,6 +97,6 @@ public class TestSQLSourceProvider implements SQLSourceProvider
 
     private SQLSource from(PureSingleExecution pse, List<SQLSourceArgument> keys)
     {
-        return new SQLSource(service, pse.func, pse.mapping, pse.runtime, pse.executionOptions, keys);
+        return new SQLSource(service, pse.func, pse.mapping, pse.runtime, pse.executionOptions, null, keys);
     }
 }

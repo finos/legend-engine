@@ -1,6 +1,7 @@
 import meta::relational::functions::sqlQueryToString::db2::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
@@ -31,8 +32,45 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
       selectSQLQueryProcessor = processSelectSQLQueryForDB2_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+      processTempTableName = processTempTableNameDB2_String_1__String_1_
    );
+}
+
+function meta::relational::functions::sqlQueryToString::db2::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createTable = translateCreateTableStatementForDB2_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementForDB2_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable = loadValuesToDbTableForDB2_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function meta::relational::functions::sqlQueryToString::db2::processTempTableNameDB2(tempTableName:String[1]) : String[1]
+{
+  'SESSION.' + $tempTableName;
+}  
+
+function meta::relational::functions::sqlQueryToString::db2::translateCreateTableStatementForDB2(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
+{
+   if($c.isTempTable->isTrue(),| 'DECLARE GLOBAL TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextDefault($c.type),
+                                                                                                                                          r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ') ON COMMIT PRESERVE ROWS NOT LOGGED'
+                              ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
+
+}
+
+function meta::relational::functions::sqlQueryToString::db2::translateDropTableStatementForDB2(d:DropTableSQL[1], dbConfig: DbConfig[1]): String[1]
+{
+   let t= $d.table;
+   'Drop table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name;
+}
+
+function meta::relational::functions::sqlQueryToString::db2::loadValuesToDbTableForDB2(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+
+  if($l.absolutePathToFile->isNotEmpty(),| fail('Loading data into a table using a file is not supported for DB2'),|[]);
+  $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::db2::getDynaFunctionToSqlForDB2(): DynaFunctionToSql[*]
@@ -87,7 +125,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
 {
    let startDate = $p->at(0);
    let number = $p->at(1)->parseInteger();
-   let unit = $p->at(2);
+   let unit = $p->at(2)->removeQuotesIfExist();
 
    'date(%s) %s %s %s'->format([
       $startDate,

@@ -51,7 +51,7 @@ public class TestConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     @Test
     public void testConnectionWithImport()
     {
-        test("Class meta::myClass\n" +
+        testWithSectionInfoPreserved("Class meta::myClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +

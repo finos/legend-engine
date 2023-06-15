@@ -36,15 +36,13 @@ public class Builder
     {
         if (serverConfig.getHandler().getType() == HandlerType.JDBC)
         {
-
             JDBCHandlerConfig config = (JDBCHandlerConfig) serverConfig.getHandler();
             return new JDBCSessionFactory(config.getConnectionString(), config.getUser(), config.getPassword());
         }
         else if (serverConfig.getHandler().getType() == HandlerType.LEGEND)
         {
             LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
-            CookieStore cookieStore = new BasicCookieStore();
-            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), cookieStore);
+            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort());
             return new LegendSessionFactory(client);
         }
         else

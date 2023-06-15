@@ -33,6 +33,8 @@ import org.junit.Test;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Collections;
 import java.util.List;
 
@@ -70,6 +72,81 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
 
         // We do have a connection pool for the user
         assertEquals(1, ConnectionPoolTestUtils.countNumHikariPools(identity1.getName()));
+        H2TestUtils.closeProperly(conn1);
+    }
+
+    @Test
+    public void testNorthwindLoader_WithLoading() throws Exception
+    {
+        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec(Lists.mutable.with(
+                "call loadNorthwindData()"));
+
+        // User gets a connection
+        Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1Conn1);
+
+        try (Statement statement = conn1.createStatement())
+        {
+            ResultSet rs = statement.executeQuery("select count(TABLE_NAME) as count from information_schema.TABLES t where t.TABLE_SCHEMA = 'NORTHWIND'");
+            assertEquals(true, rs.next());
+            assertEquals(14, rs.getInt("count"));
+
+            rs = statement.executeQuery("select count(*) as count from northwind.employees");
+            assertEquals(true, rs.next());
+            assertEquals(9, rs.getInt("count"));
+
+            rs = statement.executeQuery("select count(*) as count from northwind.customers");
+            assertEquals(true, rs.next());
+            assertEquals(91, rs.getInt("count"));
+        }
+
+        H2TestUtils.closeProperly(conn1);
+    }
+
+    @Test
+    public void testNorthwindLoader_WithRepeatedLoading() throws Exception
+    {
+        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
+        RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec(Lists.mutable.with(
+                "call loadNorthwindData();", "call loadNorthwindData();"));
+
+        // User gets a connection
+        Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1Conn1);
+
+        try (Statement statement = conn1.createStatement())
+        {
+            ResultSet rs = statement.executeQuery("select count(TABLE_NAME) as count from information_schema.TABLES t where t.TABLE_SCHEMA = 'NORTHWIND'");
+            assertEquals(true, rs.next());
+            assertEquals(14, rs.getInt("count"));
+
+            rs = statement.executeQuery("select count(*) as count from northwind.employees");
+            assertEquals(true, rs.next());
+            assertEquals(9, rs.getInt("count"));
+
+            rs = statement.executeQuery("select count(*) as count from northwind.customers");
+            assertEquals(true, rs.next());
+            assertEquals(91, rs.getInt("count"));
+        }
+
+        H2TestUtils.closeProperly(conn1);
+    }
+
+    @Test
+    public void testNorthwindLoader_WithoutLoading() throws Exception
+    {
+        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec();
+
+        // User gets a connection
+        Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, db1Conn1);
+
+        try (Statement statement = conn1.createStatement())
+        {
+            ResultSet rs = statement.executeQuery("select count(TABLE_NAME) as count from information_schema.TABLES t where t.TABLE_SCHEMA = 'NORTHWIND'");
+            assertEquals(true, rs.next());
+            assertEquals(0, rs.getInt("count"));
+        }
+
         H2TestUtils.closeProperly(conn1);
     }
 

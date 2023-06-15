@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.data.embedded;
 
-import org.eclipse.collections.api.factory.Maps;
+import java.util.Set;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -24,9 +25,8 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParse
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
@@ -62,38 +62,45 @@ public class ModelStoreDataParseTreeWalker
     {
         ModelStoreData result = new ModelStoreData();
         result.sourceInformation = sourceInformation;
-        result.instances = Maps.mutable.empty();
+        Set<String> _classes = Sets.mutable.empty();
+        List<ModelTestData> modelStoreModelData = Lists.mutable.empty();
 
         for (ModelStoreDataParserGrammar.TypeIndexedInstancesContext typeIndexedInstancesContext : ctx.typeIndexedInstances())
         {
             String fullPath = PureGrammarParserUtility.fromQualifiedName(typeIndexedInstancesContext.qualifiedName().packagePath() == null ? Collections.emptyList() : typeIndexedInstancesContext.qualifiedName().packagePath().identifier(), typeIndexedInstancesContext.qualifiedName().identifier());
-            ValueSpecification instances = null;
-            if (typeIndexedInstancesContext.instance() != null)
-            {
-                instances = collection(typeIndexedInstancesContext.instance().stream().map(this::visitInstance).collect(Collectors.toList()));
-            }
+            ModelTestData modelTestData;
             if (typeIndexedInstancesContext.embeddedData() != null)
             {
                 EmbeddedData embeddedData = HelperEmbeddedDataGrammarParser.parseEmbeddedData(typeIndexedInstancesContext.embeddedData(), this.walkerSourceInformation, extensions);
-                if (embeddedData instanceof DataElementReference)
-                {
-                    PackageableElementPtr ptr = new PackageableElementPtr();
-                    ptr.fullPath = ((DataElementReference) embeddedData).dataElement;
-                    instances = ptr;
-                }
-                else
-                {
-                    throw new EngineException("Please provide reference/package of the data element , grammar for this should look like : Reference \n#{ \n(package of data)\n}#\n");
-                }
+                ModelEmbeddedTestData modelEmbeddedData = new ModelEmbeddedTestData();
+                modelEmbeddedData.data = embeddedData;
+                modelEmbeddedData.model = fullPath;
+                modelTestData = modelEmbeddedData;
             }
-            if (result.instances.containsKey(fullPath))
+            else if (typeIndexedInstancesContext.instance() != null)
             {
-                throw new EngineException("Multiple entries found for type: '" + fullPath + "'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                ModelInstanceTestData modelInstanceData = new ModelInstanceTestData();
+                modelInstanceData.model = fullPath;
+                ValueSpecification instances = collection(typeIndexedInstancesContext.instance().stream().map(this::visitInstance).collect(Collectors.toList()));
+                modelInstanceData.instances = instances;
+                modelTestData = modelInstanceData;
             }
-
-            result.instances.put(fullPath, instances);
+            else
+            {
+                throw new EngineException("No valid model store data provided for type '" + fullPath + "'", walkerSourceInformation.getSourceInformation(typeIndexedInstancesContext), EngineErrorType.PARSER);
+            }
+            if (_classes.contains(fullPath))
+            {
+                throw new EngineException("Multiple entries found for type: '" + fullPath + "'", walkerSourceInformation.getSourceInformation(typeIndexedInstancesContext), EngineErrorType.PARSER);
+            }
+            modelTestData.sourceInformation = walkerSourceInformation.getSourceInformation(typeIndexedInstancesContext);
+            modelStoreModelData.add(modelTestData);
+            _classes.add(fullPath);
         }
-
+        if (!modelStoreModelData.isEmpty())
+        {
+            result.modelData = modelStoreModelData;
+        }
         return result;
     }
 

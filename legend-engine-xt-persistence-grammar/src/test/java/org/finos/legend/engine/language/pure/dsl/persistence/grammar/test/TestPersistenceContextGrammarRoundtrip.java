@@ -20,10 +20,20 @@ import org.junit.Test;
 public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testPersistenceContextWithImport()
+    {
+        testWithSectionInfoPreserved("###Persistence\n" +
+                "import test::*;\n" +
+                "PersistenceContext test::TestPersistenceContext\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "}\n");
+    }
+
+    @Test
     public void persistenceContextPermitOptionalFieldsToBeEmpty()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
@@ -33,15 +43,12 @@ public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip
     @Test
     public void persistenceContextPlatformDefault()
     {
-        testFormat(
-                "###Persistence\n" +
-                        "import test::*;\n" +
+        testFormat("###Persistence\n" +
                         "PersistenceContext test::TestPersistenceContext\n" +
                         "{\n" +
                         "  persistence: test::TestPersistence;\n" +
                         "}\n",
                 "###Persistence\n" +
-                        "import test::*;\n" +
                         "PersistenceContext test::TestPersistenceContext\n" +
                         "{\n" +
                         "  persistence: test::TestPersistence;\n" +
@@ -53,7 +60,6 @@ public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip
     public void persistenceContextSingleServiceParameter()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
@@ -69,7 +75,6 @@ public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip
     public void persistenceContextSinkConnectionPointer()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
@@ -99,7 +104,6 @@ public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip
     public void persistenceContextSinkConnectionEmbedded()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
@@ -135,7 +139,6 @@ public class TestPersistenceContextGrammarRoundtrip extends TestGrammarRoundtrip
                 "  }#;\n" +
                 "}\n");
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +

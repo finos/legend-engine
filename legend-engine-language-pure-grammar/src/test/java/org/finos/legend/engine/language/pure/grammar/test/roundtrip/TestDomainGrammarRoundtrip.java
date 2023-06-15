@@ -474,20 +474,16 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   println('ok');\n" +
-                "   'a';\n" +
+                "  println('ok');\n" +
+                "  'a';\n" +
                 "}\n");
-
-        test("###Pure\n" +
-                "function test::getDateTime(): DateTime[1]\n" +
+        test("function test::getDateTime(): DateTime[1]\n" +
                 "{\n" +
-                "   %1970-01-01T00:00:00.000\n" +
+                "  %1970-01-01T00:00:00.000\n" +
                 "}\n");
-
-        test("###Pure\n" +
-                "function test::getStrictDate(): StrictDate[1]\n" +
+        test("function test::getStrictDate(): StrictDate[1]\n" +
                 "{\n" +
-                "   %1970-01-01\n" +
+                "  %1970-01-01\n" +
                 "}\n");
     }
 
@@ -496,12 +492,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         testFormat("function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   false || (true && false);\n" +
-                "   'a';\n" +
+                "  false || (true && false);\n" +
+                "  'a';\n" +
                 "}\n", "function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   false || true && false;\n" +
-                "   'a';\n" +
+                "  false || true && false;\n" +
+                "  'a';\n" +
                 "}\n");
     }
 
@@ -510,12 +506,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         testFormat("function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   (false || (true && false)) || false;\n" +
-                "   'a';\n" +
+                "  (false || (true && false)) || false;\n" +
+                "  'a';\n" +
                 "}\n", "function withPath::f(s: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   false || true && false || false;\n" +
-                "   'a';\n" +
+                "  false || true && false || false;\n" +
+                "  'a';\n" +
                 "}\n");
     }
 
@@ -525,7 +521,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   println('ok')\n" +
+                "  println('ok')\n" +
                 "}\n");
     }
 
@@ -534,7 +530,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = (1 - (4 * (2 + 3))) * 4\n" +
+                "  let a = (1 - (4 * (2 + 3))) * 4\n" +
                 "}\n");
     }
 
@@ -543,7 +539,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = (4 + (1 * (2 + 3) * 4)) + ((2 + 3) * 4)\n" +
+                "  let a = (4 + (1 * (2 + 3) * 4)) + ((2 + 3) * 4)\n" +
                 "}\n");
     }
 
@@ -552,7 +548,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = 4 + (((1 - 2) / (2 + 3)) * (1 - 4 - 5))\n" +
+                "  let a = 4 + (((1 - 2) / (2 + 3)) * (1 - 4 - 5))\n" +
                 "}\n");
     }
 
@@ -573,26 +569,26 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = 1 / (2 / 3);\n" +
-                "   let a = 1 * (2 * 3);\n" +
-                "   let a = 1 - (2 - 3);\n" +
-                "   let a = 1 + (2 + 3);\n" +
-                "   let a = (8 / 4) * 2;\n" +
-                "   let a = 8 / (4 * 2);\n" +
-                "   let a = (8 * 4) / 2;\n" +
-                "   let a = 8 * (4 / 2);\n" +
-                "   let a = (8 * 4) + 2;\n" +
-                "   let a = 8 * (4 + 2);\n" +
-                "   let a = (8 + 4) * 2;\n" +
-                "   let a = 8 + (4 * 2);\n" +
-                "   let a = (1 - (4 * (2 + 3))) * 4;\n" +
-                "   let a = ((1 - (4 * 2)) + 3) * 4;\n" +
-                "   let a = (1 - (4 * 2)) + (3 * 4);\n" +
-                "   let a = 1 + 4 + 2 + 3 + 4;\n" +
-                "   let a = (1 + 2) - (3 - 4);\n" +
-                "   let a = 1 + 2 <= 3 - 4;\n" +
-                "   let a = (8 <= 4) + 2;\n" +
-                "   let a = 8 + 4 <= 2;\n" +
+                "  let a = 1 / (2 / 3);\n" +
+                "  let a = 1 * (2 * 3);\n" +
+                "  let a = 1 - (2 - 3);\n" +
+                "  let a = 1 + (2 + 3);\n" +
+                "  let a = (8 / 4) * 2;\n" +
+                "  let a = 8 / (4 * 2);\n" +
+                "  let a = (8 * 4) / 2;\n" +
+                "  let a = 8 * (4 / 2);\n" +
+                "  let a = (8 * 4) + 2;\n" +
+                "  let a = 8 * (4 + 2);\n" +
+                "  let a = (8 + 4) * 2;\n" +
+                "  let a = 8 + (4 * 2);\n" +
+                "  let a = (1 - (4 * (2 + 3))) * 4;\n" +
+                "  let a = ((1 - (4 * 2)) + 3) * 4;\n" +
+                "  let a = (1 - (4 * 2)) + (3 * 4);\n" +
+                "  let a = 1 + 4 + 2 + 3 + 4;\n" +
+                "  let a = (1 + 2) - (3 - 4);\n" +
+                "  let a = 1 + 2 <= 3 - 4;\n" +
+                "  let a = (8 <= 4) + 2;\n" +
+                "  let a = 8 + 4 <= 2;\n" +
                 "}\n");
     }
 
@@ -601,7 +597,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function package::test(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]\n" +
                 "{\n" +
-                "   [(true && (false && false)), false]->oneOf()\n" +
+                "  [(true && (false && false)), false]->oneOf()\n" +
                 "}\n");
     }
 
@@ -614,7 +610,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n\n" +
                 "function f(): Any[1]\n" +
                 "{\n" +
-                "   let x = ^anything::goes(v='value')\n" +
+                "  let x = ^anything::goes(v='value')\n" +
                 "}\n");
     }
 
@@ -629,7 +625,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n\n" +
                 "function f(): Any[1]\n" +
                 "{\n" +
-                "   let x = ^anything::goes(v='value' , v2=17 , v3=[true, false])\n" +
+                "  let x = ^anything::goes(v='value' , v2=17 , v3=[true, false])\n" +
                 "}\n");
     }
 
@@ -648,7 +644,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function f(): Any[1]\n" +
                 "{\n" +
-                "   let x = ^anything::goes2(v2=^anything::goes(v='value'))\n" +
+                "  let x = ^anything::goes2(v2=^anything::goes(v='value'))\n" +
                 "}\n");
     }
 
@@ -682,7 +678,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function test::multiExpressions(): String[0..1]\n" +
                 "{\n" +
-                "   if(true, {|\n" +
+                "  if(true, {|\n" +
                 "let test = 'test';\n" +
                 "$test;\n" +
                 "}, |'fgh')\n" +
@@ -694,7 +690,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function test::qoutedParams('1,2,3': Integer[3]): String[0..1]\n" +
                 "{\n" +
-                "   $'1,2,3'->map(n|$n->toString())->joinStrings(',')\n" +
+                "  $'1,2,3'->map(n|$n->toString())->joinStrings(',')\n" +
                 "}\n");
     }
 
@@ -703,15 +699,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function test::qoutedParams(): String[0..1]\n" +
                 "{\n" +
-                "   let '1,2,3' = [1, 2, 3];\n" +
-                "   $'1,2,3'->map(n|$n->toString())->joinStrings(',');\n" +
+                "  let '1,2,3' = [1, 2, 3];\n" +
+                "  $'1,2,3'->map(n|$n->toString())->joinStrings(',');\n" +
                 "}\n");
     }
 
     @Test
     public void testClassWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class <<goes.businesstemporal>> {goes.doc = 'bla'} anything::A extends B, B\n" +
                 "[\n" +
                 "  $this.ok->toOne() == 1,\n" +
@@ -746,7 +742,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testEnumerationWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Profile anything::goes\n" +
                 "{\n" +
                 "  stereotypes: [test];\n" +
@@ -764,7 +760,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testAssociationWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
                 "}\n" +
@@ -785,7 +781,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testFunctionWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
                 "}\n" +
@@ -798,28 +794,24 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function <<goes.test>> {goes.doc = 'Tag Value for assoc prop'} f(s: goes2[1], s1: goes2[1]): goes2[1]\n" +
                 "{\n" +
-                "   println('ok')\n" +
+                "  println('ok')\n" +
                 "}\n");
     }
 
     @Test
     public void testDefaultValue()
     {
-        test("import test::*;\n" +
-                "Class my::exampleRootType\n" +
+        test("Class my::exampleRootType\n" +
                 "{\n" +
                 "}\n\n" +
-
                 "Class my::exampleSubType extends my::exampleRootType\n" +
                 "{\n" +
                 "}\n\n" +
-
                 "Enum test::EnumWithDefault\n" +
                 "{\n" +
                 "  DefaultValue,\n" +
                 "  AnotherValue\n" +
                 "}\n\n" +
-
                 "Class test::A\n" +
                 "{\n" +
                 "  stringProperty: String[1] = 'default';\n" +
@@ -848,7 +840,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n\n" +
                 "function f(): Any[1]\n" +
                 "{\n" +
-                "   let x = ^test::A(booleanProperty=true)\n" +
+                "  let x = ^test::A(booleanProperty=true)\n" +
                 "}\n"
         );
     }
@@ -858,11 +850,11 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function my::under_score::function_example(): Any[1]\n" +
                 "{\n" +
-                "   my::under_score::function_example2()\n" +
+                "  my::under_score::function_example2()\n" +
                 "}\n\n" +
                 "function my::under_score::function_example2(): Any[1]\n" +
                 "{\n" +
-                "   'a'\n" +
+                "  'a'\n" +
                 "}\n"
         );
     }
@@ -873,7 +865,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         String code =
                 "function example::somethingElse(input: Integer[1]): Any[0..1]\n" +
                         "{\n" +
-                        "   [1, $input]->meta::pure::functions::math::max()\n" +
+                        "  [1, $input]->meta::pure::functions::math::max()\n" +
                         "}\n";
         test(code);
     }
@@ -881,8 +873,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testLambdaWithBiTemporalClass()
     {
-        test("###Pure\n" +
-                "Class <<temporal.bitemporal>> main::Person\n" +
+        test("Class <<temporal.bitemporal>> main::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  firm: main::Firm[1];\n" +
@@ -895,22 +886,22 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "\n" +
                 "function main::walkTree(): main::Person[*]\n" +
                 "{\n" +
-                "   main::Person.all(%2020-12-12, %2020-12-13)\n" +
+                "  main::Person.all(%2020-12-12, %2020-12-13)\n" +
                 "}\n" +
                 "\n" +
                 "function main::walkTree1(): main::Person[*]\n" +
                 "{\n" +
-                "   main::Person.all(%latest, %latest)\n" +
+                "  main::Person.all(%latest, %latest)\n" +
                 "}\n" +
                 "\n" +
                 "function main::walkTree2(): main::Person[*]\n" +
                 "{\n" +
-                "   main::Person.all(%latest, %2020-12-12)\n" +
+                "  main::Person.all(%latest, %2020-12-12)\n" +
                 "}\n" +
                 "\n" +
                 "function main::walkTree3(): main::Firm[*]\n" +
                 "{\n" +
-                "   main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
+                "  main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
                 "}\n");
     }
 
@@ -919,12 +910,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function model::test(a: String[1]): String[1]\n" +
                 "{\n" +
-                "   'a'\n" +
+                "  'a'\n" +
                 "}\n" +
                 "\n" +
                 "function model::test(a: String[1], b: Integer[1]): String[1]\n" +
                 "{\n" +
-                "   'a'\n" +
+                "  'a'\n" +
                 "}" +
                 "\n");
     }
@@ -959,7 +950,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "    }\n" +
                 "  }#\n";
 
-        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace("  ", "") + "\n}\n";
+        String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace("  ", "") + "\n}\n";
         test(code);
     }
 
@@ -975,7 +966,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "    }\n" +
                         "  }#\n";
 
-        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
     }
 
@@ -994,7 +985,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "    }\n" +
                         "  }#\n";
 
-        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
     }
 
@@ -1009,7 +1000,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "    }\n" +
                         "  }#\n";
 
-        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
     }
 
@@ -1028,7 +1019,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "    }\n" +
                 "  }#\n";
 
-        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
     }
 

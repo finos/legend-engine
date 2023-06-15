@@ -32,12 +32,20 @@ Class meta::external::store::elasticsearch::v7::tds::IndexTDS extends TabularDat
 function <<functionType.SideEffectFunction>> meta::external::store::elasticsearch::v7::tds::indexToTDS(store: Elasticsearch7Store[1], indexName: String[1]): TabularDataSet[1]
 {
   let index = $store.index($indexName)->toOne('No index found on store: ' + $indexName);  
+  let columns = $index.properties->collectAllSelectablesAndFilterableProperties()
+                     ->toIndexed()
+                     ->map(ip | indexPropertyToTdsColumn($ip.first, $ip.second.first.values->toOneMany()->joinStrings('.'), $ip.second.second));
+  
+  let idProp = ^TDSColumn(
+      name = '_id',
+      offset = $columns->last().offset->toOne() + 1,
+      type = String
+    );
+
   ^IndexTDS(
      store = $store,
      index = $index,
-     columns = $index.properties->collectPrimitiveTypeProperties()
-                     ->toIndexed()
-                     ->map(ip | indexPropertyToTdsColumn($ip.first, $ip.second.first.values->toOneMany()->joinStrings('.'), $ip.second.second))
+     columns = $columns->concatenate($idProp)
   );
 }
 
@@ -59,13 +67,24 @@ Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::metam
   }:String[1];
 }
 
+Class meta::external::store::elasticsearch::v7::metamodel::tds::_IDResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
+}
+
 Class meta::external::store::elasticsearch::v7::metamodel::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
 {
+
 }
 
 Class meta::external::store::elasticsearch::v7::metamodel::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
 {
   
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::FieldResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  readFrom: meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath[1];
 }
 
 Class meta::external::store::elasticsearch::v7::metamodel::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath

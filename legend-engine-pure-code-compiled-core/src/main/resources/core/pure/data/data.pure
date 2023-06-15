@@ -37,7 +37,29 @@ Class meta::pure::data::DataElementReference extends EmbeddedData
 
 Class meta::pure::data::ModelStoreData extends EmbeddedData
 {
-  instances   : Map<Class<Any>, InstanceValue>[1];
+  modelTestData: meta::pure::data::ModelData[*];
+}
+
+Class meta::pure::data::ModelData 
+{
+  model: Class<Any>[1];
+}
+
+Class meta::pure::data::ModelEmbeddedData extends meta::pure::data::ModelData 
+{
+  data: EmbeddedData[1];
+}
+
+Class meta::pure::data::ModelInstanceData extends meta::pure::data::ModelData 
+{
+  instances: InstanceValue[1];
+}
+
+Class meta::pure::data::StoreTestData
+{
+    doc: String[0..1];
+    data: meta::pure::data::EmbeddedData[1];
+    store: meta::pure::store::Store[1];
 }
 
 Class meta::external::shared::format::metamodel::data::ExternalFormatData extends EmbeddedData

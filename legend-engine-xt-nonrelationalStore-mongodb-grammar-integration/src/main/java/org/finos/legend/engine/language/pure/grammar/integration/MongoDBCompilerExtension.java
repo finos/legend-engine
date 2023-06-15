@@ -17,16 +17,16 @@ package org.finos.legend.engine.language.pure.grammar.integration;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperExternalFormat;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperMappingBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBStoreCompilerExtension;
@@ -34,6 +34,7 @@ import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBCom
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -42,7 +43,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -129,5 +129,19 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                     return null;
                 }
         );
+    }
+
+    @Override
+    public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
+    {
+        return Collections.singletonList(registerElementForPathToElement ->
+        {
+            ImmutableList<String> versions = PureClientVersions.versionsSinceExclusive("v1_31_0");
+            versions.forEach(v -> registerElementForPathToElement.value(
+                            "meta::protocols::pure::" + v + "::extension::store::mongodb",
+                            Collections.singletonList("getMongoDBStoreExtension_String_1__SerializerExtension_1_")
+                    )
+            );
+        });
     }
 }

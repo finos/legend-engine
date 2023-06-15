@@ -18,5 +18,6 @@ import java.util.List;
 
 public abstract class TestSuite extends Test
 {
+    public String doc;
     public List<AtomicTest> tests;
 }

@@ -18,11 +18,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.finos.legend.engine.plan.execution.result.ErrorResult;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.result.json.RealizedJsonResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -31,6 +33,8 @@ import java.io.UncheckedIOException;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 
 public class TestJsonStreamingResult
@@ -85,13 +89,80 @@ public class TestJsonStreamingResult
             try
             {
                 new ObjectMapper().readTree(outputStream.toByteArray());
-                Assert.fail("Serialized bytes should not contains valid JSON.  Is Jackson autoclosing arrays and objects?");
+                fail("Serialized bytes should not contains valid JSON.  Is Jackson autoclosing arrays and objects?");
             }
             catch (JsonEOFException eofException)
             {
                 assertThat(eofException, hasMessage(CoreMatchers.startsWith("Unexpected end-of-input: expected close marker for Array")));
             }
         }
+    }
+
+    @Test
+    public void realizeInMemoryGivesErrorResultOnExceededMaximumBytes()
+    {
+        try
+        {
+            System.setProperty(RealizedJsonResult.BYTE_LIMIT_PROPERTY_NAME, "10");
+            Result result = this.streamConstantLengthResult();
+            assertThat("Expected ErrorResult!", result instanceof ErrorResult);
+            assertEquals("IOException: Maximum bytes for generation [10] exceeded!", ((ErrorResult) result).getMessage());
+        }
+        catch (Exception e)
+        {
+            fail("Exception should have been handled during construction of RealizedJsonResult: " + e.getMessage());
+        }
+        finally
+        {
+            System.clearProperty(RealizedJsonResult.BYTE_LIMIT_PROPERTY_NAME);
+        }
+    }
+
+    @Test
+    public void realizeInMemoryHandlesAllowedByteSize()
+    {
+        try
+        {
+            RealizedJsonResult realizedJsonResult = (RealizedJsonResult) this.streamConstantLengthResult();
+            assertEquals("[{\"name\":\"Joe\"}]", realizedJsonResult.getValue());
+        }
+        catch (Exception e)
+        {
+            fail("Instrumented output stream should produce valid json under maximum byte limit!");
+        }
+    }
+
+    private Result streamConstantLengthResult() throws Exception
+    {
+        JsonStreamingResult result = new JsonStreamingResult(
+                new JsonStreamingResult.JsonStreamHandler()
+                {
+                    @Override
+                    public void writeTo(JsonGenerator x)
+                    {
+                        try
+                        {
+                            x.writeStartArray();
+                            x.writeStartObject();
+                            x.writeFieldName("name");
+                            x.writeString("Joe");
+                            x.writeEndObject();
+                            x.writeEndArray();
+                        }
+                        catch (IOException e)
+                        {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+
+                    @Override
+                    public Stream<ObjectNode> toStream()
+                    {
+                        return null;
+                    }
+                });
+
+        return result.realizeInMemory();
     }
 
     private static class TestException extends RuntimeException

@@ -7,7 +7,7 @@ import CoreParserGrammar;
 
 identifier:                                     VALID_STRING | STRING
                                                 | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                                | BYTE_STREAM_FUNCTION
+                                                | TO_BYTES_FUNCTION
 ;
 
 // -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
@@ -155,13 +155,13 @@ primitiveValue:                                 primitiveValueAtomic | primitive
 ;
 primitiveValueVector:                           BRACKET_OPEN (primitiveValueAtomic (COMMA primitiveValueAtomic)* )? BRACKET_CLOSE
 ;
-primitiveValueAtomic:                           instanceLiteral | byteStreamLiteral | enumReference
+primitiveValueAtomic:                           instanceLiteral | toBytesLiteral | enumReference
 ;
 instanceLiteral:                                instanceLiteralToken | (MINUS INTEGER) | (MINUS FLOAT) | (MINUS DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
 instanceLiteralToken:                           STRING | INTEGER | FLOAT | DECIMAL | DATE | BOOLEAN | STRICTTIME
 ;
-byteStreamLiteral:                              BYTE_STREAM_FUNCTION PAREN_OPEN STRING PAREN_CLOSE
+toBytesLiteral:                                 TO_BYTES_FUNCTION PAREN_OPEN STRING PAREN_CLOSE
 ;
 unitInstanceLiteral:                            (MINUS? INTEGER) | (MINUS? FLOAT) | (MINUS? DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
@@ -199,12 +199,6 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                 |
                                                 unitName
 ;
-multiplicity:                                   BRACKET_OPEN multiplicityArgument BRACKET_CLOSE
-;
-fromMultiplicity:                               INTEGER
-;
-toMultiplicity:                                 INTEGER | STAR
-;
 functionTypePureType:                           type multiplicity
 ;
 typeAndMultiplicityParameters:                  LESS_THAN ((typeParameters multiplictyParameters?) | multiplictyParameters) GREATER_THAN
@@ -222,9 +216,24 @@ contravarianceTypeParameter:                    MINUS? identifier
 ;
 multiplicityArguments:                          multiplicityArgument (COMMA multiplicityArgument)*
 ;
-multiplicityArgument:                           identifier | ((fromMultiplicity DOT_DOT)? toMultiplicity)
-;
 typeArguments:                                  type (COMMA type)*
 ;
 multiplictyParameters:                          PIPE identifier (COMMA identifier)*
+;
+
+
+
+
+multiplicity:                                   BRACKET_OPEN multiplicityArgument BRACKET_CLOSE
+;
+multiplicityArgument:                           identifier | ((fromMultiplicity DOT_DOT)? toMultiplicity)
+;
+fromMultiplicity:                               INTEGER
+;
+toMultiplicity:                                 INTEGER | STAR
+;
+
+
+
+functionIdentifier:                         qualifiedName PAREN_OPEN (qualifiedName multiplicity (COMMA qualifiedName multiplicity)*)? PAREN_CLOSE COLON qualifiedName multiplicity
 ;

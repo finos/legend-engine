@@ -35,6 +35,7 @@ import java.util.Optional;
 
 public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
     {
         if (sourceConnection instanceof MongoDBConnection && data instanceof MongoDBStoreEmbeddedData)
@@ -69,7 +70,8 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
         return Optional.empty();
     }
 
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store testStore, EmbeddedData data, List<DataElement> dataElementList)
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store testStore, EmbeddedData data)
     {
         if (testStore instanceof MongoDatabase)
         {

@@ -19,7 +19,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.shared.core.util.ResourceHelpers;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,5 +49,23 @@ public class H2Commands extends RelationalDatabaseCommands
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public String createNorthwindDataLoaderStoredProc()
+    {
+        // Load the templates from resources
+        String northwindSqlRaw = ResourceHelpers.getResourceAsString("/org/finos/legend/engine/plan/execution/stores/relational/connection/driver/vendors/h2/h2NorthwindDdl.sql");
+        String northwindProcRaw = ResourceHelpers.getResourceAsString("/org/finos/legend/engine/plan/execution/stores/relational/connection/driver/vendors/h2/h2NorthwindProc.txt");
+
+        // split/translate the raw SQL string to java string builder operations that build the string
+        // 1. it uses the string builder because it's too long as a string constant / static string
+        // 2. We clean up unnecessary line breaks as otherwise the Java file is too big for the compiler
+        String northwindSql = String.join(";\n", Arrays.stream(northwindSqlRaw.split(";")).map(x -> x.replace("\n", " ").replace("\r", "")).collect(Collectors.toList()));
+        String strEol = "\\n\");\n    sb.append(\"";
+        String northwindSqlString = "\"" + strEol + String.join(strEol, northwindSql.replace("\"", "\\\"").split("(\r)?\n")) + "\"";
+
+        // Merge the two to create the finalised SQL that needs to be executed
+        String sql = northwindProcRaw.replace("{$NORTHWIND_SQL}", northwindSqlString);
+        return sql;
     }
 }

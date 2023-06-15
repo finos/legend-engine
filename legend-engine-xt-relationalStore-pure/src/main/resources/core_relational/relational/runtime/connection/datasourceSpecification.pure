@@ -66,6 +66,7 @@ Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceS
     cloudType:String[0..1];
 
     quotedIdentifiersIgnoreCase:Boolean[0..1];
+    enableQueryTags: Boolean[0..1];
 }
 
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification

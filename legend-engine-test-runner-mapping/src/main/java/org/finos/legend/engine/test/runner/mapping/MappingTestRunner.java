@@ -70,6 +70,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import javax.ws.rs.core.MediaType;
 
+@Deprecated
 public class MappingTestRunner
 {
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
@@ -78,12 +79,12 @@ public class MappingTestRunner
     private final PlanExecutor executor;
     private final String mappingPath;
     public final MappingTest_Legacy mappingTestLegacy;
-    private final MutableList<PlanTransformer> planTransformers;
+    private final Iterable<? extends PlanTransformer> planTransformers;
     private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
     private final Root_meta_pure_runtime_Runtime_Impl runtime;
     private final String pureVersion;
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
     {
         this.pureModel = pureModel;
         this.executor = executor;
@@ -95,7 +96,7 @@ public class MappingTestRunner
         this.pureVersion = pureVersion;
     }
 
-    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)
+    public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         this(pureModel, mappingPath, mappingTestLegacy, executor, extensions, transformers, null);
     }

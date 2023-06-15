@@ -14,27 +14,25 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection;
 
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-
-import java.io.Closeable;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Collections;
-import java.util.Base64;
 
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
@@ -45,31 +43,75 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     private static String APPLICATION_JSON = "application/json";
     private static String APPLICATION_XML = "application/xml";
 
-    @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store store, EmbeddedData testData, List<DataElement> dataElementList)
+    private Connection resolveExternalFormatData(ExternalFormatData externalFormatData, String _class, boolean useDefaultExecutor)
     {
-        if (store instanceof ModelStore && testData instanceof ModelStoreData)
+        if (APPLICATION_JSON.equals(externalFormatData.contentType))
         {
-            for (Map.Entry<String, ValueSpecification> map : ((ModelStoreData) testData).instances.entrySet())
+            JsonModelConnection jsonModelConnection = new JsonModelConnection();
+            jsonModelConnection._class = _class;
+            jsonModelConnection.element = MODEL_STORE;
+            if (useDefaultExecutor)
             {
-                ValueSpecification vs = map.getValue();
+                jsonModelConnection.url = "executor:default";
+            }
+            else
+            {
+                jsonModelConnection.url = buildModelConnectionURL(externalFormatData, APPLICATION_JSON);
+            }
+            return jsonModelConnection;
+        }
+        else if (APPLICATION_XML.equals((externalFormatData.contentType)))
+        {
+            XmlModelConnection xmlModelConnection = new XmlModelConnection();
+            xmlModelConnection._class = _class;
+            xmlModelConnection.element = MODEL_STORE;
+            if (useDefaultExecutor)
+            {
+                xmlModelConnection.url = "executor:default";
+            }
+            else
+            {
+                xmlModelConnection.url = buildModelConnectionURL(externalFormatData, APPLICATION_XML);
+            }
+            return xmlModelConnection;
+        }
+        else
+        {
+            throw new RuntimeException("Data format specified is invalid, allowed types: JSON, XML for external format data");
+        }
+    }
+
+    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(List<DataElement> dataElements, ModelStoreData modelStoreData, boolean useDefaultExecutor)
+    {
+        List<ModelTestData> modelTestData = modelStoreData.modelData;
+        for (ModelTestData data : modelTestData)
+        {
+            String _class = data.model;
+            if (data instanceof ModelEmbeddedTestData)
+            {
+                ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
+                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElementWithList(dataElements, modelEmbeddedData.data);
+                if (resolvedEmbeddedData instanceof ExternalFormatData)
+                {
+                    Connection connection = resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class, useDefaultExecutor);
+                    return Optional.of(Tuples.pair(connection, Collections.emptyList()));
+                }
+                else
+                {
+                    throw new RuntimeException("Data format specified is invalid, allowed types: JSON, XML for external format data");
+                }
+            }
+            else if (data instanceof ModelInstanceTestData)
+            {
+                ModelInstanceTestData modelInstanceData = (ModelInstanceTestData) data;
+                ValueSpecification vs = modelInstanceData.instances;
                 if (vs instanceof PackageableElementPtr)
                 {
-                    EmbeddedData testDataElement = Iterate.detect(dataElementList, e -> ((PackageableElementPtr) vs).fullPath.equals(e.getPath())).data;
-                    //We assume that there is a default binding being used and therefore external data could be referencd in model store data
-                    if (testDataElement instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) testDataElement).contentType))
+                    EmbeddedData testDataElement = EmbeddedDataHelper.findDataElement(dataElements, ((PackageableElementPtr) vs).fullPath).data;
+                    if (testDataElement instanceof ExternalFormatData)
                     {
-                        JsonModelConnection jsonModelConnection = new JsonModelConnection();
-                        jsonModelConnection._class = map.getKey();
-                        jsonModelConnection.element = MODEL_STORE;
-                        return this.tryBuildTestConnection(jsonModelConnection, testDataElement);
-                    }
-                    else if (testDataElement instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) testDataElement).contentType))
-                    {
-                        XmlModelConnection xmlModelConnection = new XmlModelConnection();
-                        xmlModelConnection._class = map.getKey();
-                        xmlModelConnection.element = MODEL_STORE;
-                        return this.tryBuildTestConnection(xmlModelConnection, testDataElement);
+                        Connection connection = resolveExternalFormatData((ExternalFormatData) testDataElement, _class, useDefaultExecutor);
+                        return Optional.of(Tuples.pair(connection, Collections.emptyList()));
                     }
                     else
                     {
@@ -85,6 +127,67 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         return Optional.empty();
     }
 
+
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData testData)
+    {
+        if (store instanceof ModelStore && testData instanceof ModelStoreData)
+        {
+            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, false);
+        }
+        return Optional.empty();
+    }
+
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData testData)
+    {
+        if (store instanceof ModelStore && testData instanceof ModelStoreData)
+        {
+            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, true);
+        }
+        return Optional.empty();
+    }
+
+
+    @Override
+    public Optional<InputStream> tryBuildInputStreamForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData testData)
+    {
+        if (store instanceof ModelStore && testData instanceof ModelStoreData)
+        {
+            ModelStoreData modelStoreData = (ModelStoreData) testData;
+            for (ModelTestData _data : modelStoreData.modelData)
+            {
+                if (_data instanceof ModelEmbeddedTestData)
+                {
+
+                    EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedData(pureModelContextData, ((ModelEmbeddedTestData) _data).data);
+                    if (_embeddedData instanceof ExternalFormatData)
+                    {
+                        return Optional.of(new ByteArrayInputStream((((ExternalFormatData) _embeddedData).data).getBytes(StandardCharsets.UTF_8)));
+                    }
+                }
+                else if (_data instanceof ModelInstanceTestData)
+                {
+                    ValueSpecification valueSpecification = ((ModelInstanceTestData) _data).instances;
+                    if (valueSpecification instanceof PackageableElementPtr)
+                    {
+                        PackageableElementPtr packageableElementPtr = (PackageableElementPtr) valueSpecification;
+                        DataElement dElement = EmbeddedDataHelper.resolveDataElement(pureModelContextData, packageableElementPtr.fullPath);
+                        EmbeddedData testDataElement = dElement.data;
+                        if (testDataElement instanceof ExternalFormatData)
+                        {
+                            return Optional.of(new ByteArrayInputStream((((ExternalFormatData) testDataElement).data).getBytes(StandardCharsets.UTF_8)));
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+
     @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData embeddedData)
     {
@@ -99,8 +202,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             JsonModelConnection testConnection = new JsonModelConnection();
             testConnection.element = jsonModelConnection.element;
             testConnection._class = jsonModelConnection._class;
-            testConnection.url = DATA_PROTOCOL_NAME + ":" + APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(((ExternalFormatData) embeddedData).data.getBytes(StandardCharsets.UTF_8));
-
+            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_JSON);
             return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
         }
         else if (sourceConnection instanceof XmlModelConnection)
@@ -114,10 +216,17 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             XmlModelConnection testConnection = new XmlModelConnection();
             testConnection.element = xmlModelConnection.element;
             testConnection._class = xmlModelConnection._class;
-            testConnection.url = DATA_PROTOCOL_NAME + ":" + APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(((ExternalFormatData) embeddedData).data.getBytes(StandardCharsets.UTF_8));
+            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_XML);
 
             return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
         }
         return Optional.empty();
     }
+
+
+    private String buildModelConnectionURL(ExternalFormatData externalFormatData, String type)
+    {
+        return DATA_PROTOCOL_NAME + ":" + type + ";base64," + Base64.getEncoder().encodeToString(externalFormatData.data.getBytes(StandardCharsets.UTF_8));
+    }
+
 }

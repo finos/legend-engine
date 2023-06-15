@@ -110,6 +110,11 @@ public abstract class DataSourceSpecification
         return this.connectionKey;
     }
 
+    public org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey getDatasourceKey()
+    {
+        return this.datasourceKey;
+    }
+
     public AuthenticationStrategy getAuthenticationStrategy()
     {
         return authenticationStrategy;
@@ -118,6 +123,11 @@ public abstract class DataSourceSpecification
     public DatabaseManager getDatabaseManager()
     {
         return databaseManager;
+    }
+
+    public Properties getExtraDatasourceProperties()
+    {
+        return this.extraDatasourceProperties;
     }
 
     public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
@@ -145,6 +155,11 @@ public abstract class DataSourceSpecification
             dataSourceBuilder = () -> this.buildDataSource(identity);
         }
         return getConnection(new IdentityState(identity, databaseCredentialSupplierHolder), dataSourceBuilder);
+    }
+
+    public Connection getConnectionForTests(IdentityState identityState, Supplier<DataSource> dataSourcePoolBuilder)
+    {
+        return getConnection(identityState, dataSourcePoolBuilder);
     }
 
     protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourcePoolBuilder)
@@ -226,6 +241,11 @@ public abstract class DataSourceSpecification
             LOGGER.info("New Connection Pool created {}", ds);
             return ds;
         }
+    }
+
+    public String getJdbcUrlForTests(String host, int port, String databaseName, Properties properties)
+    {
+        return getJdbcUrl(host, port, databaseName, properties);
     }
 
     protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)

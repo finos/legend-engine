@@ -15,9 +15,12 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -40,11 +43,8 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 
 @Api(tags = "Utilities - Database")
 @Path("pure/v1/utilities/database")
-@Produces(MediaType.APPLICATION_JSON)
-
 public class SchemaExplorationApi
 {
-
     private final ModelManager modelManager;
     private final ConnectionManagerSelector connectionManager;
 
@@ -55,16 +55,16 @@ public class SchemaExplorationApi
         this.connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
     }
 
-
-    @Path("schemaExploration")
     @POST
+    @Path("schemaExploration")
+    @ApiOperation(value = "Use JDBC connection to survey database metadata (schemas, tables, columns, etc.) and build database Pure model")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
-
             SchemaExportation databaseBuilder = SchemaExportation.newBuilder(databaseBuilderInput);
             Database database = databaseBuilder.build(this.connectionManager, profiles);
             PureModelContextData graph = PureModelContextData.newBuilder().withElement(database).build();
@@ -76,4 +76,22 @@ public class SchemaExplorationApi
         }
     }
 
+    @POST
+    @Path("executeRawSQL")
+    @ApiOperation(value = "Use JDBC connection to execute SQL (this API is meant for non-production use case such exploring/previewing data, its result set is capped)")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response executeRawSQL(RawSQLExecuteInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        try
+        {
+            String result = new AdhocSQLExecutor().executeRawSQL(this.connectionManager, input.connection, input.sql, profiles);
+            return Response.ok(result).build();
+        }
+        catch (Exception e)
+        {
+            return ExceptionTool.exceptionManager(e, LoggingEventType.USER_EXECUTION_ERROR, profiles);
+        }
+    }
 }

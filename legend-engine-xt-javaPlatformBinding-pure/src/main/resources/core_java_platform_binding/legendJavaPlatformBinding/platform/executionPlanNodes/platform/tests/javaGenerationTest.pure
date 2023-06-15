@@ -43,27 +43,16 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ];
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getFunctionsToExclude():FunctionDefinition<Any>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getFunctionsToExclude():FunctionDefinition<{->Boolean[1]}>[*]
 {
   let genericsNotSupported = [
-    meta::pure::functions::collection::tests::contains::testContainsWithFunction__Boolean_1_, // requires meta::pure::functions::collection::contains_Z_MANY__Z_1__Function_1__Boolean_1_ 
     meta::pure::functions::collection::tests::drop::testDropInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_ 
     meta::pure::functions::collection::tests::groupBy::testCase1GroupWithWindowSubset__Boolean_1_, // requires meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_ 
     meta::pure::functions::collection::tests::groupBy::testCase2GroupWithWindowSubset__Boolean_1_, // requires meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_ 
     meta::pure::functions::collection::tests::groupBy::testGroupByAggregationEmptyValues__Boolean_1_, // requires meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_ 
-    meta::pure::functions::collection::tests::groupBy::testGroupByAggregation__Boolean_1_, // requires meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_ 
-    meta::pure::functions::collection::tests::head::testHeadFromEmpty__Boolean_1_, // requires meta::pure::functions::collection::head_T_MANY__T_$0_1$_ 
-    meta::pure::functions::collection::tests::head::testHead__Boolean_1_, // requires meta::pure::functions::collection::head_T_MANY__T_$0_1$_ 
-    meta::pure::functions::collection::tests::intersection::testPrimitives__Boolean_1_, // requires meta::pure::functions::collection::intersection_T_MANY__T_MANY__T_MANY_ 
+    meta::pure::functions::collection::tests::groupBy::testGroupByAggregation__Boolean_1_, // requires meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_         
     meta::pure::functions::collection::tests::intersection::testSimplePartition__Boolean_1_, // requires meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_ 
-    meta::pure::functions::collection::tests::intersection::testTypePartition__Boolean_1_, // requires meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_ 
-    meta::pure::functions::collection::tests::intersection::testTypes__Boolean_1_, // requires meta::pure::functions::collection::intersection_T_MANY__T_MANY__T_MANY_ 
-    meta::pure::functions::collection::tests::max::testMax__Boolean_1_, // requires meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_ 
-    meta::pure::functions::collection::tests::min::testMin__Boolean_1_, // requires meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_ 
-    meta::pure::functions::collection::tests::removeAll::testRemoveAllClassCustomFunction__Boolean_1_, // requires meta::pure::functions::collection::removeAll_T_MANY__T_MANY__Function_1__T_MANY_ 
-    meta::pure::functions::collection::tests::removeAll::testRemoveAllClassKey__Boolean_1_, // requires meta::pure::functions::collection::removeAll_T_MANY__T_MANY__T_MANY_ 
-    meta::pure::functions::collection::tests::removeAll::testRemoveAllPrimitiveCustomFunction__Boolean_1_, // requires meta::pure::functions::collection::removeAll_T_MANY__T_MANY__Function_1__T_MANY_ 
-    meta::pure::functions::collection::tests::removeAll::testRemoveAllPrimitiveStandardFunction__Boolean_1_, // requires meta::pure::functions::collection::removeAll_T_MANY__T_MANY__T_MANY_ 
+    meta::pure::functions::collection::tests::intersection::testTypePartition__Boolean_1_, // requires meta::pure::functions::collection::partition_I_MANY__Function_1__Pair_1_     
     meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesBy__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
     meta::pure::functions::collection::tests::slice::testSliceInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_ 
     meta::pure::functions::collection::tests::take::testTakeInList__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_ 
@@ -75,10 +64,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     meta::pure::functions::tests::collection::allButOneAreEmpty__Boolean_1_, // requires meta::pure::functions::collection::list_U_MANY__List_1_ 
     meta::pure::functions::tests::collection::newMultiValueMap2Test__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
     meta::pure::functions::tests::collection::newMultiValueMapTest__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
-    meta::pure::functions::tests::collection::testDropAt__Boolean_1_, // requires meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_ 
     meta::pure::functions::tests::collection::toIndexed__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
-    meta::pure::functions::tests::collection::toNumbered__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
-    meta::pure::functions::tests::collection::uniqueValueOnly__Boolean_1_ // requires meta::pure::functions::collection::uniqueValueOnly_T_MANY__T_$0_1$_ 
+    meta::pure::functions::tests::collection::toNumbered__Boolean_1_ // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
   ];
 
   let translationNotSupported = [
@@ -87,49 +74,17 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::collection::tests::get::testGet__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_ 
 		meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedPrimitiveStandardFunction__Boolean_1_, // requires meta::pure::functions::collection::removeAllOptimized_T_MANY__T_MANY__T_MANY_ 
 		meta::pure::functions::collection::tests::removeAllOptimized::testRemoveAllOptimizedClassKey__Boolean_1_, // requires meta::pure::functions::collection::removeAllOptimized_T_MANY__T_MANY__T_MANY_ 
-		meta::pure::functions::collection::tests::repeat::testRepeatNegative__Boolean_1_, // requires meta::pure::functions::collection::repeat_T_1__Integer_1__T_MANY_ 
-		meta::pure::functions::collection::tests::repeat::testRepeatOne__Boolean_1_, // requires meta::pure::functions::collection::repeat_T_1__Integer_1__T_MANY_ 
-		meta::pure::functions::collection::tests::repeat::testRepeatZero__Boolean_1_, // requires meta::pure::functions::collection::repeat_T_1__Integer_1__T_MANY_ 
-		meta::pure::functions::collection::tests::repeat::testRepeat__Boolean_1_, // requires meta::pure::functions::collection::repeat_T_1__Integer_1__T_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipBothListsAreOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipBothListsEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipFirstListEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipFirstListsIsOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipSecondListEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipSecondListsIsOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
-		meta::pure::functions::collection::tests::testGetPropertyValues__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_ 
-		meta::pure::functions::date::tests::testAverageTime__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::date::tests::testDayOfWeekNumberForDayOfWeekWithNewDay__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::date::tests::testTimeToAndFromSeconds__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::hash::tests::testMD5_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
-		meta::pure::functions::hash::tests::testSHA1_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
-		meta::pure::functions::hash::tests::testSHA256_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
+		meta::pure::functions::collection::tests::testGetPropertyValues__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_  
 		meta::pure::functions::lang::tests::letFn::testAssignNewInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 
 		meta::pure::functions::lang::tests::match::testMatchWithExtraParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
 		meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
-		meta::pure::functions::lang::tests::new::testDynamicInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 
-		meta::pure::functions::math::tests::exp::testNumberExp__Boolean_1_, // requires meta::pure::functions::math::exp_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::exp::testSimple__Boolean_1_, // requires meta::pure::functions::math::exp_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::log::testNumberLog__Boolean_1_, // requires meta::pure::functions::math::log_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::log::testSimple__Boolean_1_, // requires meta::pure::functions::math::log_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::mod::testModWithNegativeNumbers__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::math::tests::mod::testMod__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::math::tests::stdDev::testFloatStdDev__Boolean_1_, // requires meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_ 
-		meta::pure::functions::math::tests::stdDev::testIntStdDev__Boolean_1_, // requires meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_ 
-		meta::pure::functions::math::tests::stdDev::testMixedStdDev__Boolean_1_, // requires meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_ 
-		meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev__Boolean_1_, // requires meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_ 
-		meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation__Boolean_1_, // requires meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_ 
-		meta::pure::functions::math::tests::trigonometry::testArcCosine__Boolean_1_, // requires meta::pure::functions::math::acos_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testArcSine__Boolean_1_, // requires meta::pure::functions::math::asin_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testArcTangent2__Boolean_1_, // requires meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testArcTangent__Boolean_1_, // requires meta::pure::functions::math::atan_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testCalculatingDistanceHaversine__Boolean_1_, // requires meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testCalculatingDistancesphericalLawOfCosines__Boolean_1_, // requires meta::pure::functions::math::acos_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testSquareRoot__Boolean_1_, // requires meta::pure::functions::math::sqrt_Number_1__Float_1_ 
-		meta::pure::functions::math::tests::trigonometry::testTangent__Boolean_1_, // requires meta::pure::functions::math::tan_Number_1__Float_1_ 
-		meta::pure::functions::string::tests::base64::testBase64Decoding__Boolean_1_, // requires meta::pure::functions::string::decodeBase64_String_1__String_1_ 
-		meta::pure::functions::string::tests::base64::testBase64Encoding__Boolean_1_, // requires meta::pure::functions::string::encodeBase64_String_1__String_1_ 
-		meta::pure::functions::string::tests::base64::testBase64RoundTrip__Boolean_1_ // requires meta::pure::functions::string::decodeBase64_String_1__String_1_     
+		meta::pure::functions::lang::tests::new::testDynamicInstance__Boolean_1_ // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 				    
   ];
 
   let prohibitedFunctionAccess = [
@@ -193,6 +148,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::math::tests::evaluate::divide::testNumberDivide__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
 		meta::pure::functions::math::tests::evaluate::minus::testReflectiveExecution__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
 		meta::pure::functions::math::tests::evaluate::minus::testSingleExpressionMinus__Boolean_1_, // requires eval_Function_1__V_m_ 
+    meta::pure::functions::math::tests::exp::testNumberExp__Boolean_1_, // requires eval
+    meta::pure::functions::math::tests::log::testNumberLog__Boolean_1_, // requires eval
 		meta::pure::functions::math::tests::minus::testSingleMinusType__Boolean_1_, // requires type_Any_MANY__Type_1_ 
 		meta::pure::functions::math::tests::mod::testModInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
 		meta::pure::functions::math::tests::plus::testSinglePlusType__Boolean_1_, // requires type_Any_MANY__Type_1_ 
@@ -200,45 +157,35 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::math::tests::rem::testRemInEvalWithFloat__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
 		meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
 		meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
-		meta::pure::functions::math::tests::rem::testRemInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
+		meta::pure::functions::math::tests::rem::testRemInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_     
+    meta::pure::functions::math::tests::trigonometry::testArcCosine__Boolean_1_, // requires eval
+    meta::pure::functions::math::tests::trigonometry::testArcSine__Boolean_1_, // requires eval
+    meta::pure::functions::math::tests::trigonometry::testArcTangent2__Boolean_1_, // requires eval
+    meta::pure::functions::math::tests::trigonometry::testArcTangent__Boolean_1_, // requires eval
 		meta::pure::functions::math::tests::trigonometry::testCosine__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
 		meta::pure::functions::math::tests::trigonometry::testSine__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
+    meta::pure::functions::math::tests::trigonometry::testSquareRoot__Boolean_1_, // requires eval
+    meta::pure::functions::math::tests::trigonometry::testTangent__Boolean_1_, // requires eval
 		meta::pure::functions::math::testPercentile__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
 		meta::pure::functions::string::tests::evaluate::plus::testPlusInLambda__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
 		meta::pure::functions::string::tests::parseDate::testParseDateTypes__Boolean_1_, // requires assertInstanceOf_Any_1__Type_1__Boolean_1_ 
 		meta::pure::functions::string::tests::plus::testPlusInIterate__Boolean_1_ // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
   ];
 
-  let unknown = [
+  let misc = [    
 		meta::pure::functions::boolean::tests::testIsConcreteFunctionDefinitions__Boolean_1_,
 		meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_,
+    meta::pure::functions::collection::tests::contains::testContainsWithFunction__Boolean_1_, // Unhandled value type: meta::pure::metamodel::function::ConcreteFunctionDefinition
 		meta::pure::functions::collection::tests::contains::testContainsAllNonPrimitive__Boolean_1_,
 		meta::pure::functions::collection::tests::contains::testContainsAnyNonPrimitive__Boolean_1_,
 		meta::pure::functions::collection::tests::filter::testFilterUsingVarForFunction__Boolean_1_,
-		meta::pure::functions::collection::tests::head::testHeadComplex__Boolean_1_,
+		meta::pure::functions::collection::tests::head::testHeadComplex__Boolean_1_, // scanProperties: functionType is not supported yet for this subtype of function Path
 		meta::pure::functions::collection::tests::in::testInNonPrimitive__Boolean_1_,
 		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunction__Boolean_1_,		
-		meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::drop::testDropManyOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::drop::testDropNegativeOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::drop::testDropOneOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::drop::testDropZeroOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::exists::testExistsInSelect__Boolean_1_,
-		meta::pure::functions::collection::tests::first::testFirstOnEmptySet__Boolean_1_,
 		meta::pure::functions::collection::tests::map::testMapWithFunctionAsVariable__Boolean_1_,
+    meta::pure::functions::collection::tests::removeAll::testRemoveAllClassCustomFunction__Boolean_1_, // Unhandled value type: meta::pure::metamodel::function::ConcreteFunctionDefinition
 		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesLongList__Boolean_1_,
 		meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesNonPrimitives__Boolean_1_,
-		meta::pure::functions::collection::tests::reverse::testReverseEmpty__Boolean_1_,
-		meta::pure::functions::collection::tests::slice::testSliceEqualBounds__Boolean_1_,
-		meta::pure::functions::collection::tests::slice::testSliceOnEmpty__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeManyOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeOneOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeZeroOnEmptyList__Boolean_1_,
-		meta::pure::functions::collection::tests::take::testTakeZeroOnNonEmptyList__Boolean_1_,
 		meta::pure::functions::lang::tests::new::testNewGenericFunc__Boolean_1_,
 		meta::pure::functions::lang::tests::new::testNewGeneric__Boolean_1_,
     meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch__Boolean_1_,
@@ -277,6 +224,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_,
     meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_,
     meta::pure::functions::collection::tests::contains::testContainsNonPrimitive__Boolean_1_,
+    meta::pure::functions::collection::tests::removeAll::testRemoveAllClassKey__Boolean_1_,
+    meta::pure::functions::collection::tests::intersection::testTypes__Boolean_1_,
+    meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList__Boolean_1_,
+    meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList__Boolean_1_,
     meta::pure::functions::lang::tests::new::testNewWithAssociation__Boolean_1_,
     meta::pure::functions::lang::tests::subType::testWhenSubType__Boolean_1_,
     meta::pure::functions::math::tests::rem::testRemWithDecimals__Boolean_1_,
@@ -288,15 +239,35 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   $genericsNotSupported
     ->concatenate($translationNotSupported)
     ->concatenate($prohibitedFunctionAccess)
-    ->concatenate($unknown)
+    ->concatenate($misc)
     ->concatenate($compilationFailures)
     ->concatenate($wrongResults);
 }
 
-function <<test.TestCollection>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+function <<access.private>>  meta::pure::executionPlan::platformBinding::legendJava::library::tests::rootPackage():Package[1]
 {
-  let root = meta::pure::functions;
+   meta::pure::functions;
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+{
+  let root = rootPackage();
   let pkgsToExclude = getPackagesToExclude();
   let fnsToExclude = getFunctionsToExclude();
   $root->generateTestCollection($pkgsToExclude, $fnsToExclude);
+}
+
+function <<test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGenerationTestSingle():Boolean[1]
+{
+  let root = rootPackage();
+  let pkgsToExclude = getPackagesToExclude();
+  let fnsToExclude = getFunctionsToExclude();
+
+  let suite = javaPureTests(engineConventions([]), [])
+    ->addTestsWithin($root)
+    ->excludeTestsWithin($pkgsToExclude)
+    ->excludeTests($fnsToExclude)
+    ->runTests();
 }

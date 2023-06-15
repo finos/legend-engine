@@ -29,7 +29,7 @@ Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeEx
 {
    binding : Binding[1];
    checked : Boolean[1];
-   tree    : RootGraphFetchTree<Any>[0..1];                                 // TODO: This would be made mandatory
+   tree    : RootGraphFetchTree<Any>[1];
 }
 
 Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode

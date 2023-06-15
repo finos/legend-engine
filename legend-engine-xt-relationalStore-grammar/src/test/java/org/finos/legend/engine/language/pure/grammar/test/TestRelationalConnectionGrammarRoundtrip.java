@@ -474,4 +474,43 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "}\n");
     }
+
+    @Test
+    public void testSnowflakeLocalConnectionSpecification()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  mode: local;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSnowflakeEnableQueryTags()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'okilkol.asdasd';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'EMEA';\n" +
+                "    quotedIdentifiersIgnoreCase: false;\n" +
+                "    enableQueryTags: true;\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+
+    }
 }

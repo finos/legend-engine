@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -21,6 +25,7 @@ import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -831,6 +836,93 @@ public class Library
         }
     }
 
+    public static <T> List<T> removeAll(List<T> col1, List<T> col2, BiPredicate<T, T> eql)
+    {
+        if (eql == null)
+        {
+            return col1.stream().filter((T c1) -> !col2.contains(c1)).collect(Collectors.toList());
+        }
+        else
+        {
+            return col1.stream().filter((T c1) -> col2.stream().noneMatch((T c2) -> eql.test(c1, c2))).collect(Collectors.toList());
+        }
+    }
+
+    public static <T> boolean contains(List<T> col, T toFind, BiFunction<T, T, Boolean> eql)
+    {
+        return col.stream().anyMatch((T c) -> eql.apply(c, toFind));
+    }
+
+    public static <T> boolean contains(T col, T toFind, BiFunction<T, T, Boolean> eql)
+    {
+        return eql.apply(col, toFind);
+    }
+
+    public static <T> List<T> repeat(long count, T val)
+    {
+        if (count <= 0)
+        {
+            return Collections.emptyList();
+        }
+        return Collections.nCopies((int) count, val);
+    }
+
+    public static <T> T uniqueValueOnly(List<T> col, T defaultValue)
+    {
+        List<T> unique = col.stream().distinct().collect(Collectors.toList());
+        return unique.size() == 1 ? unique.get(0) : defaultValue;
+    }
+
+    public static <T> T uniqueValueOnly(T col, T defaultValue)
+    {
+        return col != null ? col : defaultValue;
+    }
+
+    public static <T> List<T> dropAt(List<T> col, long index, long count)
+    {
+        if (index < 0 || index >= col.size())
+        {
+            throw new IllegalArgumentException("Invalid index");
+        }
+        List<T> newList = new ArrayList<>(col.subList(0, (int) index));
+        if (index + count <= col.size())
+        {
+            newList.addAll(col.subList((int) (index + count), col.size()));
+        }
+        return newList;
+    }
+
+    public static String hash(String text, Enum hashType)
+    {
+        String type = hashType.name();
+        if (type.equals("MD5"))
+        {
+            return DigestUtils.md5Hex(text);
+        }
+        else if (type.equals("SHA1"))
+        {
+            return DigestUtils.sha1Hex(text);
+        }
+        else if (type.equals("SHA256"))
+        {
+            return DigestUtils.sha256Hex(text);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Invalid hash type " + type);
+        }
+    }
+
+    public static String decodeBase64(String text)
+    {
+        return new String(Base64.decodeBase64(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+
+    public static String encodeBase64(String text)
+    {
+        return Base64.encodeBase64URLSafeString(text.getBytes(StandardCharsets.UTF_8));
+    }
+
     public static <T> Predicate<T> distinctByKey(Function<T, ?> key)
     {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
@@ -1422,5 +1514,86 @@ public class Library
             throw new IllegalStateException(message.get());
         }
         return true;
+    }
+
+    public static double sqrt(Number input)
+    {
+        double res = Math.sqrt(input.doubleValue());
+        if (Double.isNaN(res))
+        {
+            throw new RuntimeException("can't compute sqrt for input: " + input);
+        }
+        return res;
+    }
+
+    public static Number stdDev(List<Number> list, boolean isBiasCorrected)
+    {
+        if (list == null || list.isEmpty())
+        {
+            throw new RuntimeException("Unable to process empty list");
+        }
+        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
+        double[] values = new double[javaNumbers.size()];
+        for (int i = 0; i < javaNumbers.size(); i++)
+        {
+            values[i] = javaNumbers.get(i).doubleValue();
+        }
+        return standardDeviation(values, isBiasCorrected);
+    }
+
+    public static double standardDeviation(double[] values, boolean isBiasCorrected)
+    {
+        return Math.sqrt(variance(values, isBiasCorrected));
+    }
+
+    public static double variance(double[] values, boolean isBiasCorrected)
+    {
+        int length = values.length;
+        if (length == 1)
+        {
+            if (isBiasCorrected)
+            {
+                //calculating sample variance for only 1 number is not allowed
+                throw new IllegalArgumentException("calculating sample variance for only 1 number is not allowed");
+            }
+            else
+            {
+                //population variance for only 1 number
+                return 0.0;
+            }
+        }
+
+        double mean = mean(values);
+        double val = 0.0;
+        for (int i = 0; i < length; i++)
+        {
+            double value = values[i];
+            double diff = value - mean;
+            val += diff * diff;
+        }
+        if (isBiasCorrected)
+        {
+            return val / (length - 1);
+        }
+        else
+        {
+            return val / length;
+        }
+    }
+
+    private static double mean(double[] values)
+    {
+        int length = values.length;
+        if (length == 0)
+        {
+            throw new IllegalArgumentException("Cannot compute mean with no values");
+        }
+
+        double sum = values[0];
+        for (int i = 1; i < length; i++)
+        {
+            sum += values[i];
+        }
+        return sum / length;
     }
 }

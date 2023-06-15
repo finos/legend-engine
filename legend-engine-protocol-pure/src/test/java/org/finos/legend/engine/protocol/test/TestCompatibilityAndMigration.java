@@ -928,6 +928,279 @@ public class TestCompatibilityAndMigration
                         "}");
     }
 
+
+    @Test
+    public void testModelStoreData() throws Exception
+    {
+        check("{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"modelStore\",\n" +
+                "        \"instances\": {\n" +
+                "          \"my::Person\": {\n" +
+                "            \"_type\" : \"collection\",\n" +
+                "            \"multiplicity\" : {\n" +
+                "              \"lowerBound\" : 1,\n" +
+                "              \"upperBound\" : 1\n" +
+                "            },\n" +
+                "            \"values\" : [ {\n" +
+                "              \"_type\" : \"func\",\n" +
+                "              \"function\" : \"new\",\n" +
+                "              \"parameters\" : [ {\n" +
+                "                \"_type\" : \"packageableElementPtr\",\n" +
+                "                \"fullPath\" : \"my::Person\"\n" +
+                "              }, {\n" +
+                "                \"_type\" : \"string\",\n" +
+                "                \"value\" : \"dummy\"\n" +
+                "              }, {\n" +
+                "                \"_type\" : \"collection\",\n" +
+                "                \"multiplicity\" : {\n" +
+                "                  \"lowerBound\" : 1,\n" +
+                "                  \"upperBound\" : 1\n" +
+                "                },\n" +
+                "                \"values\" : [ {\n" +
+                "                  \"_type\" : \"keyExpression\",\n" +
+                "                  \"add\" : false,\n" +
+                "                  \"expression\" : {\n" +
+                "                    \"_type\" : \"collection\",\n" +
+                "                    \"multiplicity\" : {\n" +
+                "                      \"lowerBound\" : 2,\n" +
+                "                      \"upperBound\" : 2\n" +
+                "                    },\n" +
+                "                    \"values\" : [ {\n" +
+                "                      \"_type\" : \"string\",\n" +
+                "                      \"value\" : \"Fred\"\n" +
+                "                    }, {\n" +
+                "                      \"_type\" : \"string\",\n" +
+                "                      \"value\" : \"William\"\n" +
+                "                    } ]\n" +
+                "                  },\n" +
+                "                  \"key\" : {\n" +
+                "                    \"_type\" : \"string\",\n" +
+                "                    \"value\" : \"givenNames\"\n" +
+                "                  }\n" +
+                "                } ]\n" +
+                "              } ]\n" +
+                "            } ]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"name\": \"dataWithModelStore\",\n" +
+                "      \"package\": \"my\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"name\": \"dataWithModelStore2\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"modelStore\",\n" +
+                "        \"modelData\": [\n" +
+                "          {\n" +
+                "            \"_type\": \"modelInstanceData\",\n" +
+                "            \"model\": \"my::Person\",\n" +
+                "            \"instances\": {\n" +
+                "          \"_type\" : \"collection\",\n" +
+                "          \"multiplicity\" : {\n" +
+                "            \"lowerBound\" : 1,\n" +
+                "            \"upperBound\" : 1\n" +
+                "          },\n" +
+                "          \"values\" : [ {\n" +
+                "            \"_type\" : \"func\",\n" +
+                "            \"function\" : \"new\",\n" +
+                "            \"parameters\" : [ {\n" +
+                "              \"_type\" : \"packageableElementPtr\",\n" +
+                "              \"fullPath\" : \"my::Person\"\n" +
+                "            }, {\n" +
+                "              \"_type\" : \"string\",\n" +
+                "              \"value\" : \"dummy\"\n" +
+                "            }, {\n" +
+                "              \"_type\" : \"collection\",\n" +
+                "              \"multiplicity\" : {\n" +
+                "                \"lowerBound\" : 1,\n" +
+                "                \"upperBound\" : 1\n" +
+                "              },\n" +
+                "              \"values\" : [ {\n" +
+                "                \"_type\" : \"keyExpression\",\n" +
+                "                \"add\" : false,\n" +
+                "                \"expression\" : {\n" +
+                "                  \"_type\" : \"collection\",\n" +
+                "                  \"multiplicity\" : {\n" +
+                "                    \"lowerBound\" : 2,\n" +
+                "                    \"upperBound\" : 2\n" +
+                "                  },\n" +
+                "                  \"values\" : [ {\n" +
+                "                    \"_type\" : \"string\",\n" +
+                "                    \"value\" : \"Fred\"\n" +
+                "                  }, {\n" +
+                "                    \"_type\" : \"string\",\n" +
+                "                    \"value\" : \"William\"\n" +
+                "                  } ]\n" +
+                "                },\n" +
+                "                \"key\" : {\n" +
+                "                  \"_type\" : \"string\",\n" +
+                "                  \"value\" : \"givenNames\"\n" +
+                "                }\n" +
+                "              } ]\n" +
+                "            } ]\n" +
+                "          } ]\n" +
+                "        }\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n", "{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"modelStore\",\n" +
+                "        \"modelData\": [\n" +
+                "          {\n" +
+                "            \"_type\": \"modelInstanceData\",\n" +
+                "            \"model\": \"my::Person\",\n" +
+                "            \"instances\": {\n" +
+                "              \"_type\": \"collection\",\n" +
+                "              \"multiplicity\": {\n" +
+                "                \"lowerBound\": 1,\n" +
+                "                \"upperBound\": 1\n" +
+                "              },\n" +
+                "              \"values\": [\n" +
+                "                {\n" +
+                "                  \"_type\": \"func\",\n" +
+                "                  \"function\": \"new\",\n" +
+                "                  \"parameters\": [\n" +
+                "                    {\n" +
+                "                      \"_type\": \"packageableElementPtr\",\n" +
+                "                      \"fullPath\": \"my::Person\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"_type\": \"string\",\n" +
+                "                      \"value\": \"dummy\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"_type\": \"collection\",\n" +
+                "                      \"multiplicity\": {\n" +
+                "                        \"lowerBound\": 1,\n" +
+                "                        \"upperBound\": 1\n" +
+                "                      },\n" +
+                "                      \"values\": [\n" +
+                "                        {\n" +
+                "                          \"_type\": \"keyExpression\",\n" +
+                "                          \"add\": false,\n" +
+                "                          \"expression\": {\n" +
+                "                            \"_type\": \"collection\",\n" +
+                "                            \"multiplicity\": {\n" +
+                "                              \"lowerBound\": 2,\n" +
+                "                              \"upperBound\": 2\n" +
+                "                            },\n" +
+                "                            \"values\": [\n" +
+                "                              {\n" +
+                "                                \"_type\": \"string\",\n" +
+                "                                \"value\": \"Fred\"\n" +
+                "                              },\n" +
+                "                              {\n" +
+                "                                \"_type\": \"string\",\n" +
+                "                                \"value\": \"William\"\n" +
+                "                              }\n" +
+                "                            ]\n" +
+                "                          },\n" +
+                "                          \"key\": {\n" +
+                "                            \"_type\": \"string\",\n" +
+                "                            \"value\": \"givenNames\"\n" +
+                "                          }\n" +
+                "                        }\n" +
+                "                      ]\n" +
+                "                    }\n" +
+                "                  ]\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      \"name\": \"dataWithModelStore\",\n" +
+                "      \"package\": \"my\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"name\": \"dataWithModelStore2\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"modelStore\",\n" +
+                "        \"modelData\": [\n" +
+                "          {\n" +
+                "            \"_type\": \"modelInstanceData\",\n" +
+                "            \"model\": \"my::Person\",\n" +
+                "            \"instances\": {\n" +
+                "              \"_type\": \"collection\",\n" +
+                "              \"multiplicity\": {\n" +
+                "                \"lowerBound\": 1,\n" +
+                "                \"upperBound\": 1\n" +
+                "              },\n" +
+                "              \"values\": [\n" +
+                "                {\n" +
+                "                  \"_type\": \"func\",\n" +
+                "                  \"function\": \"new\",\n" +
+                "                  \"parameters\": [\n" +
+                "                    {\n" +
+                "                      \"_type\": \"packageableElementPtr\",\n" +
+                "                      \"fullPath\": \"my::Person\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"_type\": \"string\",\n" +
+                "                      \"value\": \"dummy\"\n" +
+                "                    },\n" +
+                "                    {\n" +
+                "                      \"_type\": \"collection\",\n" +
+                "                      \"multiplicity\": {\n" +
+                "                        \"lowerBound\": 1,\n" +
+                "                        \"upperBound\": 1\n" +
+                "                      },\n" +
+                "                      \"values\": [\n" +
+                "                        {\n" +
+                "                          \"_type\": \"keyExpression\",\n" +
+                "                          \"add\": false,\n" +
+                "                          \"expression\": {\n" +
+                "                            \"_type\": \"collection\",\n" +
+                "                            \"multiplicity\": {\n" +
+                "                              \"lowerBound\": 2,\n" +
+                "                              \"upperBound\": 2\n" +
+                "                            },\n" +
+                "                            \"values\": [\n" +
+                "                              {\n" +
+                "                                \"_type\": \"string\",\n" +
+                "                                \"value\": \"Fred\"\n" +
+                "                              },\n" +
+                "                              {\n" +
+                "                                \"_type\": \"string\",\n" +
+                "                                \"value\": \"William\"\n" +
+                "                              }\n" +
+                "                            ]\n" +
+                "                          },\n" +
+                "                          \"key\": {\n" +
+                "                            \"_type\": \"string\",\n" +
+                "                            \"value\": \"givenNames\"\n" +
+                "                          }\n" +
+                "                        }\n" +
+                "                      ]\n" +
+                "                    }\n" +
+                "                  ]\n" +
+                "                }\n" +
+                "              ]\n" +
+                "            }\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);

@@ -80,7 +80,7 @@ public abstract class TestExternalFormatQueries
             extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_shared_format_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
             SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(lambda, null, null, null, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
-            PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+            PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
             PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs()
                     .withPlan(plan)
                     .withParams(params)

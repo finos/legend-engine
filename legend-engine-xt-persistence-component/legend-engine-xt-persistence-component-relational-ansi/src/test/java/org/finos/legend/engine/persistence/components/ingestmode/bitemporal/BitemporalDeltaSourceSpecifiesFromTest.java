@@ -96,7 +96,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
@@ -166,7 +166,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -284,7 +284,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery, preActionsSql.get(3));
 
@@ -422,7 +422,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery, operations.get(0).preActionsSql().get(3));
 
@@ -522,7 +522,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery, preActionsSql.get(3));
 
@@ -600,7 +600,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery, operations.get(0).preActionsSql().get(3));
 
@@ -729,7 +729,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery, preActionsSql.get(3));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery, preActionsSql.get(4));
@@ -886,7 +886,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery, operations.get(0).preActionsSql().get(3));
         Assertions.assertEquals(expectedBitemporalFromOnlyStageWithDeleteIndicatorWithDataSplitWithoutDuplicatesTableCreateQuery, operations.get(0).preActionsSql().get(4));
@@ -987,7 +987,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
@@ -1065,7 +1065,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
@@ -1145,7 +1145,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
@@ -1176,5 +1176,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQuery;
     }
 }

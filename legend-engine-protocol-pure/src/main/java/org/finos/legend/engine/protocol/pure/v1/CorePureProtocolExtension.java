@@ -19,10 +19,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
@@ -46,8 +44,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -108,6 +108,10 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(ModelStoreData.class, "modelStore")
                         .withSubtype(DataElementReference.class, "reference")
                         .build(),
+                ProtocolSubTypeInfo.newBuilder(ModelTestData.class)
+                        .withSubtype(ModelEmbeddedTestData.class, "modelEmbeddedData")
+                        .withSubtype(ModelInstanceTestData.class, "modelInstanceData")
+                        .build(),
                 // Test Assertion
                 ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
                         .withSubtype(EqualTo.class, "equalTo")
@@ -137,10 +141,12 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
-                        .withSubtype(MappingTestSuite.class, "mappingTestSuite")
+                        .withSubtype(MappingDataTestSuite.class, "mappingTestDataSuite")
+                        .withSubtype(MappingFunctionTestSuite.class, "mappingTestQuerySuite")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
-                        .withSubtype(MappingTest.class, "mappingTest")
+                        .withSubtype(MappingDataTest.class, "mappingDataTest")
+                        .withSubtype(MappingFunctionTest.class, "mappingQueryTest")
                         .build()
         ));
     }

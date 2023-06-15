@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::graphFetch::executionPlan::*;
 import meta::protocols::pure::vX_X_X::extension::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::csv::*;
@@ -33,6 +34,34 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension(type:S
    assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
    $res->at(0).second->eval();
    
+}
+
+function meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy(tempTableStrategy:meta::relational::graphFetch::executionPlan::TempTableStrategy[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy[1]
+{
+   $tempTableStrategy->match([
+      t : LoadFromSubQueryTempTableStrategy[1] |
+      ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromSubQueryTempTableStrategy(
+        _type = 'subQuery',
+        createTempTableNode = if($t.createTempTableNode->isNotEmpty(),|$t.createTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        loadTempTableNode = if($t.loadTempTableNode->isNotEmpty(),|$t.loadTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        dropTempTableNode = if($t.dropTempTableNode->isNotEmpty(),|$t.dropTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[])
+      );,
+      t : LoadFromTempFileTempTableStrategy[1] |
+      ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromTempFileTempTableStrategy(
+        _type = 'tempFile',
+        createTempTableNode = if($t.createTempTableNode->isNotEmpty(),|$t.createTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        loadTempTableNode = if($t.loadTempTableNode->isNotEmpty(),|$t.loadTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        dropTempTableNode = if($t.dropTempTableNode->isNotEmpty(),|$t.dropTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[])
+      );,
+      t : LoadFromResultSetAsValueTuplesTempTableStrategy[1] |
+      ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromResultSetAsValueTuplesTempTableStrategy(
+        _type = 'resultSet',
+        createTempTableNode = if($t.createTempTableNode->isNotEmpty(),|$t.createTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        loadTempTableNode = if($t.loadTempTableNode->isNotEmpty(),|$t.loadTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        dropTempTableNode = if($t.dropTempTableNode->isNotEmpty(),|$t.dropTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
+        tupleBatchSize = $t.tupleBatchSize
+      );
+   ])
 }
 
 function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X[1]
@@ -96,6 +125,19 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
                            connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                         ),
+                     rel:meta::relational::mapping::RelationalSaveNode[1]|
+                        ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalSaveNode(
+                           _type = 'relationalSave',
+                           resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           sqlComment = $rel.sqlComment,
+                           sqlQuery = $rel.sqlQuery,
+                           generatedVariableName = $rel.generatedVariableName,
+                           columnValueGenerators = $rel.columnValueGenerators->keyValues()->map(cvg | pair($cvg.first, $cvg.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions)))->newMap(),
+                           onConnectionCloseCommitQuery = $rel.onConnectionCloseCommitQuery,
+                           onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
+                           connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                        ),
                      rel:meta::relational::mapping::RelationalTdsInstantiationExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode(
                            _type = 'relationalTdsInstantiation',
@@ -134,10 +176,12 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                      rel:meta::relational::graphFetch::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode(
                            _type = 'relationalRootQueryTempTableGraphFetch',
+                           tempTableStrategy = if($rel.tempTableStrategy->isNotEmpty(),|$rel.tempTableStrategy->toOne()->meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy($mapping, $extensions),|[]),
                            resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                            resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                            batchSize = $rel.batchSize,
                            tempTableName = $rel.tempTableName,
+                           processedTempTableName = $rel.processedTempTableName,
                            columns = $rel.columns->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultColumn()),
                            children = $rel.children->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
                            nodeIndex = $rel.nodeIndex,
@@ -148,23 +192,29 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                      rel:meta::relational::graphFetch::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode(
                            _type = 'relationalCrossRootQueryTempTableGraphFetch',
+                           parentTempTableStrategy = if($rel.parentTempTableStrategy->isNotEmpty(),|$rel.parentTempTableStrategy->toOne()->meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy($mapping, $extensions),|[]),
+                           tempTableStrategy = if($rel.tempTableStrategy->isNotEmpty(),|$rel.tempTableStrategy->toOne()->meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy($mapping, $extensions),|[]),
                            resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                            resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                            tempTableName = $rel.tempTableName,
+                           processedTempTableName = $rel.processedTempTableName,
                            columns = $rel.columns->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultColumn()),
                            children = $rel.children->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
                            nodeIndex = $rel.nodeIndex,
                            parentIndex = $rel.parentIndex,
                            parentTempTableName = $rel.parentTempTableName,
+                           processedParentTempTableName =$rel.processedParentTempTableName,
                            parentTempTableColumns = $rel.parentTempTableColumns->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultColumn()),
                            graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
                         ),
                      rel:meta::relational::graphFetch::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode(
                            _type = 'relationalClassQueryTempTableGraphFetch',
+                           tempTableStrategy = if($rel.tempTableStrategy->isNotEmpty(),|$rel.tempTableStrategy->toOne()->meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy($mapping, $extensions),|[]),
                            resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                            resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                            tempTableName = $rel.tempTableName,
+                           processedTempTableName = $rel.processedTempTableName,
                            columns = $rel.columns->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultColumn()),
                            children = $rel.children->map(c | $c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
                            nodeIndex = $rel.nodeIndex,

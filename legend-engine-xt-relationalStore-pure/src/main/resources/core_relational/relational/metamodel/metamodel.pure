@@ -15,6 +15,11 @@
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 
+Class meta::relational::metamodel::UpsertSQLQuery extends SQLQuery
+{
+  data               : Table[1];
+  equalityStatements : Map<String, Literal>[1];
+}
 
 Class meta::relational::metamodel::RelationDataSelectSqlQuery extends SelectSQLQuery
 {
@@ -65,10 +70,19 @@ Class meta::relational::metamodel::DropTableSQL extends SQLQuery
 }
 
 Class meta::relational::metamodel::LoadTableSQL extends SQLQuery
+[
+  only_one_datasource : ($this.absolutePathToFile->isNotEmpty() && $this.parsedData->isEmpty()) || ($this.absolutePathToFile->isEmpty() && $this.parsedData->isNotEmpty())
+]
 {
     table: Table[1];
     columnsToLoad : Column[*];
     parsedData : List<List<String>>[0..1];
+    absolutePathToFile : meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[0..1];
+}
+
+function meta::relational::metamodel::loadWith(c:CreateTableSQL[1], absolutePathToFile:meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]):SQLQuery[2]
+{
+  [$c, ^LoadTableSQL(table = $c.table, absolutePathToFile=$absolutePathToFile, columnsToLoad=$c.table.columns->cast(@Column))]//TODO move function, asserts/constraints on columns
 }
 
 Class meta::relational::metamodel::Alterable

@@ -84,27 +84,38 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   $functionExpression.parametersValues->at($index)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues;
 }
 
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::buildFilterPath(simpleFunctionExpression: SimpleFunctionExpression[1], path: String[1]): String[1]
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::buildFilterPathRecursively(simpleFunctionExpression: SimpleFunctionExpression[1], path: String[1]): String[1]
 {
   if ($simpleFunctionExpression.func != map_T_$0_1$__Function_1__V_$0_1$_ && $simpleFunctionExpression.func != map_T_m__Function_1__V_m_,
   |
     let nextValue = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
     if ($nextValue->instanceOf(SimpleFunctionExpression),
       |
-        let leftPart = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
-        let rightPart = $simpleFunctionExpression.func.name->toOne();
-        let currentPath = if ($path == '', | $rightPart, | $rightPart + '.' + $path);
-        buildFilterPath($leftPart, $currentPath);,
+        if ($simpleFunctionExpression.func == toOne_T_MANY__T_1_,
+          | 
+            let functionExpression = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+            buildFilterPathRecursively($functionExpression, $path);,
+          |
+            let functionExpression = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+            let key = $simpleFunctionExpression.func.name->toOne();
+            let currentPath = buildDotNotationPath($path, $key);
+            buildFilterPathRecursively($functionExpression, $currentPath);
+        );,
       |
-        let leftPart = $simpleFunctionExpression.func.name->toOne();
-        $leftPart + '.' + $path;
+        let key = $simpleFunctionExpression.func.name->toOne();
+        buildDotNotationPath($path, $key);
     );,
   |
-    let rightPart = $simpleFunctionExpression.parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-    let leftPart = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
-    let currentPath = if ($path == '', | $rightPart, | $rightPart + '.' + $path);
-    buildFilterPath($leftPart, $currentPath);
+    let key = $simpleFunctionExpression.parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
+    let functionExpression = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+    let currentPath = buildDotNotationPath($path, $key);
+    buildFilterPathRecursively($functionExpression, $currentPath);
   );
+}
+
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::buildDotNotationPath(path: String[1], key: String[1]): String[1]
+{
+  if ($path == '', | $key, | $key + '.' + $path);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): EqOperatorExpression[1]
@@ -116,7 +127,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
     | 
       $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(),
     |
-      buildFilterPath($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
+      buildFilterPathRecursively($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
   );
 
   let fieldPath = '$' + $path;
@@ -128,27 +139,37 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processIsNotEmpty(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): NEOperatorExpression[1]
 {
-  let fieldPath = '$' + $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-  let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
-  ^NEOperatorExpression(expressions=[$leftSide, ^LiteralValue(value=^NullTypeValue())]);
+  let funcValue = $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+  let path = if ($funcValue.func != map_T_$0_1$__Function_1__V_$0_1$_ && $funcValue.func != map_T_m__Function_1__V_m_,
+    |
+      '$' + $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
+    |
+      '$' + buildFilterPathRecursively($funcValue, '');
+  );
+  let fieldPathExpression = ^FieldPathExpression(fieldPath=$path);
+  ^NEOperatorExpression(expressions=[$fieldPathExpression, ^LiteralValue(value=^NullTypeValue())]);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): ComparisonOperatorExpression[1]
 {
-  if ($functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name != 'toOne_T_MANY__T_1_',
+  let parameterValues = processSimpleFunctionExpression($functionExpression, 0);
+  let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
+
+  let path = if($firstParameterValue->instanceOf(VariableExpression),
+    | 
+      if ($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name != 'toOne_T_MANY__T_1_',
+        | $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
+        | $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->toOne()->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
+      );,
     |
-      // when the variable in the domain class is mandatory.
-      let fieldPath = '$' + $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-      let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
-      let rightSide = processValueSpecification($functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
-      meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonFunction($functionExpression, $leftSide, $rightSide);,
-    |
-      //when the variable in the domain class in optional.
-      let fieldPath = '$' + $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->toOne()->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-      let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
-      let rightSide = processValueSpecification($functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
-      meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonFunction($functionExpression, $leftSide, $rightSide);
-    );
+      buildFilterPathRecursively($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
+  );
+
+  let fieldPath = '$' + $path->toOne();
+
+  let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
+  let rightSide = processValueSpecification($functionExpression.parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
+  meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonFunction($functionExpression, $leftSide, $rightSide);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processNot(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): NotOperatorExpression[1]
@@ -164,8 +185,10 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
 {
   $i.values->match([
-    s: String[1] | ^LiteralValue(value=^StringTypeValue(value=$s)),
-    s: Integer[1] | ^LiteralValue(value=^IntTypeValue(value=$s)),
+    s: String[1]      | ^LiteralValue(value=^StringTypeValue(value=$s)),
+    i: Integer[1]     | ^LiteralValue(value=^IntTypeValue(value=$i)),
+    sd :StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
+    dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()));,
     l: LambdaFunction<Any>[1] |
       let fe = $i.values->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression);
       processFunctionExpression($fe->toOne(), $databaseCommand, $mapping, $inScopeVars, $debug);
@@ -269,15 +292,19 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::not_Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNot_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__NotOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processFilter_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
@@ -296,14 +323,18 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
    newMap([
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second={leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second={ leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_,second={ leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
-      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])})
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])})
       ]);
 }

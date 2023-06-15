@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -22,16 +23,30 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.io.Closeable;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
+
+/**
+ * Used to build connections using test data. Main goal is to leverage connection for execution
+ */
 public interface ConnectionFactoryExtension
 {
+
+    /**
+     * Deprecated as part of deprecated of Legacy Mapping Test
+     */
+    @Deprecated
     default Optional<Connection> tryBuildFromInputData(InputData inputData)
     {
         return Optional.empty();
     }
 
+    @Deprecated
+    /**
+     * Deprecated as part of deprecated of Legacy Service Test
+     */
     default Optional<Connection> tryBuildFromConnection(Connection connection, String testData, String element)
     {
         return Optional.empty();
@@ -42,7 +57,17 @@ public interface ConnectionFactoryExtension
         return Optional.empty();
     }
 
-    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store store, EmbeddedData data, List<DataElement> dataElementList)
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData data)
+    {
+        return Optional.empty();
+    }
+
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData data)
+    {
+        return this.tryBuildTestConnectionsForStore(dataElements, store, data);
+    }
+
+    default Optional<InputStream> tryBuildInputStreamForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData data)
     {
         return Optional.empty();
     }

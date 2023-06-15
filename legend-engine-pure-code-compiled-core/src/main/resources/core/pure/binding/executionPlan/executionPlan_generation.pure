@@ -72,13 +72,16 @@ function <<access.private>> meta::external::shared::format::executionPlan::graph
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
                           |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
                           | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
+                          | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
                           | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
                           | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
                           | fail('Unknown graphFetch function - ' + $fe.func.name->orElse('')); $state;
-                      )))));
+                      ))))));
 
    $fe.parametersValues->at(0)->meta::external::shared::format::executionPlan::processValueSpecification($updatedState, $extensions, $debug)->toOne();
 }
@@ -98,36 +101,33 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
    
    let inScopeVars     = $state.inScopeVars;
    
-   let tree            = if($parameters->size() == 3,  // TODO: This condition should not be needed once tree is mandated
-                            | $parameters->at(2)->byPassValueSpecificationWrapper()->match([
-                                v:VariableExpression[1]       | $inScopeVars->get($v.name).values->cast(@RootGraphFetchTree<Any>)->toOne(),
-                                i:InstanceValue[1]            | $i.values->cast(@RootGraphFetchTree<Any>)->first(),
-                                s:SimpleFunctionExpression[1] | assert($s.func == checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_, | 'Please provide a tree or use a checked function as a parameter for externalize');
-                                                                let valueTree  = $s.parametersValues->at(0)->match([
-                                                                                                                v:VariableExpression[1] | $inScopeVars->get($v.name).values,
-                                                                                                                i:InstanceValue[1]      | $i.values
-                                                                                                             ])->cast(@RootGraphFetchTree<Any>)->toOne();
-                                                                let binding    = $s.parametersValues->at(1)->match([
-                                                                                                                v:VariableExpression[1] | $inScopeVars->get($v.name).values,
-                                                                                                                i:InstanceValue[1]      | $i.values
-                                                                                                             ])->cast(@Binding)->toOne();
-                                                                let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordSerializeTree;
-                                                                assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $binding.contentType);
-                                                                checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
-                               ]), 
-                            | []); 
+   let tree            = $parameters->at(2)->byPassValueSpecificationWrapper()->match([
+                              v:VariableExpression[1]       | $inScopeVars->get($v.name).values->cast(@RootGraphFetchTree<Any>)->toOne(),
+                              i:InstanceValue[1]            | $i.values->cast(@RootGraphFetchTree<Any>)->toOne(),
+                              s:SimpleFunctionExpression[1] | assert($s.func == checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_, | 'Please provide a tree or use a checked function as a parameter for externalize');
+                                                              let valueTree  = $s.parametersValues->at(0)->match([
+                                                                                                              v:VariableExpression[1] | $inScopeVars->get($v.name).values,
+                                                                                                              i:InstanceValue[1]      | $i.values
+                                                                                                            ])->cast(@RootGraphFetchTree<Any>)->toOne();
+                                                              let binding    = $s.parametersValues->at(1)->match([
+                                                                                                              v:VariableExpression[1] | $inScopeVars->get($v.name).values,
+                                                                                                              i:InstanceValue[1]      | $i.values
+                                                                                                            ])->cast(@Binding)->toOne();
+                                                              let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordSerializeTree;
+                                                              assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $binding.contentType);
+                                                              checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
+                              ]); 
 
-   let bindingArg      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper();
-   let binding         = $bindingArg->match([
-                                             s:SimpleFunctionExpression[1] | $s->reactivate($inScopeVars)->toOne(),
-                                             i:InstanceValue[1]            | $i.values->at(0),
-                                             v:VariableExpression[1]       | $inScopeVars->get($v.name).values->toOne()
-                                            ])->cast(@Binding);
-                            
    let inputType       = $parameters->at(0)->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression).genericType.rawType;
    let checked         = $inputType == meta::pure::dataQuality::Checked;
 
-   assert($tree->isEmpty() || $tree.class == $inputType, | 'Input type \'' + $inputType->toOne()->elementToPath() + '\' and root tree type \'' + $tree.class->toOne()->elementToPath() + '\' for externalize does not match');
+   assert($tree.class == $inputType, | 'Input type \'' + $inputType->toOne()->elementToPath() + '\' and root tree type \'' + $tree.class->toOne()->elementToPath() + '\' for externalize does not match');
+
+   let bindingArg      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper();
+   let binding         = $bindingArg->cast(@InstanceValue).values->match([
+                                                                    b:meta::external::shared::format::binding::Binding[1] | $b,
+                                                                    s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = extractClassesFromTree($tree)))
+                                                                  ]);
 
    ^ExternalFormatExternalizeExecutionNode
    (
@@ -148,15 +148,15 @@ function <<access.private>> meta::external::shared::format::executionPlan::inter
    let bindingArg         = $fe.parametersValues->at(1);
    let inScopeVars        = $state.inScopeVars;
 
-   assert($bindingArg->instanceOf(InstanceValue) || ($bindingArg->instanceOf(VariableExpression) && $inScopeVars->get($bindingArg->cast(@VariableExpression).name).values->toOne()->instanceOf(meta::external::shared::format::binding::Binding)), 'Only literal binding is supported');
-   let binding            = $bindingArg->match([
-                                                i:InstanceValue[1]      | $i.values->at(0),
-                                                v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
-                                              ])->cast(@meta::external::shared::format::binding::Binding);
-
    let classArg           = $fe.parametersValues->at(0);
    assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
    let class              = $classArg->cast(@InstanceValue).values->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+
+   assert($bindingArg->instanceOf(InstanceValue), 'Only literal binding is supported');
+   let binding            = $bindingArg->cast(@InstanceValue).values->match([
+                                                                        b:meta::external::shared::format::binding::Binding[1] | $b,
+                                                                        s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = if($graphFetchTree->isEmpty(), | $class, |extractClassesFromTree($graphFetchTree->toOne()))))
+                                                                      ]);
    
    ^ExternalFormatInternalizeExecutionNode
    (
@@ -191,21 +191,33 @@ function <<access.private>> meta::external::shared::format::executionPlan::gener
                                       ]);
 }
 
+function <<access.private>> meta::external::shared::format::executionPlan::extractClassesFromTree(tree:GraphFetchTree[1]): Class<Any>[*]
+{
+  let classesFromTree = $tree->match([
+                                  r:RootGraphFetchTree<Any>[1] | $r.class,
+                                  p:PropertyGraphFetchTree[1]  | if($p.isPrimitive(), |[], |$p.property.genericType.rawType->cast(@Class<Any>)),
+                                  s:SubTypeGraphFetchTree[1]   | $s.subTypeClass
+                                ]);
+  $classesFromTree->concatenate($tree.subTrees->map(s | $s->extractClassesFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractClassesFromTree()));
+}
+
 function <<access.private>> meta::external::shared::format::executionPlan::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
 {
    let specificProcessorsForFunctions = 
       newMap([
         ^PureFunctionToProcessFunctionPair(first = meta::pure::dataQuality::checked_T_MANY__Checked_MANY_, second = checkedFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_Checked_MANY__Binding_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_T_MANY__String_1__RootGraphFetchTree_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__Byte_MANY__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__String_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__String_1__Byte_MANY__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
       ]);
    
    if($specificProcessorsForFunctions->get($f.func)->isNotEmpty(),

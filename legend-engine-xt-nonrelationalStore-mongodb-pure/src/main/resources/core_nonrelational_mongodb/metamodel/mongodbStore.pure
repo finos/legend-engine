@@ -443,6 +443,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue ex
   keyValues: KeyValuePair[*];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::DateTypeValue extends BaseTypeValue
+{
+  value: String[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue extends BaseTypeValue
 {
   items: BaseTypeValue[*];
@@ -454,11 +459,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
   value: BaseTypeValue[1];
 }
 
-
-Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
-{
-  SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI, MONGODB_X509
-}
 
 
 

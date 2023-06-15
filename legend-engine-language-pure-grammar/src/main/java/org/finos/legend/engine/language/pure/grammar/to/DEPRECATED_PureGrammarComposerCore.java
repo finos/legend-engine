@@ -63,7 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -98,6 +98,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -393,7 +394,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
-                LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
+                LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
                 "\n}";
     }
 
@@ -883,9 +884,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(CByteStream cByteStream)
+    public String visit(CByteArray cByteArray)
     {
-        return "byteStream(" + HelperValueSpecificationGrammarComposer.renderString(cByteStream.value, this) + ")";
+        return "toBytes(" + HelperValueSpecificationGrammarComposer.renderString(new String(cByteArray.value, StandardCharsets.UTF_8), this) + ")";
     }
 
     @Override
@@ -929,15 +930,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         if (rootGraphFetchTree.subTypeTrees != null && !rootGraphFetchTree.subTypeTrees.isEmpty())
         {
-            if (!subTreeString.isEmpty())
-            {
-                subTypeTreeString = ",";
-            }
             subTypeTreeString = subTypeTreeString + rootGraphFetchTree.subTypeTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                subTreeString + subTypeTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
+                subTreeString + (!subTreeString.isEmpty() && !subTypeTreeString.isEmpty() ? (this.isRenderingPretty() ? "," + this.returnChar() : ",") : "") + subTypeTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
                 DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 this.indentationString + "}#";
     }

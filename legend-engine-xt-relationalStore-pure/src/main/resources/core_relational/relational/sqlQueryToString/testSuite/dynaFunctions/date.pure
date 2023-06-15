@@ -31,6 +31,13 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::adjust::testAdjustWithStringUnit(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='adjust', parameters=[^Literal(value=%2014-11-30), ^Literal(value=1), ^Literal(value='DAYS')]);
+  let expected = ^Literal(value=%2014-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 //get datetime subpart
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::second::testSecond(config:DbTestConfig[1]):Boolean[1]
 {

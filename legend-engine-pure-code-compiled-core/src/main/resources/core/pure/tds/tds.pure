@@ -76,6 +76,7 @@ Class meta::pure::tds::TDSRow
    values : Any[*];
 
    getString(colName:String[1]){$this.get($colName)->cast(@String)}:String[1];
+   getNullableString(colName:String[1]){ if($this.isNull($colName), | [] , | $this.getString($colName))}:String[0..1];
    getNumber(colName:String[1]){$this.get($colName)->cast(@Number)}:Number[1];
    getInteger(colName:String[1]){$this.get($colName)->cast(@Integer)}:Integer[1];
    getFloat(colName:String[1]){$this.get($colName)->cast(@Number)->toFloat()}:Float[1];
@@ -133,8 +134,8 @@ Class meta::pure::tds::TDSNull
 Class meta::pure::tds::AggregateValue<T,U>
 {
    name : String[1];
-   mapFn : FunctionDefinition<{TDSRow[1]->T[1]}>[1];
-   aggregateFn : FunctionDefinition<{T[*]->U[1]}>[1];
+   mapFn : FunctionDefinition<{TDSRow[1]->T[0..1]}>[1];
+   aggregateFn : FunctionDefinition<{T[*]->U[0..1]}>[1];
 }
 
 Class meta::pure::tds::ColumnSpecification<T>
@@ -198,7 +199,7 @@ Class meta::pure::tds::WindowColumnSpecification<T> extends ColumnSpecification<
 
 function 
    {doc.doc = 'Helper function to create / define an aggreagation value (combination of column name and aggregation function)'}
-   meta::pure::tds::agg<T,U>(name:String[1], mapFn:FunctionDefinition<{TDSRow[1]->T[0..1]}>[1], aggregateFn:FunctionDefinition<{T[*]->U[1]}>[1]):meta::pure::tds::AggregateValue<T,U>[1]
+   meta::pure::tds::agg<T,U>(name:String[1], mapFn:FunctionDefinition<{TDSRow[1]->T[0..1]}>[1], aggregateFn:FunctionDefinition<{T[*]->U[0..1]}>[1]):meta::pure::tds::AggregateValue<T,U>[1]
 {
    ^meta::pure::tds::AggregateValue<T,U>(name = $name, mapFn=$mapFn, aggregateFn=$aggregateFn);
 }

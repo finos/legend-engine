@@ -96,7 +96,7 @@ public class TestDataGrammarParser extends TestGrammarParser.TestGrammarParserTe
                         "       ]\n" +
                         "   }#\n" +
                         "}\n",
-                "PARSER error at [6:6-12:8]: Multiple entries found for type: 'meta::Demo'"
+                "PARSER error at [9:6-11:8]: Multiple entries found for type: 'meta::Demo'"
         );
     }
 }

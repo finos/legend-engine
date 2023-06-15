@@ -23,14 +23,22 @@ import org.finos.legend.authentication.credentialprovider.CredentialProviderProv
 import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
+import javax.security.auth.kerberos.KerberosPrincipal;
+import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClient>
+public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<MongoClient>>
 {
 
     private static final String ADMIN_DB = "admin";
@@ -41,36 +49,60 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
     }
 
     @Override
-    public MongoClient makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
+    public Supplier<MongoClient> makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
     {
-        if (!(connectionSpec instanceof MongoDBConnectionSpecification && authenticationSpec instanceof UserPasswordAuthenticationSpecification))
+        if (!(connectionSpec instanceof MongoDBConnectionSpecification && (authenticationSpec instanceof UserPasswordAuthenticationSpecification || authenticationSpec instanceof KerberosAuthenticationSpecification)))
         {
             throw new IllegalStateException("Invalid ConnectionSpecification/AuthenticationSpecification. Please reach out to dev team");
         }
 
         MongoDBConnectionSpecification mongoDBConnectionSpec = (MongoDBConnectionSpecification) connectionSpec;
-        UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
 
-        Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
-
-        if (!(credential instanceof PlaintextUserPasswordCredential))
-        {
-            String message = String.format("Failed to create connected. Expected credential of type %s but found credential of type %s", PlaintextUserPasswordCredential.class, credential.getClass());
-            throw new UnsupportedOperationException(message);
-        }
-
-        PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
-        MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
+        MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder().applyToClusterSettings(builder -> builder.hosts(serverAddresses)).applicationName("Legend Execution Server");
 
-        MongoClientSettings clientSettings = MongoClientSettings.builder()
-                .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
-                .credential(mongoCredential)
-                .applicationName("Legend Execution Server").build();
+        Supplier<MongoClient> mongoClientSupplier;
+        if (authenticationSpec instanceof KerberosAuthenticationSpecification)
+        {
+            Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
+            if (!kerberosHolder.isPresent())
+            {
+                throw new UnsupportedOperationException("Expected Kerberos credential was not found, for KerberosAuthenticationSpecification");
+            }
+            LegendKerberosCredential kerberosCredential = kerberosHolder.get();
 
-        MongoClient mongoClient = MongoClients.create(clientSettings);
-        return mongoClient;
+            if (kerberosCredential.getSubject().getPrincipals().stream().noneMatch(KerberosPrincipal.class::isInstance))
+            {
+                String errMesg = String.format("Invalid Subject: Expected at least 1 KerberosPrincipal but got [%s]",
+                        kerberosCredential.getSubject().getPrincipals().stream().map(k -> k.getClass().getName()).collect(Collectors.joining(", ")));
+                throw new IllegalStateException(errMesg);
+            }
+
+            KerberosPrincipal kerberosPrincipal = kerberosCredential.getSubject().getPrincipals(KerberosPrincipal.class).stream().findFirst().get();
+
+            MongoCredential mongoCredential = MongoCredential.createGSSAPICredential(kerberosPrincipal.getName());
+            MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
+            mongoClientSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<MongoClient>) () -> MongoClients.create(clientSettings));
+        }
+        else
+        {
+            // authenticationSpec instanceof UserPasswordAuthenticationSpecification
+            Credential credential = makeCredential(authenticationSpec, identity);
+
+            if (credential instanceof PlaintextUserPasswordCredential)
+            {
+                PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
+                MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
+                MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
+                mongoClientSupplier = () -> MongoClients.create(clientSettings);
+            }
+            else
+            {
+                String errMesg = String.format("Within UserPasswordAuthenticationSpecification only PlaintextUserPasswordCredential is supported, but got: %s", credential.getClass().getName());
+                throw new IllegalStateException(errMesg);
+            }
+
+        }
+        return mongoClientSupplier;
     }
-
-
 }

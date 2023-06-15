@@ -1486,6 +1486,26 @@ function <<test.Test>> meta::pure::router::preeval::tests::testLetOnlyStatement(
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testLambdaParamOverride():Boolean[1]
+{
+  let input    = { | let val = 1;
+                     {val:Integer[1]| $val};};
+
+  let expected = { | {val:Integer[1]| $val};};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testLambdaParamOverride2():Boolean[1]
+{
+  let val = 1; 
+  let input    = { | let x = 1;
+                     {p:Integer[1]|$p->map(x|$x+$val)};};
+  let expected = { | {p:Integer[1]|$p->map(x|$x+1)}};
+
+  assertRoundTrip($input, $expected);
+}
+
 function <<access.private>> meta::pure::router::preeval::tests::myFunc2():String[1]
 {
   let x = 'hello';
@@ -1499,7 +1519,7 @@ function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(s
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]
 {
-  assertRoundTrip($input, $expectedOrig, debug())
+  assertRoundTrip($input, $expectedOrig, noDebug())
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1], debug:meta::pure::tools::DebugContext[1]):Boolean[1]

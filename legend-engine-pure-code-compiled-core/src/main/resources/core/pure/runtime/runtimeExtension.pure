@@ -102,14 +102,24 @@ function meta::pure::runtime::getRuntimeWithModelConnection(sourceClass:Class<An
    ^Runtime(connections=^ModelConnection(element = ^ModelStore(), instances=newMap(pair($sourceClass, list($inputs)))));
 }
 
-function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], binding:meta::external::shared::format::binding::Binding[1], inputStream:ByteStream[1]):Runtime[1]
+function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], binding:meta::external::shared::format::binding::Binding[1], input:Byte[*]):Runtime[1]
 {
-  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $inputStream)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
 }
 
 function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], binding:meta::external::shared::format::binding::Binding[1], input:String[1]):Runtime[1]
 {
   ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+}
+
+function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], contentType:String[1], input:Byte[*]):Runtime[1]
+{
+  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+}
+
+function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], contentType:String[1], input:String[1]):Runtime[1]
+{
+  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
 }
 
 // Function signature takes Any to incorporate both Runtime & PackageableRuntime

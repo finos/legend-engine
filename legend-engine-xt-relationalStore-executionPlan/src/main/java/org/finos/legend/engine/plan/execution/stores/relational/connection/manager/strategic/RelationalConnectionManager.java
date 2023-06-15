@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
@@ -34,9 +35,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
@@ -199,12 +202,50 @@ public class RelationalConnectionManager implements ConnectionManager
 
     public DataSourceSpecification getDataSourceSpecification(DatabaseConnection connection)
     {
-        if (connection instanceof RelationalDatabaseConnection)
+        if (!(connection instanceof RelationalDatabaseConnection))
         {
-            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
+            return null;
+        }
+
+        RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
+        boolean localMode = this.resolveLocalMode(relationalDatabaseConnection);
+        if (localMode)
+        {
+            return getLocalModeDataSourceSpecification(relationalDatabaseConnection);
+        }
+        else
+        {
             ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
             return buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey);
         }
-        return null;
+    }
+
+    private boolean resolveLocalMode(RelationalDatabaseConnection relationalDatabaseConnection)
+    {
+        DatasourceSpecification datasourceSpecification = relationalDatabaseConnection.datasourceSpecification;
+        if (!(datasourceSpecification instanceof SnowflakeDatasourceSpecification))
+        {
+            return false;
+        }
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification)datasourceSpecification;
+        // See RelationalDatabaseConnectionParseTreeWalker.handleLocalMode
+        return snowflakeDatasourceSpecification.accountName.startsWith("legend-local-snowflake-accountName");
+    }
+
+    public DataSourceSpecification getLocalModeDataSourceSpecification(RelationalDatabaseConnection relationalDatabaseConnection)
+    {
+        DatabaseType databaseType = relationalDatabaseConnection.databaseType;
+        if (databaseType == null)
+        {
+            databaseType = relationalDatabaseConnection.type;
+        }
+        DatabaseManager databaseManager = DatabaseManager.fromString(databaseType.name());
+
+        DatasourceSpecification datasourceSpecification = relationalDatabaseConnection.datasourceSpecification;
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification)datasourceSpecification;
+
+        AuthenticationStrategy authenticationStrategy = relationalDatabaseConnection.authenticationStrategy;
+        SnowflakePublicAuthenticationStrategy snowflakePublicAuthenticationStrategy = (SnowflakePublicAuthenticationStrategy) authenticationStrategy;
+        return databaseManager.getLocalDataSourceSpecification(snowflakeDatasourceSpecification, snowflakePublicAuthenticationStrategy);
     }
 }
