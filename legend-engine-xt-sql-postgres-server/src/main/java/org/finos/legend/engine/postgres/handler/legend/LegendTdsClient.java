@@ -18,6 +18,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import org.apache.http.client.CookieStore;
@@ -164,8 +167,37 @@ public class LegendTdsClient implements LegendExecutionClient
         if (jsonNode.get("result") != null)
         {
             ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
-            return LazyIterate.collect(result, a -> columIndex -> a.get("values").get(columIndex).asText());
+            return LazyIterate.collect(result, a -> columIndex ->
+            {
+                JsonNode node = a.get("values").get(columIndex);
+                if (node.isNull())
+                {
+                    return null;
+                }
+                if (node.isInt())
+                {
+                    return node.intValue();
+                }
+                if (node.isFloat())
+                {
+                    return node.floatValue();
+                }
+                if (node.isDouble())
+                {
+                    return node.doubleValue();
+                }
+                if (node.isNumber())
+                {
+                    return node.doubleValue();
+                }
+                if (node.isBoolean())
+                {
+                    return node.booleanValue();
+                }
+                return node.asText();
+            });
         }
         return Collections.emptyList();
     }
+
 }

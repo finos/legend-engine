@@ -14,7 +14,15 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-public interface TDSRow
+public class LegendDataType
 {
-    Object  get(int columIndex);
+    public static final String STRICT_DATE = "StrictDate";
+    public static final String DATE = "Date";
+    public static final String DATE_TIME = "DateTime";
+    public static final String INTEGER = "Integer";
+    public static final String FLOAT = "Float";
+    public static final String NUMBER = "Number";
+    public static final String BOOLEAN = "Boolean";
+
+    public static final String STRING = "String";
 }
