@@ -14,17 +14,39 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Objects;
+
 public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+    private static void testTo(String protocolResource, String expectedCode)
+    {
+        try
+        {
+            PureModelContextData modelData = objectMapper.readValue(Objects.requireNonNull(TestMappingGrammarTo.class.getClassLoader().getResourceAsStream(protocolResource)), PureModelContextData.class);
+            String modelCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(modelData);
+            Assert.assertEquals(expectedCode, modelCode);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testService()
     {
@@ -128,7 +150,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testServiceWithEmbeddedRuntime()
     {
-        test("###Service\n" +
+        testFrom("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
@@ -179,7 +201,67 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n");
+                "}\n", "serviceWithEmbeddedRuntime.json");
+
+        testTo("serviceWithEmbeddedRuntime.json",
+                "###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      mappings:\n" +
+                "      [\n" +
+                "        meta::myMapping222\n" +
+                "      ];\n" +
+                "      connectionPointerStores:\n" +
+                "      [\n" +
+                "        test::myConnection:\n" +
+                "        [\n" +
+                "          ModelStore\n" +
+                "        ],\n" +
+                "        meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2:\n" +
+                "        [\n" +
+                "          ModelStore\n" +
+                "        ],\n" +
+                "        meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3:\n" +
+                "        [\n" +
+                "          ModelStore\n" +
+                "        ]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n"
+        );
     }
 
     @Test
@@ -232,27 +314,19 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    mapping: meta::myMapping;\n" +
                 "    runtime:\n" +
                 "    #{\n" +
-                "      connections:\n" +
+                "      connectionPointerStores:\n" +
                 "      [\n" +
-                "        ModelStore:\n" +
+                "        test::myConnection:\n" +
                 "        [\n" +
-                "          id1: test::myConnection,\n" +
-                "          id2:\n" +
-                "          #{\n" +
-                "            JsonModelConnection\n" +
-                "            {\n" +
-                "              class: meta::mySimpleClass;\n" +
-                "              url: 'my_url';\n" +
-                "            }\n" +
-                "          }#,\n" +
-                "          id3:\n" +
-                "          #{\n" +
-                "            JsonModelConnection\n" +
-                "            {\n" +
-                "              class: meta::mySimpleClass;\n" +
-                "              url: 'my_url';\n" +
-                "            }\n" +
-                "          }#\n" +
+                "          ModelStore\n" +
+                "        ],\n" +
+                "        meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2:\n" +
+                "        [\n" +
+                "          ModelStore\n" +
+                "        ],\n" +
+                "        meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3:\n" +
+                "        [\n" +
+                "          ModelStore\n" +
                 "        ]\n" +
                 "      ];\n" +
                 "    }#;\n" +
@@ -266,6 +340,20 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
                 "    ];\n" +
                 "  }\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
                 "}\n";
         testFormat(formatted, unformatted);
     }
@@ -1315,7 +1403,71 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ];\n" +
                 "}\n");
 
-        test("###Service\n" +
+        testFormat("###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping1;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping2;\n" +
+                "        runtime: test::myRuntime2;\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    PROD:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping3;\n" +
+                "        runtime: test::myRuntime3;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping4;\n" +
+                "        runtime:\n" +
+                "        #{\n" +
+                "          connectionPointerStores:\n" +
+                "          [\n" +
+                "            test::myConnection:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ],\n" +
+                "            test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid2:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ],\n" +
+                "            test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid3:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ]\n" +
+                "          ];\n" +
+                "        }#;\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid2\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid3\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n",
+                "###Service\n" +
                 "ExecutionEnvironment test::executionEnvironment\n" +
                 "{\n" +
                 "  executions:\n" +
@@ -1378,7 +1530,107 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testExecutionEnvironmentInMultiExecService()
     {
-        test("###Service\n" +
+        testFormat("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: env: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->get($env, 'abc'))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping1;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping2;\n" +
+                "        runtime: test::myRuntime2;\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    PROD:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping3;\n" +
+                "        runtime: test::myRuntime3;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping4;\n" +
+                "        runtime:\n" +
+                "        #{\n" +
+                "          connectionPointerStores:\n" +
+                "          [\n" +
+                "            test::myConnection:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ],\n" +
+                "            test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid2:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ],\n" +
+                "            test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid3:\n" +
+                "            [\n" +
+                "              ModelStore\n" +
+                "            ]\n" +
+                "          ];\n" +
+                "        }#;\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid2\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection test::EmbeddedConnectionForPackageableElementexecutionEnvironmentUnderStoreModelStoreWithIdid3\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n",
+        "###Service\n" +
                 "Service meta::pure::myServiceMulti\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/{env}';\n" +

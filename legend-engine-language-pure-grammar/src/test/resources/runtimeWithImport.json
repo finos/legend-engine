@@ -1,0 +1,495 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "mySimpleClass",
+      "originalMilestonedProperties": [],
+      "package": "meta",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "propertyTypeSourceInformation": {
+            "endColumn": 14,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 9,
+            "startLine": 3
+          },
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 3
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 4,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "meta::goes",
+          "classSourceInformation": {
+            "endColumn": 13,
+            "endLine": 10,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 10
+          },
+          "id": "meta_goes",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "explodeProperty": false,
+              "property": {
+                "class": "meta::goes",
+                "property": "name",
+                "sourceInformation": {
+                  "endColumn": 8,
+                  "endLine": 12,
+                  "sourceId": "meta::mySimpleMapping",
+                  "startColumn": 5,
+                  "startLine": 12
+                }
+              },
+              "source": "meta_goes",
+              "sourceInformation": {
+                "endColumn": 14,
+                "endLine": 12,
+                "sourceId": "meta::mySimpleMapping",
+                "startColumn": 5,
+                "startLine": 12
+              },
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "string",
+                    "sourceInformation": {
+                      "endColumn": 14,
+                      "endLine": 12,
+                      "sourceId": "meta::mySimpleMapping",
+                      "startColumn": 11,
+                      "startLine": 12
+                    },
+                    "value": "hi"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 13,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 10
+          }
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "mySimpleMapping",
+      "package": "meta",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 14,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 8
+      },
+      "tests": []
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "model::firm::Person",
+        "classSourceInformation": {
+          "endColumn": 28,
+          "endLine": 20,
+          "sourceId": "",
+          "startColumn": 10,
+          "startLine": 20
+        },
+        "element": "ModelStore",
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 22,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 18
+        },
+        "url": "my_url"
+      },
+      "name": "mySimpleConnection",
+      "package": "meta",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 22,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 18
+      }
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "mySimpleClass",
+        "classSourceInformation": {
+          "endColumn": 30,
+          "endLine": 48,
+          "sourceId": "",
+          "startColumn": 18,
+          "startLine": 48
+        },
+        "sourceInformation": {
+          "endColumn": 9,
+          "endLine": 50,
+          "sourceId": "",
+          "startColumn": 9,
+          "startLine": 46
+        },
+        "url": "my_url"
+      },
+      "name": "EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid4",
+      "package": "meta",
+      "sourceInformation": {
+        "endColumn": 9,
+        "endLine": 50,
+        "sourceId": "",
+        "startColumn": 9,
+        "startLine": 46
+      }
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "meta::mySimpleClass",
+        "classSourceInformation": {
+          "endColumn": 36,
+          "endLine": 56,
+          "sourceId": "",
+          "startColumn": 18,
+          "startLine": 56
+        },
+        "sourceInformation": {
+          "endColumn": 9,
+          "endLine": 58,
+          "sourceId": "",
+          "startColumn": 9,
+          "startLine": 54
+        },
+        "url": "my_url"
+      },
+      "name": "EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid5",
+      "package": "meta",
+      "sourceInformation": {
+        "endColumn": 9,
+        "endLine": 58,
+        "sourceId": "",
+        "startColumn": 9,
+        "startLine": 54
+      }
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "ModelChainConnection",
+        "mappings": [
+          "mapping::MyMapping1",
+          "mapping::MyMapping2"
+        ],
+        "mappingsSourceInformation": {
+          "endColumn": 12,
+          "endLine": 67,
+          "sourceId": "",
+          "startColumn": 11,
+          "startLine": 64
+        },
+        "sourceInformation": {
+          "endColumn": 9,
+          "endLine": 68,
+          "sourceId": "",
+          "startColumn": 9,
+          "startLine": 62
+        }
+      },
+      "name": "EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid6",
+      "package": "meta",
+      "sourceInformation": {
+        "endColumn": 9,
+        "endLine": 68,
+        "sourceId": "",
+        "startColumn": 9,
+        "startLine": 62
+      }
+    },
+    {
+      "_type": "runtime",
+      "name": "mySimpleRuntime",
+      "package": "meta",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connectionPointerStores": [
+          {
+            "connectionPointer": {
+              "_type": "connectionPointer",
+              "connection": "test::connection",
+              "sourceInformation": {
+                "endColumn": 20,
+                "endLine": 35,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 35
+              }
+            },
+            "sourceInformation": {
+              "endColumn": 5,
+              "endLine": 38,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 35
+            },
+            "storePointers": [
+              {
+                "path": "ModelStore",
+                "sourceInformation": {
+                  "endColumn": 16,
+                  "endLine": 37,
+                  "sourceId": "",
+                  "startColumn": 7,
+                  "startLine": 37
+                },
+                "type": "STORE"
+              }
+            ]
+          },
+          {
+            "connectionPointer": {
+              "_type": "connectionPointer",
+              "connection": "meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid4",
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 50,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 46
+              }
+            },
+            "sourceInformation": {
+              "endColumn": 5,
+              "endLine": 70,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 42
+            },
+            "storePointers": [
+              {
+                "path": "ModelStore",
+                "sourceInformation": {
+                  "endColumn": 14,
+                  "endLine": 42,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 42
+                },
+                "type": "STORE"
+              }
+            ]
+          },
+          {
+            "connectionPointer": {
+              "_type": "connectionPointer",
+              "connection": "meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid5",
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 58,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 54
+              }
+            },
+            "sourceInformation": {
+              "endColumn": 5,
+              "endLine": 70,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 42
+            },
+            "storePointers": [
+              {
+                "path": "ModelStore",
+                "sourceInformation": {
+                  "endColumn": 14,
+                  "endLine": 42,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 42
+                },
+                "type": "STORE"
+              }
+            ]
+          },
+          {
+            "connectionPointer": {
+              "_type": "connectionPointer",
+              "connection": "meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithIdid6",
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 68,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 62
+              }
+            },
+            "sourceInformation": {
+              "endColumn": 5,
+              "endLine": 70,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 42
+            },
+            "storePointers": [
+              {
+                "path": "ModelStore",
+                "sourceInformation": {
+                  "endColumn": 14,
+                  "endLine": 42,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 42
+                },
+                "type": "STORE"
+              }
+            ]
+          }
+        ],
+        "connections": [],
+        "mappings": [
+          {
+            "path": "mySimpleMapping",
+            "sourceInformation": {
+              "endColumn": 19,
+              "endLine": 31,
+              "sourceId": "",
+              "startColumn": 5,
+              "startLine": 31
+            },
+            "type": "MAPPING"
+          }
+        ],
+        "sourceInformation": {
+          "endColumn": 1,
+          "endLine": 72,
+          "sourceId": "",
+          "startColumn": 1,
+          "startLine": 27
+        }
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 72,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 27
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::mySimpleClass"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 7,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::mySimpleMapping"
+          ],
+          "imports": [],
+          "parserName": "Mapping",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 17,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 8
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::mySimpleConnection"
+          ],
+          "imports": [],
+          "parserName": "Connection",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 25,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 18
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::mySimpleRuntime"
+          ],
+          "imports": [
+            "meta"
+          ],
+          "parserName": "Runtime",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 74,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 26
+          }
+        }
+      ]
+    }
+  ]
+}

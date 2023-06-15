@@ -1,0 +1,607 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "meta::mySimpleClass",
+        "classSourceInformation": {
+          "endColumn": 40,
+          "endLine": 26,
+          "sourceId": "",
+          "startColumn": 22,
+          "startLine": 26
+        },
+        "sourceInformation": {
+          "endColumn": 13,
+          "endLine": 28,
+          "sourceId": "",
+          "startColumn": 13,
+          "startLine": 24
+        },
+        "url": "my_url"
+      },
+      "name": "EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2",
+      "package": "meta::pure",
+      "sourceInformation": {
+        "endColumn": 13,
+        "endLine": 28,
+        "sourceId": "",
+        "startColumn": 13,
+        "startLine": 24
+      }
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "meta::mySimpleClass",
+        "classSourceInformation": {
+          "endColumn": 40,
+          "endLine": 34,
+          "sourceId": "",
+          "startColumn": 22,
+          "startLine": 34
+        },
+        "sourceInformation": {
+          "endColumn": 13,
+          "endLine": 36,
+          "sourceId": "",
+          "startColumn": 13,
+          "startLine": 32
+        },
+        "url": "my_url"
+      },
+      "name": "EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3",
+      "package": "meta::pure",
+      "sourceInformation": {
+        "endColumn": 13,
+        "endLine": 36,
+        "sourceId": "",
+        "startColumn": 13,
+        "startLine": 32
+      }
+    },
+    {
+      "_type": "service",
+      "autoActivateUpdates": true,
+      "documentation": "this is just for context",
+      "execution": {
+        "_type": "pureSingleExecution",
+        "func": {
+          "_type": "lambda",
+          "body": [
+            {
+              "_type": "property",
+              "parameters": [
+                {
+                  "_type": "var",
+                  "name": "src",
+                  "sourceInformation": {
+                    "endColumn": 55,
+                    "endLine": 9,
+                    "sourceId": "",
+                    "startColumn": 52,
+                    "startLine": 9
+                  }
+                }
+              ],
+              "property": "a",
+              "sourceInformation": {
+                "endColumn": 57,
+                "endLine": 9,
+                "sourceId": "",
+                "startColumn": 57,
+                "startLine": 9
+              }
+            }
+          ],
+          "parameters": [
+            {
+              "_type": "var",
+              "class": "meta::transform::tests::Address",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "name": "src",
+              "sourceInformation": {
+                "endColumn": 47,
+                "endLine": 9,
+                "sourceId": "",
+                "startColumn": 17,
+                "startLine": 9
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 57,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 51,
+            "startLine": 9
+          }
+        },
+        "mapping": "meta::myMapping",
+        "mappingSourceInformation": {
+          "endColumn": 28,
+          "endLine": 10,
+          "sourceId": "",
+          "startColumn": 14,
+          "startLine": 10
+        },
+        "runtime": {
+          "_type": "engineRuntime",
+          "connectionPointerStores": [
+            {
+              "connectionPointer": {
+                "_type": "connectionPointer",
+                "connection": "test::myConnection",
+                "sourceInformation": {
+                  "endColumn": 33,
+                  "endLine": 21,
+                  "sourceId": "",
+                  "startColumn": 16,
+                  "startLine": 21
+                }
+              },
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 38,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 19
+              },
+              "storePointers": [
+                {
+                  "path": "ModelStore",
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 19
+                  },
+                  "type": "STORE"
+                }
+              ]
+            },
+            {
+              "connectionPointer": {
+                "_type": "connectionPointer",
+                "connection": "meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid2",
+                "sourceInformation": {
+                  "endColumn": 13,
+                  "endLine": 28,
+                  "sourceId": "",
+                  "startColumn": 13,
+                  "startLine": 24
+                }
+              },
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 38,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 19
+              },
+              "storePointers": [
+                {
+                  "path": "ModelStore",
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 19
+                  },
+                  "type": "STORE"
+                }
+              ]
+            },
+            {
+              "connectionPointer": {
+                "_type": "connectionPointer",
+                "connection": "meta::pure::EmbeddedConnectionForPackageableElementmyServiceSingleUnderStoreModelStoreWithIdid3",
+                "sourceInformation": {
+                  "endColumn": 13,
+                  "endLine": 36,
+                  "sourceId": "",
+                  "startColumn": 13,
+                  "startLine": 32
+                }
+              },
+              "sourceInformation": {
+                "endColumn": 9,
+                "endLine": 38,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 19
+              },
+              "storePointers": [
+                {
+                  "path": "ModelStore",
+                  "sourceInformation": {
+                    "endColumn": 18,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 9,
+                    "startLine": 19
+                  },
+                  "type": "STORE"
+                }
+              ]
+            }
+          ],
+          "connections": [],
+          "mappings": [
+            {
+              "path": "meta::myMapping222",
+              "sourceInformation": {
+                "endColumn": 26,
+                "endLine": 15,
+                "sourceId": "",
+                "startColumn": 9,
+                "startLine": 15
+              },
+              "type": "MAPPING"
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 39,
+            "sourceId": "",
+            "startColumn": 7,
+            "startLine": 13
+          }
+        },
+        "sourceInformation": {
+          "endColumn": 3,
+          "endLine": 41,
+          "sourceId": "",
+          "startColumn": 14,
+          "startLine": 7
+        }
+      },
+      "name": "myServiceSingle",
+      "owners": [],
+      "package": "meta::pure",
+      "pattern": "url/myUrl/",
+      "postValidations": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 51,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "test": {
+        "_type": "singleExecutionTest",
+        "asserts": [
+          {
+            "assert": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "size",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "func",
+                              "function": "cast",
+                              "parameters": [
+                                {
+                                  "_type": "property",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "res",
+                                      "sourceInformation": {
+                                        "endColumn": 38,
+                                        "endLine": 47,
+                                        "sourceId": "",
+                                        "startColumn": 35,
+                                        "startLine": 47
+                                      }
+                                    }
+                                  ],
+                                  "property": "values",
+                                  "sourceInformation": {
+                                    "endColumn": 45,
+                                    "endLine": 47,
+                                    "sourceId": "",
+                                    "startColumn": 40,
+                                    "startLine": 47
+                                  }
+                                },
+                                {
+                                  "_type": "genericTypeInstance",
+                                  "fullPath": "TabularDataSet",
+                                  "sourceInformation": {
+                                    "endColumn": 67,
+                                    "endLine": 47,
+                                    "sourceId": "",
+                                    "startColumn": 54,
+                                    "startLine": 47
+                                  }
+                                }
+                              ],
+                              "sourceInformation": {
+                                "endColumn": 51,
+                                "endLine": 47,
+                                "sourceId": "",
+                                "startColumn": 48,
+                                "startLine": 47
+                              }
+                            }
+                          ],
+                          "property": "rows",
+                          "sourceInformation": {
+                            "endColumn": 73,
+                            "endLine": 47,
+                            "sourceId": "",
+                            "startColumn": 70,
+                            "startLine": 47
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 79,
+                        "endLine": 47,
+                        "sourceId": "",
+                        "startColumn": 76,
+                        "startLine": 47
+                      }
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 86,
+                        "endLine": 47,
+                        "sourceId": "",
+                        "startColumn": 86,
+                        "startLine": 47
+                      },
+                      "value": 1
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 84,
+                    "endLine": 47,
+                    "sourceId": "",
+                    "startColumn": 83,
+                    "startLine": 47
+                  }
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "class": "Result<Any|*>",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "name": "res",
+                  "sourceInformation": {
+                    "endColumn": 30,
+                    "endLine": 47,
+                    "sourceId": "",
+                    "startColumn": 18,
+                    "startLine": 47
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 86,
+                "endLine": 47,
+                "sourceId": "",
+                "startColumn": 34,
+                "startLine": 47
+              }
+            },
+            "parametersValues": [],
+            "sourceInformation": {
+              "endColumn": 88,
+              "endLine": 47,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 47
+            }
+          },
+          {
+            "assert": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "equal",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "size",
+                      "parameters": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "func",
+                              "function": "cast",
+                              "parameters": [
+                                {
+                                  "_type": "property",
+                                  "parameters": [
+                                    {
+                                      "_type": "var",
+                                      "name": "res",
+                                      "sourceInformation": {
+                                        "endColumn": 38,
+                                        "endLine": 48,
+                                        "sourceId": "",
+                                        "startColumn": 35,
+                                        "startLine": 48
+                                      }
+                                    }
+                                  ],
+                                  "property": "values",
+                                  "sourceInformation": {
+                                    "endColumn": 45,
+                                    "endLine": 48,
+                                    "sourceId": "",
+                                    "startColumn": 40,
+                                    "startLine": 48
+                                  }
+                                },
+                                {
+                                  "_type": "genericTypeInstance",
+                                  "fullPath": "TabularDataSet",
+                                  "sourceInformation": {
+                                    "endColumn": 67,
+                                    "endLine": 48,
+                                    "sourceId": "",
+                                    "startColumn": 54,
+                                    "startLine": 48
+                                  }
+                                }
+                              ],
+                              "sourceInformation": {
+                                "endColumn": 51,
+                                "endLine": 48,
+                                "sourceId": "",
+                                "startColumn": 48,
+                                "startLine": 48
+                              }
+                            }
+                          ],
+                          "property": "rows",
+                          "sourceInformation": {
+                            "endColumn": 73,
+                            "endLine": 48,
+                            "sourceId": "",
+                            "startColumn": 70,
+                            "startLine": 48
+                          }
+                        }
+                      ],
+                      "sourceInformation": {
+                        "endColumn": 79,
+                        "endLine": 48,
+                        "sourceId": "",
+                        "startColumn": 76,
+                        "startLine": 48
+                      }
+                    },
+                    {
+                      "_type": "integer",
+                      "sourceInformation": {
+                        "endColumn": 86,
+                        "endLine": 48,
+                        "sourceId": "",
+                        "startColumn": 86,
+                        "startLine": 48
+                      },
+                      "value": 1
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 84,
+                    "endLine": 48,
+                    "sourceId": "",
+                    "startColumn": 83,
+                    "startLine": 48
+                  }
+                }
+              ],
+              "parameters": [
+                {
+                  "_type": "var",
+                  "class": "Result<Any|*>",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "name": "res",
+                  "sourceInformation": {
+                    "endColumn": 30,
+                    "endLine": 48,
+                    "sourceId": "",
+                    "startColumn": 18,
+                    "startLine": 48
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 86,
+                "endLine": 48,
+                "sourceId": "",
+                "startColumn": 34,
+                "startLine": 48
+              }
+            },
+            "parametersValues": [],
+            "sourceInformation": {
+              "endColumn": 88,
+              "endLine": 48,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 48
+            }
+          }
+        ],
+        "data": "moreThanData",
+        "sourceInformation": {
+          "endColumn": 3,
+          "endLine": 50,
+          "sourceId": "",
+          "startColumn": 9,
+          "startLine": 42
+        }
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "importAware",
+          "elements": [
+            "meta::pure::myServiceSingle"
+          ],
+          "imports": [],
+          "parserName": "Service",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 53,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

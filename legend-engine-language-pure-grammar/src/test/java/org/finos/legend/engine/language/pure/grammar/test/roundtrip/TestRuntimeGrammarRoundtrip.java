@@ -79,7 +79,8 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testRuntimeWithImport()
     {
-        testWithSectionInfoPreserved("Class meta::mySimpleClass\n" +
+
+        testFormat("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
@@ -115,42 +116,105 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  [\n" +
                 "    ModelStore:\n" +
                 "    [\n" +
-                "      id3: test::connection,\n" +
-                "      id4:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: mySimpleClass;\n" +
-                "          url: 'my_url';\n" +
-                "        }\n" +
-                "      }#,\n" +
-                "      id5:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: meta::mySimpleClass;\n" +
-                "          url: 'my_url';\n" +
-                "        }\n" +
-                "      }#,\n" +
-                "      id6:\n" +
-                "      #{\n" +
-                "        ModelChainConnection\n" +
-                "        {\n" +
-                "          mappings: [\n" +
-                "            mapping::MyMapping1,\n" +
-                "            mapping::MyMapping2\n" +
-                "          ];\n" +
-                "        }\n" +
-                "      }#\n" +
+                "      id4: meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid4,\n" +
+                "      id5: meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid5,\n" +
+                "      id6: meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid6\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n");
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid4\n" +
+                "{\n" +
+                "  class: mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid5\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection meta::EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid6\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    mapping::MyMapping1,\n" +
+                "    mapping::MyMapping2\n" +
+                "  ];\n" +
+                "}\n",
+                "Class meta::mySimpleClass\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping meta::mySimpleMapping\n" +
+                        "(\n" +
+                        "  *meta::goes[meta_goes]: Pure\n" +
+                        "  {\n" +
+                        "    name: 'hi'\n" +
+                        "  }\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "###Connection\n" +
+                        "JsonModelConnection meta::mySimpleConnection\n" +
+                        "{\n" +
+                        "  class: model::firm::Person;\n" +
+                        "  url: 'my_url';\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Runtime\n" +
+                        "import meta::*;\n" +
+                        "Runtime meta::mySimpleRuntime\n" +
+                        "{\n" +
+                        "  mappings:\n" +
+                        "  [\n" +
+                        "    mySimpleMapping\n" +
+                        "  ];\n" +
+                        "  connections:\n" +
+                        "  [\n" +
+                        "    ModelStore:\n" +
+                        "    [\n" +
+                        "      id4:\n" +
+                        "      #{\n" +
+                        "        JsonModelConnection\n" +
+                        "        {\n" +
+                        "          class: mySimpleClass;\n" +
+                        "          url: 'my_url';\n" +
+                        "        }\n" +
+                        "      }#,\n" +
+                        "      id5:\n" +
+                        "      #{\n" +
+                        "        JsonModelConnection\n" +
+                        "        {\n" +
+                        "          class: meta::mySimpleClass;\n" +
+                        "          url: 'my_url';\n" +
+                        "        }\n" +
+                        "      }#,\n" +
+                        "      id6:\n" +
+                        "      #{\n" +
+                        "        ModelChainConnection\n" +
+                        "        {\n" +
+                        "          mappings: [\n" +
+                        "            mapping::MyMapping1,\n" +
+                        "            mapping::MyMapping2\n" +
+                        "          ];\n" +
+                        "        }\n" +
+                        "      }#\n" +
+                        "    ]\n" +
+                        "  ];\n" +
+                        "}\n");
     }
 
     @Test
     public void testQuotedRuntime()
     {
-        test("Class meta::mySimpleClass\n" +
+        testFormat("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
@@ -175,6 +239,7 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "\n" +
                 "\n" +
                 "###Runtime\n" +
+                "import meta::*;\n" +
                 "Runtime meta::mySimpleRuntime\n" +
                 "{\n" +
                 "  mappings:\n" +
@@ -191,34 +256,104 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    'Model Store':\n" +
                 "    [\n" +
                 "      id3: test::connection,\n" +
-                "      id4:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: mySimpleClass;\n" +
-                "          url: 'my_url';\n" +
-                "        }\n" +
-                "      }#,\n" +
-                "      id5:\n" +
-                "      #{\n" +
-                "        JsonModelConnection\n" +
-                "        {\n" +
-                "          class: meta::mySimpleClass;\n" +
-                "          url: 'my_url';\n" +
-                "        }\n" +
-                "      }#,\n" +
-                "      id6:\n" +
-                "      #{\n" +
-                "        ModelChainConnection\n" +
-                "        {\n" +
-                "          mappings: [\n" +
-                "            mapping::MyMapping1,\n" +
-                "            mapping::MyMapping2\n" +
-                "          ];\n" +
-                "        }\n" +
-                "      }#\n" +
+                "      id4: meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid4',\n" +
+                "      id5: meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid5',\n" +
+                "      id6: meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid6'\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n");
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid4'\n" +
+                "{\n" +
+                "  class: mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid5'\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection meta::'EmbeddedConnectionForPackageableElementmySimpleRuntimeUnderStoreModelStoreWithOriginalIdid6'\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    mapping::MyMapping1,\n" +
+                "    mapping::MyMapping2\n" +
+                "  ];\n" +
+                "}\n",
+                "Class meta::mySimpleClass\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping meta::mySimpleMapping\n" +
+                        "(\n" +
+                        "  *meta::goes[meta_goes]: Pure\n" +
+                        "  {\n" +
+                        "    name: 'hi'\n" +
+                        "  }\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "###Connection\n" +
+                        "JsonModelConnection meta::mySimpleConnection\n" +
+                        "{\n" +
+                        "  class: model::firm::Person;\n" +
+                        "  url: 'my_url';\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Runtime\n" +
+                        "import meta::*;\n" +
+                        "Runtime meta::mySimpleRuntime\n" +
+                        "{\n" +
+                        "  mappings:\n" +
+                        "  [\n" +
+                        "    mySimpleMapping\n" +
+                        "  ];\n" +
+                        "  connections:\n" +
+                        "  [\n" +
+                        "    'my Store':\n" +
+                        "    [\n" +
+                        "      'id 1': 'my Simple Connection',\n" +
+                        "      'id 2': test::'a connection'\n" +
+                        "    ],\n" +
+                        "    'Model Store':\n" +
+                        "    [\n" +
+                        "      id3: test::connection,\n" +
+                        "      id4:\n" +
+                        "      #{\n" +
+                        "        JsonModelConnection\n" +
+                        "        {\n" +
+                        "          class: mySimpleClass;\n" +
+                        "          url: 'my_url';\n" +
+                        "        }\n" +
+                        "      }#,\n" +
+                        "      id5:\n" +
+                        "      #{\n" +
+                        "        JsonModelConnection\n" +
+                        "        {\n" +
+                        "          class: meta::mySimpleClass;\n" +
+                        "          url: 'my_url';\n" +
+                        "        }\n" +
+                        "      }#,\n" +
+                        "      id6:\n" +
+                        "      #{\n" +
+                        "        ModelChainConnection\n" +
+                        "        {\n" +
+                        "          mappings: [\n" +
+                        "            mapping::MyMapping1,\n" +
+                        "            mapping::MyMapping2\n" +
+                        "          ];\n" +
+                        "        }\n" +
+                        "      }#\n" +
+                        "    ]\n" +
+                        "  ];\n" +
+                        "}\n");
     }
 }

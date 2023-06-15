@@ -120,7 +120,7 @@ public class ServiceParseTreeWalker
         service.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
-        service.execution = this.visitExecution(execContext);
+        service.execution = this.visitExecution(execContext, service);
         // test suites
         // TODO: this should be marked required when every service is migrated
         ServiceParserGrammar.ServiceTestSuitesContext testSuitesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSuites(), "testSuites", service.sourceInformation);
@@ -269,7 +269,7 @@ public class ServiceParseTreeWalker
         });
     }
 
-    private Execution visitExecution(ServiceParserGrammar.ServiceExecContext ctx)
+    private Execution visitExecution(ServiceParserGrammar.ServiceExecContext ctx, PackageableElement parentPackageableElement)
     {
         if (ctx.singleExec() != null)
         {
@@ -288,7 +288,7 @@ public class ServiceParseTreeWalker
             {
                 pureSingleExecution.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
                 pureSingleExecution.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
-                pureSingleExecution.runtime = this.visitRuntime(runtimeContext);
+                pureSingleExecution.runtime = this.visitRuntime(runtimeContext, parentPackageableElement);
             }
             else if (mappingContext == null && runtimeContext == null)
             {
@@ -326,14 +326,14 @@ public class ServiceParseTreeWalker
             {
                 // execution parameters (indexed by execution key)
                 PureGrammarParserUtility.validateAndExtractRequiredField(pureMultiExecContext.execKey(), "key", pureMultiExecution.sourceInformation);
-                pureMultiExecution.executionParameters = ListIterate.collect(pureMultiExecContext.execParameter(), this::visitKeyedExecutionParameter);
+                pureMultiExecution.executionParameters = Lists.mutable.ofAll(pureMultiExecContext.execParameter()).collect(entry -> visitKeyedExecutionParameter(entry, parentPackageableElement));
             }
             return pureMultiExecution;
         }
         throw new UnsupportedOperationException();
     }
 
-    private Runtime visitRuntime(ServiceParserGrammar.ServiceRuntimeContext serviceRuntimeContext)
+    private Runtime visitRuntime(ServiceParserGrammar.ServiceRuntimeContext serviceRuntimeContext, PackageableElement parentPackageableElement)
     {
         if (serviceRuntimeContext.runtimePointer() != null)
         {
@@ -361,12 +361,12 @@ public class ServiceParseTreeWalker
             int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + serviceRuntimeContext.embeddedRuntime().ISLAND_OPEN().getSymbol().getCharPositionInLine() + serviceRuntimeContext.embeddedRuntime().ISLAND_OPEN().getText().length();
             ParseTreeWalkerSourceInformation embeddedRuntimeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
             SourceInformation embeddedRuntimeSourceInformation = walkerSourceInformation.getSourceInformation(serviceRuntimeContext.embeddedRuntime());
-            return runtimeParser.parseEmbeddedRuntime(embeddedRuntimeParsingText, embeddedRuntimeWalkerSourceInformation, embeddedRuntimeSourceInformation);
+            return runtimeParser.parseEmbeddedRuntime(embeddedRuntimeParsingText, embeddedRuntimeWalkerSourceInformation, embeddedRuntimeSourceInformation, parentPackageableElement, this.elementConsumer);
         }
         throw new UnsupportedOperationException();
     }
 
-    private KeyedExecutionParameter visitKeyedExecutionParameter(ServiceParserGrammar.ExecParameterContext ctx)
+    private KeyedExecutionParameter visitKeyedExecutionParameter(ServiceParserGrammar.ExecParameterContext ctx, PackageableElement parentPackageableElement)
     {
         KeyedExecutionParameter keyedExecutionParameter = new KeyedExecutionParameter();
         keyedExecutionParameter.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
@@ -378,7 +378,7 @@ public class ServiceParseTreeWalker
         keyedExecutionParameter.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
         // runtime
         ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceRuntime(), "runtime", keyedExecutionParameter.sourceInformation);
-        keyedExecutionParameter.runtime = this.visitRuntime(runtimeContext);
+        keyedExecutionParameter.runtime = this.visitRuntime(runtimeContext, parentPackageableElement);
         return keyedExecutionParameter;
     }
 
@@ -527,11 +527,11 @@ public class ServiceParseTreeWalker
         List<ServiceParserGrammar.ExecParamsContext> execEnvCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.executions().execParams(), "executions", walkerSourceInformation.getSourceInformation(ctx.executions()));
         if (execEnvCtxList.stream().anyMatch(x -> x.singleExecEnv() != null))
         {
-            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitSingleExecutionParameters(execEnvContext.singleExecEnv()));
+            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitSingleExecutionParameters(execEnvContext.singleExecEnv(), execEnv));
         }
         else if (execEnvCtxList.stream().anyMatch(x -> x.multiExecEnv() != null))
         {
-            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitMultiExecutionParameters(execEnvContext.multiExecEnv()));
+            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitMultiExecutionParameters(execEnvContext.multiExecEnv(), execEnv));
         }
         else
         {
@@ -540,7 +540,7 @@ public class ServiceParseTreeWalker
         return execEnv;
     }
 
-    private SingleExecutionParameters visitSingleExecutionParameters(ServiceParserGrammar.SingleExecEnvContext ctx)
+    private SingleExecutionParameters visitSingleExecutionParameters(ServiceParserGrammar.SingleExecEnvContext ctx, PackageableElement owningPackageableElement)
     {
         SingleExecutionParameters singleExecParams = new SingleExecutionParameters();
         singleExecParams.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
@@ -550,16 +550,16 @@ public class ServiceParseTreeWalker
         singleExecParams.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
         // runtime
         ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceRuntime()), "runtime", singleExecParams.sourceInformation);
-        singleExecParams.runtime = this.visitRuntime(runtimeContext);
+        singleExecParams.runtime = this.visitRuntime(runtimeContext, owningPackageableElement);
         return singleExecParams;
     }
 
-    private MultiExecutionParameters visitMultiExecutionParameters(ServiceParserGrammar.MultiExecEnvContext ctx)
+    private MultiExecutionParameters visitMultiExecutionParameters(ServiceParserGrammar.MultiExecEnvContext ctx, PackageableElement parentPackageableElement)
     {
         MultiExecutionParameters multiExecParams = new MultiExecutionParameters();
         multiExecParams.masterKey = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         List<ServiceParserGrammar.SingleExecEnvContext> singleExecCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.singleExecEnv(), "executions", walkerSourceInformation.getSourceInformation(ctx));
-        multiExecParams.singleExecutionParameters = ListIterate.collect(singleExecCtxList, this::visitSingleExecutionParameters);
+        multiExecParams.singleExecutionParameters = Lists.mutable.ofAll(singleExecCtxList).collect(entry -> visitSingleExecutionParameters(entry, parentPackageableElement));
         return multiExecParams;
     }
 }

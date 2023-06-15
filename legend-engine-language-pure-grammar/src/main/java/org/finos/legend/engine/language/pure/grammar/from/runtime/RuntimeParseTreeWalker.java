@@ -24,11 +24,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -77,11 +76,11 @@ public class RuntimeParseTreeWalker
         });
         // connections (optional)
         RuntimeParserGrammar.ConnectionsContext connectionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connections(), "connections", runtime.sourceInformation);
-        this.addConnectionsByStore(connectionsContext, runtime.runtimeValue);
+        this.addConnectionsByStore(connectionsContext, runtime.runtimeValue, runtime, this.elementConsumer);
         return runtime;
     }
 
-    private void addConnectionsByStore(RuntimeParserGrammar.ConnectionsContext connectionsContext, EngineRuntime engineRuntime)
+    private void addConnectionsByStore(RuntimeParserGrammar.ConnectionsContext connectionsContext, EngineRuntime engineRuntime, PackageableElement parentPackageableElement, Consumer<PackageableElement> parentElementConsumer)
     {
         if (connectionsContext != null)
         {
@@ -106,13 +105,13 @@ public class RuntimeParseTreeWalker
                     IdentifiedConnection identifiedConnection = new IdentifiedConnection();
                     identifiedConnection.sourceInformation = walkerSourceInformation.getSourceInformation(identifiedConnectionContext);
                     identifiedConnection.id = PureGrammarParserUtility.fromIdentifier(identifiedConnectionContext.identifier());
+                    ConnectionPointer connectionPointer = new ConnectionPointer();
+                    identifiedConnection.connection = connectionPointer;
                     if (identifiedConnectionContext.connectionPointer() != null)
                     {
                         RuntimeParserGrammar.ConnectionPointerContext connectionPointerContext = identifiedConnectionContext.connectionPointer();
-                        ConnectionPointer connectionPointer = new ConnectionPointer();
                         connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(connectionPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionPointerContext.qualifiedName().packagePath().identifier(), connectionPointerContext.qualifiedName().identifier());
                         connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionPointerContext.qualifiedName());
-                        identifiedConnection.connection = connectionPointer;
                     }
                     else if (identifiedConnectionContext.embeddedConnection() != null)
                     {
@@ -130,7 +129,17 @@ public class RuntimeParseTreeWalker
                         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + embeddedConnectionContext.ISLAND_OPEN().getSymbol().getText().length();
                         ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
                         SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(embeddedConnectionContext);
-                        identifiedConnection.connection = this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
+                        Connection connection = this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
+
+                        PackageableConnection packageableConnection = new PackageableConnection();
+                        packageableConnection.connectionValue = connection;
+                        packageableConnection.sourceInformation = connection.sourceInformation;
+                        packageableConnection._package = parentPackageableElement._package;
+                        packageableConnection.name = "EmbeddedConnectionForPackageableElement" + parentPackageableElement.name + "UnderStore" + storeConnectionsContext.qualifiedName().identifier().getText().replaceAll("[ ']", "") + "WithOriginalId" + PureGrammarParserUtility.fromIdentifier(identifiedConnectionContext.identifier());
+                        parentElementConsumer.accept(packageableConnection);
+
+                        connectionPointer.connection = packageableConnection._package + "::" + packageableConnection.name;
+                        connectionPointer.sourceInformation = packageableConnection.sourceInformation;
                     }
                     else
                     {
@@ -148,7 +157,7 @@ public class RuntimeParseTreeWalker
         }
     }
 
-    public EngineRuntime visitEmbeddedRuntime(RuntimeParserGrammar.EmbeddedRuntimeContext ctx, SourceInformation sourceInformation)
+    public EngineRuntime visitEmbeddedRuntime(RuntimeParserGrammar.EmbeddedRuntimeContext ctx, SourceInformation sourceInformation, PackageableElement parentPackageableElement, Consumer<PackageableElement> parentElementConsumer)
     {
         EngineRuntime engineRuntime = new EngineRuntime();
         if (ctx == null || ctx.children == null)
@@ -175,7 +184,7 @@ public class RuntimeParseTreeWalker
         }
         // connections (optional)
         RuntimeParserGrammar.ConnectionsContext connectionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connections(), "connections", engineRuntime.sourceInformation);
-        this.addConnectionsByStore(connectionsContext, engineRuntime);
+        this.addConnectionsByStore(connectionsContext, engineRuntime, parentPackageableElement, parentElementConsumer);
         return engineRuntime;
     }
 }

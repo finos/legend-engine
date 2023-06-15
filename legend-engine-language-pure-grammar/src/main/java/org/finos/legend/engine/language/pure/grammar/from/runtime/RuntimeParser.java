@@ -91,10 +91,10 @@ public class RuntimeParser implements DEPRECATED_SectionGrammarParser
         return section;
     }
 
-    public EngineRuntime parseEmbeddedRuntime(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
+    public EngineRuntime parseEmbeddedRuntime(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PackageableElement owningElement, Consumer<PackageableElement> elementConsumer)
     {
         SourceCodeParserInfo sectionParserInfo = this.getParserInfo(code, null, walkerSourceInformation, false);
         RuntimeParseTreeWalker walker = new RuntimeParseTreeWalker(walkerSourceInformation, null, null, this.connectionParser);
-        return walker.visitEmbeddedRuntime(((RuntimeParserGrammar) sectionParserInfo.parser).embeddedRuntime(), sourceInformation);
+        return walker.visitEmbeddedRuntime(((RuntimeParserGrammar) sectionParserInfo.parser).embeddedRuntime(), sourceInformation, owningElement, elementConsumer);
     }
 }
