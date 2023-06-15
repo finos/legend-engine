@@ -99,29 +99,21 @@ public class LegendTdsClient implements LegendExecutionClient
     protected JsonNode executeQueryApi(String query)
     {
         LOGGER.info("executing query " + query);
-        String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString";
-        HttpPost req = new HttpPost(uri);
-
-        StringEntity stringEntity = new StringEntity(query, UTF_8);
-        stringEntity.setContentType(TEXT_PLAIN);
-        req.setEntity(stringEntity);
-
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-             CloseableHttpResponse res = client.execute(req))
-        {
-            return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        String apiPath = "/api/sql/v1/execution/executeQueryString";
+        return executeApi(query, apiPath);
     }
 
 
     protected JsonNode executeSchemaApi(String query)
     {
         LOGGER.info("executing schema query " + query);
-        String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/getSchemaFromQueryString";
+        String apiPath = "/api/sql/v1/execution/getSchemaFromQueryString";
+        return executeApi(query, apiPath);
+    }
+
+    private JsonNode executeApi(String query, String apiPath)
+    {
+        String uri = protocol + "://" + this.host + ":" + this.port + apiPath;
         HttpPost req = new HttpPost(uri);
 
         StringEntity stringEntity = new StringEntity(query, UTF_8);
