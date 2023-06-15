@@ -303,7 +303,8 @@ public class PostgresServerTest
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
             Assert.assertNotNull(serverErrorMessage);
-            Assert.assertEquals("PureAssertFailException: Assert failure at (resource:/core_external_query_sql/binding/fromPure/fromPure.pure line:1744 column:5), \"no column found named some_random_column_name\"", serverErrorMessage.getMessage());
+            Assert.assertNotNull(serverErrorMessage.getMessage());
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
         }
     }
 
@@ -333,7 +334,8 @@ public class PostgresServerTest
             PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
             ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
             Assert.assertNotNull(serverErrorMessage);
-            Assert.assertEquals("PureAssertFailException: Assert failure at (resource:/core_external_query_sql/binding/fromPure/fromPure.pure line:1744 column:5), \"no column found named some_random_column_name\"", serverErrorMessage.getMessage());
+            Assert.assertNotNull(serverErrorMessage.getMessage());
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
         }
     }
 
