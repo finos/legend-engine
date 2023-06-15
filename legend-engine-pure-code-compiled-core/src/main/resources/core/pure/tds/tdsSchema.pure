@@ -48,7 +48,9 @@ Class meta::pure::tds::schema::SchemaState[
       assertEmpty($colNamesToRestrict->removeAll($this.columns.name), | 'Columns ' + $colNamesToRestrict->joinStrings('[', ',', ']') + ' must in in existing schema ' + $this.columns.name->joinStrings('[', ',', ']'));
       assertNotEmpty($colNamesToRestrict);
 
-      ^$this(columns = $colNamesToRestrict->map(r | $this.columns->filter(c|$c.name == $r))->toOneMany()->resetColumnOffsets());
+      let columns = $colNamesToRestrict->map(r | $this.columns->filter(c|$c.name == $r))->toOneMany()->resetColumnOffsets();
+
+      ^$this(columns = $columns);
    } : SchemaState[1];
 
    extend(additionalColumns : TDSColumn[1..*])
