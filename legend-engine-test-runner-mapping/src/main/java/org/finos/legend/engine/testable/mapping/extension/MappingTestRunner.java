@@ -250,11 +250,11 @@ public class MappingTestRunner implements TestRunner
             {
                 // We want to read streaming results only once
                 StreamingResult streamingResult = (StreamingResult) result;
-                result = new ConstantResult((streamingResult.flush(streamingResult.getSerializer(SerializationFormat.PURE))));
+                result = new ConstantResult((streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW))));
             }
             for (TestAssertion assertion : mappingTest.assertions)
             {
-                assertionStatusList.add(assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.PURE)));
+                assertionStatusList.add(assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW)));
             }
             TestExecuted testResult = new TestExecuted(assertionStatusList);
             testResult.atomicTestId = mappingTest.id;

@@ -279,6 +279,7 @@ public class TestMappingTestRunner
 
 
 
+
     @Test
     public void testMappingTestSuiteForM2MUsecase()
     {
@@ -370,7 +371,6 @@ public class TestMappingTestRunner
         Assert.assertEquals("test2", test2.atomicTestId);
         Assert.assertEquals(1, test2.assertStatuses.size());
         Assert.assertEquals(TestExecutionStatus.FAIL, test2.testExecutionStatus);
-
     }
 
 
