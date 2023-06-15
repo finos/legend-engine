@@ -38,6 +38,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 public class PostgresServerTest
 {
@@ -276,6 +278,35 @@ public class PostgresServerTest
         }
     }
 
+    @Test
+    public void testUnknownService() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnknownColumn() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertEquals("PureAssertFailException: Assert failure at (resource:/core_external_query_sql/binding/fromPure/fromPure.pure line:1744 column:5), \"no column found named some_random_column_name\"", serverErrorMessage.getMessage());
+        }
+    }
 
     @AfterClass
     public static void tearDown()

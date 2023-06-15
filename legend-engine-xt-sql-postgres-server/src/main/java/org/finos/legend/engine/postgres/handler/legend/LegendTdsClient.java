@@ -18,12 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
-import org.apache.http.client.CookieStore;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -35,8 +30,18 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 public class LegendTdsClient implements LegendExecutionClient
 {
@@ -62,7 +67,7 @@ public class LegendTdsClient implements LegendExecutionClient
         if (jsonNode.get("columns") != null)
         {
             ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
         }
         return Collections.emptyList();
     }
@@ -94,27 +99,19 @@ public class LegendTdsClient implements LegendExecutionClient
     protected JsonNode executeQueryApi(String query)
     {
         LOGGER.info("executing query " + query);
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()))
+        String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString";
+        HttpPost req = new HttpPost(uri);
+
+        StringEntity stringEntity = new StringEntity(query, UTF_8);
+        stringEntity.setContentType(TEXT_PLAIN);
+        req.setEntity(stringEntity);
+
+        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+             CloseableHttpResponse res = client.execute(req))
         {
-            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString";
-            HttpPost req = new HttpPost(uri);
-
-            StringEntity stringEntity = new StringEntity(query);
-            stringEntity.setContentType("text/plain");
-            req.setEntity(stringEntity);
-
-            try (CloseableHttpResponse res = client.execute(req))
-            {
-                JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
-                if (res.getStatusLine().getStatusCode() != 200)
-                {
-                    String message = "Failed to execute query " + query + "\n Cause: " + response.toPrettyString();
-                    LOGGER.info(message);
-                }
-                return response;
-            }
+            return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -199,5 +196,52 @@ public class LegendTdsClient implements LegendExecutionClient
         }
         return Collections.emptyList();
     }
+
+    protected static JsonNode handleResponse(String query, Callable<InputStream> responseContentSupplier, Supplier<Integer> responseStatusCodeSupplier)
+    {
+        String errorResponse = null;
+        try
+        {
+            InputStream in = responseContentSupplier.call();
+            if (responseStatusCodeSupplier.get() == 200)
+            {
+                return mapper.readTree(in);
+            }
+            else
+            {
+                errorResponse = IOUtils.toString(in, UTF_8);
+                ExceptionError exceptionError = mapper.readValue(errorResponse, ExceptionError.class);
+                String errorMessage;
+                if ("error".equalsIgnoreCase(exceptionError.status))
+                {
+                    errorMessage = exceptionError.getMessage();
+                    LOGGER.error("Failed to execute query: [{}], trace: [{}]", query, exceptionError.getTrace());
+                }
+                else
+                {
+                    errorMessage = String.format("Status: [%s], Response: [%s]", in, exceptionError);
+                }
+                throw new LegendTdsClientException(errorMessage);
+            }
+        }
+        catch (Exception e)
+        {
+            if (e instanceof LegendTdsClientException)
+            {
+                throw (LegendTdsClientException) e;
+            }
+            else
+            {
+                String message = String.format("Unable to parse json. Execution API response status[%s]", responseStatusCodeSupplier.get());
+                if (responseStatusCodeSupplier.get() != 200)
+                {
+                    message = String.format("%s, response: [%s]", message, errorResponse);
+                }
+                throw new LegendTdsClientException(message);
+            }
+
+        }
+    }
+
 
 }

@@ -27,6 +27,7 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.postgres.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -329,7 +330,7 @@ public class Session implements AutoCloseable
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw ExceptionUtil.wrapException(e);
         }
     }
 

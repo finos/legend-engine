@@ -18,20 +18,14 @@ package org.finos.legend.engine.postgres.handler.legend;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.dropwizard.testing.junit.ResourceTestRule;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
 
 public class LegendTdsTestClient extends LegendTdsClient
 {
@@ -52,20 +46,7 @@ public class LegendTdsTestClient extends LegendTdsClient
     {
         Invocation.Builder builder = resourceTestRule.target("sql/v1/execution/executeQueryString").request();
         Response response = builder.post(Entity.text(query));
-        String responseString = response.readEntity(String.class);
-
-        if (response.getStatus() != 200)
-        {
-            LOGGER.error(String.format("Status: [%s], Response: [%s]", response.getStatusInfo(), responseString));
-        }
-        try
-        {
-            return mapper.readValue(responseString, JsonNode.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return handleResponse(query, () -> (InputStream) response.getEntity(), response::getStatus);
     }
 
     @Override
