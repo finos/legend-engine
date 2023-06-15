@@ -121,27 +121,19 @@ public class LegendTdsClient implements LegendExecutionClient
     protected JsonNode executeSchemaApi(String query)
     {
         LOGGER.info("executing schema query " + query);
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()))
+        String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/getSchemaFromQueryString";
+        HttpPost req = new HttpPost(uri);
+
+        StringEntity stringEntity = new StringEntity(query, UTF_8);
+        stringEntity.setContentType(TEXT_PLAIN);
+        req.setEntity(stringEntity);
+
+        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+             CloseableHttpResponse res = client.execute(req))
         {
-            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/getSchemaFromQueryString";
-            HttpPost req = new HttpPost(uri);
-
-            StringEntity stringEntity = new StringEntity(query);
-            stringEntity.setContentType("text/plain");
-            req.setEntity(stringEntity);
-
-            try (CloseableHttpResponse res = client.execute(req))
-            {
-                JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
-                if (res.getStatusLine().getStatusCode() != 200)
-                {
-                    String message = "Failed to execute schema query " + query + "\n Cause: " + response.toPrettyString();
-                    LOGGER.info(message);
-                }
-                return response;
-            }
+            return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

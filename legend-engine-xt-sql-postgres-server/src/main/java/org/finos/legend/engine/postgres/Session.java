@@ -209,7 +209,7 @@ public class Session implements AutoCloseable
                 }
                 catch (Exception e)
                 {
-                    throw new RuntimeException(e);
+                    throw ExceptionUtil.wrapException(e);
                 }
             default:
                 throw new AssertionError("Unsupported type: " + type);
