@@ -102,7 +102,7 @@ Mapping meta::pure::graphFetch::tests::XStore::milestoning::TradeLinkageMapping
 import meta::pure::graphFetch::tests::XStore::milestoning::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::runtime::*;
-
+import meta::pure::executionPlan::profiles::*;
 
 function meta::pure::graphFetch::tests::XStore::milestoning::runtime():Runtime[1]
 {
