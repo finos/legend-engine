@@ -35,6 +35,11 @@ public class ExceptionError
     private SourceInformation sourceInformation;
     private EngineErrorType errorType;
 
+    public ExceptionError()
+    {
+        // DO NOT DELETE: this resets the default constructor for Jackson
+    }
+
     ExceptionError(int code, String message)
     {
         this.status = "error";

@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.query.sql.api.CatchAllExceptionMapper;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.sources.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -75,6 +76,7 @@ public class SqlExecuteTest
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
                 .addResource(new MockPac4jFeature())
+                .addResource(new CatchAllExceptionMapper())
                 .build();
         return Tuples.pair(pureModel,resources);
     }
