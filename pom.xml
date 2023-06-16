@@ -108,6 +108,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
+        <module>legend-engine-xt-relationalStore-h2-1.4.200-execution</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
@@ -305,7 +306,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.7</legend.pure.version>
+        <legend.pure.version>4.5.8</legend.pure.version>
         <legend.shared.version>0.23.7</legend.shared.version>
 
         <!-- SONAR -->
