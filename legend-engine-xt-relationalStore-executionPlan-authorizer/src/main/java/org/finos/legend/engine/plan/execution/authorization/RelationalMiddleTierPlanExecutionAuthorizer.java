@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
@@ -215,15 +217,47 @@ public class RelationalMiddleTierPlanExecutionAuthorizer implements PlanExecutio
         }
     }
 
+    private void collectSQLExecutionNodes(ExecutionNode executionNode, MutableList<SQLExecutionNode> sqlExecutionNodes )
+    {
+        if (executionNode == null)
+        {
+            return;
+        }
+        if (executionNode instanceof SQLExecutionNode)
+        {
+            sqlExecutionNodes.add((SQLExecutionNode)executionNode);
+            return;
+        }
+        if (executionNode instanceof GlobalGraphFetchExecutionNode)
+        {
+            GlobalGraphFetchExecutionNode ggfe = (GlobalGraphFetchExecutionNode) executionNode;
+            if (ggfe.children != null)
+            {
+                ListIterate.forEach(ggfe.children, c -> this.collectSQLExecutionNodes(c, sqlExecutionNodes));
+            }
+            this.collectSQLExecutionNodes(ggfe.localGraphFetchExecutionNode, sqlExecutionNodes);
+        }
+        else if (executionNode instanceof LocalGraphFetchExecutionNode)
+        {
+            LocalGraphFetchExecutionNode lgfe = (LocalGraphFetchExecutionNode) executionNode;
+            if (lgfe.executionNodes != null)
+            {
+                ListIterate.forEach(lgfe.executionNodes, c -> this.collectSQLExecutionNodes(c, sqlExecutionNodes));
+            }
+        }
+        else if (executionNode.executionNodes != null)
+        {
+            ListIterate.forEach(executionNode.executionNodes, e -> collectSQLExecutionNodes(e, sqlExecutionNodes));
+        }
+    }
+
     private MutableList<RelationalDatabaseConnection> findNodesWithMiddleTierAuthConnections(SingleExecutionPlan executionPlan)
     {
         List<ExecutionNode> rootExecutionNodes = executionPlan.rootExecutionNode.executionNodes;
-        MutableList<ExecutionNode> childExecutionNodes = ListIterate.flatCollect(rootExecutionNodes, executionNode -> executionNode.executionNodes);
-        MutableList<ExecutionNode> allExecutionNodes = Lists.mutable.withAll(rootExecutionNodes);
-        allExecutionNodes.addAll(childExecutionNodes);
-        MutableList<RelationalDatabaseConnection> nodesWithMiddleTierConnections = allExecutionNodes
-                .select(node -> node instanceof SQLExecutionNode)
-                .collect(node -> (SQLExecutionNode) node)
+        MutableList<SQLExecutionNode> sqlExecutionNodes = Lists.mutable.empty();
+        rootExecutionNodes.forEach(e -> this.collectSQLExecutionNodes(e, sqlExecutionNodes));
+
+        MutableList<RelationalDatabaseConnection> nodesWithMiddleTierConnections = sqlExecutionNodes
                 .select(sqlExecutionNode -> sqlExecutionNode.connection instanceof RelationalDatabaseConnection)
                 .collect(sqlExecutionNode -> (RelationalDatabaseConnection) sqlExecutionNode.connection)
                 .select(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy);
@@ -261,13 +295,10 @@ public class RelationalMiddleTierPlanExecutionAuthorizer implements PlanExecutio
     private boolean isMiddleTierPlanImpl(SingleExecutionPlan executionPlan)
     {
         List<ExecutionNode> rootExecutionNodes = executionPlan.rootExecutionNode.executionNodes;
-        MutableList<ExecutionNode> childExecutionNodes = ListIterate.flatCollect(rootExecutionNodes, executionNode -> executionNode.executionNodes);
-        MutableList<ExecutionNode> allExecutionNodes = Lists.mutable.withAll(rootExecutionNodes);
-        allExecutionNodes.addAll(childExecutionNodes);
+        MutableList<SQLExecutionNode> sqlExecutionNodes = Lists.mutable.empty();
+        rootExecutionNodes.forEach(e -> this.collectSQLExecutionNodes(e, sqlExecutionNodes));
 
-        MutableList<MiddleTierUserNamePasswordAuthenticationStrategy> middleTierUserNamePasswordAuthenticationStrategies = allExecutionNodes
-                .select(node -> node instanceof SQLExecutionNode)
-                .collect(node -> (SQLExecutionNode) node)
+        MutableList<MiddleTierUserNamePasswordAuthenticationStrategy> middleTierUserNamePasswordAuthenticationStrategies = sqlExecutionNodes
                 .select(sqlExecutionNode -> sqlExecutionNode.connection instanceof RelationalDatabaseConnection)
                 .collect(sqlExecutionNode -> (RelationalDatabaseConnection) sqlExecutionNode.connection)
                 .select(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
