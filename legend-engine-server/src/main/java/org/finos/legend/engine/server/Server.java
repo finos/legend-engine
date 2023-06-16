@@ -76,6 +76,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
+import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
@@ -147,7 +148,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     public static void main(String[] args) throws Exception
     {
         EngineUrlStreamHandlerFactory.initialize();
-        new Server().run(args.length == 0 ? new String[]{"server", "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
+        new Server().run(args.length == 0 ? new String[] {"server", "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json"} : args);
     }
 
     @Override
@@ -373,7 +374,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,PUT,POST,DELETE,OPTIONS");
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_TIMING_ORIGINS_PARAM, "*");
-        corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Access-Control-Allow-Credentials,x-b3-parentspanid,x-b3-sampled,x-b3-spanid,x-b3-traceid");
+        corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Access-Control-Allow-Credentials,x-b3-parentspanid,x-b3-sampled,x-b3-spanid,x-b3-traceid," + RequestContextHelper.LEGEND_REQUEST_ID);
         corsFilter.setInitParameter(CrossOriginFilter.CHAIN_PREFLIGHT_PARAM, "false");
         corsFilter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "*");
     }
