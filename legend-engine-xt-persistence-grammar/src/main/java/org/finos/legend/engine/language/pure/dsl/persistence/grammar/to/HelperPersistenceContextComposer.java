@@ -23,10 +23,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ConnectionValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.parameter.ConnectionValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.parameter.PrimitiveTypeValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.parameter.ServiceParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.parameter.ServiceParameterValue;
 
 import java.util.List;
 

@@ -14,8 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
@@ -24,19 +23,38 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Snapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.AnyVersion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersionForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersionForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
@@ -79,32 +97,53 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PersistenceParseTreeWalker
 {
+    private enum DatasetTypeEnum
+    {
+        GRAPH_FETCH, TDS
+    }
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final List<Function<TriggerSourceCode, Trigger>> triggerProcessors;
+    private final List<Function<PersistenceTargetSourceCode, PersistenceTarget>> targetProcessors;
     private final PureGrammarParserContext context;
 
     private final PersistenceContextParseTreeWalker persistenceContextWalker;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, PersistenceContextParseTreeWalker persistenceContextWalker, PureGrammarParserContext context)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, List<Function<PersistenceTargetSourceCode, PersistenceTarget>> targetProcessors, PersistenceContextParseTreeWalker persistenceContextWalker, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.triggerProcessors = triggerProcessors;
+        this.targetProcessors = targetProcessors;
         this.context = context;
         this.persistenceContextWalker = persistenceContextWalker;
     }
@@ -153,15 +192,21 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", persistence.sourceInformation);
         persistence.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
 
-        // persister
-        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
-        persistence.persister = visitPersister(persisterContext);
+        // service output targets (optional)
+        PersistenceParserGrammar.ServiceOutputTargetsContext serviceOutputTargetsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOutputTargets(), "serviceOutputTargets", persistence.sourceInformation);
+        persistence.serviceOutputTargets = serviceOutputTargetsContext == null ? Collections.emptyList() : ListIterate.collect(serviceOutputTargetsContext.serviceOutputTarget(), this::visitServiceOutputTarget);
 
-        // notifier
+        //TODO: ledav -- remove once v2 is rolled out | START
+        // persister (optional)
+        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persister(), "persister", persistence.sourceInformation);
+        persistence.persister = persisterContext == null ? null : visitPersister(persisterContext);
+        //TODO: ledav -- remove once v2 is rolled out | END
+
+        // notifier (optional)
         PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
         persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
 
-        // test
+        // test (optional)
         PersistenceParserGrammar.TestsContext persistenceTestsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tests(), "tests", persistence.sourceInformation);
         persistence.tests = persistenceTestsContext == null ? null : ListIterate.collect(persistenceTestsContext.test(), this::visitPersistenceTest);
 
@@ -205,53 +250,464 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * persister
+     * service output targets
      **********/
 
-    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
+    private ServiceOutputTarget visitServiceOutputTarget(PersistenceParserGrammar.ServiceOutputTargetContext ctx)
+    {
+        ServiceOutputTarget serviceOutputTarget = new ServiceOutputTarget();
+        serviceOutputTarget.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // service output
+        PersistenceParserGrammar.ServiceOutputContext serviceOutputContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceOutput()), "serviceOutput", serviceOutputTarget.sourceInformation);
+        serviceOutputTarget.serviceOutput = visitServiceOutput(serviceOutputContext);
+
+        // persistence target
+        //TODO: ledav -- delegate to extension
+        PersistenceParserGrammar.TargetContext targetContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.target()), "target", serviceOutputTarget.sourceInformation);
+        serviceOutputTarget.persistenceTarget = visitTarget(targetContext);
+
+        return serviceOutputTarget;
+    }
+
+    /**********
+     * service output
+     **********/
+
+    private ServiceOutput visitServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.streamingPersister() != null)
+
+        if (ctx.graphFetchServiceOutput() != null)
         {
-            return visitStreamingPersister(ctx.streamingPersister());
+            return visitGraphFetchServiceOutput(ctx.graphFetchServiceOutput(), sourceInformation);
         }
-        else if (ctx.batchPersister() != null)
+        else if (ctx.tdsServiceOutput() != null)
         {
-            return visitBatchPersister(ctx.batchPersister());
+            return visitTdsServiceOutput(ctx.tdsServiceOutput(), sourceInformation);
         }
-        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Ambiguous service output: expected reference to a TDS service output or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
+    private GraphFetchServiceOutput visitGraphFetchServiceOutput(PersistenceParserGrammar.GraphFetchServiceOutputContext ctx, SourceInformation sourceInformation)
     {
-        StreamingPersister persister = new StreamingPersister();
-        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        GraphFetchServiceOutput serviceOutput = new GraphFetchServiceOutput();
+        serviceOutput.sourceInformation = sourceInformation;
 
-        // sink
-        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
-        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+        // path
+        PersistenceParserGrammar.DslNavigationPathContext path = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.dslNavigationPath()), "path", sourceInformation);
+        serviceOutput.path = visitPath(path);
 
-        return persister;
+        // keys
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = visitGraphFetchDatasetKeys(datasetKeysContext);
+
+        // deduplication (optional)
+        PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
+        serviceOutput.deduplication = deduplicationContext == null ? null : visitDeduplication(DatasetTypeEnum.GRAPH_FETCH, deduplicationContext);
+
+        // dataset type
+        PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
+        serviceOutput.datasetType = visitDatasetType(DatasetTypeEnum.GRAPH_FETCH, datasetTypeContext);
+
+        return serviceOutput;
     }
 
-    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
+    private TdsServiceOutput visitTdsServiceOutput(PersistenceParserGrammar.TdsServiceOutputContext ctx, SourceInformation sourceInformation)
     {
-        BatchPersister persister = new BatchPersister();
-        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        TdsServiceOutput serviceOutput = new TdsServiceOutput();
+        serviceOutput.sourceInformation = sourceInformation;
 
-        // sink
-        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
-        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+        // keys
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = visitTdsDatasetKeys(datasetKeysContext);
 
-        // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", persister.sourceInformation);
-        persister.targetShape = visitTargetShape(targetShapeContext);
+        // deduplication (optional)
+        PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
+        serviceOutput.deduplication = deduplicationContext == null ? null : visitDeduplication(DatasetTypeEnum.TDS, deduplicationContext);
 
-        // ingest mode
-        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", persister.sourceInformation);
-        persister.ingestMode = visitIngestMode(ingestModeContext);
+        // dataset type
+        PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
+        serviceOutput.datasetType = visitDatasetType(DatasetTypeEnum.TDS, datasetTypeContext);
 
-        return persister;
+        return serviceOutput;
+    }
+
+    /**********
+     * target
+     **********/
+
+    private PersistenceTarget visitTarget(PersistenceParserGrammar.TargetContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.BRACE_OPEN() != null)
+        {
+            return null;
+        }
+        else if (ctx.targetSpecification() != null)
+        {
+            return visitTargetSpecification(ctx.targetSpecification());
+        }
+        throw new EngineException("Unrecognized target", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private PersistenceTarget visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
+    {
+        StringBuilder text = new StringBuilder();
+        PersistenceParserGrammar.TargetValueContext targetValueContext = ctx.targetValue();
+        if (targetValueContext != null)
+        {
+            for (PersistenceParserGrammar.TargetValueContentContext fragment : targetValueContext.targetValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String textToParse = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
+
+            // prepare island grammar walker source information
+            int startLine = targetValueContext.ISLAND_OPEN().getSymbol().getLine();
+            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+            // only add current walker source information column offset if this is the first line
+            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + targetValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + targetValueContext.ISLAND_OPEN().getSymbol().getText().length();
+            ParseTreeWalkerSourceInformation targetValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            SourceInformation targetValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistenceTargetSourceCode sourceCode = new PersistenceTargetSourceCode(textToParse, ctx.targetType().getText(), targetValueSourceInformation, targetValueWalkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, targetProcessors);
+        }
+        else
+        {
+            SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistenceTargetSourceCode sourceCode = new PersistenceTargetSourceCode(text.toString(), ctx.targetType().getText(), sourceInformation, walkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, targetProcessors);
+        }
+    }
+
+    private Path visitPath(ParserRuleContext ctx)
+    {
+        DomainParser parser = new DomainParser();
+        // prepare island grammar walker source information
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        String pathString = PureGrammarParserUtility.fromGrammarString("#" + ctx.getText() + "#", false);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(pathString, combineExpressionSourceInformation, null);
+        if (valueSpecification instanceof ClassInstance)
+        {
+            ClassInstance classInstance = (ClassInstance) valueSpecification;
+            if ("path".equals(classInstance.type))
+            {
+                return (Path) classInstance.value;
+            }
+        }
+        throw new EngineException("Unable to parse path [" + pathString + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private List<Path> visitGraphFetchDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
+    {
+        //TODO: ledav -- validate
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::dslNavigationPath)
+                .collect(this::visitPath)
+                .castToList();
+    }
+
+    private List<String> visitTdsDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
+    {
+        //TODO: ledav -- validate
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::identifier)
+                .collect(PureGrammarParserUtility::fromIdentifier)
+                .castToList();
+    }
+
+    private Deduplication visitDeduplication(DatasetTypeEnum datasetType, PersistenceParserGrammar.DeduplicationContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.deduplicationNone() != null)
+        {
+            return visitNoDeduplication(ctx.deduplicationNone());
+        }
+        else if (ctx.deduplicationAny() != null)
+        {
+            return visitAnyDeduplication(ctx.deduplicationAny());
+        }
+        else if (ctx.deduplicationMax() != null)
+        {
+            return visitMaxDeduplication(datasetType, ctx.deduplicationMax());
+        }
+        throw new EngineException("Unrecognized deduplication", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoDeduplication visitNoDeduplication(PersistenceParserGrammar.DeduplicationNoneContext ctx)
+    {
+        NoDeduplication deduplication = new NoDeduplication();
+        deduplication.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return deduplication;
+    }
+
+    private AnyVersion visitAnyDeduplication(PersistenceParserGrammar.DeduplicationAnyContext ctx)
+    {
+        AnyVersion deduplication = new AnyVersion();
+        deduplication.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return deduplication;
+    }
+
+    private MaxVersion visitMaxDeduplication(DatasetTypeEnum datasetType, PersistenceParserGrammar.DeduplicationMaxContext ctx)
+    {
+        if (datasetType == DatasetTypeEnum.GRAPH_FETCH)
+        {
+            return visitMaxDeduplicationForGraphFetch(ctx);
+        }
+        else if (datasetType == DatasetTypeEnum.TDS)
+        {
+            return visitMaxDeduplicationForTds(ctx);
+        }
+        throw new EngineException("Unrecognized max deduplication type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private MaxVersionForGraphFetch visitMaxDeduplicationForGraphFetch(PersistenceParserGrammar.DeduplicationMaxContext ctx)
+    {
+        MaxVersionForGraphFetch maxVersionForGraphFetch = new MaxVersionForGraphFetch();
+        maxVersionForGraphFetch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // version field
+        PersistenceParserGrammar.DeduplicationMaxVersionFieldContext versionFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationMaxVersionField(), "versionField", maxVersionForGraphFetch.sourceInformation);
+        maxVersionForGraphFetch.versionFieldPath = this.visitPath(versionFieldContext.serviceOutputValue().dslNavigationPath());
+
+        return maxVersionForGraphFetch;
+    }
+
+    private MaxVersionForTds visitMaxDeduplicationForTds(PersistenceParserGrammar.DeduplicationMaxContext ctx)
+    {
+        MaxVersionForTds maxVersionForTds = new MaxVersionForTds();
+        maxVersionForTds.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // version field
+        PersistenceParserGrammar.DeduplicationMaxVersionFieldContext versionFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationMaxVersionField(), "versionField", maxVersionForTds.sourceInformation);
+        maxVersionForTds.versionField = PureGrammarParserUtility.fromIdentifier(versionFieldContext.serviceOutputValue().identifier());
+
+        return maxVersionForTds;
+    }
+
+    private DatasetType visitDatasetType(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetTypeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.datasetSnapshot() != null)
+        {
+            return visitSnapshot(datasetType, ctx.datasetSnapshot());
+        }
+        else if (ctx.datasetDelta() != null)
+        {
+            return visitDelta(datasetType, ctx.datasetDelta());
+        }
+        throw new EngineException("Unrecognized dataset type", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private Snapshot visitSnapshot(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetSnapshotContext ctx)
+    {
+        Snapshot snapshot = new Snapshot();
+        snapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // partitioning (optional)
+        PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", snapshot.sourceInformation);
+        snapshot.partitioning = partitioningContext == null ? null : visitPartitioning(datasetType, partitioningContext);
+
+        return snapshot;
+    }
+
+    private Partitioning visitPartitioning(DatasetTypeEnum datasetType, PersistenceParserGrammar.PartitioningContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.partitioningNone() != null)
+        {
+            return visitNoPartitioning(ctx.partitioningNone());
+        }
+        else if (ctx.partitioningFieldBased() != null)
+        {
+            return visitFieldBasedPartitioning(datasetType, ctx.partitioningFieldBased());
+        }
+        throw new EngineException("Unrecognized partitioning", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoPartitioning visitNoPartitioning(PersistenceParserGrammar.PartitioningNoneContext ctx)
+    {
+        NoPartitioning partitioning = new NoPartitioning();
+        partitioning.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // empty dataset handling (optional)
+        PersistenceParserGrammar.EmptyDatasetHandlingContext emptyDatasetHandlingContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.emptyDatasetHandling(), "emptyDatasetHandling", partitioning.sourceInformation);
+        partitioning.emptyDatasetHandling = emptyDatasetHandlingContext == null ? null : visitEmptyDatasetHandling(emptyDatasetHandlingContext);
+
+        return partitioning;
+    }
+
+    private EmptyDatasetHandling visitEmptyDatasetHandling(PersistenceParserGrammar.EmptyDatasetHandlingContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.emptyDatasetHandlingNoOp() != null)
+        {
+            return visitNoOp(ctx.emptyDatasetHandlingNoOp());
+        }
+        else if (ctx.emptyDatasetHandlingDeleteTargetData() != null)
+        {
+            return visitDeleteTargetDataset(ctx.emptyDatasetHandlingDeleteTargetData());
+        }
+        throw new EngineException("Unrecognized empty dataset handling", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoOp visitNoOp(PersistenceParserGrammar.EmptyDatasetHandlingNoOpContext ctx)
+    {
+        NoOp emptyDatasetHandling = new NoOp();
+        emptyDatasetHandling.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return emptyDatasetHandling;
+    }
+
+    private DeleteTargetDataset visitDeleteTargetDataset(PersistenceParserGrammar.EmptyDatasetHandlingDeleteTargetDataContext ctx)
+    {
+        DeleteTargetDataset emptyDatasetHandling = new DeleteTargetDataset();
+        emptyDatasetHandling.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return emptyDatasetHandling;
+    }
+
+    private FieldBased visitFieldBasedPartitioning(DatasetTypeEnum datasetType, PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
+    {
+        if (datasetType == DatasetTypeEnum.GRAPH_FETCH)
+        {
+            return visitFieldBasedForGraphFetch(ctx);
+        }
+        else if (datasetType == DatasetTypeEnum.TDS)
+        {
+            return visitFieldBasedForTds(ctx);
+        }
+        throw new EngineException("Unrecognized field based partitioning", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private FieldBasedForGraphFetch visitFieldBasedForGraphFetch(PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
+    {
+        FieldBasedForGraphFetch fieldBasedForGraphFetch = new FieldBasedForGraphFetch();
+        fieldBasedForGraphFetch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", fieldBasedForGraphFetch.sourceInformation);
+        fieldBasedForGraphFetch.partitionFieldPaths = visitPartitionPathFields(partitionFieldsContext);
+        return fieldBasedForGraphFetch;
+    }
+
+    private FieldBasedForTds visitFieldBasedForTds(PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
+    {
+        FieldBasedForTds fieldBasedForTds = new FieldBasedForTds();
+        fieldBasedForTds.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", fieldBasedForTds.sourceInformation);
+        fieldBasedForTds.partitionFields = visitPartitionFields(partitionFieldsContext);
+        return fieldBasedForTds;
+    }
+
+    private List<Path> visitPartitionPathFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
+    {
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::dslNavigationPath)
+                .collect(this::visitPath)
+                .castToList();
+    }
+
+    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
+    {
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::identifier)
+                .collect(PureGrammarParserUtility::fromIdentifier)
+                .castToList();
+    }
+
+    private Delta visitDelta(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetDeltaContext ctx)
+    {
+        Delta delta = new Delta();
+        delta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // action indicator (optional)
+        PersistenceParserGrammar.ActionIndicatorContext actionIndicatorContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.actionIndicator(), "actionIndicator", delta.sourceInformation);
+        delta.actionIndicator = actionIndicatorContext == null ? null : visitActionIndicator(datasetType, actionIndicatorContext);
+
+        return delta;
+    }
+
+    private ActionIndicatorFields visitActionIndicator(DatasetTypeEnum datasetType, PersistenceParserGrammar.ActionIndicatorContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.noActionIndicator() != null)
+        {
+            return visitNoActionIndicator(ctx.noActionIndicator());
+        }
+        else if (ctx.deleteIndicator() != null)
+        {
+            return visitDeleteIndicator(datasetType, ctx.deleteIndicator());
+        }
+        throw new EngineException("Unrecognized action indicator", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoActionIndicator visitNoActionIndicator(PersistenceParserGrammar.NoActionIndicatorContext ctx)
+    {
+        NoActionIndicator actionIndicator = new NoActionIndicator();
+        actionIndicator.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return actionIndicator;
+    }
+
+    private DeleteIndicator visitDeleteIndicator(DatasetTypeEnum datasetType, PersistenceParserGrammar.DeleteIndicatorContext ctx)
+    {
+        if (datasetType == DatasetTypeEnum.GRAPH_FETCH)
+        {
+            return visitDeleteIndicatorForGraphFetch(ctx);
+        }
+        else if (datasetType == DatasetTypeEnum.TDS)
+        {
+            return visitDeleteIndicatorForTds(ctx);
+        }
+        throw new EngineException("Unrecognized delete indicator type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private DeleteIndicatorForGraphFetch visitDeleteIndicatorForGraphFetch(PersistenceParserGrammar.DeleteIndicatorContext ctx)
+    {
+        DeleteIndicatorForGraphFetch deleteIndicatorForGraphFetch = new DeleteIndicatorForGraphFetch();
+        deleteIndicatorForGraphFetch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // delete field
+        PersistenceParserGrammar.DeleteIndicatorFieldContext deleteIndicatorFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorField(), "deleteField", deleteIndicatorForGraphFetch.sourceInformation);
+        deleteIndicatorForGraphFetch.deleteFieldPath = this.visitPath(deleteIndicatorFieldContext.serviceOutputValue().dslNavigationPath());
+
+        // delete values
+        PersistenceParserGrammar.DeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorValues(), "deleteValues", deleteIndicatorForGraphFetch.sourceInformation);
+        deleteIndicatorForGraphFetch.deleteValues = visitDeleteValues(deleteIndicatorValuesContext);
+
+        return deleteIndicatorForGraphFetch;
+    }
+
+    private DeleteIndicatorForTds visitDeleteIndicatorForTds(PersistenceParserGrammar.DeleteIndicatorContext ctx)
+    {
+        DeleteIndicatorForTds deleteIndicatorForTds = new DeleteIndicatorForTds();
+        deleteIndicatorForTds.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // delete field
+        PersistenceParserGrammar.DeleteIndicatorFieldContext deleteIndicatorFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorField(), "deleteField", deleteIndicatorForTds.sourceInformation);
+        deleteIndicatorForTds.deleteField = PureGrammarParserUtility.fromIdentifier(deleteIndicatorFieldContext.serviceOutputValue().identifier());
+
+        // delete values
+        PersistenceParserGrammar.DeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorValues(), "deleteValues", deleteIndicatorForTds.sourceInformation);
+        deleteIndicatorForTds.deleteValues = visitDeleteValues(deleteIndicatorValuesContext);
+
+        return deleteIndicatorForTds;
+    }
+
+    private List<String> visitDeleteValues(PersistenceParserGrammar.DeleteIndicatorValuesContext ctx)
+    {
+        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
+        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
     }
 
     /**********
@@ -404,6 +860,58 @@ public class PersistenceParseTreeWalker
         return testAssertion;
     }
 
+    //TODO: ledav -- remove once v2 is rolled out | START
+
+    /**********
+     * persister
+     **********/
+
+    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.streamingPersister() != null)
+        {
+            return visitStreamingPersister(ctx.streamingPersister());
+        }
+        else if (ctx.batchPersister() != null)
+        {
+            return visitBatchPersister(ctx.batchPersister());
+        }
+        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
+    {
+        StreamingPersister persister = new StreamingPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+
+        return persister;
+    }
+
+    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
+    {
+        BatchPersister persister = new BatchPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", persister.sourceInformation);
+        persister.targetShape = visitTargetShape(targetShapeContext);
+
+        // ingest mode
+        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", persister.sourceInformation);
+        persister.ingestMode = visitIngestMode(ingestModeContext);
+
+        return persister;
+    }
+
     /**********
      * sink
      **********/
@@ -554,12 +1062,6 @@ public class PersistenceParseTreeWalker
         return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
     }
 
-    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
-    {
-        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
-        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
-    }
-
     private String visitModelClass(PersistenceParserGrammar.TargetModelClassContext ctx)
     {
         PersistenceParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
@@ -620,7 +1122,7 @@ public class PersistenceParseTreeWalker
 
         // version field
         PersistenceParserGrammar.DeduplicationMaxVersionFieldContext versionFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationMaxVersionField(), "versionField", deduplicationStrategy.sourceInformation);
-        deduplicationStrategy.versionField = PureGrammarParserUtility.fromIdentifier(versionFieldContext.identifier());
+        deduplicationStrategy.versionField = PureGrammarParserUtility.fromIdentifier(versionFieldContext.serviceOutputValue().identifier());
 
         return deduplicationStrategy;
     }
@@ -1078,4 +1580,6 @@ public class PersistenceParseTreeWalker
 
         return validityDerivation;
     }
+
+    //TODO: ledav -- remove once v2 is rolled out | END
 }

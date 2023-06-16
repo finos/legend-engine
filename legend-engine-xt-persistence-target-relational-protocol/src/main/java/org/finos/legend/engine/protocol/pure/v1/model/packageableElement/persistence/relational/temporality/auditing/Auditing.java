@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class ServiceParameter
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoAuditing.class)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = AuditingDateTime.class, name = "auditingDateTime"),
+    @JsonSubTypes.Type(value = NoAuditing.class, name = "noAuditing")
+})
+public abstract class Auditing
 {
-    public String name;
-    public ServiceParameterValue value;
     public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(AuditingVisitor<T> visitor);
 }

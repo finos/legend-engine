@@ -66,6 +66,10 @@
         <module>legend-engine-xt-persistence-cloud-protocol</module>
         <module>legend-engine-xt-persistence-cloud-pure</module>
 
+        <module>legend-engine-xt-persistence-target-relational-grammar</module>
+        <module>legend-engine-xt-persistence-target-relational-protocol</module>
+        <module>legend-engine-xt-persistence-target-relational-pure</module>
+
         <module>legend-engine-xt-mastery-grammar</module>
         <module>legend-engine-xt-mastery-protocol</module>
         <module>legend-engine-xt-mastery-pure</module>
@@ -1114,6 +1118,22 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = FieldBasedForGraphFetch.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PrimitiveTypeValue.class, name = "primitiveTypeValue"),
-        @JsonSubTypes.Type(value = ConnectionValue.class, name = "connectionValue")
+    @JsonSubTypes.Type(value = FieldBasedForGraphFetch.class, name = "fieldBasedForGraphFetch"),
+    @JsonSubTypes.Type(value = FieldBasedForTds.class, name = "fieldBasedForTds")
 })
-public abstract class ServiceParameterValue
+public abstract class FieldBased extends Partitioning
 {
+
+    @Override
+    public <T> T accept(PartitioningVisitor<T> visitor)
+    {
+        return visitor.visitFieldBased(this);
+    }
+
+    public abstract <T> T accept(FieldBasedVisitor<T> visitor);
 }

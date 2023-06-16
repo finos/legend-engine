@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-
-public class PrimitiveTypeValue extends ServiceParameterValue
+public interface SourceDerivedDimensionVisitor<T>
 {
-    public ValueSpecification primitiveType;
+    T visitSourceDerivedTime(SourceDerivedTime val);
 }

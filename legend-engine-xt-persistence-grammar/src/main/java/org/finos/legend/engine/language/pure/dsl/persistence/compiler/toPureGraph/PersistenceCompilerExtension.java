@@ -87,7 +87,14 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) context.pureModel.getOrCreatePackage(persistence._package)._children().detect(c -> persistence.name.equals(c._name()));
                             purePersistence._trigger(HelperPersistenceBuilder.buildTrigger(persistence.trigger, context));
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
-                            purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                            if (persistence.serviceOutputTargets != null)
+                            {
+                                purePersistence._serviceOutputTargets(ListIterate.collect(persistence.serviceOutputTargets, ot -> HelperPersistenceBuilder.buildServiceOutputTarget(ot, context)));
+                            }
+                            if (persistence.persister != null)
+                            {
+                                purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                            }
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
                             purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, purePersistence, context));
                         }

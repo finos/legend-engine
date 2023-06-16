@@ -44,6 +44,8 @@ import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.
 import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceComposerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.from.PersistenceRelationalParserExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.to.PersistenceRelationalComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
@@ -258,6 +260,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
@@ -300,6 +303,7 @@ public class TestExtensions
                 .with(MasteryParserExtension.class)
                 .with(PersistenceParserExtension.class)
                 .with(PersistenceCloudParserExtension.class)
+                .with(PersistenceRelationalParserExtension.class)
                 .with(RelationalGrammarParserExtension.class)
                 .with(ServiceParserExtension.class)
                 .with(AuthenticationGrammarParserExtension.class)
@@ -324,6 +328,7 @@ public class TestExtensions
                 .with(MasteryGrammarComposerExtension.class)
                 .with(PersistenceComposerExtension.class)
                 .with(PersistenceCloudComposerExtension.class)
+                .with(PersistenceRelationalComposerExtension.class)
                 .with(RelationalGrammarComposerExtension.class)
                 .with(BigQueryGrammarComposerExtension.class)
                 .with(SpannerGrammarComposerExtension.class)
@@ -354,6 +359,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph.MasteryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.persistence.relational.compiler.toPureGraph.PersistenceRelationalCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
@@ -449,6 +455,7 @@ public class TestExtensions
                 .with("core_external_language_daml")
                 .with("core_external_language_haskell")
                 .with("core_persistence_cloud")
+                .with("core_persistence_relational")
                 .with("core_relational")
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
