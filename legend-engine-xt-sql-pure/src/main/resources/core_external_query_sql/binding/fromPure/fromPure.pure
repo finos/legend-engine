@@ -1235,8 +1235,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair(Decimal, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
           pair(Date, |sfe(min_Date_MANY__Date_$0_1$_, $args)),
           pair(StrictDate, |sfe(min_StrictDate_MANY__StrictDate_$0_1$_, $args)),
-          pair(DateTime, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args)),
-          pair(String, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args))
+          pair(DateTime, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args))
         ]->getValue($type, | sfe(min_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
       }),
       processor('max', true, {args |
@@ -1252,8 +1251,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair(Decimal, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
           pair(Date, |sfe(max_Date_MANY__Date_$0_1$_, $args)),
           pair(StrictDate, |sfe(max_StrictDate_MANY__StrictDate_$0_1$_, $args)),
-          pair(DateTime, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args)),
-          pair(String, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args))
+          pair(DateTime, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args))
         ]->getValue($type, | sfe(max_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
       }),
 
