@@ -975,10 +975,10 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::changeD
 function <<access.private>> meta::relational::graphFetch::executionPlan::newVarsForMilestoningContext(propTree: RoutedPropertyGraphFetchTree[1], inScopeVars: Map<String, List<Any>>[1]):Pair<String, List<Any>>[*]
 {
   if($propTree.property->instanceOf(QualifiedProperty),
-                    | let qualifier    = $propTree.property->cast(@QualifiedProperty<Any>);
-                      $qualifier->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($propTree.parameters->evaluateAndDeactivate()->at($qualifier->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->evaluateAndDeactivate()->reactivate($inScopeVars)->evaluateAndDeactivate())));,
-                    | []
-                 );
+     | let qualifier = $propTree.property->cast(@QualifiedProperty<Any>);
+       $qualifier->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($propTree.parameters->evaluateAndDeactivate()->at($qualifier->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->evaluateAndDeactivate()->reactivate($inScopeVars)->evaluateAndDeactivate())));,
+     | []
+  );
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::milestoningContextFromPropertyTree(propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], state: State[1], extensions:Extension[*]):TemporalMilestoningContext[0..1]
