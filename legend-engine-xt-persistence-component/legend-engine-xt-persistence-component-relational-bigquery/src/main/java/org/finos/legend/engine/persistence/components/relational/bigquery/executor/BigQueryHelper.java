@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.constraints.columns.PKColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
@@ -38,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class BigQueryHelper implements RelationalExecutionHelper
 {
@@ -132,11 +134,12 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
     {
-        // TODO # 10: Fetch and validate primary keys, unique keys and indices
+        // TODO # 10: Fetch and validate unique keys and indices
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
 
         Table table = this.bigQuery.getTable(TableId.of(schema, name));
+        List<String> primaryKeysInDb = this.fetchPrimaryKeys(name, schema, dataset.datasetReference().database().orElse(null));
         FieldList dbFields = table.getDefinition().getSchema().getFields();
         List<Field> userFields = new ArrayList<>(dataset.schema().fields());
         List<Column> userColumns = convertUserProvidedFieldsToColumns(userFields, datatypeMapping);
@@ -162,6 +165,10 @@ public class BigQueryHelper implements RelationalExecutionHelper
             {
                 columnConstraints.add(new NotNullColumnConstraint());
             }
+            if (primaryKeysInDb.contains(columnName))
+            {
+                columnConstraints.add(new PKColumnConstraint());
+            }
 
             Column column = new Column(columnName, physicalDataType, columnConstraints, null);
             dbColumns.add(column);
@@ -173,7 +180,8 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
     {
-        // TODO # 9: Fetch and construct primary keys, unique keys and indices
+        // TODO # 9: Fetch and construct unique keys and indices
+        List<String> primaryKeysInDb = this.fetchPrimaryKeys(tableName, schemaName, databaseName);
         Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
 
         // Get all columns
@@ -191,11 +199,13 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
             // Construct constraints
             boolean nullable = !com.google.cloud.bigquery.Field.Mode.REQUIRED.equals(dbField.getMode());
+            boolean primaryKey = primaryKeysInDb.contains(columnName);
 
             Field field = Field.builder()
                     .name(columnName)
                     .type(fieldType)
                     .nullable(nullable)
+                    .primaryKey(primaryKey)
                     .build();
 
             fields.add(field);
@@ -205,6 +215,17 @@ public class BigQueryHelper implements RelationalExecutionHelper
                 .addAllFields(fields)
                 .build();
         return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
+    }
+
+    private List<String> fetchPrimaryKeys(String tableName, String schemaName, String databaseName)
+    {
+        String sql = databaseName == null ?
+                "select column_name from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'" :
+                "select column_name from {DATABASE_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'"
+                        .replace("{DATABASE_NAME}", databaseName);
+        sql = sql.replace("{SCHEMA_NAME}", schemaName).replace("{TABLE_NAME}", tableName);
+        List<Map<String, Object>> resultSet = this.executeQuery(sql);
+        return resultSet.stream().map(resultEntry -> (String) resultEntry.get("column_name")).collect(Collectors.toList());
     }
 
     public static void validateColumns(List<Column> userColumns, List<Column> dbColumns)
@@ -225,7 +246,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public static List<Column> convertUserProvidedFieldsToColumns(List<Field> userFields, DataTypeMapping datatypeMapping)
     {
-        // TODO # 11: Handle primary keys, unique keys and indices
+        // TODO # 11: Handle unique keys and indices
         List<Column> columnList = new ArrayList<>();
 
         for (Field f : userFields)
@@ -235,6 +256,10 @@ public class BigQueryHelper implements RelationalExecutionHelper
             if (!f.nullable() || f.primaryKey())
             {
                 columnConstraints.add(new NotNullColumnConstraint());
+            }
+            if (f.primaryKey())
+            {
+                columnConstraints.add(new PKColumnConstraint());
             }
             Column column = new Column(f.name(), dataType, columnConstraints, null);
             columnList.add(column);
