@@ -291,17 +291,62 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhereOperators():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testInAndNullOperators():Boolean[1]
 {
-  let sqlString = 'SELECT * FROM service."/service/service1" WHERE Integer = 1 OR Integer > 1 OR Integer < 1 OR Integer >= 1 OR Integer <= 1'
-                + ' OR Integer IN (1,2,3) OR Integer IS NULL OR Integer IS NOT NULL';
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE Integer IN (1,2,3) OR Integer IS NULL OR Integer IS NOT NULL';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->filter(row | ($row.getInteger('Integer') == 1) || ($row.getInteger('Integer') > 1) || ($row.getInteger('Integer') < 1)
-                    || ($row.getInteger('Integer') >= 1) || ($row.getInteger('Integer') <= 1) || ($row.getInteger('Integer')->in([1,2,3])
-                    || ($row.getInteger('Integer')->isEmpty()) || ($row.getInteger('Integer')->isNotEmpty())))
+      ->filter(row | $row.getInteger('Integer')->in([1,2,3]) || $row.getInteger('Integer')->isEmpty() || $row.getInteger('Integer')->isNotEmpty())
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsNumber():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE Integer > 1 OR Integer < 1 OR Integer >= 1 OR Integer <= 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getInteger('Integer') > 1) || ($row.getInteger('Integer') < 1) || ($row.getInteger('Integer') >= 1) || ($row.getInteger('Integer') <= 1))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsString():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE String > \'one\' OR String < \'one\' OR String >= \'one\' OR String <= \'one\'';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getString('String') > 'one') || ($row.getString('String') < 'one') || ($row.getString('String') >= 'one') || ($row.getString('String') <= 'one'))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsBoolean():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE Boolean > true OR Boolean < true OR Boolean >= false OR Boolean <= false';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getBoolean('Boolean') > true) || ($row.getBoolean('Boolean') < true) || ($row.getBoolean('Boolean') >= false) || ($row.getBoolean('Boolean') <= false))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsDate():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-01\' OR StrictDate <= CURRENT_DATE';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today()) || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') <= today()))
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -409,8 +454,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('minDate', row | $row.getStrictDate('StrictDate'), y | $y->min()),
           agg('minString', row | $row.getString('String'), y | $y->min()),
           agg('maxInt', row | $row.getInteger('Integer'), y | $y->max()),
-          agg('maxDate', row | $row.getStrictDate('StrictDate'), y | $y->max()),     
-          agg('maxString', row | $row.getString('String'), y | $y->max()),          
+          agg('maxDate', row | $row.getStrictDate('StrictDate'), y | $y->max()),
+          agg('maxString', row | $row.getString('String'), y | $y->max()),
           agg('stringAgg', row | $row.getString('String'), y | $y->joinStrings())
         ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'minInt', 'minDate', 'minString', 'maxInt', 'maxDate', 'maxString', 'stringAgg'])
       };
@@ -475,7 +520,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->extend([
-          col(row:TDSRow[1] | 'abc', 'abc'), 
+          col(row:TDSRow[1] | 'abc', 'abc'),
           col(row:TDSRow[1] | pi(), 'pi')
         ])
         ->groupBy(['abc', 'pi'], [
@@ -510,6 +555,25 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | cast($row.getInteger('Integer'), @Integer), 'expression')
         ])
       };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+//CAST
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateCasts():Boolean[1]
+{
+  let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constantDate", CAST(String AS DATE) AS "date", CAST(\'2023-01-01 10:01:01\' AS TIMESTAMP) AS "constantTimestamp", CAST(String AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->project([
+          col(row:TDSRow[1] | parseDate('2023-01-01'), 'constantDate'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
+          col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01'), 'constantTimestamp'),
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
+        ])
+      };
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -589,7 +653,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ]
         )
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //JOIN
@@ -607,7 +671,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               )->restrict(['Integer']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
         )->restrict('Integer')
       };
-  
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -695,7 +759,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //DATE_TRUNC
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateTrunc():Boolean[1]
 {
-  let sqlString = 'SELECT date_trunc(\'year\', StrictDate) AS "YEAR", date_trunc(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_trunc(\'month\', StrictDate) AS "MONTH", date_trunc(\'week\', StrictDate) AS "WEEK" FROM service."/service/service1"';
+  let sqlString = 'SELECT date_trunc(\'year\', StrictDate) AS "YEAR", date_trunc(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_trunc(\'month\', StrictDate) AS "MONTH", date_trunc(\'week\', StrictDate) AS "WEEK", date_trunc(\'day\', StrictDate) AS "DAY" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -707,7 +771,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | firstDayOfYear($row.getStrictDate('StrictDate')), 'YEAR'),
                 col(row:TDSRow[1] | firstDayOfQuarter(parseDate('2023-01-01')), 'QUARTER'),
                 col(row:TDSRow[1] | firstDayOfMonth($row.getStrictDate('StrictDate')), 'MONTH'),
-                col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK')
+                col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | datePart($row.getStrictDate('StrictDate')), 'DAY')
               ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -897,7 +962,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //WINDOW FUNCTIONS
@@ -1072,7 +1137,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT * FROM service."/service/service3"';
   let sqlTransformContext = $sqlString->processQuery();
-  let expected = {| 
+  let expected = {|
         let const = 123;
         FlatInput.all()->project(
         [

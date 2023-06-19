@@ -164,6 +164,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let schema = $query.columns.name;
 
   let expected = $querySpec.select.selectItems->filter(si | $si->instanceOf(SingleColumn))->cast(@SingleColumn)->map(s | extractNameFromSingleColumn($s));
+
   if ($schema != $expected && $expected->isNotEmpty(), | ^$query(expression = processRestrict($expected, $query)), | $query);
 }
 
@@ -332,13 +333,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   assert($window.orderBy->size() <= 1, | 'multiple window sort items not yet supported');
   assert($window.windowFrame->isEmpty(), | 'window frame not yet supported');
 
-  let func = processAggregationLambda(^$functionCall(window = []), Number, $context);
+  let func = processAggregationLambda(^$functionCall(window = []), TDSRow, $context);
 
   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression());
 
   let sort = $window.orderBy->map(si | $si->createSortItemFunction());
 
-  appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
+  appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_, [
     list(iv($partitions)), list(iv($sort)), list(iv($func)), list(iv($name))
   ]);
 }
@@ -968,14 +969,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug('processIsNullPredicate');
   let value = $n.value->processExpression($expContext, $context);
-  sfe(isEmpty_Any_MANY__Boolean_1_, $value);
+
+  sfe(isEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIsNotNullPredicate(n:IsNotNullPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug('processIsNotNullPredicate');
   let value = $n.value->processExpression($expContext, $context);
-  sfe(isNotEmpty_Any_MANY__Boolean_1_, $value);
+  sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInPredicate(i:InPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -1019,20 +1021,31 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let expression = processExpression($c.expression, $expContext, $context);
 
-  let func = [
-    pair('VARCHAR', toString_Any_1__String_1_),
-    pair('TEXT', toString_Any_1__String_1_),
-    pair('DATE', parseDate_String_1__Date_1_),
-    pair('INTEGER', parseInteger_String_1__Integer_1_),
-    pair('BIGINT', parseInteger_String_1__Integer_1_),
-    pair('DOUBLE', parseFloat_String_1__Float_1_),
-    pair('BOOLEAN', parseBoolean_String_1__Boolean_1_),
-    pair('NUMERIC', parseDecimal_String_1__Decimal_1_),
-    pair('DECIMAL', parseDecimal_String_1__Decimal_1_),
-    pair('TIMESTAMP', parseDate_String_1__Date_1_)
-  ]->getValue($c.type.name->toUpper());
+  [
+    pair('VARCHAR', | sfe(toString_Any_1__String_1_, $expression)),
+    pair('TEXT', | sfe(toString_Any_1__String_1_, $expression)),
+    pair('DATE', | processParseDate($expression)),
+    pair('INTEGER', | sfe(parseInteger_String_1__Integer_1_, $expression)),
+    pair('BIGINT', | sfe(parseInteger_String_1__Integer_1_, $expression)),
+    pair('DOUBLE', | sfe(parseFloat_String_1__Float_1_, $expression)),
+    pair('BOOLEAN', | sfe(parseBoolean_String_1__Boolean_1_, $expression)),
+    pair('NUMERIC', | sfe(parseDecimal_String_1__Decimal_1_, $expression)),
+    pair('DECIMAL', | sfe(parseDecimal_String_1__Decimal_1_, $expression)),
+    pair('TIMESTAMP', | processParseDate($expression))
+  ]->getValue($c.type.name->toUpper())->eval();
+}
 
-  sfe($func, $expression);
+//TODO revisit to fully push down
+function meta::external::query::sql::transformation::queryToPure::processParseDate(v:ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+  let value = if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(String),
+    | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
+      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]{3})?'),
+        | $string->replace(' ', 'T')->iv(),
+        | $v);,
+    | $v);
+
+  sfe(parseDate_String_1__Date_1_, $value);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCastAsCast(c:Cast[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -1128,6 +1141,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(column:TDSColumn[1], var:VariableExpression[1], context: SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
+
    let properties = newMap([
       pair(String, {x:TDSRow[1] | $x.getString('')}),
       pair(Integer, {x:TDSRow[1] | $x.getInteger('')}),
@@ -1224,7 +1238,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('distinct', distinct_T_MANY__T_MANY_, true),
       processor('min', true, {args |
         let type = $args->match([
-          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
           a:Any[*] | fail('Unsupported arg type'); Any;
         ]);
 
@@ -1240,7 +1254,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       processor('max', true, {args |
         let type = $args->match([
-          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
           a:Any[*] | fail('Unsupported arg type'); Any;
         ]);
 
@@ -1256,12 +1270,37 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
 
       //MATH
-      processor('abs', abs_Number_1__Number_1_, false),
+      processor('abs', false, {args |
+        let type = $args->match([
+          v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        let func = [
+          pair(Integer, abs_Integer_1__Integer_1_),
+          pair(Float, abs_Float_1__Float_1_),
+          pair(Decimal, abs_Decimal_1__Decimal_1_)
+        ]->getValue($type, abs_Number_1__Number_1_);
+
+        sfe($func, $args);
+      }),
       processor('acos', acos_Number_1__Float_1_, false),
       processor('asin', asin_Number_1__Float_1_, false),
       processor('atan', atan_Number_1__Float_1_, false),
       processor('atan2', atan2_Number_1__Number_1__Float_1_, false),
-      processor('avg', average_Number_MANY__Float_1_, true),
+      processor('avg', true, {args |
+        let type = $args->match([
+          v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        let func = [
+          pair(Integer, average_Integer_MANY__Float_1_),
+          pair(Float, average_Float_MANY__Float_1_)
+        ]->getValue($type, average_Number_MANY__Float_1_);
+
+        sfe($func, $args);
+      }),
       processor('ceil', ceiling_Number_1__Integer_1_, false),
       processor('ceiling', ceiling_Number_1__Integer_1_, false),
       processor('cos', cos_Number_1__Float_1_, false),
@@ -1284,14 +1323,26 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('stddev_pop', stdDevPopulation_Number_MANY__Number_1_, true),
       processor('stddev_samp', stdDevSample_Number_MANY__Number_1_, true),
       processor('stddev', stdDevSample_Number_MANY__Number_1_, true),
-      processor('sum', sum_Number_MANY__Number_1_, true),
+      processor('sum', true, {args |
+        let type = $args->match([
+          v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        let func = [
+          pair(Integer, sum_Integer_MANY__Integer_1_),
+          pair(Float, sum_Float_MANY__Float_1_)
+        ]->getValue($type, sum_Number_MANY__Number_1_);
+
+        sfe($func, $args);
+      }),
       processor('sqrt', sqrt_Number_1__Float_1_, false),
       processor('tan', tan_Number_1__Float_1_, false),
       processor('trunc', false, {args |
         //TODO replace with pure trunc function when implemented;
         assert($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
 
-        let condition = sfe(greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_, [$args->at(0), iv(0)])->evaluateAndDeactivate();
+        let condition = sfe(greaterThan_Number_1__Number_1__Boolean_1_, [$args->at(0), iv(0)])->evaluateAndDeactivate();
         let truth = sfe(floor_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
         let else = sfe(ceiling_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
 
@@ -1335,7 +1386,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair('year', firstDayOfYear_Date_1__Date_1_),
           pair('quarter', firstDayOfQuarter_Date_1__StrictDate_1_),
           pair('month', firstDayOfMonth_Date_1__Date_1_),
-          pair('week', firstDayOfWeek_Date_1__Date_1_)
+          pair('week', firstDayOfWeek_Date_1__Date_1_),
+          pair('day', datePart_Date_1__Date_1_)
         ]->getValue($value->toLower());
 
         sfe($func, $args->at(1));
@@ -1497,10 +1549,26 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let left = $a.left->processExpression($expContext, $context);
   let right = $a.right->processExpression($expContext, $context);
 
+  let leftType = $left.genericType.rawType;
+  let rightType = $right.genericType.rawType;
+  let type = if ($leftType->isNotEmpty() && $leftType == $rightType, | $leftType->toOne(), | Number);
+
   [
-    pair(ArithmeticType.ADD, | sfe(plus_Number_MANY__Number_1_, iv($left->concatenate($right)))),
-    pair(ArithmeticType.SUBTRACT, | sfe(minus_Number_MANY__Number_1_, iv($left->concatenate($right)))),
-    pair(ArithmeticType.MULTIPLY, | sfe(times_Number_MANY__Number_1_, iv($left->concatenate($right)))),
+    pair(ArithmeticType.ADD, | sfe([
+      pair(Integer, plus_Integer_MANY__Integer_1_),
+      pair(Float, plus_Float_MANY__Float_1_),
+      pair(Float, plus_Decimal_MANY__Decimal_1_)
+    ]->getValue($type, plus_Number_MANY__Number_1_), iv($left->concatenate($right)))),
+    pair(ArithmeticType.SUBTRACT, | sfe([
+      pair(Integer, minus_Integer_MANY__Integer_1_),
+      pair(Float, minus_Float_MANY__Float_1_),
+      pair(Decimal, minus_Decimal_MANY__Decimal_1_)
+    ]->getValue($type, minus_Number_MANY__Number_1_), iv($left->concatenate($right)))),
+    pair(ArithmeticType.MULTIPLY, | sfe([
+      pair(Integer, times_Integer_MANY__Integer_1_),
+      pair(Float, times_Float_MANY__Float_1_),
+      pair(Decimal, times_Decimal_MANY__Decimal_1_)
+    ]->getValue($type, times_Number_MANY__Number_1_), iv($left->concatenate($right)))),
     pair(ArithmeticType.DIVIDE, | sfe(divide_Number_1__Number_1__Float_1_, [$left, $right])),
     pair(ArithmeticType.MODULUS, | sfe(mod_Integer_1__Integer_1__Integer_1_, [$left, $right]))
   ]->getValue($a.type)->eval();
@@ -1576,13 +1644,120 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let left = $c.left->processExpression($expContext, $context);
   let right = $c.right->processExpression($expContext, $context);
 
+  let leftType = normalizeType($left.genericType.rawType->toOne());
+  let rightType = normalizeType($right.genericType.rawType->toOne());
+  let type = if ($leftType == $rightType, | $leftType, | Number);
+
+  let leftOne = $left.multiplicity->isToOne();
+  let rightOne = $right.multiplicity->isToOne();
+
   let func = [
     pair(ComparisonOperator.EQUAL, equal_Any_MANY__Any_MANY__Boolean_1_),
     pair(ComparisonOperator.NOT_EQUAL, equal_Any_MANY__Any_MANY__Boolean_1_),
-    pair(ComparisonOperator.LESS_THAN, lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_),
-    pair(ComparisonOperator.LESS_THAN_OR_EQUAL, lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_),
-    pair(ComparisonOperator.GREATER_THAN, greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_),
-    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)
+    pair(ComparisonOperator.LESS_THAN, [
+      pair(Number, [
+            pair($leftOne && $rightOne, lessThan_Number_1__Number_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThan_Number_1__Number_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThan_Number_$0_1$__Number_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThan_Number_$0_1$__Number_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Date, [
+            pair($leftOne && $rightOne, lessThan_Date_1__Date_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThan_Date_1__Date_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThan_Date_$0_1$__Date_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThan_Date_$0_1$__Date_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(String, [
+            pair($leftOne && $rightOne, lessThan_String_1__String_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThan_String_1__String_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThan_String_$0_1$__String_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThan_String_$0_1$__String_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Boolean, [
+            pair($leftOne && $rightOne, lessThan_Boolean_1__Boolean_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThan_Boolean_1__Boolean_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThan_Boolean_$0_1$__Boolean_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)
+        ]->getValue(true))
+    ]->getValue($type)),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL, [
+      pair(Number, [
+            pair($leftOne && $rightOne, lessThanEqual_Number_1__Number_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThanEqual_Number_1__Number_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThanEqual_Number_$0_1$__Number_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Date, [
+            pair($leftOne && $rightOne, lessThanEqual_Date_1__Date_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThanEqual_Date_1__Date_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThanEqual_Date_$0_1$__Date_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(String, [
+            pair($leftOne && $rightOne, lessThanEqual_String_1__String_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThanEqual_String_1__String_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThanEqual_String_$0_1$__String_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Boolean, [
+            pair($leftOne && $rightOne, lessThanEqual_Boolean_1__Boolean_1__Boolean_1_),
+            pair($leftOne && !$rightOne, lessThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, lessThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, lessThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)
+        ]->getValue(true))
+    ]->getValue($type)),
+    pair(ComparisonOperator.GREATER_THAN, [
+      pair(Number, [
+            pair($leftOne && $rightOne, greaterThan_Number_1__Number_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThan_Number_1__Number_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThan_Number_$0_1$__Number_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Date, [
+            pair($leftOne && $rightOne, greaterThan_Date_1__Date_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThan_Date_1__Date_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThan_Date_$0_1$__Date_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThan_Date_$0_1$__Date_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(String, [
+            pair($leftOne && $rightOne, greaterThan_String_1__String_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThan_String_1__String_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThan_String_$0_1$__String_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThan_String_$0_1$__String_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Boolean, [
+            pair($leftOne && $rightOne, greaterThan_Boolean_1__Boolean_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThan_Boolean_1__Boolean_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)
+        ]->getValue(true))
+    ]->getValue($type)),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, [
+      pair(Number, [
+            pair($leftOne && $rightOne, greaterThanEqual_Number_1__Number_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThanEqual_Number_1__Number_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThanEqual_Number_$0_1$__Number_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThanEqual_Number_$0_1$__Number_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Date, [
+            pair($leftOne && $rightOne, greaterThanEqual_Date_1__Date_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThanEqual_Date_1__Date_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThanEqual_Date_$0_1$__Date_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThanEqual_Date_$0_1$__Date_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(String, [
+            pair($leftOne && $rightOne, greaterThanEqual_String_1__String_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThanEqual_String_1__String_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThanEqual_String_$0_1$__String_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)
+        ]->getValue(true)),
+      pair(Boolean, [
+            pair($leftOne && $rightOne, greaterThanEqual_Boolean_1__Boolean_1__Boolean_1_),
+            pair($leftOne && !$rightOne, greaterThanEqual_Boolean_1__Boolean_$0_1$__Boolean_1_),
+            pair(!$leftOne && $rightOne, greaterThanEqual_Boolean_$0_1$__Boolean_1__Boolean_1_),
+            pair(!$leftOne && !$rightOne, greaterThanEqual_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)
+        ]->getValue(true))
+    ]->getValue($type))
   ]->getValue($c.operator);
 
   let sfe = sfe($func, [$left, $right]);
