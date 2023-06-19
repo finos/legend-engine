@@ -15,6 +15,9 @@
 
 package org.finos.legend.engine.query.sql.api.sources;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.collections.impl.utility.ListIterate;
 
 import java.util.Collections;
@@ -54,5 +57,23 @@ public class TableSource
     public Optional<TableSourceArgument> getNamedArgument(String name)
     {
         return ListIterate.select(this.arguments, a -> name.equals(a.getName())).getFirstOptional();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

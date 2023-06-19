@@ -73,6 +73,7 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -222,7 +223,7 @@ public class SqlExecute
 
     private Pair<RichIterable<SQLSource>, PureModelContext> getSourcesAndModel(Statement statement, SQLContext context, MutableList<CommonProfile> profiles)
     {
-        List<TableSource> tables = new TableSourceExtractor().visit(statement);
+        Set<TableSource> tables = new TableSourceExtractor().visit(statement);
 
         MutableMultimap<String, TableSource> grouped = Iterate.groupBy(tables, TableSource::getType);
 
