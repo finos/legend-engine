@@ -185,5 +185,5 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::db2::processTakeForDB2(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
-   ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake()->toString() +' rows only';
+   ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake($s)->toString() +' rows only';
 }

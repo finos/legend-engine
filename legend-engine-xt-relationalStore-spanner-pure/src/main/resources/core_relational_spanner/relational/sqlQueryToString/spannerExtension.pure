@@ -212,7 +212,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processSliceOrDropForSpanner(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
-   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size));
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s)]) + if ($size == -1, | '', | ' limit %s'->format($size));
 }
 
 function meta::relational::functions::sqlQueryToString::spanner::getSpannerDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]

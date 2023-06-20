@@ -142,7 +142,8 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode(
                            _type = 'relationalTdsInstantiation',
                            resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           pageSize = if($rel.pageSize->isEmpty(), |[], |$rel.pageSize->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), $extensions))
                         ),
                      rel:meta::relational::mapping::RelationalClassInstantiationExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalClassInstantiationExecutionNode(
@@ -187,7 +188,8 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            nodeIndex = $rel.nodeIndex,
                            parentIndex = $rel.parentIndex,
                            graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
-                           checked = $rel.checked
+                           checked = $rel.checked,
+                           pageSize = if($rel.pageSize->isEmpty(), |[], |$rel.pageSize->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), $extensions))
                         ),
                      rel:meta::relational::graphFetch::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode(

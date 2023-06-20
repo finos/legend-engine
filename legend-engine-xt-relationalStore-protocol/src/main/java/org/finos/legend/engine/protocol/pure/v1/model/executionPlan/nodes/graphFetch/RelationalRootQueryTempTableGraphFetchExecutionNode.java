@@ -16,11 +16,13 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graph
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 public class RelationalRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode
 {
     public Integer batchSize;
     public Boolean checked;
+    public ValueSpecification pageSize;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

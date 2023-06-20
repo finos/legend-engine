@@ -260,7 +260,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
     // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc00801.1601/doc/html/san1281564978024.html
 
     assert($s.orderBy->isNotEmpty(), | 'SybaseIQ requires an order by column for meaningful limit/offset');
-    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s), $size]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]

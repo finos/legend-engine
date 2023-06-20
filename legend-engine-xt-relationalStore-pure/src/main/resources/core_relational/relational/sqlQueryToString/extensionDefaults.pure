@@ -116,7 +116,7 @@ function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsW
 
 function meta::relational::functions::sqlQueryToString::default::processTakeDefault(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
-   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake($s)]);
 }
 
 function meta::relational::functions::sqlQueryToString::default::getDefaultLiteralProcessors():Map<Type,LiteralProcessor>[1]
@@ -260,7 +260,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
 function meta::relational::functions::sqlQueryToString::default::processTop(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
    if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull),
-         |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
+         |'top '+$s.toRow->toOne()->getValueForTake($s)+' ', |'');
 }
 
 function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
@@ -337,11 +337,17 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
          '';
       , |let size = if ($s.toRow == [] || $s.fromRow == [],
                       | -1,
-                      |$s.toRow.value->match([
-                          i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
-                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
-                          ])
-                      );
+                      |if($s.pagination->isEmpty(),
+                          |$s.toRow.value->match([
+                              i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
+                              v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+                              ]),
+                          | // pagination, fromRow is pageNumber, toRow is pageSize. size = toRow in this case
+                            $s.toRow.value->match([
+                              i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) + 1,
+                              v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, '1']->joinStrings('${','?number + ', '}')
+                              ]);
+                      ));
          if ($s.fromRow == [],
             |
                // We have a "take"
@@ -358,15 +364,30 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
 
 function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
-   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s), $size]);
 }
 
-function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1]):String[1]
+function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1], s:SelectSQLQuery[1]):String[1]
 {
-   $l.value->match([
+  if($s.pagination->isEmpty(),
+   |$l.value->match([
       i:Integer[1]| $i->toString(),
-      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '',[], [])
-   ]);
+      v:VarPlaceHolder[1]|$v->processPlaceHolder($v->getVariableType(), '', '',[], [])
+   ]),
+   | // pagination, fromRow stores pageNumber, toRow stores pageSize. take = pageSize
+    let pageNumber = $s.fromRow->toOne().value->match([
+      i: Integer[1] | $i - 1,
+      v:VarPlaceHolder[1]|'(' + $v.name + '?number - 1)'
+    ]);
+    let pageSize = $s.toRow->toOne().value->match([
+      i: Integer[1] | $i,
+      v:VarPlaceHolder[1]|$v.name + '?number'
+    ]);
+    if($pageNumber->instanceOf(Integer) && $pageSize->instanceOf(Integer),
+        | let offset = $pageNumber->cast(@Integer) * $pageSize->cast(@Integer); $offset->toString();,
+        |'${%s * %s}'->format([$pageNumber->toString(), $pageSize->toString()])
+    );
+  )->cast(@String);
 }
 
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithBackTicks(identifier:String[1], dbConfig: DbConfig[1]):String[1]

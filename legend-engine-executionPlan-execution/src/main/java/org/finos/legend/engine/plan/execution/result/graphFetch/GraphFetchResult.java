@@ -18,6 +18,7 @@ import io.opentracing.Span;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class GraphFetchResult extends Result
@@ -25,6 +26,7 @@ public class GraphFetchResult extends Result
     private Stream<GraphObjectsBatch> graphObjectsBatchStream;
     private Result rootResult;
     private Span graphFetchSpan;
+    private AtomicBoolean hasMore;
 
     public GraphFetchResult(Stream<GraphObjectsBatch> graphObjectsBatchStream, Result rootResult)
     {
@@ -47,6 +49,17 @@ public class GraphFetchResult extends Result
     {
         this.graphFetchSpan = graphFetchSpan;
         return this;
+    }
+
+    public GraphFetchResult hasMore(AtomicBoolean hasMore)
+    {
+        this.hasMore = hasMore;
+        return this;
+    }
+
+    public boolean getHasMore()
+    {
+        return this.hasMore.get();
     }
 
     public Span getGraphFetchSpan()

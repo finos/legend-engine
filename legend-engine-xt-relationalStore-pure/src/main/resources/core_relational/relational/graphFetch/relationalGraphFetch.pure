@@ -68,6 +68,7 @@ Class meta::relational::graphFetch::executionPlan::RelationalRootQueryTempTableG
    batchSize : Integer[0..1];
    enableConstraints : Boolean[1];
    checked : Boolean[1];
+   pageSize: ValueSpecification[0..1];
 }
 
 Class meta::relational::graphFetch::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode
@@ -396,6 +397,14 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
                               let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
                               getTempTableStrategyForRootNode($dbType, $createTempTableNode, $loadTempTableNode, $dropTempTableNode);,
                             | []);
+   let pageSizeOrEmpty = $fe->pageSizeFromPaginateFunctionIfExists();
+   let pageSize = if($pageSizeOrEmpty->isEmpty(),
+    |[],
+    |$pageSizeOrEmpty->match([
+        i:InstanceValue[1] | $i,
+        v:VariableExpression[1] | $v
+       ])
+   );
    ^RelationalRootQueryTempTableGraphFetchExecutionNode
    (
       tempTableStrategy = $tempTableStrategy,
@@ -409,8 +418,20 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
       children       = $children,
       executionNodes = $wrappedNode,
       enableConstraints = $enableConstraints,
-      checked = $checked
+      checked = $checked,
+      pageSize = $pageSize
    );
+}
+
+function meta::pure::executionPlan::pageSizeFromPaginateFunctionIfExists(f: ValueSpecification[0..1]): ValueSpecification[0..1]
+{
+  if($f->isNotEmpty() && $f->toOne()->instanceOf(SimpleFunctionExpression), 
+    | if($f->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func == paginate_T_MANY__Integer_1__Integer_1__T_MANY_,
+        | $f->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues->at(2),
+        | $f->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->pageSizeFromPaginateFunctionIfExists()
+      );,
+    | []
+  );
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::planGraphFetchExecutionPrimitiveChild(currentTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], parentSets: RelationalInstanceSetImplementation[*], store: Database[1], mapping: Mapping[1], runtime: Runtime[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], exeCtx : ExecutionContext[1], extensions:Extension[*], debug : DebugContext[1]): RelationalPrimitiveQueryGraphFetchExecutionNode[1]

@@ -293,8 +293,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
    if ($s.fromRow->isNotEmpty(),
        | if ($size == -1,
-             | '%s limit \'\' offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]),
-             | '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake()])),
+             | '%s limit \'\' offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s)]),
+             | '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake($s)])),
        | '%s limit %s'->format($size));
 }
 

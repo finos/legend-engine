@@ -76,6 +76,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -94,6 +95,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public final List<String> sqlColumns;
     private final List<String> temporaryTables;
     private final List<SQLResultColumn> resultColumns;
+    private long pageSize = -1;
     private List<String> columnListForSerializer;
 
     private final Connection connection;
@@ -224,6 +226,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             throw new RuntimeException(e);
         }
+    }
+
+    public RelationalResult(SQLExecutionResult sqlExecutionResult, RelationalTdsInstantiationExecutionNode relationalTdsInstantiationExecutionNode, long finalPageSize)
+    {
+        this(sqlExecutionResult, relationalTdsInstantiationExecutionNode);
+        this.pageSize = finalPageSize;
     }
 
     private void buildTransformersAndBuilder(ExecutionNode node, DatabaseConnection databaseConnection) throws SQLException
@@ -667,5 +675,10 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + RequestContext.getSessionID(this.requestContext) + " " + e.getMessage()).toString());
         }
+    }
+
+    public long getPageSize()
+    {
+        return pageSize;
     }
 }

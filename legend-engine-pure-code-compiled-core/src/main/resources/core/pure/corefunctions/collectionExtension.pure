@@ -287,3 +287,9 @@ function meta::pure::functions::collection::getAllForEachDate<T>(type:Class<T>[1
     fail('not implemented');
     [];
 }
+
+function meta::pure::functions::collection::paginate<T>(set:T[*], pageNumber: Integer[1], pageSize: Integer[1]): T[*]
+{
+  fail('not implemented');
+  [];
+}

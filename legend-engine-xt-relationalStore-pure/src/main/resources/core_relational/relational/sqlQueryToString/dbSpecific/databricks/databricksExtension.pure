@@ -160,20 +160,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTakeDatabricks(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
    assert($s.toRow->isNotEmpty());
-   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake($s)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processOffsetDatabricks(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
    assert($s.fromRow->isNotEmpty());
-   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]);
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSliceDatabricks(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
    assert($s.toRow->isNotEmpty());
    assert($s.fromRow->isNotEmpty());
-   '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake()]);
+   '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake($s)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processLimitDatabricks(

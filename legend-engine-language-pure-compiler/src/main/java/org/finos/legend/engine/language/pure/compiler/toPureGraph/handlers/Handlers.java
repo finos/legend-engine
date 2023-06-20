@@ -549,6 +549,10 @@ public class Handlers
         register(h("meta::pure::tds::slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
                 h("meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
 
+        register(
+            h("meta::pure::functions::collection::paginate_T_MANY__Integer_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
+        );
+
         register("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", true, ps -> res(ps.get(1)._genericType(), ps.get(0)._multiplicity()));
 
         register("meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));

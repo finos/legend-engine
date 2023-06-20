@@ -485,7 +485,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processSliceOrDropForH2(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
-   '%s offset %s rows'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' fetch next %s rows only'->format($size));
+   '%s offset %s rows'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s)]) + if ($size == -1, | '', | ' fetch next %s rows only'->format($size));
 }
 
 

@@ -53,8 +53,14 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     private final byte[] b_rows = "], \"rows\" : [".getBytes();
     private final byte[] b_comma = ",".getBytes();
     private final byte[] b_values = "{\"values\": [".getBytes();
-    private final byte[] b_end = "]}".getBytes();
+    private final byte[] b_values_end = "]}".getBytes();
+    private final byte[] b_meta = "\"meta\": {".getBytes();
+    private final byte[] b_meta_end = "}".getBytes();
+    private final byte[] b_pageInfo = "\"pageInfo\": {".getBytes();
+    private final byte[] b_pageInfo_end = "}".getBytes();
+    private final byte[] b_hasMore = "\"hasMore\": ".getBytes();
     private final byte[] b_endResult = "}".getBytes();
+    private boolean hasMore;
 
     public RelationalResultToJsonDefaultSerializer(RelationalResult relationalResult)
     {
@@ -83,7 +89,17 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
             streamCollection(stream, relationalResult.getColumnListForSerializer());
             stream.write(b_rows);
             streamRows(stream);
-            stream.write(b_end);
+            stream.write(b_values_end);
+            stream.write(b_comma);
+            stream.write(b_meta);
+            if(relationalResult.getPageSize() != -1)
+            {
+                stream.write(b_pageInfo);
+                stream.write(b_hasMore);
+                stream.write(String.valueOf(hasMore).getBytes());
+                stream.write(b_pageInfo_end);
+            }
+            stream.write(b_meta_end);
             stream.write(b_endResult);
         }
         catch (Exception e)
@@ -99,21 +115,30 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     private void streamRows(OutputStream outputStream) throws Exception
     {
         int rowCount = 0;
+        long pageSize = relationalResult.getPageSize();
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: Fetch first row").startActive(true))
         {
-            if (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
+            if ((pageSize == -1 || rowCount < pageSize) && !relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 processRow(outputStream);
                 rowCount++;
             }
+            if(pageSize == rowCount && relationalResult.resultSet.next())
+            {
+                hasMore = true;
+            }
         }
         try (Scope scope = GlobalTracer.get().buildSpan("Relational Streaming: remaining rows").startActive(true))
         {
-            while (!relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
+            while ((pageSize == -1 || rowCount < pageSize) && !relationalResult.resultSet.isClosed() && relationalResult.resultSet.next())
             {
                 outputStream.write(b_comma);
                 processRow(outputStream);
                 rowCount++;
+            }
+            if(pageSize == rowCount && relationalResult.resultSet.next())
+            {
+                hasMore = true;
             }
             scope.span().setTag("rowCount", rowCount);
             if (relationalResult.topSpan != null)
@@ -135,7 +160,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
             outputStream.write(b_comma);
         }
         outputStream.write(purePrimitiveToJsonConverter.apply(transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount))).getBytes());
-        outputStream.write(b_end);
+        outputStream.write(b_values_end);
     }
 
 

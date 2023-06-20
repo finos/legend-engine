@@ -110,9 +110,17 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                 ]);
                            )
                     );
-
+  let fe = $sq.fe->evaluateAndDeactivate();
+  let pageSizeOrEmpty = $fe->meta::pure::executionPlan::pageSizeFromPaginateFunctionIfExists();
+   let pageSize = if($pageSizeOrEmpty->isEmpty(),
+    |[],
+    |$pageSizeOrEmpty->match([
+        i:InstanceValue[1] | $i,
+        v:VariableExpression[1] | $v
+       ])
+   );
    $resultType->match([
-      t : TDSResultType[1]       | ^RelationalTdsInstantiationExecutionNode(executionNodes = $node, resultType = $t),
+      t : TDSResultType[1]       | ^RelationalTdsInstantiationExecutionNode(executionNodes = $node, resultType = $t, pageSize = $pageSize),
       c : ClassResultType[1]     | ^RelationalClassInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity),
       r : RelationResultType[1]  | ^RelationalRelationDataInstantiationExecutionNode(executionNodes = $node, resultType = $r, resultSizeRange = ZeroMany),
       c : DataTypeResultType[1]  | ^RelationalDataTypeInstantiationExecutionNode(executionNodes = $node, resultType = $c, resultSizeRange = $sq.fe.multiplicity)

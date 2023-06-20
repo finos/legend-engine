@@ -645,6 +645,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     in_Any_$0_1$__Any_MANY__Boolean_1_,
     sortBy_T_m__Function_$0_1$__T_m_,
     limit_T_MANY__Integer_1__T_MANY_,
+    paginate_T_MANY__Integer_1__Integer_1__T_MANY_,
     distinct_T_MANY__T_MANY_,
     count_Any_MANY__Integer_1_,
     isEmpty_Any_MANY__Boolean_1_,

@@ -14,8 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+
 public class RelationalTdsInstantiationExecutionNode extends RelationalInstantiationExecutionNode
 {
+    public ValueSpecification pageSize;
+
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {

@@ -17,6 +17,8 @@ package org.finos.legend.engine.plan.execution.result.json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
+import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -43,6 +45,14 @@ public class JsonStreamToJsonDefaultSerializer extends JsonSerializer
             generator.writeObject(this.builder);
             generator.writeFieldName("values");
             result.getJsonStream().accept(generator);
+            if (result.getChildResult() instanceof StreamingObjectResult)
+            {
+                if (((StreamingObjectResult) result.getChildResult()).getChildResult() instanceof GraphFetchResult)
+                {
+                    generator.writeFieldName("hasMore");
+                    generator.writeBoolean(((GraphFetchResult)(((StreamingObjectResult) result.getChildResult()).getChildResult())).getHasMore());
+                }
+            }
             generator.writeEndObject();
         }
         finally

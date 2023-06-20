@@ -124,6 +124,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
@@ -146,6 +148,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -372,7 +375,29 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             try
             {
                 sqlExecutionResult = (SQLExecutionResult) this.visit((SQLExecutionNode) relationalTdsInstantiationExecutionNode.executionNodes.get(0));
-                RelationalResult relationalTdsResult = new RelationalResult(sqlExecutionResult, relationalTdsInstantiationExecutionNode);
+                long pageSize = -1;
+                if (relationalTdsInstantiationExecutionNode.pageSize instanceof Variable)
+                {
+                    Result result = executionState.getResult(((Variable) relationalTdsInstantiationExecutionNode.pageSize).name);
+                    if (result instanceof ConstantResult)
+                    {
+                        pageSize = (long) ((ConstantResult) result).getValue();
+                    }
+                    else
+                    {
+                        throw new RuntimeException("pageSize not valid");
+                    }
+                }
+                else if (relationalTdsInstantiationExecutionNode.pageSize instanceof CInteger)
+                {
+                    pageSize = ((CInteger) relationalTdsInstantiationExecutionNode.pageSize).value;
+                }
+                else if (relationalTdsInstantiationExecutionNode.pageSize != null)
+                {
+                    throw new RuntimeException("invalid pageSize in node");
+                }
+                final long finalPageSize = pageSize;
+                RelationalResult relationalTdsResult = new RelationalResult(sqlExecutionResult, relationalTdsInstantiationExecutionNode, finalPageSize);
 
                 if (this.executionState.inAllocation)
                 {
@@ -1335,6 +1360,28 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     {
         int batchSize = node.batchSize == null ? 1000 : node.batchSize;
         boolean isLeaf = node.children == null || node.children.isEmpty();
+        long pageSize = -1;
+        if (node.pageSize instanceof Variable)
+        {
+            Result result = executionState.getResult(((Variable) node.pageSize).name);
+            if (result instanceof ConstantResult)
+            {
+                pageSize = (long) ((ConstantResult) result).getValue();
+            }
+            else
+            {
+                throw new RuntimeException("pageSize not valid");
+            }
+        }
+        else if (node.pageSize instanceof CInteger)
+        {
+            pageSize = ((CInteger) node.pageSize).value;
+        }
+        else if (node.pageSize != null)
+        {
+            throw new RuntimeException("invalid pageSize in node");
+        }
+        final long finalPageSize = pageSize;
         Result rootResult = null;
 
         Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "relational").withTag("batchSizeConfig", batchSize).start();
@@ -1361,6 +1408,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             boolean isUnion = setIdCount > 1;
             AtomicLong batchIndex = new AtomicLong(0L);
+            AtomicBoolean hasMore = new AtomicBoolean(false);
+            AtomicLong totalCount = new AtomicLong(0L);
             Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
             {
                 @Override
@@ -1383,10 +1432,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> instancesToDeepFetchAndCache = new ArrayList<>();
 
                         int objectCount = 0;
-                        while ((!rootResultSet.isClosed()) && rootResultSet.next())
+                        while ((finalPageSize == -1 || totalCount.get() < finalPageSize) && (!rootResultSet.isClosed()) && rootResultSet.next())
                         {
                             relationalGraphObjectsBatch.incrementRowCount();
-
+                            totalCount.incrementAndGet();
                             int setIndex = isUnion ? rootResultSet.getInt(1) : 0;
                             Object cachedObject = RelationalExecutionNodeExecutor.this.checkAndReturnCachedObject(cachingEnabledForNode, setIndex, multiSetCache);
                             boolean shouldDeepFetchOnThisInstance = cachedObject == null;
@@ -1415,6 +1464,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             {
                                 break;
                             }
+                        }
+                        if (totalCount.get() == finalPageSize && rootResultSet.next())
+                        {
+                            hasMore.set(true);
                         }
 
                         relationalGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, resultObjects);
@@ -1469,7 +1522,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             };
 
             Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
-            return new GraphFetchResult(graphObjectsBatchStream, rootResult).withGraphFetchSpan(graphFetchSpan);
+            return new GraphFetchResult(graphObjectsBatchStream, rootResult).withGraphFetchSpan(graphFetchSpan).hasMore(hasMore);
         }
         catch (RuntimeException e)
         {

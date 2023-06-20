@@ -73,6 +73,7 @@ Class meta::relational::mapping::RelationalInstantiationExecutionNode extends Ex
 Class meta::relational::mapping::RelationalTdsInstantiationExecutionNode extends RelationalInstantiationExecutionNode
 [tdsResultType:$this.resultType->instanceOf(TDSResultType)]
 {
+  pageSize: ValueSpecification[0..1];
 }
 
 Class meta::relational::mapping::RelationalClassInstantiationExecutionNode extends RelationalInstantiationExecutionNode

@@ -37,6 +37,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalSaveNod
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalInstantiationExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
+  pageSize: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalInstantiationExecutionNode
@@ -84,6 +85,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootQue
 {
    batchSize : Integer[0..1];
    checked : Boolean[0..1];
+   pageSize: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootListTempTableGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTempTableGraphFetchExecutionNode

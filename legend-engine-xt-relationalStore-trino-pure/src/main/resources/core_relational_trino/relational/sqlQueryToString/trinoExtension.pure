@@ -184,8 +184,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 {
    if ($s.fromRow->isNotEmpty(),
        | if ($size == -1,
-            | '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]),
-            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size])),
+            | '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s)]),
+            | '%s offset %s rows fetch next %s rows only'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($s), $size])),
        | '%s limit %s'->format($size));
 }
 
