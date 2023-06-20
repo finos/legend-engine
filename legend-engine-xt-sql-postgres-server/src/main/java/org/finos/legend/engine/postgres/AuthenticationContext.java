@@ -27,6 +27,7 @@ import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.SecureString;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 class AuthenticationContext implements Closeable
 {
@@ -62,8 +63,9 @@ class AuthenticationContext implements Closeable
     Identity authenticate()
     {
         Identity user = authMethod.authenticate(userName, password, connProperties);
-        if (user != null && logger.isTraceEnabled())
+        if (user != null)
         {
+            MDC.put("user", user.getName());
             logger.trace("Authentication succeeded user \"{}\" and method \"{}\".", user.getName(),
                     authMethod.name());
         }
