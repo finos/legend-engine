@@ -216,6 +216,8 @@ public class SqlExecute
         Root_meta_external_query_sql_metamodel_Node query = new ProtocolToMetamodelTranslator().translate(statement, pureModel);
 
         RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
+        LOGGER.info("{}", new LogInfo(profiles, LoggingEventType.GENERATE_PLAN_START));
+
         Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(compiledSources, query, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
         return transformExecutionPlan(plan, pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers);
