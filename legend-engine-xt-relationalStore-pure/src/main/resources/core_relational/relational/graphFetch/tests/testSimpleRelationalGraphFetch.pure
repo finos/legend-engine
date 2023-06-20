@@ -357,7 +357,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testGraphFetchCheckedWithSize(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::relational::graphFetch::tests::simple::testGraphFetchCheckedWithSize(): Boolean[1]
 {
    let tree = #{
       Person {
