@@ -81,6 +81,20 @@ public class SqlExecuteTest
         return Tuples.pair(pureModel,resources);
     }
 
+    @Test
+    public void getSchemaForQueryWithDuplicateSources()
+    {
+        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
+                .request()
+                .post(Entity.text("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"")).readEntity(String.class);
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
+        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
+        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn);
+        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel);
+        Assert.assertEquals(expectedSchema, actualSchema);
+    }
+
 
     @Test
     public void getSchemaFromQueryString()
