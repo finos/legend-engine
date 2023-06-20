@@ -77,6 +77,7 @@ public class SqlExecuteTest
                 .addResource(sqlExecute)
                 .addResource(new MockPac4jFeature())
                 .addResource(new CatchAllExceptionMapper())
+                .bootstrapLogging(false)
                 .build();
         return Tuples.pair(pureModel,resources);
     }
