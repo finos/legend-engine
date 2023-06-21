@@ -36,12 +36,40 @@ public class TestMappingTestRunner
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
         mappingTestableRunnerExtension.setPureVersion("vX_X_X");
-        String grammar = "###ServiceStore\n" +
+        String grammar = "###Data\n" +
+                "Data testServiceStoreTestSuites::TestData\n" +
+                "{\n" +
+                "  ServiceStore\n" +
+                "  #{\n" +
+                "    [\n" +
+                "      {\n" +
+                "        request:\n" +
+                "        {\n" +
+                "          method: GET;\n" +
+                "          url: '/employees/allEmployees';\n" +
+                "        };\n" +
+                "        response:\n" +
+                "        {\n" +
+                "          body:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[ { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" } ]';\n" +
+                "            }#;\n" +
+                "        };\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###ServiceStore\n" +
                 "ServiceStore testServiceStoreTestSuites::ServiceStore\n" +
                 "(\n" +
                 "  ServiceGroup EmployeeServices\n" +
                 "  (\n" +
                 "    path : '/employees';\n" +
+                "\n" +
                 "    Service EmployeeService\n" +
                 "    (\n" +
                 "      path : '/allEmployees';\n" +
@@ -55,10 +83,10 @@ public class TestMappingTestRunner
                 "      method : GET;\n" +
                 "      parameters :\n" +
                 "      (\n" +
-                "          stringParam : String (location = query),\n" +
-                "          integerParam : Integer (location = query),\n" +
-                "          floatParam : Float (location = query),\n" +
-                "          booleanParam : Boolean (location = query)\n" +
+                "        stringParam : String ( location = query ),\n" +
+                "        integerParam : Integer ( location = query ),\n" +
+                "        floatParam : Float ( location = query ),\n" +
+                "        booleanParam : Boolean ( location = query )\n" +
                 "      );\n" +
                 "      response : [testServiceStoreTestSuites::Employee2 <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];\n" +
                 "      security : [];\n" +
@@ -67,38 +95,11 @@ public class TestMappingTestRunner
                 ")\n" +
                 "\n" +
                 "\n" +
-                "###Data\n" +
-                "Data testServiceStoreTestSuites::TestData\n" +
-                "{\n" +
-                "  ServiceStore #{\n" +
-                "    [\n" +
-                "      {\n" +
-                "        request:\n" +
-                "        {\n" +
-                "          method: GET;\n" +
-                "          url: '/employees/allEmployees';\n" +
-                "        };\n" +
-                "        response:\n" +
-                "        {\n" +
-                "          body:\n" +
-                "            ExternalFormat \n" +
-                "            #{\n" +
-                "              contentType: 'application/json';\n" +
-                "              data: '[ { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" } ]';\n" +
-                "            }#;\n" +
-                "        };\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
                 "###ExternalFormat\n" +
                 "Binding testServiceStoreTestSuites::employeeServiceStoreSchemaBinding\n" +
                 "{\n" +
                 "  contentType: 'application/json';\n" +
-                "  modelIncludes: \n" +
-                "  [\n" +
+                "  modelIncludes: [\n" +
                 "    testServiceStoreTestSuites::Employee,\n" +
                 "    testServiceStoreTestSuites::Employee2\n" +
                 "  ];\n" +
@@ -115,12 +116,13 @@ public class TestMappingTestRunner
                 "  lastName: String[0..1];\n" +
                 "  countryCode: String[0..1];\n" +
                 "}\n" +
+                "\n" +
                 "Class testServiceStoreTestSuites::Employee2\n" +
                 "{\n" +
-                "  stringParam : String[1];\n" +
-                "  integerParam :  Integer[1];\n" +
-                "  floatParam :  Float[1];\n" +
-                "  booleanParam :  Boolean[1];\n" +
+                "  stringParam: String[1];\n" +
+                "  integerParam: Integer[1];\n" +
+                "  floatParam: Float[1];\n" +
+                "  booleanParam: Boolean[1];\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -147,23 +149,46 @@ public class TestMappingTestRunner
                 "      )\n" +
                 "    )\n" +
                 "  }\n" +
+                "\n" +
                 "  testSuites:\n" +
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "        testServiceStoreTestSuites::ServiceStore:\n" +
-                "            Reference \n" +
-                "            #{ \n" +
-                "              testServiceStoreTestSuites::TestData \n" +
-                "            }#\n" +
-                "      ];\n" +
+                "      function: |testServiceStoreTestSuites::Employee.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    testServiceStoreTestSuites::Employee{\n" +
+                "      kerberos,\n" +
+                "      employeeID,\n" +
+                "      title,\n" +
+                "      firstName,\n" +
+                "      lastName,\n" +
+                "      countryCode\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    testServiceStoreTestSuites::Employee{\n" +
+                "      kerberos,\n" +
+                "      employeeID,\n" +
+                "      title,\n" +
+                "      firstName,\n" +
+                "      lastName,\n" +
+                "      countryCode\n" +
+                "    }\n" +
+                "  }#\n" +
+                ");\n" +
                 "      tests:\n" +
                 "      [\n" +
-                "        test1:\n" +
+                "        passingTest:\n" +
                 "        {\n" +
-                "          function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            testServiceStoreTestSuites::ServiceStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testServiceStoreTestSuites::TestData\n" +
+                "              }#\n" +
+                "          ];\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -173,7 +198,31 @@ public class TestMappingTestRunner
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
-                "                    data: '{\"kerberos\" : \"dummy kerberos\",\"employeeID\" : \"dummy id\",\"title\" : \"dummy title\",\"firstName\" : \"dummy firstName\",\"lastName\" : \"dummy lastname\",\"countryCode\" : \"dummy countryCode\"}';\n" +
+                "                    data: '{\\n  \"kerberos\": \"dummy kerberos\",\\n  \"employeeID\": \"dummy id\",\\n  \"title\": \"dummy title\",\\n  \"firstName\": \"dummy firstName\",\\n  \"lastName\": \"dummy lastname\",\\n  \"countryCode\": \"dummy countryCode\"\\n}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        },\n" +
+                "        failingTest:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            testServiceStoreTestSuites::ServiceStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testServiceStoreTestSuites::TestData\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\\n  \"kerberos\": \"dummy kerberos\",\\n  \"employeeID\": \"Whoops\",\\n  \"title\": \"dummy title\",\\n  \"firstName\": \"dummy firstName\",\\n  \"lastName\": \"dummy lastname\",\\n  \"countryCode\": \"dummy countryCode\"\\n}';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
                 "          ];\n" +
@@ -181,19 +230,43 @@ public class TestMappingTestRunner
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                ")\n" +
-                "\n";
+                ")\n";
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("testServiceStoreTestSuites::ServiceStoreMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
+        Assert.assertEquals(2, mappingTestResults.size());
 
-        Assert.assertEquals(1, mappingTestResults.size());
-        Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted); //gets truncated
-        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
-        Assert.assertEquals("testServiceStoreTestSuites::ServiceStoreMapping", mappingTestResults.get(0).testable);
-        Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
-        Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
+        // passing test
+        TestExecuted passingTest = guaranteedTestExecuted(findTestById(mappingTestResults, "passingTest"));
+        Assert.assertEquals(TestExecutionStatus.PASS, passingTest.testExecutionStatus);
+        Assert.assertEquals("testServiceStoreTestSuites::ServiceStoreMapping", passingTest.testable);
+        Assert.assertEquals("testSuite1", passingTest.testSuiteId);
+        Assert.assertEquals("passingTest", passingTest.atomicTestId);
+
+        // failing test
+        TestExecuted failingTest = guaranteedTestExecuted(findTestById(mappingTestResults, "failingTest"));
+        Assert.assertEquals(TestExecutionStatus.FAIL, failingTest.testExecutionStatus);
+        Assert.assertEquals("testServiceStoreTestSuites::ServiceStoreMapping", failingTest.testable);
+        Assert.assertEquals("testSuite1", failingTest.testSuiteId);
+        Assert.assertEquals("failingTest", failingTest.atomicTestId);
+        Assert.assertEquals(1, failingTest.assertStatuses.size());
     }
+
+    private TestResult findTestById(List<TestResult> results, String id)
+    {
+        return results.stream().filter(test -> test.atomicTestId.equals(id)).findFirst().orElseThrow(() -> new RuntimeException("Test Id " + id + " not found"));
+    }
+
+    private TestExecuted guaranteedTestExecuted(TestResult result)
+    {
+        if (result instanceof  TestExecuted)
+        {
+            return (TestExecuted) result;
+        }
+        throw new RuntimeException("test expected to have been executed");
+    }
+
+
 }

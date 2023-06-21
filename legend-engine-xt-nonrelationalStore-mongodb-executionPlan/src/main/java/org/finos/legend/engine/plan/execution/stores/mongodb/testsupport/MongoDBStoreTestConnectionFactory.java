@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
 import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExtension
@@ -71,7 +72,7 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store testStore, EmbeddedData data)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement> dataElements, Store testStore, EmbeddedData data)
     {
         if (testStore instanceof MongoDatabase)
         {
