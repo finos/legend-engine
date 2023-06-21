@@ -373,8 +373,9 @@ public class SQLGrammarComposer
             public String visit(Query val)
             {
                 return val.queryBody.accept(this)
-                        + (val.orderBy.isEmpty() ? "" : visit(val.orderBy, ", "))
-                        + (val.limit == null ? "" : val.limit.accept(this));
+                        + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
+                        + (val.limit == null ? "" : " limit " + val.limit.accept(this))
+                        + (val.offset == null ? "" : " offset " + val.offset.accept(this));
             }
 
             @Override
@@ -392,7 +393,8 @@ public class SQLGrammarComposer
                         + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
                         + (val.having == null ? "" : " having " + visit(val.having))
                         + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
-                        + (val.limit == null ? "" : " limit " + visit(val.limit));
+                        + (val.limit == null ? "" : " limit " + visit(val.limit))
+                        + (val.offset == null ? "" : " offset " + visit(val.offset));
             }
 
             @Override

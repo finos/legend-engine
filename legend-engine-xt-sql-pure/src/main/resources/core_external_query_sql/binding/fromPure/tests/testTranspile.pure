@@ -48,26 +48,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithExtendAndEnumColumns():Boolean[1]
-{
-  let sqlString = 'SELECT 1 AS one, "The Enum Value" AS enum FROM service."/service/service3"';
-  let sqlTransformContext = $sqlString->processQuery();
-  let expected = {|
-        let const = 123;
-        FlatInput.all()->project(
-        [
-          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
-        ],
-        [
-          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
-        ]
-      )->project([
-        col(row:TDSRow[1] | 1, 'one'),
-        col(row:TDSRow[1] | $row.getEnum('The Enum Value')->cast(@MyEnum), 'enum')
-      ]);};
-  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
-}
-
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithAliases():Boolean[1]
 {
   let sqlString = 'SELECT Boolean, Integer AS int FROM service."/service/service1"';
@@ -167,7 +147,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
-//LIMIT
+//LIMIT-OFFSET
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimit():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service1" LIMIT 2';
@@ -187,6 +167,30 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOffset():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" OFFSET 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->drop(1)
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimitOffset():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1" OFFSET 2 LIMIT 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->slice(2, 2 + 1)
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -1150,6 +1154,39 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValues():Boolean[1]
+{
+  //NOTE: the enum filter and plan generation is important to ensure cast and typing works correctly
+
+  let sqlString = 'SELECT 1 AS "one", "The Enum Value" AS "enum" FROM service."/service/service3" WHERE "The Enum Value" = \'Value1\' OR "The Enum Value" IN (\'Value1\', \'Value2\')';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->filter(row:TDSRow[1] |
+          $row.getEnum('The Enum Value') == MyEnum.Value1
+          ||
+          $row.getEnum('The Enum Value')->in([MyEnum.Value1, MyEnum.Value2])
+      )->project([
+          col(row:TDSRow[1] | 1, 'one'),
+          col(row:TDSRow[1] | $row.getEnum('The Enum Value')->cast(@MyEnum), 'enum')
+      ]);};
+
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+  let plan = $sqlTransformContext->getPlan($sqlTransformContext.sources, $sqlTransformContext.extensions);
+
+  let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+
+  assertEquals('select 1 as "one", "root".enum as "enum" from flat as "root" where ("root".enum = \'V1\' or "root".enum in (\'V1\', \'V2\'))', $sql);
+
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlanGenerationAndTransform():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service3"';
@@ -1229,6 +1266,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
+
   let extensions = relationalExtensions();
   let context = ^SqlTransformContext(
     sources = $sources,
