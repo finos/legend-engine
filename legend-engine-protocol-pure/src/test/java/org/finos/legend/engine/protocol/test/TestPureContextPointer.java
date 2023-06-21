@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class TestPureContextPointer
@@ -74,6 +75,16 @@ public class TestPureContextPointer
         return pure;
     }
 
+    private void assertPMCPEquals(PureModelContextPointer expected, PureModelContextPointer result)
+    {
+        //required as set is really used and converted to list which leads to flaky equality
+        Comparator<? super PackageableElementPointer> comparator = Comparator.comparing(p -> p.type + ":" + p.type);
+        expected.sdlcInfo.packageableElementPointers.sort(comparator);
+        result.sdlcInfo.packageableElementPointers.sort(comparator);
+
+        Assert.assertEquals(expected, result);
+    }
+
     @Test
     public void testCombineAlloy()
     {
@@ -91,7 +102,7 @@ public class TestPureContextPointer
         SDLC expectedSDLC = alloy("P1", "G1", "A1", "v1", "V1", FastList.newListWith(p1, p2));
         PureModelContextPointer expected = context(expectedSDLC);
 
-        Assert.assertEquals(expected, result);
+        assertPMCPEquals(expected, result);
     }
 
     @Test
@@ -111,9 +122,8 @@ public class TestPureContextPointer
         SDLC expectedSDLC = pure("v1", "V1", FastList.newListWith(p1, p2));
         PureModelContextPointer expected = context(expectedSDLC);
 
-        Assert.assertEquals(expected, result);
+        assertPMCPEquals(expected, result);
     }
-
 
     @Test
     public void testCombineIncompatible()
