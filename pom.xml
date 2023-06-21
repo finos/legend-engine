@@ -398,6 +398,7 @@
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <opencsv.version>4.6</opencsv.version>
         <logback.version>1.2.3</logback.version>
+        <logback-contrib.version>0.1.5</logback-contrib.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -2345,6 +2346,16 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
                 <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback.contrib</groupId>
+                <artifactId>logback-json-classic</artifactId>
+                <version>${logback-contrib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback.contrib</groupId>
+                <artifactId>logback-jackson</artifactId>
+                <version>${logback-contrib.version}</version>
             </dependency>
             <!-- LOGGING -->
 
