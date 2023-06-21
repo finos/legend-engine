@@ -427,7 +427,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
    print(if(!$context.debug, |'', | $context.space+'  - build new Union (using processGetAll)\n'));
    let newTargetOperation = if ($targetSetImplementations->size() == 1,
                      | $targetSetImplementations->at(0)->mainRelation(),
-                     | buildUnion($targetSetImplementations, $relationalPropertyMappings, true, false, [], $nodeId, $state, $context, $extensions)
+                     | buildUnion($targetSetImplementations, $relationalPropertyMappings, true, false, $srcOperation.milestoningContext, $nodeId, $state, $context, $extensions)
                );
 
    print(if(!$context.debug, |'', | $context.space+'  - build new JoinTreeNode\n'));
