@@ -34,6 +34,37 @@
     {
       "request": {
         "method": "GET",
+        "url": "/trades/allTradesSpecialCharactersService"
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "s_trade.Id": "1",
+            "s_trader.Details": "abc:F_Name_1:L_Name_1",
+            "s_trade.Details": "30:100"
+          },
+          {
+            "s_trade.Id": "2",
+            "s_trader.Details": "abc:F_Name_1:L_Name_1",
+            "s_trade.Details": "31:200"
+          },
+          {
+            "s_trade.Id": "3",
+            "s_trader.Details": "abc:F_Name_2:L_Name_2",
+            "s_trade.Details": "30:300"
+          },
+          {
+            "s_trade.Id": "4",
+            "s_trader.Details": "abc:F_Name_2:L_Name_2",
+            "s_trade.Details": "31:400"
+          }
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
         "url": "/trades/1"
       },
       "response": {

@@ -1,0 +1,154 @@
+[
+  {
+    "string" : "String",
+    "optionalString" : "OptionalString",
+    "repeatedString" : ["RepeatedString1", "RepeatedString2"],
+
+    "integer" : 1,
+    "optionalInteger" : 2,
+    "repeatedInteger" : [1, 2],
+
+    "float" : 1.0,
+    "optionalFloat" : 2.5,
+    "repeatedFloat" : [1.1, 2.2],
+
+    "decimal" : 1.23456789,
+    "optionalDecimal" : 2.3596784236,
+    "repeatedDecimal" : [1.2359361818, 12.15456123618],
+
+    "boolean" : true,
+    "optionalBoolean" : false,
+    "repeatedBoolean" : [true, false],
+
+    "date" : "2022-12-12",
+    "optionalDate" : "2022-12-12T01:00:05",
+    "repeatedDate" : ["2022-12-12", "2023-12-12T12:00:00"],
+
+    "strictDate" : "2022-12-12",
+    "optionalStrictDate" : "2019-12-12",
+    "repeatedStrictDate" : ["2022-12-12", "2020-12-12"],
+
+    "dateTime" : "2023-12-12T12:00:00",
+    "optionalDateTime" : "2020-12-12T12:00:00", 
+    "repeatedDateTime" : ["2020-12-12T12:00:00", "2023-12-12T12:00:00"],
+
+    "enum" : "MALE",
+    "optionalEnum" : "meta::external::format::json::executionPlan::test::types::Gender.FEMALE",
+    "repeatedEnum" : ["MALE", "meta::external::format::json::executionPlan::test::types::Gender.OTHER"],
+
+    "measure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    },
+    "optionalMeasure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":15.5
+    },
+    "repeatedMeasure" : [
+      {
+        "unit":[
+          {
+            "unitId":"meta::pure::unit::Mass~Kilogram",
+            "exponentValue":1
+          }
+        ],
+        "value":5.5
+      },
+      {
+        "unit":[
+          {
+            "unitId":"meta::pure::unit::Mass~Kilogram",
+            "exponentValue":1
+          }
+        ],
+        "value":15.5
+      }
+    ]
+  },
+  {
+    "string" : "String",
+
+    "integer" : 1,
+
+    "float" : 1.0,
+
+    "decimal" : 1.23456789,
+
+    "boolean" : true,
+
+    "date" : "2022-12-12",
+
+    "strictDate" : "2022-12-12",
+
+    "dateTime" : "2023-12-12T12:00:00",
+
+    "enum" : "MALE",
+
+    "measure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    }
+  },
+  {
+    "string" : "String",
+    "repeatedString" : "RepeatedString1",
+
+    "integer" : 1,
+    "repeatedInteger" : 2,
+
+    "float" : 1.0,
+    "repeatedFloat" : 2.2,
+
+    "decimal" : 1.23456789,
+    "repeatedDecimal" : 1.2359361818,
+
+    "boolean" : true,
+    "repeatedBoolean" : false,
+
+    "date" : "2022-12-12",
+    "repeatedDate" : "2022-12-12",
+
+    "strictDate" : "2022-12-12",
+    "repeatedStrictDate" : "2022-12-12",
+
+    "dateTime" : "2023-12-12T12:00:00",
+    "repeatedDateTime" : "2023-12-12T12:00:00",
+
+    "enum" : "MALE",
+    "repeatedEnum" : "MALE",
+
+    "measure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    },
+    "repeatedMeasure" : {
+      "unit":[
+        {
+          "unitId":"meta::pure::unit::Mass~Kilogram",
+          "exponentValue":1
+        }
+      ],
+      "value":5.5
+    }
+  }
+]

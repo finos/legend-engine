@@ -237,7 +237,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
 
    let resolvedModel                       = $node.binding.modelUnit->resolve();
-   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties($sourceRecordTree.class)
+   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties(meta::pure::mapping::modelToModel::JsonDataRecord)
                                                                ->map(ti| if($node.tree->isEmpty(),| $ti->addForClass($class)->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
 
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),

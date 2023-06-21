@@ -20,6 +20,11 @@ function meta::legend::compileLegendGrammar(grammar:String[1]): PackageableEleme
   $func->eval($grammar);
 }
 
+function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], extensions:meta::pure::extension::Extension[*]): String[1]
+{
+  meta::legend::executeLegendQuery($f, $vars, ^meta::pure::runtime::ExecutionContext(), $extensions);
+}
+
 function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]): String[1]
 {
   let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';

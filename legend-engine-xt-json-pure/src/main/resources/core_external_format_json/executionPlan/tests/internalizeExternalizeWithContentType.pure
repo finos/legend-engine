@@ -47,9 +47,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithNestedTree(): Boolean[1]
+{
+  let query   = {data:String[1]| Person->fromJson($data)->graphFetch(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->toJson(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}, "addresses": {"street": "Street A"}}'));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}}', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithIncompleteData(): Boolean[1]
 {
-  let query   = {data:String[1]| Person->fromJson($data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->toJson(checked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#, getTestBinding()))};
+  let query   = {data:String[1]| Person->fromJson($data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->toJson(checked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#, 'application/json'))};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
@@ -72,6 +81,13 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 import meta::legend::*;
 import meta::external::shared::format::binding::*;
 import meta::external::format::json::executionPlan::test::withContentType::*;
+
+Class meta::external::format::json::executionPlan::test::withContentType::RefinedPerson
+{
+  fullName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
 
 Class meta::external::format::json::executionPlan::test::withContentType::TargetPerson
 {
@@ -98,25 +114,7 @@ Class meta::external::format::json::executionPlan::test::withContentType::Addres
   street : String[1];
 }
 
-function meta::external::format::json::executionPlan::test::withContentType::getTestBinding():Binding[1]
-{
-  let schema = 
-    '###ExternalFormat\n' +
-    'Binding meta::external::format::json::executionPlan::test::withContentType::TestBinding\n' +
-    '{\n' +
-    '  contentType: \'application/json\';\n' +
-    '  modelIncludes: [\n' +
-    '    meta::external::format::json::executionPlan::test::withContentType::Person,\n' +
-    '    meta::external::format::json::executionPlan::test::withContentType::Firm,\n' +
-    '    meta::external::format::json::executionPlan::test::withContentType::Address\n' +
-    '  ];\n' +
-    '}\n';
-  
-  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
-}
-
 ###Mapping
-
 Mapping meta::external::format::json::executionPlan::test::withContentType::M2MMapping
 (
   meta::external::format::json::executionPlan::test::withContentType::TargetPerson: Pure

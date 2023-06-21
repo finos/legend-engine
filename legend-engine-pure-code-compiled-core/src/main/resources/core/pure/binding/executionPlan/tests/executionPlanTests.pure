@@ -70,6 +70,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
                 '      checked = false\n' +
+                '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
                 '\n' +
                 '      (\n' +
                 '        VariableResolution\n' +
@@ -107,6 +108,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                 '      enableConstraints = true\n' +
                 '      checked = false\n' +
+                '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
                 '\n' +
                 '      (\n' +
                 '        VariableResolution\n' +
@@ -136,6 +138,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
         '  enableConstraints = true\n' +
         '  checked = false\n' +
+        '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
         '\n' +
         '  (\n' +
         '    Sequence\n' +
@@ -193,6 +196,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                   '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
                   '      enableConstraints = true\n' +
                   '      checked = true\n' +
+                  '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
                   '\n' +
                   '      (\n' +
                   '        VariableResolution\n' +
