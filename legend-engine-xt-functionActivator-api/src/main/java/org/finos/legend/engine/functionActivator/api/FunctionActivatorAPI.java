@@ -90,12 +90,8 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
-            if (service == null)
-            {
-                throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");
-            }
-            return Response.ok(objectMapper.writeValueAsString(service.validate(pureModel, activator, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = getActivatorService(activator, pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.validate(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -117,17 +113,46 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
-            if (service == null)
-            {
-                throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");
-            }
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(pureModel, activator, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = getActivatorService(activator,pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
             return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
         }
+    }
+
+    @POST
+    @Path("renderArtifact")
+    @ApiOperation(value = "Display generated artifact as text where applicable")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response renderArtifact(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        try
+        {
+            String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
+            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
+            Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
+            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = getActivatorService(activator, pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.renderArtifact(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+        }
+    }
+
+    public FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> getActivatorService(Root_meta_external_functionActivator_FunctionActivator activator, PureModel pureModel)
+    {
+        FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        if (service == null)
+        {
+            throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");
+        }
+        return service;
     }
 }

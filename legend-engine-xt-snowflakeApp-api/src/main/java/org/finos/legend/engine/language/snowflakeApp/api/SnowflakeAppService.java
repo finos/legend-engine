@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppProtocolExtension;
 import org.finos.legend.pure.generated.Root_meta_external_functionActivator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp;
@@ -77,7 +78,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MutableList<? extends FunctionActivatorError> validate(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
         return sqlExpressions.size() != 1 ?
@@ -87,7 +88,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         Object[] objects = this.extractSQLExpressionsAndConnectionMetadata(pureModel, activator, routerExtensions);
         RichIterable<String> sqlExpressions = (RichIterable<String>) objects[0];
@@ -106,6 +107,13 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
             FunctionActivatorError functionActivatorError = new FunctionActivatorError(e.getMessage());
             return Lists.mutable.with(functionActivatorError);
         }
+    }
+
+    @Override
+    public SnowflakeAppArtifact renderArtifact(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    {
+        RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
+        return new SnowflakeAppArtifact(sqlExpressions);
     }
 
     private RichIterable<String> extractSQLExpressions(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -143,4 +151,5 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     {
         return Lists.mutable.with(node).withAll(node._executionNodes().flatCollect(this::collectAllNodes));
     }
+
 }
