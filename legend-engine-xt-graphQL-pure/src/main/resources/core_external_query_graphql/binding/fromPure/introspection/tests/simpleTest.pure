@@ -1,0 +1,51 @@
+###Pure
+import meta::external::query::graphQL::metamodel::introspection::*;
+import meta::external::query::graphQL::transformation::introspection::*;
+import meta::external::query::graphQL::binding::fromPure::introspection::*;
+import meta::external::query::graphQL::binding::fromPure::introspection::tests::*;
+
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::A
+{ 
+  b: B[*]; 
+}
+
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::B
+{ 
+  a: A[0..1];
+  c: C[*]; 
+}
+
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::C 
+{
+  b: B[*];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::D
+{
+}
+
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_C
+{ 
+  c: C[1];
+  a: A[*];
+}
+
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_D
+{ 
+  b: B[1];
+  d: D[*];
+}
+
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_D
+{ 
+  c: C[1];
+  d: D[*];
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::introspection::tests::testSimpleScanTypes(): Boolean[1]
+{
+  let types = meta::external::query::graphQL::binding::fromPure::introspection::scanTypes(A, []);
+  let expectedSize = 4;
+  assert($types->size() == $expectedSize, 'Number of types discovered should be ' + $expectedSize->toString() + ' but it is ' + $types->size()->toString());
+  assert($types == $types->distinct(), 'All elements must be unique');
+}
