@@ -1008,7 +1008,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   processFunctionCall(^FunctionCall(name = ^QualifiedName(parts = 'date_part'), arguments = [^StringLiteral(value = $part, quoted = false), $e.expression], distinct = false), $expContext, $context);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCurrentTime(c:CurrentTime[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCurrentTime(c:CurrentTime[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processCurrentTime');
   assert($c.precision->isEmpty(), | ' precision currently unsupported');
@@ -1022,7 +1022,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   sfe($func, []);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIsNullPredicate(n:IsNullPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIsNullPredicate(n:IsNullPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processIsNullPredicate');
   let value = $n.value->processExpression($expContext, $context);
@@ -1030,14 +1030,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   sfe(isEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIsNotNullPredicate(n:IsNotNullPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processIsNotNullPredicate(n:IsNotNullPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processIsNotNullPredicate');
   let value = $n.value->processExpression($expContext, $context);
   sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInPredicate(i:InPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInPredicate(i:InPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processInPredicate');
   let value = $i.value->processExpression($expContext, $context);
@@ -1143,7 +1143,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug('processSearchedCaseExpression');
   let default = if ($s.defaultValue->isEmpty(),
-                  | iv(Nil),
+                  | iv([]),
                   | $s.defaultValue->toOne()->processExpression($expContext, $context));
 
   $s.whenClauses->reverse()->fold({clause, else |
@@ -1703,11 +1703,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   })->eval();
 }
 
-//TODO handle arg type
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processComparisonExpression(c:ComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
-
   debug('processComparisonExpression');
+
   let left = $c.left->processExpression($expContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
 
@@ -1716,6 +1715,38 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let type = if ($leftType == $rightType, | $leftType, | Number);
 
+  if ($type->instanceOf(Enumeration),
+    | processEnumComparison($c, $left.genericType.rawType->toOne()->cast(@Enumeration<Enum>), $left, $right, $type, $expContext, $context),
+    | processStandardComparison($c, $left, $right, $type, $expContext, $context));
+}
+
+//we have to create this as SQL providers are working on varchars, not enums, so can form comparison operators safely
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processEnumComparison(c:ComparisonExpression[1], enum:Enumeration<Enum>[1], left:ValueSpecification[1], right:ValueSpecification[1], type:Type[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
+  let enumValues = $enum->enumValues().name->sort();
+
+  let value = $c.right->match([
+    s:StringLiteral[1] | $enum->extractEnumValue($s.value),
+    a:meta::external::query::sql::metamodel::Expression[0..1] | fail('unsupported enumeration comparison, right hand side must be a literal value'); [];
+  ]);
+
+  let index = $enumValues->indexOf($value->toOne().name);
+
+  let values = [
+    pair(ComparisonOperator.LESS_THAN, | $enumValues->take($index)),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL, | $enumValues->take($index + 1)),
+    pair(ComparisonOperator.GREATER_THAN, | $enumValues->drop($index + 1)),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, | $enumValues->drop($index))
+  ]->getValue($c.operator,| [])->eval();
+
+  [
+    pair(ComparisonOperator.EQUAL, | $c->processStandardComparison($left, $right, $type, $expContext, $context)),
+    pair(ComparisonOperator.NOT_EQUAL, | $c->processStandardComparison($left, $right, $type, $expContext, $context))
+  ]->getValue($c.operator, | processInPredicate(^InPredicate(valueList = ^InListExpression(values = $values->map(v | ^StringLiteral(value = $v,quoted = false))),value = $c.left), $expContext, $context))->eval();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStandardComparison(c:ComparisonExpression[1], left:ValueSpecification[1], right:ValueSpecification[1], type:Type[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
   let leftOne = $left.multiplicity->isToOne();
   let rightOne = $right.multiplicity->isToOne();
 
