@@ -166,11 +166,6 @@
             <artifactId>legend-engine-configuration</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>net.javacrumbs.json-unit</groupId>
-            <artifactId>json-unit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>

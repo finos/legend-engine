@@ -601,7 +601,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             case PURE:
                 return new RelationalResultToPureTDSSerializer(this);
-            case RAW:
             case PURE_TDSOBJECT:
                 return new RelationalResultToPureTDSToObjectSerializer(this);
             case CSV:

@@ -40,6 +40,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
@@ -58,8 +60,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregateSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingDataTestSuite;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingDataTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingQueryTestSuite;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingQueryTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
@@ -521,13 +525,22 @@ public class HelperMappingBuilder
             {
                 throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", testSuite.sourceInformation, EngineErrorType.COMPILATION);
             }
-            if (test instanceof MappingTestSuite)
+            if (testSuite instanceof MappingDataTestSuite)
+            {
+                MappingDataTestSuite mappingTestSuite = (MappingDataTestSuite) testSuite;
+                Root_meta_pure_mapping_metamodel_MappingDataTestSuite dataTestSuite = new Root_meta_pure_mapping_metamodel_MappingDataTestSuite_Impl("", null,  context.pureModel.getClass("meta::pure::mapping::metamodel::MappingDataTestSuite"));
+                return dataTestSuite._id(mappingTestSuite.id)
+                       ._storeTestData(ListIterate.collect(mappingTestSuite.storeTestData, ele -> HelperMappingBuilder.processMappingElementTestData(ele, context, new ProcessingContext("Mapping Element: "))))
+                    ._tests(ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, pureMapping, context)))
+                    ._testable(pureMapping);
+            }
+            else if (test instanceof MappingFunctionTestSuite)
             {
 
-                MappingTestSuite queryTestSuite = (MappingTestSuite) test;
-                Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingSuite = new Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl("", null, context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTestSuite"));
+                MappingFunctionTestSuite queryTestSuite = (MappingFunctionTestSuite) test;
+                Root_meta_pure_mapping_metamodel_MappingQueryTestSuite mQueryTestSuite = new Root_meta_pure_mapping_metamodel_MappingQueryTestSuite_Impl("", null, context.pureModel.getClass("meta::pure::mapping::metamodel::MappingQueryTestSuite"));
 
-                return compiledMappingSuite._id(queryTestSuite.id)
+                return mQueryTestSuite._id(queryTestSuite.id)
                     ._query(HelperValueSpecificationBuilder.buildLambda(queryTestSuite.func, context))
                     ._tests(ListIterate.collect(queryTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, pureMapping, context)))
                     ._testable(pureMapping);
