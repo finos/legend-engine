@@ -5,10 +5,10 @@ import meta::external::query::graphQL::binding::fromPure::introspection::*;
 
 function meta::external::query::graphQL::binding::fromPure::introspection::scanTypes(t:Type[1], processed:Type[*]):Type[*]
 {
-  let np = if(!$processed->contains($t), | $processed->concatenate($t), | $processed);
-  if (!$processed->contains($t) && $t->instanceOf(Class),
-      | 
-        let propTypes = $t->cast(@Class<Any>)
+  let processedContainsType = $processed->contains($t);
+  let np = if($processedContainsType, | $processed, | $processed->concatenate($t));
+  if (!$processedContainsType && $t->instanceOf(Class),    
+    | let propTypes = $t->cast(@Class<Any>)
                           ->allProperties().genericType.rawType
                           ->distinct()
                           ->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())
