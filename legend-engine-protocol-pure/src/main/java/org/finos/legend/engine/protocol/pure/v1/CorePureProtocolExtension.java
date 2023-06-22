@@ -44,10 +44,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -141,12 +139,10 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
-                        .withSubtype(MappingDataTestSuite.class, "mappingTestDataSuite")
-                        .withSubtype(MappingFunctionTestSuite.class, "mappingTestQuerySuite")
+                        .withSubtype(MappingTestSuite.class, "mappingTestSuite")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
-                        .withSubtype(MappingDataTest.class, "mappingDataTest")
-                        .withSubtype(MappingFunctionTest.class, "mappingQueryTest")
+                        .withSubtype(MappingTest.class, "mappingTest")
                         .build()
         ));
     }
