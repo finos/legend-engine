@@ -508,7 +508,10 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let wrappedNode   = generateExecutionNodeForPostProcessedResult($sqlNode, $allExecNodes, $postProcessorResult, $extensions);
 
 
-   let newVars = newVarsForMilestoningContext($currentTree, $inScopeVars);
+   let newVars = if($currentTree.property->instanceOf(QualifiedProperty),
+                    | $currentTree.property->cast(@QualifiedProperty<Any>)->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($currentTree.parameters->evaluateAndDeactivate()->at($currentTree.property->cast(@QualifiedProperty<Any>)->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->evaluateAndDeactivate()->reactivate($inScopeVars)->evaluateAndDeactivate()))),
+                    | []
+                 );
    let mcForProperty = milestoningContextFromPropertyTree($currentTree, $parentTree, defaultState($mapping, $inScopeVars->putAll($newVars)), $extensions);
    let children = $currentTree->generateRelationalChildGraphNodes($currentPath, $setImpls, $simplePrimitiveProperties, $orderedPaths, $store, $mapping, $runtime, $inScopeVars, $mcForProperty, $exeCtx, $extensions, $debug);
    let columns = $sqlNode.resultColumns->filter(x | $x.label->startsWith('"pk_'))->map(x | ^SQLResultColumn(label = $x.label->substring(1, $x.label->length() - 1), dataType = $x.dataType->toOne()));
@@ -592,13 +595,10 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
 
    /* Assert conditions on sets */
    $setImpl->assertConditionsOnSetImpl($simplePrimitiveProperties);
-   
-   let newVars = newVarsForMilestoningContext($rootTree, $inScopeVars);
-   let mcForProperty = milestoningContextFromPropertyTree($rootTree, $targetFetchTree, defaultState($mapping, $inScopeVars->putAll($newVars)), $extensions);
 
    /* Generate Sql Query */
    print(if($debug.debug,|$debug.space+'   >Generate cross property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
-   let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $mcForProperty, $debug->indent(2), $extensions);
+   let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $debug->indent(2), $extensions);
    let dbConnection        = $runtime->connectionByElement($store)->cast(@DatabaseConnection);
    let oneRuntime          = ^Runtime(connections = $dbConnection);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
@@ -750,9 +750,10 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
    
    let res = if ($isQualified,
                 {|
-                   let newVars      = newVarsForMilestoningContext($propTree, $inScopeVars);
+                   let qualifier    = $propTree.property->cast(@QualifiedProperty<Any>);
+                   let newVars      = $qualifier->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($propTree.parameters->evaluateAndDeactivate()->at($qualifier->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->evaluateAndDeactivate()->reactivate($inScopeVars)->evaluateAndDeactivate())));
                    let updatedState = ^$pureToSqlState(inGetterFlow = true, qualifierBase=^OperationWithParentPropertyMapping(element = $base), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
-                   processQualifiedProperty($propTree.property->cast(@QualifiedProperty<Any>), [], $base, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
+                   processQualifiedProperty($qualifier, [], $base, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
                 },
                 {|
                    processPropertyMapping($propTree.propertyMapping, $parentTree->typeFromGraphFetchTree()->cast(@Class<Any>), $base, ^$pureToSqlState(inGetterFlow = true), JoinType.LEFT_OUTER, '_gftp', ^List<ColumnGroup>(), $debug, $extensions)->cast(@SelectWithCursor)
@@ -778,11 +779,12 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
    
    let res = if ($isQualified,
                 {|
-                   let newVars       = newVarsForMilestoningContext($propTree, $inScopeVars);
+                   let qualifier     = $propTree.property->cast(@QualifiedProperty<Any>);
+                   let newVars       = $qualifier->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($propTree.parameters->evaluateAndDeactivate()->at($qualifier->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->reactivate($inScopeVars)->evaluateAndDeactivate())));
                    let mcForProperty = milestoningContextFromPropertyTree($propTree, $parentTree, ^$pureToSqlState(inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars)), $extensions);
                    let baseWithMc    = ^$base(milestoningContext = $mcForProperty);
                    let updatedState  = ^$pureToSqlState(inGetterFlow = true, qualifierBase = ^OperationWithParentPropertyMapping(element = $baseWithMc), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
-                   let withQualifier = processQualifiedProperty($propTree.property->cast(@QualifiedProperty<Any>), [], $baseWithMc, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
+                   let withQualifier = processQualifiedProperty($qualifier, [], $baseWithMc, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
                    let newSelect     = $withQualifier.select->pushFilters($extensions);
                    let innerRes      = ^$withQualifier(select = ^$newSelect(leftSideOfFilter = []));
                    let toPropagateMc = if ($propTree.property->hasGeneratedMilestoningPropertyStereotype(),
@@ -834,7 +836,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
    ^$newQueryMergedWithMilestoneFilters(distinct = true)->pushFilters($extensions);
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::generateCrossPropertyQuery(propTree: RoutedPropertyGraphFetchTree[1], parentIndex: Integer[1], xStorePropertyMapping: XStorePropertyMapping[1], srcProperties: AbstractProperty<Any>[*], mapping: Mapping[1], inScopeVars: Map<String, List<Any>>[1], propertiesToFetch: Property<Nil,Any|*>[*], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], extensions:Extension[*]): SelectSQLQuery[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::generateCrossPropertyQuery(propTree: RoutedPropertyGraphFetchTree[1], parentIndex: Integer[1], xStorePropertyMapping: XStorePropertyMapping[1], srcProperties: AbstractProperty<Any>[*], mapping: Mapping[1], inScopeVars: Map<String, List<Any>>[1], propertiesToFetch: Property<Nil,Any|*>[*], debug: DebugContext[1], extensions:Extension[*]): SelectSQLQuery[1]
 {
    let setImpl        = $propTree.sets->toOne()->cast(@RootRelationalInstanceSetImplementation);
    let pureToSqlState = ^State(inScopeVars = $inScopeVars, mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth=0, inProjectFunctions=false,  processingProjectionThread=false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
@@ -861,13 +863,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
 
    let pksAndProperties = $pkQuries->concatenate($propertyQueries).select->mergeSQLQueryData('_gftcm', ^$pureToSqlState(shouldIsolate=true), $debug, $extensions);
    let mergedQuery  = $joinOpQuery->concatenate($targetWithFilter).select->concatenate($pksAndProperties)->mergeSQLQueryData('_gftcm', $pureToSqlState, $debug, $extensions);
-   let mergedSelectMilestoned = if($mc.currentMilestoningStrategy->isNotEmpty(),
-                                    | let milestoningStrategy = $mc.currentMilestoningStrategy->toOne();
-                                      let tableFilter = $milestoningStrategy->getAllMilestonedTableFilter($mergedQuery, $mc->toOne(), $pureToSqlState.inScopeVars, $extensions);
-                                      let queryWithMilestoningFilters = $mergedQuery->applyMilestoningFilters($tableFilter, getTableToTableIdentifyFunction(), true, $extensions)->cast(@SelectSQLQuery);
-                                      let queryWithMilestoningColumns = ^$queryWithMilestoningFilters(columns+=$mc.columns($currentNode.alias.relationalElement->toOne()->findMainTable()));,
-                                    | $mergedQuery);
-   let mergedSelect = ^$mergedSelectMilestoned(distinct = true)->pushFilters($extensions);
+   let mergedSelect = ^$mergedQuery(distinct = true)->pushFilters($extensions);
 
    let tempSelectSQL = ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = ^VarSetPlaceHolder(varName = crossTempTableName($parentIndex)))));
    let tempAlias     = ^TableAlias(name = 'driverTemp', relationalElement = $tempSelectSQL);
@@ -970,15 +966,6 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::changeD
                                )
              )
    );
-}
-
-function <<access.private>> meta::relational::graphFetch::executionPlan::newVarsForMilestoningContext(propTree: RoutedPropertyGraphFetchTree[1], inScopeVars: Map<String, List<Any>>[1]):Pair<String, List<Any>>[*]
-{
-  if($propTree.property->instanceOf(QualifiedProperty),
-     | let qualifier = $propTree.property->cast(@QualifiedProperty<Any>);
-       $qualifier->functionType().parameters->evaluateAndDeactivate()->tail()->map(x | pair($x.name, list($propTree.parameters->evaluateAndDeactivate()->at($qualifier->functionType().parameters->evaluateAndDeactivate()->indexOf($x) - 1)->evaluateAndDeactivate()->reactivate($inScopeVars)->evaluateAndDeactivate())));,
-     | []
-  );
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::milestoningContextFromPropertyTree(propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], state: State[1], extensions:Extension[*]):TemporalMilestoningContext[0..1]

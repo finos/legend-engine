@@ -21,7 +21,6 @@ import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::utils::*;
 import meta::pure::runtime::*;
-import meta::pure::milestoning::*;
 
 // To Remove ------------------------------------------
 import meta::pure::graphFetch::execution::*;
@@ -104,10 +103,8 @@ function <<access.private>> meta::pure::router::store::routing::build(v:ValueSpe
                                                                                 e:StoreMappingRoutedValueSpecification[1]|
                                                                                     let propNameReturnTypePair =  $f.func->match([
                                                                                                                                   p:Property<Nil,Any|*>[1]|pair($p.name->toOne(), $p.classifierGenericType.typeArguments->at(1).rawType->toOne()),
-                                                                                                                                  qp:QualifiedProperty<Any>[1]| if($qp->hasGeneratedMilestoningPropertyStereotype(),
-                                                                                                                                                                    | pair($qp->edgePointPropertyName()->toOne(), $qp.genericType.rawType->toOne()),
-                                                                                                                                                                    | pair($qp.name->toOne(), $qp.genericType.rawType->toOne()));
-                                                                                                                                 ])->toOne();
+                                                                                                                                  qp:QualifiedProperty<Any>[1]|pair($qp.name->toOne(), $qp.genericType.rawType->toOne())
+                                                                                                                                ])->toOne();
                                                                                     let propertyName = $propNameReturnTypePair.first;
                                                                                     let setImplementation = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
                                                                                     let newParams = $setImplementation->match([
