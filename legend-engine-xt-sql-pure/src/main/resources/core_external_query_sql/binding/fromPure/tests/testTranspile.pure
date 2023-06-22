@@ -355,6 +355,30 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsEnum():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3" WHERE "The Enum Value" > \'Value2\' or "The Enum Value" < \'Value_3\' or "The Enum Value" >= \'Value2\' or "The Enum Value" <= \'Value_3\' or "The Enum Value" = \'Value1\' or "The Enum Value" != \'Value1\'';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->filter(row|$row.getEnum('The Enum Value')->in(MyEnum.Value_3)
+            || $row.getEnum('The Enum Value')->in([MyEnum.VALUE__4, MyEnum.Value1, MyEnum.Value2])
+            || $row.getEnum('The Enum Value')->in([MyEnum.Value2, MyEnum.Value_3])
+            || $row.getEnum('The Enum Value')->in([MyEnum.VALUE__4, MyEnum.Value1, MyEnum.Value2, MyEnum.Value_3])
+            || $row.getEnum('The Enum Value') == MyEnum.Value1
+            || $row.getEnum('The Enum Value') != MyEnum.Value1
+      )
+  ;};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhereCombined():Boolean[1]
 {
   let sqlString = 'SELECT String, sum(Float) AS "float" FROM service."/service/service1" WHERE Integer = 1 GROUP BY 1';
@@ -1153,6 +1177,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       );};
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
+
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValues():Boolean[1]
 {
