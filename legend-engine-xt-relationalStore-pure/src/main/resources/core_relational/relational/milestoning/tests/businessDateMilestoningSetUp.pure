@@ -1272,6 +1272,91 @@ Database meta::relational::tests::milestoning::ViewChainDb
 
 )
 
+###Mapping
+import meta::relational::tests::milestoning::*;
+
+Mapping meta::relational::tests::milestoning::UnionOnViewWithMilestoningMapping
+(
+  meta::relational::tests::milestoning::BiTemporalProduct : Relational
+  {
+    id   : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductTable.id,
+    name : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductTable.name,
+    classification[stock] : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]@Product_Classification,
+    classification[option] : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]@Product_Classification
+  } 
+
+  *meta::relational::tests::milestoning::ProductClassification: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(stock, option)
+  }
+
+  meta::relational::tests::milestoning::ProductClassification[stock]: Relational
+  {
+    ~filter [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]StockClassification
+
+    type        : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductClassificationView.type,
+    description : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductClassificationView.type_description
+  }
+
+  meta::relational::tests::milestoning::ProductClassification[option]: Relational
+  {
+    ~filter [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]OptionClasification
+
+    type        : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductClassificationView.type,
+    description : [meta::relational::tests::milestoning::UnionOnViewWithMilestoning]ProductClassificationView.type_description
+  }
+)
+
+###Relational
+Database meta::relational::tests::milestoning::UnionOnViewWithMilestoning
+(
+  Table ProductTable
+  (
+    milestoning
+    (
+      business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+    )
+    id Integer PRIMARY KEY, 
+    name VARCHAR(200) PRIMARY KEY,
+    type VARCHAR(200),
+    exchange VARCHAR(200),
+    classificationSystemId Integer,
+    referenceSystemName VARCHAR(200),
+    externalReferenceSystemName VARCHAR(200),
+    from_z DATE,
+    thru_z DATE
+  )
+
+  Table ProductClassificationTable
+  (
+    milestoning
+    (
+      business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+    )
+    type VARCHAR(200) PRIMARY KEY,
+    type_description VARCHAR(400),
+    system VARCHAR(200),
+    exchange VARCHAR(200),
+    from_z DATE, 
+    thru_z DATE
+  )
+
+  View ProductClassificationView
+  (
+    type: ProductClassificationTable.type PRIMARY KEY,
+    type_description: ProductClassificationTable.type_description,
+    system: ProductClassificationTable.system,
+    exchange: ProductClassificationTable.exchange,
+    from_z: ProductClassificationTable.from_z,
+    thru_z: ProductClassificationTable.thru_z
+  )
+
+  Filter StockClassification(ProductClassificationView.type = 'STOCK')
+  Filter OptionClasification(ProductClassificationView.type = 'OPTION')
+
+  Join Product_Classification(ProductTable.type=ProductClassificationView.type)
+)
+
 ###Relational
 Database meta::relational::tests::milestoning::db(
    Table OrderTable(id Integer PRIMARY KEY, orderDate DATE, prodFk Integer)

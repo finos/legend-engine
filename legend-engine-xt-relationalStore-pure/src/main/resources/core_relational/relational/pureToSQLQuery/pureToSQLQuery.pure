@@ -1684,7 +1684,13 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                       let res = if ($updatedRelationalPropertyMappings->size() > 1,
                                                          |
                                                             let targets = $updatedRelationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-                                                            let union = buildSQLQueryOutManySetImplementations($srcOperation,
+                                                            let srcOperationWithMilestoneProcessingState = if(!$property->hasGeneratedMilestoningPropertyStereotype(),
+                                                                                                              | ^$srcOperation(milestoningContext = []),
+                                                                                                              |
+                                                                                                            if($property->isEdgePointProperty() || $srcOperation.milestoningContext.isAllVersions->orElse(false),
+                                                                                                              | $srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.ALL_VERSIONS), 
+                                                                                                              | $srcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.NON_MILESTONED_CLASS_PROPERTY)));
+                                                            let union = buildSQLQueryOutManySetImplementations($srcOperationWithMilestoneProcessingState,
                                                                                                                $updatedRelationalPropertyMappings,
                                                                                                                $propertyOwnerClass,
                                                                                                                $c,
@@ -1694,8 +1700,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                                                                                $extensions);
                                                             let nSrcOperation = $union.second.first;
                                                             let currentData = $nSrcOperation.select.data->toOne();
-                                                            let srcOperationWithMilestoneProcessingState=$nSrcOperation->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.NON_MILESTONED_CLASS_PROPERTY);
-                                                            let queryWithJoin = applyJoinInTree($currentData, $srcOperationWithMilestoneProcessingState.currentTreeNode->toOne(), $union.first, $srcOperationWithMilestoneProcessingState, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+                                                            let queryWithJoin = applyJoinInTree($currentData, $nSrcOperation.currentTreeNode->toOne(), $union.first, ^$nSrcOperation(milestoningContext = $srcOperation.milestoningContext)->updateMilestoningContextProcessingStateForProperties(MilestoningProcessingState.NON_MILESTONED_CLASS_PROPERTY), $nodeId, $joinType, true, true, [], $state, $context, $extensions);
                                                             // Merge would most likely be more appropriate!
                                                             let select = $queryWithJoin.select;
                                                             let withFilter = ^$queryWithJoin(select = ^$select(filteringOperation = $nSrcOperation.select.filteringOperation));
