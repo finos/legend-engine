@@ -1002,7 +1002,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(ExtractField.DAY, 'day'),
     pair(ExtractField.HOUR, 'hour'),
     pair(ExtractField.MINUTE, 'minute'),
-    pair(ExtractField.SECOND, 'second')
+    pair(ExtractField.SECOND, 'second'),
+    pair(ExtractField.EPOCH, 'epoch')
   ]->getValue($e.field);
 
   processFunctionCall(^FunctionCall(name = ^QualifiedName(parts = 'date_part'), arguments = [^StringLiteral(value = $part, quoted = false), $e.expression], distinct = false), $expContext, $context);
@@ -1496,7 +1497,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair('day', dayOfMonth_Date_1__Integer_1_),
           pair('hour', hour_Date_1__Integer_1_),
           pair('minute', minute_Date_1__Integer_1_),
-          pair('second', second_Date_1__Integer_1_)
+          pair('second', second_Date_1__Integer_1_),
+          pair('epoch', toEpochValue_Date_1__Integer_1_)
         ]->getValue($value->toLower());
 
         sfe($func, $args->at(1));

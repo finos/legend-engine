@@ -840,7 +840,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDatePart():Boolean[1]
 {
   let sqlString = 'SELECT date_part(\'year\', StrictDate) AS "YEAR", date_part(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_part(\'month\', StrictDate) AS "MONTH", date_part(\'week\', StrictDate) AS "WEEK", ' +
-                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", date_part(\'second\', StrictDate) AS "SECOND" FROM service."/service/service1"';
+                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", date_part(\'second\', StrictDate) AS "SECOND", ' +
+                  'date_part(\'epoch\', StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -857,7 +858,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
                 col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
                 col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
-                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
+                col(row:TDSRow[1] | toEpochValue($row.getStrictDate('StrictDate')), 'EPOCH')
               ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -867,7 +869,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtract():Boolean[1]
 {
   let sqlString = 'SELECT EXTRACT(\'year\' FROM StrictDate) AS "YEAR", EXTRACT(\'quarter\' FROM CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", EXTRACT(\'month\' FROM StrictDate) AS "MONTH", EXTRACT(\'week\' FROM StrictDate) AS "WEEK", ' +
-                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", EXTRACT(\'second\' FROM StrictDate) AS "SECOND" FROM service."/service/service1"';
+                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", EXTRACT(\'second\' FROM StrictDate) AS "SECOND", ' +
+                  'EXTRACT(\'epoch\' FROM StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -884,7 +887,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
                 col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
                 col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
-                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
+                col(row:TDSRow[1] | toEpochValue($row.getStrictDate('StrictDate')), 'EPOCH')
               ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());

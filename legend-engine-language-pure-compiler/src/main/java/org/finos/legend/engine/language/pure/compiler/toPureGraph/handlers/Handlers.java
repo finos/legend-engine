@@ -1096,10 +1096,17 @@ public class Handlers
 
     private void registerOlapMath()
     {
-        register("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
-        register("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
-        register("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
-        register("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, ps -> res("meta::pure::functions::collection::Map", "one"));
+        ReturnInference resolve = ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(this.pureModel.getType("meta::pure::functions::collection::Map"))
+                ._typeArguments(FastList.newListWith(
+                        this.pureModel.getGenericType("meta::pure::metamodel::type::Any"),
+                        this.pureModel.getGenericType("Integer")
+                )), "one");
+
+        register("meta::pure::functions::math::olap::rank_Any_MANY__Map_1_", false, resolve);
+        register("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", false, resolve);
+        register("meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_", false, resolve);
+        register("meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_", false, resolve);
     }
 
     private void registerAggregations()
