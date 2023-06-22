@@ -67,15 +67,17 @@ public class TestSchemaExploration
     }
 
     @Test
-    public void testDefaults() throws Exception
+    public void testEmptyPatterns() throws Exception
     {
         DatabaseBuilderInput databaseBuilderInput = new DatabaseBuilderInput();
         databaseBuilderInput.connection = createCommonConnection();
         databaseBuilderInput.targetDatabase._package = "my::package";
         databaseBuilderInput.targetDatabase.name = "db";
 
-        Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1", "SCHEMA11"), FastList.newList(), false, false);
-        test(databaseBuilderInput, expected);
+        test(databaseBuilderInput, filterCommonDatabase(FastList.newList(), FastList.newList(), false, false));
+
+        databaseBuilderInput.config.patterns = FastList.newList();
+        test(databaseBuilderInput, filterCommonDatabase(FastList.newList(), FastList.newList(), false, false));
     }
 
     @Test
@@ -86,6 +88,7 @@ public class TestSchemaExploration
         databaseBuilderInput.targetDatabase._package = "my::package";
         databaseBuilderInput.targetDatabase.name = "db";
         databaseBuilderInput.config.enrichTables = true;
+        databaseBuilderInput.config.patterns = FastList.newListWith(new DatabasePattern(null, null));
 
         Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1", "SCHEMA11"), FastList.newListWith("TABLE_1", "TABLE11"), false, false);
         test(databaseBuilderInput, expected);
@@ -100,6 +103,7 @@ public class TestSchemaExploration
         databaseBuilderInput.targetDatabase.name = "db";
         databaseBuilderInput.config.enrichTables = true;
         databaseBuilderInput.config.enrichColumns = true;
+        databaseBuilderInput.config.patterns = FastList.newListWith(new DatabasePattern(null, null));
 
         Database expected = filterCommonDatabase(FastList.newListWith("SCHEMA_1", "SCHEMA11"), FastList.newListWith("TABLE_1", "TABLE11"), true, false);
         test(databaseBuilderInput, expected);
