@@ -377,6 +377,7 @@ public class TestRelationalMappingRunner
         TestExecuted testExecuted2 = (TestExecuted)_test2;
         Assert.assertEquals("testSuite1", testExecuted2.testSuiteId);
         Assert.assertEquals(1, testExecuted2.assertStatuses.size());
+        Assert.assertEquals(TestExecutionStatus.FAIL, testExecuted2.testExecutionStatus);
         AssertionStatus assertionStatus = testExecuted2.assertStatuses.get(0);
         Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
         EqualToJsonAssertFail equalToJsonAssertFail1 = (EqualToJsonAssertFail)assertionStatus;

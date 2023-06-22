@@ -22,14 +22,15 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
+import java.util.List;
 import java.util.Map;
 
 class MappingTestRunnerContext
@@ -44,6 +45,7 @@ class MappingTestRunnerContext
     private final PlanExecutor.ExecuteArgsBuilder executeBuilder;
     private final Map<String, DataElement> dataElementIndex;
     private SingleExecutionPlan plan;
+    private List<Connection> connections;
 
     public MappingTestRunnerContext(Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping, PureModel pureModel, PureModelContextData pureModelContextData, MutableList<PlanTransformer> executionPlanTransformers,
                                     ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions)
@@ -64,6 +66,16 @@ class MappingTestRunnerContext
         Map<String, DataElement> result = Maps.mutable.empty();
         pureModelContextData.getElementsOfType(DataElement.class).forEach(d -> result.put(d.getPath(), d));
         return result;
+    }
+
+    public void withConnections(List<Connection> connections)
+    {
+        this.connections = connections;
+    }
+
+    public List<Connection> getConnections()
+    {
+        return connections;
     }
 
     public PureModel getPureModel()
@@ -96,7 +108,7 @@ class MappingTestRunnerContext
         return plan;
     }
 
-    public void setPlan(SingleExecutionPlan plan)
+    public void withPlan(SingleExecutionPlan plan)
     {
         this.executeBuilder.withPlan(plan);
         this.plan = plan;

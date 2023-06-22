@@ -19,14 +19,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -36,20 +32,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
-import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -58,7 +49,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +73,7 @@ public class MappingTestRunner implements TestRunner
     {
         this.pureMapping = pureMapping;
         this.pureVersion = pureVersion;
-        this.executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        this.executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
         this.extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
     }
 
@@ -106,7 +96,7 @@ public class MappingTestRunner implements TestRunner
             MappingTestSuite mappingTestSuite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
             MappingTestRunnerContext context = new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), extensions.flatCollect(e -> e.getExtraExtensions(pureModel)));
             // build plan, executor args
-            List<MappingTest> mappingTests = this.validateMappingSuiteTests(mappingTestSuite, MappingTest.class);
+            List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
             // running of each test is catchable and put under a test error
             for (MappingTest mappingTest : mappingTests)
             {
@@ -142,33 +132,17 @@ public class MappingTestRunner implements TestRunner
         List<Pair<Connection, List<Closeable>>> connections = Lists.mutable.empty();
         try
         {
-            Assert.assertTrue(mappingTest.assertions.size() == 1, () -> "Mapping Test expected to have one assertion");
             Root_meta_pure_runtime_Runtime_Impl runtime = new Root_meta_pure_runtime_Runtime_Impl("");
             List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
             connections = connectionInfo.stream()
-                    .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStoreWithMultiInputs(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
+                    .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
                             .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
             connections.forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.getConnectionVisitor())));
-
-            Optional<String> executeInput = resolveInputStringFromDataElement(mappingTest, context);
-            SingleExecutionPlan executionPlan = context.getPlan();
-            if (executionPlan == null || !executeInput.isPresent())
-            {
-                executionPlan = PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
-                context.setPlan(executionPlan);
-            }
-            executeInput.ifPresent(stream ->  context.getExecuteBuilder().withInputAsString(stream));
-
+            handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context);
             // execute assertion
             TestAssertion assertion = mappingTest.assertions.get(0);
             PlanExecutor.ExecuteArgs executeArgs = context.getExecuteBuilder().build();
             Result result = this.executor.executeWithArgs(executeArgs);
-            if (result instanceof StreamingResult)
-            {
-                // We want to read streaming results only once
-                StreamingResult streamingResult = (StreamingResult) result;
-                result = new ConstantResult((streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW))));
-            }
             AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
             TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
             testResult.atomicTestId = mappingTest.id;
@@ -187,61 +161,25 @@ public class MappingTestRunner implements TestRunner
         }
     }
 
-    public Optional<String> resolveInputStringFromDataElement(MappingTest mappingTest, MappingTestRunnerContext context)
+    private void handleGenerationOfPlan(List<Connection> incomingConnections, Root_meta_pure_runtime_Runtime_Impl runtime, MappingTestRunnerContext context)
     {
-        if (mappingTest.storeTestData.size() == 1)
+        SingleExecutionPlan executionPlan = context.getPlan();
+        boolean reusePlan = false;
+        if (context.getConnections() != null)
         {
-            StoreTestData storeTestData = mappingTest.storeTestData.get(0);
-            Store store = resolveStore(context.getPureModelContextData(), storeTestData.store);
-            EmbeddedData embeddedData = EmbeddedDataHelper.resolveDataElement(context.getDataElementIndex(), storeTestData.data);
-            if (store instanceof ModelStore && embeddedData instanceof ModelStoreData)
+            List<Connection> cachedConnections = context.getConnections();
+            if (cachedConnections.size() == incomingConnections.size())
             {
-                ModelStoreData modelStoreData = (ModelStoreData) embeddedData;
-                for (ModelTestData _data : modelStoreData.modelData)
-                {
-                    if (_data instanceof ModelEmbeddedTestData)
-                    {
-                        EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), ((ModelEmbeddedTestData) _data).data);
-                        if (_embeddedData instanceof ExternalFormatData)
-                        {
-                            return Optional.of(((ExternalFormatData) _embeddedData).data);
-                        }
-                    }
-                    else if (_data instanceof ModelInstanceTestData)
-                    {
-                        ValueSpecification valueSpecification = ((ModelInstanceTestData) _data).instances;
-                        if (valueSpecification instanceof PackageableElementPtr)
-                        {
-                            PackageableElementPtr packageableElementPtr = (PackageableElementPtr) valueSpecification;
-                            DataElement dElement = EmbeddedDataHelper.findDataElement(context.getDataElementIndex(), packageableElementPtr.fullPath);
-                            EmbeddedData testDataElement = dElement.data;
-                            if (testDataElement instanceof ExternalFormatData)
-                            {
-                                return Optional.of(((ExternalFormatData) testDataElement).data);
-                            }
-                        }
-                    }
-                }
+                reusePlan = incomingConnections.stream().allMatch(incomingConnection -> cachedConnections.stream().anyMatch(cachedConn -> cachedConn == incomingConnection));
             }
         }
-        return Optional.empty();
-    }
-
-    private <T extends MappingTest> List<T> validateMappingSuiteTests(MappingTestSuite suite, java.lang.Class<T> cls)
-    {
-        List<T> tests = Lists.mutable.empty();
-        suite.tests.forEach(test ->
+        if (executionPlan == null || !reusePlan)
         {
-           if (cls.isInstance(test))
-           {
-              tests.add((T) test);
-           }
-           else
-           {
-               throw new UnsupportedOperationException("Mapping Suite of type '" + suite.getClass().getName() + "' expects test to be of type '" +  cls.getName() + "'. Test '" + test.id + "' non comaptibale");
-           }
-        });
-        return tests;
+            executionPlan = PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+            context.withPlan(executionPlan);
+        }
+        // set new connections
+        context.withConnections(incomingConnections);
     }
 
     private void closeConnections(List<Pair<Connection, List<Closeable>>> connections)

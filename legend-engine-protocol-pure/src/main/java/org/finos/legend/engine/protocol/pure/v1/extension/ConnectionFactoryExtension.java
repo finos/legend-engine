@@ -61,9 +61,5 @@ public interface ConnectionFactoryExtension
         return Optional.empty();
     }
 
-    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(Map<String, DataElement> dataElements, Store store, EmbeddedData data)
-    {
-        return this.tryBuildTestConnectionsForStore(dataElements, store, data);
-    }
 
 }

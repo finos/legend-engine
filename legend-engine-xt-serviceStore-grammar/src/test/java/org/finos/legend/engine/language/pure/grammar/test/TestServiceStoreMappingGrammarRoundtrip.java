@@ -1,3 +1,4 @@
+
 // Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -182,6 +183,89 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
                 "      function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
                 "      tests:\n" +
                 "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            testServiceStoreTestSuites::ServiceStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testMapping::TestData\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{ \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" }';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+        test("###Mapping\n" +
+                "Mapping testServiceStoreTestSuites::ServiceStoreMapping\n" +
+                "(\n" +
+                "  *testServiceStoreTestSuites::Employee[employee_set]: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeService\n" +
+                "  }\n" +
+                "  *testServiceStoreTestSuites::Employee2[employee2_set]: ServiceStore\n" +
+                "  {\n" +
+                "    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeServiceWithParameters\n" +
+                "    (\n" +
+                "      ~request\n" +
+                "      (\n" +
+                "        parameters\n" +
+                "        (\n" +
+                "          stringParam = $this.stringParam,\n" +
+                "          integerParam = $this.integerParam,\n" +
+                "          floatParam = $this.floatParam,\n" +
+                "          booleanParam = $this.booleanParam\n" +
+                "        )\n" +
+                "      )\n" +
+                "    )\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            testServiceStoreTestSuites::ServiceStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testMapping::TestData\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{ \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" }';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        },\n" +
                 "        test1:\n" +
                 "        {\n" +
                 "          data:\n" +
