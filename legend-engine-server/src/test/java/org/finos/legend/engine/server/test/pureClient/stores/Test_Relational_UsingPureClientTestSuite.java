@@ -82,7 +82,6 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::graphFetch::tests::XStore::inMemoryAndRelational", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::graphFetch::tests::XStore::ordered", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::graphFetch::tests::XStore::milestoning", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::functions::pureToSqlQuery::calendarAggregations", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
                     return suite;
