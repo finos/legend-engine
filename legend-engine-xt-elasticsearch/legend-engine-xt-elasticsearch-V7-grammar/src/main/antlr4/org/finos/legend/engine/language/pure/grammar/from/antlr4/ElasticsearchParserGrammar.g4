@@ -20,7 +20,10 @@ scalarPropertyTypes:                    KEYWORD |
                                         BOOLEAN
 ;
 
-identifier:                             VALID_STRING | STRING | ES_V7_CLUSTER | IMPORT | INDICES | PROPERTIES | FIELDS | scalarPropertyTypes
+complexPropertyTypes:                   OBJECT | NESTED
+;
+
+identifier:                             VALID_STRING | STRING | ES_V7_CLUSTER | IMPORT | INDICES | PROPERTIES | FIELDS | scalarPropertyTypes | complexPropertyTypes
 ;
 
 imports:                                (importStatement)*
@@ -77,7 +80,7 @@ propertyName:                           STRING | VALID_STRING
 namedPropertyDefinition:               propertyName COLON propertyTypeDefinition
 ;
 
-propertyTypeDefinition:                 scalarPropertyDefinition
+propertyTypeDefinition:                 scalarPropertyDefinition | complexPropertyDefinition
 ;
 
 scalarPropertyContent:                  BRACE_OPEN
@@ -88,4 +91,14 @@ scalarPropertyContent:                  BRACE_OPEN
 ;
 
 scalarPropertyDefinition:              scalarPropertyTypes scalarPropertyContent?
+;
+
+complexPropertyContent:                  BRACE_OPEN
+                                            (
+                                                propertiesDefinition
+                                            )*
+                                         BRACE_CLOSE
+;
+
+complexPropertyDefinition:              complexPropertyTypes complexPropertyContent
 ;

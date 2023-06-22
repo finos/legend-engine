@@ -53,7 +53,7 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
   debug: DebugContext[1];
   debug(s : Function<{->String[1]}>[1])
   {
-    println(if($this.debug.debug, |$this.debug.space + $s->eval(), |''));
+    if($this.debug.debug, |println($this.debug.space + $s->eval()), |[]);
   }:Any[0];
 
   tdsESDetails: TDSESDetail[*];
@@ -526,7 +526,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   assert($req.inFilter, 'TdsRow.isNotNull only supporter on filter context');
-  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
   let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
@@ -544,7 +544,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   assert($req.inFilter, 'TdsRow.isNull only supporter on filter context');
-  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
   let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
   let query = ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
   let search = $req.search;
@@ -662,23 +662,22 @@ function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : Fun
 
 function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : Any[1], req: State[1]): Any[*]
 {
-  $req.debug(|'-- processing simple value ' + $vs->type()->toString() + ': ' + $vs->evaluateAndDeactivate()->printValueSpecification('\n'));
+  $req.debug(|'-- processing simple value ' + $vs->type()->toString());
   $vs->match([
     rfe: FunctionExpression[1] |
       let fe = $rfe->deepByPassRouterInfo()->cast(@FunctionExpression);
       if($fe.func->instanceOf(QualifiedProperty),
-        | $fe.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($fe.parametersValues, $req),
+        | $fe.func->cast(@QualifiedProperty<Any>)->qualifiedPropertyToTDSESDetail($fe.parametersValues, $req),
         | if(toOne_T_MANY__T_1_ == $fe.func,
             | $fe.parametersValues->at(0)->extractSimpleValue($req),
             | $req.supportedSimpleValueFunctions->findAndEvalSupportedFunction($fe, $req)
       ));,
     iv: InstanceValue[1] | $iv.values->map(x | $x->extractSimpleValue($req)),
-    any: Any[1] |
-      if ($any->type()->instanceOf(DataType), | $any, | fail('not supported: ' + $any->type()->toString()))
+    any: Any[*] | $any
   ]);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): Any[1]
+function meta::external::store::elasticsearch::v7::pureToEs::qualifiedPropertyToTDSESDetail(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): TDSESDetail[1]
 {
   assert($params->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow, 'Only TDSRow operations supported');
   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getNullableString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];

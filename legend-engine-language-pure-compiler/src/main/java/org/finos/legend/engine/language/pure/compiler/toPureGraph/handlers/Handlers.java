@@ -425,18 +425,18 @@ public class Handlers
         register(m(m(h("meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(this.pureModel.getType("meta::pure::tds::AggregateValue"))
                         ._typeArguments(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2)))),
-                        "one"), ps -> ps.size() == 3 && typeOne(ps.get(0), "String"))),
+                        "one"), ps -> Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), ps -> ps.size() == 3 && typeOne(ps.get(0), "String"))),
                 m(h("meta::pure::functions::collection::agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", false, ps -> res("meta::pure::functions::collection::AggregateValue", "one"), ps -> true))));
 
 
         register(m(m(h("meta::pure::tds::col_Function_1__String_1__String_1__BasicColumnSpecification_1_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"))
                         ._typeArguments(Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType())),
-                "one"), ps -> ps.size() == 3)),
+                "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> ps.size() == 3)),
                 m(h("meta::pure::tds::col_Function_1__String_1__BasicColumnSpecification_1_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                 ._rawType(this.pureModel.getType("meta::pure::tds::BasicColumnSpecification"))
                                 ._typeArguments(Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType())),
-                        "one"), ps -> true))));
+                        "one"), ps -> Lists.fixedSize.of(funcType(ps.get(0)._genericType())._parameters().getOnly()._genericType()), ps -> true))));
         // ----------------------------
 
 

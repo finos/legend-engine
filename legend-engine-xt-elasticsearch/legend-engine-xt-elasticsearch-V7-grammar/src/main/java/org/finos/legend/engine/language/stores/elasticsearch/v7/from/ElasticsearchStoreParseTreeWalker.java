@@ -139,7 +139,7 @@ public class ElasticsearchStoreParseTreeWalker
         Property property = propertyCtx.accept(this.propertyDefinitionParseTreeWalker);
         if (property == null)
         {
-            throw new EngineException("Parsing unsupported type: " + propertyCtx, parserInfo.walkerSourceInformation.getSourceInformation(propertyCtx), EngineErrorType.PARSER);
+            throw new EngineException("Parsing unsupported type: " + propertyCtx.getStart().getText(), parserInfo.walkerSourceInformation.getSourceInformation(propertyCtx), EngineErrorType.PARSER);
         }
         return property;
     }
@@ -163,6 +163,24 @@ public class ElasticsearchStoreParseTreeWalker
                 .orElse(Collections.emptyList());
 
         docValuesPropertyBase.fields = propertyDefinitionContexts.stream()
+                .map(ElasticsearchStoreParseTreeWalker.this::visitNamedPropertyDefinition)
+                .collect(Collectors.toMap(Pair::getOne, Pair::getTwo));
+    }
+
+    private void processComplexPropertyContent(ElasticsearchParserGrammar.ComplexPropertyContentContext complexPropertyContentContext, CorePropertyBase complexObject)
+    {
+        // process inner fields
+        List<ElasticsearchParserGrammar.NamedPropertyDefinitionContext> propertyDefinitionContexts = Optional.ofNullable(
+                        PureGrammarParserUtility.validateAndExtractRequiredField(
+                                complexPropertyContentContext.propertiesDefinition(),
+                                ElasticsearchLexerGrammar.VOCABULARY.getLiteralName(ElasticsearchLexerGrammar.PROPERTIES),
+                                parserInfo.walkerSourceInformation.getSourceInformation(complexPropertyContentContext)
+                        )
+                ).map(ElasticsearchParserGrammar.PropertiesDefinitionContext::propertiesArrayDefinition)
+                .map(ElasticsearchParserGrammar.PropertiesArrayDefinitionContext::namedPropertyDefinition)
+                .orElse(Collections.emptyList());
+
+        complexObject.properties = propertyDefinitionContexts.stream()
                 .map(ElasticsearchStoreParseTreeWalker.this::visitNamedPropertyDefinition)
                 .collect(Collectors.toMap(Pair::getOne, Pair::getTwo));
     }
@@ -222,6 +240,29 @@ public class ElasticsearchStoreParseTreeWalker
                 case ElasticsearchParserGrammar.BOOLEAN:
                     property._boolean = new BooleanProperty();
                     ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._boolean);
+                    break;
+            }
+
+            return property;
+        }
+
+        @Override
+        public Property visitComplexPropertyDefinition(ElasticsearchParserGrammar.ComplexPropertyDefinitionContext ctx)
+        {
+            ElasticsearchParserGrammar.ComplexPropertyTypesContext complexPropertyTypesContext = ctx.complexPropertyTypes();
+            TerminalNode type = complexPropertyTypesContext.getChild(TerminalNode.class, 0);
+
+            Property property = new Property();
+
+            switch (type.getSymbol().getType())
+            {
+                case ElasticsearchParserGrammar.OBJECT:
+                    property.object = new ObjectProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processComplexPropertyContent(ctx.complexPropertyContent(), property.object);
+                    break;
+                case ElasticsearchParserGrammar.NESTED:
+                    property.nested = new NestedProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processComplexPropertyContent(ctx.complexPropertyContent(), property.nested);
                     break;
             }
 
