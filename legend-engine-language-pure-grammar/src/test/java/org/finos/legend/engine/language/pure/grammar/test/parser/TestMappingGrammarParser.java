@@ -326,12 +326,6 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    testSuite1:\n" +
                 "    {\n" +
                 "      doc: 'myDoc';\n" +
-                "      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
-                "      tests:\n" +
-                "      [\n" +
-                "        test1:\n" +
-                "        {\n" +
-                "          doc: 'my test';\n" +
                 "      data:\n" +
                 "      [\n" +
                 "        ModelStore: ModelStore\n" +
@@ -343,6 +337,12 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "              }#\n" +
                 "         }#\n" +
                 "      ];\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          doc: 'my test';\n" +
+                "          function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -398,39 +398,42 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "  ]\n" +
                 ")");
         test("###Mapping\n" +
-                "Mapping test::modelToModelMapping\n" +
+                "Mapping testing::mapping\n" +
                 "(\n" +
-                "    *test::changedModel: Pure\n" +
-                "{\n" +
-                "    ~src test::model\n" +
-                "    name: $src.name,\n" +
-                "    id: $src.id->parseInteger()\n" +
-                "}\n" +
+                "  *testing::Person[testing_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src testing::other::NPerson\n" +
+                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
+                "  }\n" +
+                "\n" +
                 "  testSuites:\n" +
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        ModelStore: ModelStore\n" +
+                "        #{\n" +
+                "           test::example::model:\n" +
+                "              Reference \n" +
+                "              #{ \n" +
+                "                testMapping::TestData \n" +
+                "              }#\n" +
+                "         }#\n" +
+                "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          data:\n" +
+                "          function: |testing::Person.all();\n" +
+                "          asserts:\n" +
                 "          [\n" +
-                "            ModelStore: ModelStore\n" +
-                "            #{\n" +
-                "               test::model:\n" +
-                "                Reference \n" +
-                "                #{ \n" +
-                "                  test::data::MyData\n" +
-                "                }#\n" +
-                "            }#\n" +
                 "          ];\n" +
                 "        }\n" +
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                ")","PARSER error at [17:9-30:9]: Field 'asserts' is required");
+                ")","PARSER error at [27:9-33:9]: Field 'asserts' is required");
         test("###Mapping\n" +
                 "Mapping testing::mapping\n" +
                 "(\n" +
@@ -448,6 +451,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
+                "          function: |testing::Person.all();\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -465,7 +469,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                ")","PARSER error at [12:5-33:5]: Mapping Test Suite requires a query function");
+                ")","PARSER error at [12:5-34:5]: Mapping Test Suites expects either data or function as setup");
     }
 
     @Test

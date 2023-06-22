@@ -14,13 +14,18 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection;
 
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -76,7 +81,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
     }
 
-    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(Map<String, DataElement> dataElements, ModelStoreData modelStoreData, boolean useDefaultExecutor)
+    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(List<DataElement> dataElements, ModelStoreData modelStoreData, boolean useDefaultExecutor)
     {
         List<ModelTestData> modelTestData = modelStoreData.modelData;
         for (ModelTestData data : modelTestData)
@@ -85,7 +90,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             if (data instanceof ModelEmbeddedTestData)
             {
                 ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
-                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElement(dataElements, modelEmbeddedData.data);
+                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElementWithList(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
                     Connection connection = resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class, useDefaultExecutor);
@@ -122,8 +127,10 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         return Optional.empty();
     }
 
+
+
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement>  dataElements, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
@@ -132,8 +139,9 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         return Optional.empty();
     }
 
+
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(Map<String, DataElement>  dataElements, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
@@ -141,6 +149,44 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
         return Optional.empty();
     }
+
+
+    @Override
+    public Optional<InputStream> tryBuildInputStreamForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData testData)
+    {
+        if (store instanceof ModelStore && testData instanceof ModelStoreData)
+        {
+            ModelStoreData modelStoreData = (ModelStoreData) testData;
+            for (ModelTestData _data : modelStoreData.modelData)
+            {
+                if (_data instanceof ModelEmbeddedTestData)
+                {
+
+                    EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedData(pureModelContextData, ((ModelEmbeddedTestData) _data).data);
+                    if (_embeddedData instanceof ExternalFormatData)
+                    {
+                        return Optional.of(new ByteArrayInputStream((((ExternalFormatData) _embeddedData).data).getBytes(StandardCharsets.UTF_8)));
+                    }
+                }
+                else if (_data instanceof ModelInstanceTestData)
+                {
+                    ValueSpecification valueSpecification = ((ModelInstanceTestData) _data).instances;
+                    if (valueSpecification instanceof PackageableElementPtr)
+                    {
+                        PackageableElementPtr packageableElementPtr = (PackageableElementPtr) valueSpecification;
+                        DataElement dElement = EmbeddedDataHelper.resolveDataElement(pureModelContextData, packageableElementPtr.fullPath);
+                        EmbeddedData testDataElement = dElement.data;
+                        if (testDataElement instanceof ExternalFormatData)
+                        {
+                            return Optional.of(new ByteArrayInputStream((((ExternalFormatData) testDataElement).data).getBytes(StandardCharsets.UTF_8)));
+                        }
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
 
     @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData embeddedData)
@@ -176,6 +222,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
         return Optional.empty();
     }
+
 
     private String buildModelConnectionURL(ExternalFormatData externalFormatData, String type)
     {

@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -38,6 +39,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
@@ -162,16 +167,38 @@ public class MappingParseTreeWalker
     {
         SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         MappingParserGrammar.MappingTestableFuncContext funcContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingTestableFunc(), FUNCTION_NAME, sourceInformation);
-        MappingTestSuite suite = new MappingTestSuite();
-        if (funcContext != null)
+        MappingParserGrammar.MappingTestableDataContext dataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingTestableData(), DATA_NAME, sourceInformation);
+
+        MappingTestSuite suite;
+        if (dataContext != null)
         {
-            suite.func = this.visitMappingTreeLambda(funcContext.combinedExpression(), mapping);
+            MappingDataTestSuite testSuite = new MappingDataTestSuite();
+
+            if (funcContext != null)
+            {
+                throw new EngineException("Mapping Data Test Suite does not expect function at the root level", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            MappingParserGrammar.MappingTestableDataContext validatedDataCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappingTestableData(), DATA_NAME, sourceInformation);
+            testSuite.storeTestData = validatedDataCtx.mappingTestDataContent().stream().map(this::visitMappingStoreTestData).collect(Collectors.toList());
             MappingParserGrammar.MappingTestsContext testsCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappingTests(), "tests", sourceInformation);
-            suite.tests = ListIterate.collect(testsCtx.mappingTestContent(), this::visitMappingTests);
+            testSuite.tests = ListIterate.collect(testsCtx.mappingTestContent(), atomicTest -> this.visitMappingFuncTests(atomicTest, mapping));
+            suite = testSuite;
+        }
+        else if (funcContext != null)
+        {
+            MappingFunctionTestSuite testFuncSuite = new MappingFunctionTestSuite();
+            testFuncSuite.func = this.visitMappingTreeLambda(funcContext.combinedExpression(), mapping);
+            if (dataContext != null)
+            {
+                throw new EngineException("Mapping Function Test Suite does not expect data at the root level", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            }
+            MappingParserGrammar.MappingTestsContext testsCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappingTests(), "tests", sourceInformation);
+            testFuncSuite.tests = ListIterate.collect(testsCtx.mappingTestContent(), this::visitMappingDataTests);
+            suite = testFuncSuite;
         }
         else
         {
-            throw new EngineException("Mapping Test Suite requires a query function", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+            throw new EngineException("Mapping Test Suites expects either data or function as setup", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
         suite.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         suite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
@@ -184,14 +211,35 @@ public class MappingParseTreeWalker
     {
         StoreTestData testData = new StoreTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        testData.store = ctx.qualifiedName().packagePath() == null ? ctx.qualifiedName().getText() : PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
+        testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
+                "ModelStore" :
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
         return testData;
     }
 
-    private MappingTest visitMappingTests(MappingParserGrammar.MappingTestContentContext ctx)
+    private MappingFunctionTest visitMappingFuncTests(MappingParserGrammar.MappingTestContentContext ctx, Mapping mapping)
     {
-        MappingTest mappingTest = new MappingTest();
+        MappingFunctionTest mappingTest = new MappingFunctionTest();
         processMappingTests(mappingTest, ctx);
+        MappingParserGrammar.MappingTestableDataContext dataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingTestableData(), DATA_NAME, mappingTest.sourceInformation);
+        if (dataContext != null)
+        {
+            throw new EngineException("Function Mapping Test does not expect data at the root level", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+        MappingParserGrammar.MappingTestableFuncContext funcContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappingTestableFunc(), FUNCTION_NAME, mappingTest.sourceInformation);
+        mappingTest.func = this.visitMappingTreeLambda(funcContext.combinedExpression(), mapping);
+        return mappingTest;
+    }
+
+    private MappingDataTest visitMappingDataTests(MappingParserGrammar.MappingTestContentContext ctx)
+    {
+        MappingDataTest mappingTest = new MappingDataTest();
+        processMappingTests(mappingTest, ctx);
+        MappingParserGrammar.MappingTestableFuncContext funcContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mappingTestableFunc(), FUNCTION_NAME, mappingTest.sourceInformation);
+        if (funcContext != null)
+        {
+            throw new EngineException("Data Mapping Test does not expect function at the root level", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
         MappingParserGrammar.MappingTestableDataContext validatedDataCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappingTestableData(), DATA_NAME, mappingTest.sourceInformation);
         mappingTest.storeTestData = validatedDataCtx.mappingTestDataContent().stream().map(this::visitMappingStoreTestData).collect(Collectors.toList());
         return mappingTest;

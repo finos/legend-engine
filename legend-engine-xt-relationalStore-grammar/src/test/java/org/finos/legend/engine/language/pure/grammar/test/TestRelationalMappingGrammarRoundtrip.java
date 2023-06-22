@@ -115,19 +115,19 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        store::TestDB:\n" +
+                "          Reference\n" +
+                "          #{\n" +
+                "            data::RelationalData\n" +
+                "          }#\n" +
+                "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          data:\n" +
-                "          [\n" +
-                "            store::TestDB:\n" +
-                "              Reference\n" +
-                "              #{\n" +
-                "                data::RelationalData\n" +
-                "              }#\n" +
-                "          ];\n" +
+                "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            shouldPass:\n" +

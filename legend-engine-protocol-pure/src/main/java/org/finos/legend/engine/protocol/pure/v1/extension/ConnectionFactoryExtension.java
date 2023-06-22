@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -22,8 +23,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.io.Closeable;
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 
@@ -56,14 +57,18 @@ public interface ConnectionFactoryExtension
         return Optional.empty();
     }
 
-    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement> dataElements, Store store, EmbeddedData data)
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData data)
     {
         return Optional.empty();
     }
 
-    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(Map<String, DataElement> dataElements, Store store, EmbeddedData data)
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData data)
     {
         return this.tryBuildTestConnectionsForStore(dataElements, store, data);
     }
 
+    default Optional<InputStream> tryBuildInputStreamForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData data)
+    {
+        return Optional.empty();
+    }
 }

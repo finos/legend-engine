@@ -80,6 +80,7 @@ mappingTestSuite:               identifier COLON
                                   BRACE_OPEN
                                   (
                                       mappingTestableDoc
+                                    | mappingTestableData
                                     | mappingTestableFunc
                                     | mappingTests
                                   )*
@@ -104,7 +105,8 @@ mappingTests:                   MAPPING_TESTS COLON
 mappingTestContent:             identifier COLON
                                   BRACE_OPEN
                                     (
-                                      mappingTestableDoc
+                                      mappingTestableFunc
+                                      | mappingTestableDoc
                                       | mappingTestAsserts
                                       | mappingTestableData
                                     )*

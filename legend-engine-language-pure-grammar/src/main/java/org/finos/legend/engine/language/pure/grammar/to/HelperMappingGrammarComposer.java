@@ -32,6 +32,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
@@ -204,8 +208,16 @@ public class HelperMappingGrammarComposer
         {
             str.append(getTabString(baseIndentation + 1)).append("doc: ").append(convertString(mappingTestSuite.doc, true)  + ";\n");
         }
-
-        str.append(getTabString(baseIndentation + 1)).append("function: ").append(mappingTestSuite.func.accept(transformer)).append(";\n");
+        if (mappingTestSuite instanceof MappingDataTestSuite && ((MappingDataTestSuite)mappingTestSuite).storeTestData != null)
+        {
+            MappingDataTestSuite mappingDataTestSuite = (MappingDataTestSuite) mappingTestSuite;
+            str.append(renderStoreTestData(mappingDataTestSuite.storeTestData, transformer, 2));
+        }
+        if (mappingTestSuite instanceof MappingFunctionTestSuite && ((MappingFunctionTestSuite)mappingTestSuite).func != null)
+        {
+            MappingFunctionTestSuite mappingDataTestSuite = (MappingFunctionTestSuite) mappingTestSuite;
+            str.append(getTabString(baseIndentation + 1)).append("function: ").append(mappingDataTestSuite.func.accept(transformer)).append(";\n");
+        }
         if (mappingTestSuite.tests != null && !mappingTestSuite.tests.isEmpty())
         {
             str.append(getTabString(baseIndentation + 1)).append("tests:\n");
@@ -227,7 +239,16 @@ public class HelperMappingGrammarComposer
         {
             str.append(getTabString(baseIndentation + 1)).append("doc: ").append(convertString(test.doc, true)  + ";\n");
         }
-        str.append(renderStoreTestData(test.storeTestData, transformer, 4));
+        if (test instanceof MappingFunctionTest)
+        {
+            MappingFunctionTest mappingFunctionTest = (MappingFunctionTest) test;
+            str.append(getTabString(baseIndentation + 1)).append("function: ").append(mappingFunctionTest.func.accept(transformer)).append(";\n");
+        }
+        if (test instanceof MappingDataTest)
+        {
+            MappingDataTest mappingQueryTest = (MappingDataTest) test;
+            str.append(renderStoreTestData(mappingQueryTest.storeTestData, transformer, 4));
+        }
         str.append(getTabString(baseIndentation + 1)).append("asserts:\n").append(getTabString(baseIndentation + 1)).append("[\n");
         if (test.assertions != null || test.assertions.isEmpty())
         {
