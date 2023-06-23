@@ -113,3 +113,44 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    ];
   assertSameElements($sqls,$expectedSqls);
 }  
+
+function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGenerationWithColumnValueHasDelimiterAndQuotes():Boolean[1]
+{
+  let records ='default\n'+
+                'personTable\n'+
+                'id, firstName, lastName, age, addressId, firmId, managerId\n'+
+                '1, Peter,  "I\'m Smith, Jr",23,1,1,2';
+
+  let sqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbInc, meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.H2));
+  
+  let expectedSqls= [
+   'Drop schema if exists productSchema cascade;',
+   'Create Schema productSchema;',
+   'Drop schema if exists default cascade;',
+   'Create Schema default;',
+   'Drop table if exists productSchema.productTable;',
+   'Create Table productSchema.productTable(ID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists personTable;',
+   'Create Table personTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists PersonTableExtension;',
+   'Create Table PersonTableExtension(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL,birthDate DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists differentPersonTable;',
+   'Create Table differentPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmTable;',
+   'Create Table firmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL,CEOID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists firmExtensionTable;',
+   'Create Table firmExtensionTable(firmId INT NOT NULL,legalName VARCHAR(200) NULL,establishedDate DATE NULL, PRIMARY KEY(firmId));',
+   'Drop table if exists otherFirmTable;',
+   'Create Table otherFirmTable(ID INT NOT NULL,LEGALNAME VARCHAR(200) NULL,ADDRESSID INT NULL, PRIMARY KEY(ID));',
+   'Drop table if exists addressTable;',
+   'Create Table addressTable(ID INT NOT NULL,TYPE INT NULL,NAME VARCHAR(200) NULL,STREET VARCHAR(100) NULL,COMMENTS VARCHAR(100) NULL, PRIMARY KEY(ID));',
+   'Drop table if exists locationTable;',
+   'Create Table locationTable(ID INT NOT NULL,PERSONID INT NULL,PLACE VARCHAR(200) NULL,date DATE NULL, PRIMARY KEY(ID));',
+   'Drop table if exists placeOfInterestTable;',
+   'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
+   'Drop table if exists validPersonTable;',
+   'Create Table validPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'"I\'\'m Smith, Jr"\',23,1,1,2);'
+   ];
+  assertSameElements($sqls,$expectedSqls);
+}

@@ -115,8 +115,44 @@ function <<access.private>> meta::alloy::service::execution::splitWithEmptyValue
    let delimForEmptyCsvField = '|EMPTY|';
 
    $s->meta::alloy::service::execution::replaceWithEmptyValue($delimForEmptyCsvField)
-        ->split(',')
+        ->meta::alloy::service::execution::splitCsvRow(',')
         ->map(csv_val| if($csv_val == $delimForEmptyCsvField, | '' ,| $csv_val));
+}
+
+Class <<access.private>> meta::alloy::service::execution::SplitterState
+{
+   tokens:String[*];
+   inQuotes:Boolean[1];
+   hasEscapeChar: Boolean[1];
+   currentTokenChars:String[*];
+}
+
+function meta::alloy::service::execution::splitCsvRow(s: String[1], delimiter: String[1]): String[*]
+{
+  let charArray = chunk($s, 1);
+  let finalSplitterState = $charArray->fold({currentChar,splitterState |
+                  if ($currentChar == $delimiter,
+                    | if(!$splitterState.inQuotes,
+                      | ^$splitterState(tokens = $splitterState.tokens->add($splitterState.currentTokenChars->makeString()->trim()), inQuotes= false, hasEscapeChar = false, currentTokenChars=[]),
+                      | ^$splitterState(tokens = $splitterState.tokens, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                      ),
+                    | if ($currentChar == '\"',
+                        | if(!$splitterState.inQuotes,
+                            | ^$splitterState(inQuotes = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
+                            | if ($splitterState.hasEscapeChar,
+                                | ^$splitterState(hasEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar));,
+                                | ^$splitterState(inQuotes = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                                )
+                           ),
+                        | if ( $currentChar == '\\',
+                           | ^$splitterState(hasEscapeChar = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
+                           | ^$splitterState(currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                             )
+                       )
+                    )                            
+                  }, ^meta::alloy::service::execution::SplitterState(tokens=[], inQuotes= false, hasEscapeChar = false, currentTokenChars=[]));
+
+  if($finalSplitterState.currentTokenChars != [],|$finalSplitterState.tokens->add($finalSplitterState.currentTokenChars->makeString()->trim()), | $finalSplitterState.tokens);
 }
 
 function <<access.private>> meta::alloy::service::execution::replaceWithEmptyValue(s:String[1], delimForEmptyCsvField: String[1]) : String[1]
