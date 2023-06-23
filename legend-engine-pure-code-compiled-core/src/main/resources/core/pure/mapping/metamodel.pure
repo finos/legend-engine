@@ -19,33 +19,12 @@ import meta::pure::mapping::metamodel::*;
 
 //Mapping Test Model
 
-Class <<typemodifiers.abstract>> meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test::TestSuite
-{
-}
-
-Class <<typemodifiers.abstract>> meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::AtomicTest
-{     
-}
-
-// Mapping Impl Models  `MappingDataTestSuite`
-
-Class {doc.doc = 'Suite will contain one data with multiple tests each with their own query'} meta::pure::mapping::metamodel::MappingDataTestSuite extends MappingTestSuite
-{
-  storeTestData: meta::pure::data::StoreTestData[*];
-}
-
-Class meta::pure::mapping::metamodel::MappingQueryTest extends MappingTest
+Class meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test::TestSuite
 {
   query: FunctionDefinition<Any>[1];
 }
 
-// Mapping Impl Models  `MappingDataTestSuite`
-Class {doc.doc = 'Suite will contain one query with multiple tests with their own test data'} meta::pure::mapping::metamodel::MappingQueryTestSuite extends MappingTestSuite
-{
-  query: FunctionDefinition<Any>[1];
-}
-
-Class meta::pure::mapping::metamodel::MappingDataTest extends MappingTest
+Class  meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::AtomicTest
 {
   storeTestData: meta::pure::data::StoreTestData[*];
 }
@@ -58,18 +37,6 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         position=(1463.00000, 296.00000),
         width=127.38965,
         height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_5(
-        type=meta::pure::test::AtomicTest,
-        position=(1250.00000, 432.00000),
-        width=179.96191,
-        height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -101,21 +68,9 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_11(
-        type=meta::pure::mapping::metamodel::MappingQueryTest,
-        position=(1281.18067, 740.00000),
-        width=169.10693,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_10(
-        type=meta::pure::mapping::metamodel::MappingDataTest,
-        position=(1503.18067, 731.00000),
+    TypeView cview_7(
+        type=meta::pure::mapping::metamodel::MappingTest,
+        position=(1266.00000, 586.00000),
         width=186.47168,
         height=44.00000,
         stereotypesVisible=true,
@@ -125,21 +80,9 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_8(
-        type=meta::pure::mapping::metamodel::MappingDataTestSuite,
-        position=(1930.18066, 646.00000),
-        width=220.46680,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_4(
         type=meta::pure::test::TestSuite,
-        position=(1685.00000, 394.00000),
+        position=(2011.00000, 406.00000),
         width=137.15967,
         height=58.00000,
         stereotypesVisible=true,
@@ -151,7 +94,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
 
     TypeView cview_6(
         type=meta::pure::mapping::metamodel::MappingTestSuite,
-        position=(1852.00000, 487.00000),
+        position=(1936.00000, 511.00000),
         width=284.85400,
         height=44.00000,
         stereotypesVisible=true,
@@ -161,22 +104,10 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_9(
-        type=meta::pure::mapping::metamodel::MappingQueryTestSuite,
-        position=(2185.18067, 634.00000),
-        width=222.90430,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_12(
-        type=meta::pure::data::StoreTestData,
-        position=(1663.27100, 568.50000),
-        width=144.69531,
+    TypeView cview_5(
+        type=meta::pure::test::AtomicTest,
+        position=(1269.00000, 430.00000),
+        width=179.96191,
         height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -185,11 +116,11 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_7(
-        type=meta::pure::mapping::metamodel::MappingTest,
-        position=(1329.00000, 586.00000),
-        width=169.10693,
-        height=44.00000,
+    TypeView cview_8(
+        type=meta::pure::data::StoreTestData,
+        position=(1547.18066, 616.00000),
+        width=144.69531,
+        height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -209,7 +140,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
     GeneralizationView gview_1(
         source=cview_4,
         target=cview_3,
-        points=[(1753.57983,423.00000),(1526.69483,325.00000)],
+        points=[(2079.57983,435.00000),(1526.69483,325.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -218,7 +149,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
     GeneralizationView gview_2(
         source=cview_5,
         target=cview_3,
-        points=[(1339.98096,468.00000),(1526.69483,325.00000)],
+        points=[(1358.98096,466.00000),(1526.69483,325.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -227,7 +158,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
     GeneralizationView gview_3(
         source=cview_6,
         target=cview_4,
-        points=[(1994.42700,509.00000),(1753.57983,423.00000)],
+        points=[(2078.42700,533.00000),(2079.57983,435.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -236,43 +167,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
     GeneralizationView gview_4(
         source=cview_7,
         target=cview_5,
-        points=[(1413.55347,608.00000),(1339.98096,468.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_5(
-        source=cview_8,
-        target=cview_6,
-        points=[(2040.41406,675.00000),(1994.42700,509.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_6(
-        source=cview_9,
-        target=cview_6,
-        points=[(2296.63281,663.00000),(1994.42700,509.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_7(
-        source=cview_10,
-        target=cview_7,
-        points=[(1596.41650,753.00000),(1413.55346,608.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_8(
-        source=cview_11,
-        target=cview_7,
-        points=[(1365.73413,762.00000),(1413.55346,608.00000)],
+        points=[(1359.23584,608.00000),(1358.98096,466.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -293,24 +188,10 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         lineStyle=SIMPLE)
 
     PropertyView pview_1(
-        property=meta::pure::mapping::metamodel::MappingDataTest.storeTestData,
-        source=cview_10,
-        target=cview_12,
-        points=[(1596.41651,753.00000),(1735.61866,604.50000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_2(
-        property=meta::pure::mapping::metamodel::MappingDataTestSuite.storeTestData,
-        source=cview_8,
-        target=cview_12,
-        points=[(2040.41406,675.00000),(1735.61866,604.50000)],
+        property=meta::pure::mapping::metamodel::MappingTest.storeTestData,
+        source=cview_7,
+        target=cview_8,
+        points=[(1359.23584,608.00000),(1619.52832,652.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

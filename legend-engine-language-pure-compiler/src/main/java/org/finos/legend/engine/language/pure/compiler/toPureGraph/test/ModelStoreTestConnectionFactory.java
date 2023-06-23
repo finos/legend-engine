@@ -12,68 +12,73 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection;
+package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
-import java.io.ByteArrayInputStream;
-import java.io.Closeable;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.shared.core.url.InputStreamProvider;
+import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
+// TO BE MOVED TO MODEL STORE MODULE ONCE CREATED
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
-    public static String MODEL_STORE = "ModelStore";
+    public static final String MODEL_STORE = "ModelStore";
     //TODO: after refactor use the already present variables
     //currently creates a circular dependency, hence cannot use the already present variables
-    private static String DATA_PROTOCOL_NAME = "data";
-    private static String APPLICATION_JSON = "application/json";
-    private static String APPLICATION_XML = "application/xml";
+    private static final String DATA_PROTOCOL_NAME = "data";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_XML = "application/xml";
 
-    private Connection resolveExternalFormatData(ExternalFormatData externalFormatData, String _class, boolean useDefaultExecutor)
+    private static JsonModelConnection jsonModelConnection = new JsonModelConnection();
+    private static XmlModelConnection xmlModelConnection = new XmlModelConnection();
+
+
+    private Pair<Connection, List<Closeable>> resolveExternalFormatData(ExternalFormatData externalFormatData, String _class)
     {
+        Closeable closeable = new Closeable()
+        {
+            @Override
+            public void close() throws IOException
+            {
+                StreamProviderHolder.streamProviderThreadLocal.remove();
+            }
+        };
         if (APPLICATION_JSON.equals(externalFormatData.contentType))
         {
-            JsonModelConnection jsonModelConnection = new JsonModelConnection();
             jsonModelConnection._class = _class;
             jsonModelConnection.element = MODEL_STORE;
-            if (useDefaultExecutor)
-            {
-                jsonModelConnection.url = "executor:default";
-            }
-            else
-            {
-                jsonModelConnection.url = buildModelConnectionURL(externalFormatData, APPLICATION_JSON);
-            }
-            return jsonModelConnection;
+            jsonModelConnection.url = "executor:default";
+            String inputData = externalFormatData.data;
+            InputStream stream = new ByteArrayInputStream(inputData.getBytes(StandardCharsets.UTF_8));
+            StreamProviderHolder.streamProviderThreadLocal.set(new InputStreamProvider(stream));
+            return  Tuples.pair(jsonModelConnection, Collections.singletonList(closeable));
         }
         else if (APPLICATION_XML.equals((externalFormatData.contentType)))
         {
-            XmlModelConnection xmlModelConnection = new XmlModelConnection();
             xmlModelConnection._class = _class;
             xmlModelConnection.element = MODEL_STORE;
-            if (useDefaultExecutor)
-            {
-                xmlModelConnection.url = "executor:default";
-            }
-            else
-            {
-                xmlModelConnection.url = buildModelConnectionURL(externalFormatData, APPLICATION_XML);
-            }
-            return xmlModelConnection;
+            xmlModelConnection.url = "executor:default";
+            String inputData = externalFormatData.data;
+            InputStream stream =  new ByteArrayInputStream(inputData.getBytes(StandardCharsets.UTF_8));
+            StreamProviderHolder.streamProviderThreadLocal.set(new InputStreamProvider(stream));
+            return Tuples.pair(xmlModelConnection, Collections.singletonList(closeable));
         }
         else
         {
@@ -81,7 +86,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
     }
 
-    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(List<DataElement> dataElements, ModelStoreData modelStoreData, boolean useDefaultExecutor)
+    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(Map<String, DataElement> dataElements, ModelStoreData modelStoreData)
     {
         List<ModelTestData> modelTestData = modelStoreData.modelData;
         for (ModelTestData data : modelTestData)
@@ -90,11 +95,10 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             if (data instanceof ModelEmbeddedTestData)
             {
                 ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
-                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElementWithList(dataElements, modelEmbeddedData.data);
+                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElement(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
-                    Connection connection = resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class, useDefaultExecutor);
-                    return Optional.of(Tuples.pair(connection, Collections.emptyList()));
+                    return Optional.of(resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class));
                 }
                 else
                 {
@@ -110,8 +114,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                     EmbeddedData testDataElement = EmbeddedDataHelper.findDataElement(dataElements, ((PackageableElementPtr) vs).fullPath).data;
                     if (testDataElement instanceof ExternalFormatData)
                     {
-                        Connection connection = resolveExternalFormatData((ExternalFormatData) testDataElement, _class, useDefaultExecutor);
-                        return Optional.of(Tuples.pair(connection, Collections.emptyList()));
+                        return Optional.of(resolveExternalFormatData((ExternalFormatData) testDataElement, _class));
                     }
                     else
                     {
@@ -127,66 +130,15 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         return Optional.empty();
     }
 
-
-
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement>  dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
-            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, false);
+            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData);
         }
         return Optional.empty();
     }
-
-
-    @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData testData)
-    {
-        if (store instanceof ModelStore && testData instanceof ModelStoreData)
-        {
-            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, true);
-        }
-        return Optional.empty();
-    }
-
-
-    @Override
-    public Optional<InputStream> tryBuildInputStreamForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData testData)
-    {
-        if (store instanceof ModelStore && testData instanceof ModelStoreData)
-        {
-            ModelStoreData modelStoreData = (ModelStoreData) testData;
-            for (ModelTestData _data : modelStoreData.modelData)
-            {
-                if (_data instanceof ModelEmbeddedTestData)
-                {
-
-                    EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedData(pureModelContextData, ((ModelEmbeddedTestData) _data).data);
-                    if (_embeddedData instanceof ExternalFormatData)
-                    {
-                        return Optional.of(new ByteArrayInputStream((((ExternalFormatData) _embeddedData).data).getBytes(StandardCharsets.UTF_8)));
-                    }
-                }
-                else if (_data instanceof ModelInstanceTestData)
-                {
-                    ValueSpecification valueSpecification = ((ModelInstanceTestData) _data).instances;
-                    if (valueSpecification instanceof PackageableElementPtr)
-                    {
-                        PackageableElementPtr packageableElementPtr = (PackageableElementPtr) valueSpecification;
-                        DataElement dElement = EmbeddedDataHelper.resolveDataElement(pureModelContextData, packageableElementPtr.fullPath);
-                        EmbeddedData testDataElement = dElement.data;
-                        if (testDataElement instanceof ExternalFormatData)
-                        {
-                            return Optional.of(new ByteArrayInputStream((((ExternalFormatData) testDataElement).data).getBytes(StandardCharsets.UTF_8)));
-                        }
-                    }
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
 
     @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData embeddedData)
@@ -222,7 +174,6 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
         return Optional.empty();
     }
-
 
     private String buildModelConnectionURL(ExternalFormatData externalFormatData, String type)
     {

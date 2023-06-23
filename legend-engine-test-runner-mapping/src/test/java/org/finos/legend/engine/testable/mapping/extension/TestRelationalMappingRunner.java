@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.mapping.extension;
 
+import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -114,19 +115,19 @@ public class TestRelationalMappingRunner
             "    [\n" +
             "      testSuite1:\n" +
             "      {\n" +
-            "        data:\n" +
-            "        [\n" +
-            "          store::TestDB:\n" +
-            "              Reference\n" +
-            "              #{\n" +
-            "                data::RelationalData\n" +
-            "              }#\n" +
-            "        ];\n" +
+            "        function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
             "        tests:\n" +
             "        [\n" +
             "          test1:\n" +
             "          {\n" +
-            "            function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "            data:\n" +
+            "            [\n" +
+            "              store::TestDB:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  data::RelationalData\n" +
+            "                }#\n" +
+            "            ];\n" +
             "            asserts:\n" +
             "            [\n" +
             "              shouldPass:\n" +
@@ -136,7 +137,7 @@ public class TestRelationalMappingRunner
             "                    ExternalFormat\n" +
             "                    #{\n" +
             "                      contentType: 'application/json';\n" +
-            "                      data: '{\"columns\":[{\"name\":\"Employees/First Name\",\"type\":\"String\"},{\"name\":\"Employees/Last Name\",\"type\":\"String\"},{\"name\":\"Legal Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[\"John\",\"Doe\",\"Finos\"]},{\"values\":[\"Nicole\",\"Smith\",\"Finos\"]},{\"values\":[\"Time\",\"Smith\",\"Apple\"]}]}';\n" +
+            "                      data: '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]';\n" +
             "                    }#;\n" +
             "                }#\n" +
             "            ];\n" +
@@ -145,27 +146,6 @@ public class TestRelationalMappingRunner
             "      }\n" +
             "    ]\n" +
             ")\n";
-
-
-    String expected = "{\n" +
-            "  \"columns\" : [ {\n" +
-            "    \"name\" : \"Employees/First Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  }, {\n" +
-            "    \"name\" : \"Employees/Last Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  }, {\n" +
-            "    \"name\" : \"Legal Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  } ],\n" +
-            "  \"rows\" : [ {\n" +
-            "    \"values\" : [ \"John\", \"Doe\", \"Finos\" ]\n" +
-            "  }, {\n" +
-            "    \"values\" : [ \"Nicole\", \"Smith\", \"Finos\" ]\n" +
-            "  }, {\n" +
-            "    \"values\" : [ \"Time\", \"Smith\", \"Apple\" ]\n" +
-            "  } ]\n" +
-            "}";
 
     String model2 = "###Data\n" +
             "Data data::RelationalData\n" +
@@ -265,19 +245,19 @@ public class TestRelationalMappingRunner
             "  [\n" +
             "    testSuite1:\n" +
             "    {\n" +
-            "      data:\n" +
+            "      function: |model::Firm.all()->project([x|$x.employees.firstName], ['Employees/First Name']);\n" +
+            "      tests:\n" +
             "      [\n" +
+            "        test1:\n" +
+            "        {\n" +
+            "        data:\n" +
+            "        [\n" +
             "           store::TestDB: \n" +
             "                Reference\n" +
             "                #{\n" +
             "                  data::RelationalData\n" +
             "                }#\n" +
-            "      ];\n" +
-            "      tests:\n" +
-            "      [\n" +
-            "        test1:\n" +
-            "        {\n" +
-            "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "        ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -287,14 +267,21 @@ public class TestRelationalMappingRunner
             "                  ExternalFormat\n" +
             "                  #{\n" +
             "                    contentType: 'application/json';\n" +
-            "                    data: '{\"id\" : 77, \"name\" : \"john doe\"}';\n" +
+            "                    data: '[{\"Employees/First Name\":\"John\"},{\"Employees/First Name\":\"Nicole\"},{\"Employees/First Name\":\"Time\"}]';\n" +
             "                  }#;\n" +
             "              }#\n" +
             "          ];\n" +
             "        },\n" +
             "        test2:\n" +
             "        {\n" +
-            "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "          data:\n" +
+            "          [\n" +
+            "           store::TestDB: \n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  data::RelationalData\n" +
+            "                }#\n" +
+            "          ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -304,7 +291,7 @@ public class TestRelationalMappingRunner
             "                  ExternalFormat\n" +
             "                  #{\n" +
             "                    contentType: 'application/json';\n" +
-            "                    data: '';\n" +
+            "                    data: '{}';\n" +
             "                  }#;\n" +
             "              }#\n" +
             "          ];\n" +
@@ -377,22 +364,33 @@ public class TestRelationalMappingRunner
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
         Assert.assertEquals(2, mappingTestResults.size());
+        // test 1
         TestResult _test1 = mappingTestResults.stream().filter(e -> e.atomicTestId.equals("test1")).findFirst().get();
         Assert.assertTrue(_test1 instanceof  TestExecuted);
         TestExecuted testExecuted = (TestExecuted)_test1;
         Assert.assertEquals("testSuite1", testExecuted.testSuiteId);
         Assert.assertEquals(1, testExecuted.assertStatuses.size());
-        Assert.assertEquals(TestExecutionStatus.FAIL, testExecuted.testExecutionStatus);
-        AssertionStatus status1 = testExecuted.assertStatuses.get(0);
-        Assert.assertTrue(status1 instanceof EqualToJsonAssertFail);
-        EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status1;
-        Assert.assertEquals("Actual result does not match Expected result", equalToJsonAssertFail.message);
-        Assert.assertEquals("assert1", equalToJsonAssertFail.id);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+        // test 2
         TestResult _test2 = mappingTestResults.stream().filter(e -> e.atomicTestId.equals("test2")).findFirst().get();
         Assert.assertTrue(_test2 instanceof  TestExecuted);
-        TestExecuted testExecuted2 = (TestExecuted)_test1;
+        TestExecuted testExecuted2 = (TestExecuted)_test2;
         Assert.assertEquals("testSuite1", testExecuted2.testSuiteId);
         Assert.assertEquals(1, testExecuted2.assertStatuses.size());
+        Assert.assertEquals(TestExecutionStatus.FAIL, testExecuted2.testExecutionStatus);
+        AssertionStatus assertionStatus = testExecuted2.assertStatuses.get(0);
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail equalToJsonAssertFail1 = (EqualToJsonAssertFail)assertionStatus;
+        JsonAssert.assertJsonEquals("{}",equalToJsonAssertFail1.expected);
+        String expected = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\"\n" +
+
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\"\n" +
+                "} ]";
+        JsonAssert.assertJsonEquals(expected, equalToJsonAssertFail1.actual);
 
     }
 
