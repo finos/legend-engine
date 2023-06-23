@@ -120,6 +120,14 @@ function {doc.doc = 'Get all properties on the provided type / class'}
      ->concatenate($class.qualifiedPropertiesFromAssociations)
 }
 
+function {doc.doc = 'Get all nested types present in this property tree of this class'}
+   meta::pure::functions::meta::allNestedPropertyTypes(class : Class<Any>[1]) : Type[*]
+{
+  let propertyTypes = $class.properties->map(p | $p.genericType.rawType->toOne());
+  let propertiesThatAreClasses = $propertyTypes->filter(type | $type->instanceOf(Class))->cast(@Class<Any>);
+  $class->concatenate($propertyTypes->concatenate($propertiesThatAreClasses->map(class |$class->allNestedPropertyTypes())));
+}
+
 function {doc.doc = 'Get defined and inheritied properties on the provided class'}
    meta::pure::functions::meta::hierarchicalProperties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
 {
