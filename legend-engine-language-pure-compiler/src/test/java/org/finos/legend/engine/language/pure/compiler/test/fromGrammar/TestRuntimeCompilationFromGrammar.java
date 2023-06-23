@@ -142,7 +142,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "        }\n" +
                 "      }#]\n" +
                 "   ];\n" +
-                "}\n", "COMPILATION error at [22:7-17]: Can't find store 'ModelStore2'");
+                "}\n", "COMPILATION error at [22:7-17]: Can't find the packageable element 'ModelStore2'");
     }
 
     @Test
