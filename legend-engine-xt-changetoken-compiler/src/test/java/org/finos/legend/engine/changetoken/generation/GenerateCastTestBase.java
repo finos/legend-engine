@@ -55,7 +55,8 @@ public abstract class GenerateCastTestBase
         Path fileName = generatedSourcesDirectory.resolve(
                 "org/finos/legend/engine/generated/meta/pure/changetoken/cast_generation/" + baseClassName + ".java");
         Assert.assertTrue(Files.exists(fileName));
-        LOGGER.debug("==== Generated Class ====\n" + new String(Files.readAllBytes(fileName)));
+        String fileContent = new String(Files.readAllBytes(fileName));
+        LOGGER.debug("==== Generated Class ====\n" + fileContent);
         String fullClassName = "org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation." + baseClassName;
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();

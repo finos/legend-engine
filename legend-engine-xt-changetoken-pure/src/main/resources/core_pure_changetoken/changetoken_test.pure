@@ -40,6 +40,56 @@ Class meta::pure::changetoken::tests::SampleClass
   abc : Integer[1];  
 }
 
+// This is test Versions: AddField with ConstValue(true)
+function meta::pure::changetoken::tests::getVersionsBoolean():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Boolean[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value=true)
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue('true')
+function meta::pure::changetoken::tests::getVersionsBooleanString():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Boolean[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='true')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
 // This is test Versions: AddField with ConstValue(100)
 function meta::pure::changetoken::tests::getVersions():Versions[1]
 {
@@ -63,6 +113,257 @@ function meta::pure::changetoken::tests::getVersions():Versions[1]
       )
     ]
   ); 
+}
+
+// This is test Versions: AddField with ConstValue('100')
+function meta::pure::changetoken::tests::getVersionsIntegerString():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Integer[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='100')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue(123.45)
+function meta::pure::changetoken::tests::getVersionsDouble():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='double[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value=123.45)
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue('123.45')
+function meta::pure::changetoken::tests::getVersionsDoubleString():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='double[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='123.45')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+
+// This is test Versions: AddField with ConstValue('one " two')
+function meta::pure::changetoken::tests::getVersionsString():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^AddField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='abc',
+            fieldType='String[1]',
+            safeCast=true,
+            defaultValue=^ConstValue(value='one " two')
+          )
+        ]
+      )
+    ]
+  );
+}
+
+// This is test Versions: AddField with ConstValue('"one \\" two"')
+function meta::pure::changetoken::tests::getVersionsStringQuotes():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='String[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='"one \\" two"')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue('{"@type":"Custom","value":"0d"}')
+function meta::pure::changetoken::tests::getVersionsCustom():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^AddField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='abc',
+            fieldType='Custom[1]',
+            safeCast=true,
+            defaultValue=^ConstValue(value='{"@type":"Custom","value":"0d"}')
+          )
+        ]
+      )
+    ]
+  );
+}
+
+// This is test Versions: AddField with ConstValue('{"@type":"Custom","restricted":true,"value":0,"range":{"@type":"intMinMax","min":-1,"max":1,"round":0.5}}')
+function meta::pure::changetoken::tests::getVersionsCustomNested():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Custom[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='{"@type":"Custom","restricted":true,"value":0,"range":{"@type":"intMinMax","min":-1,"max":1,"round":0.5}}')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue(^Map<String, Any>()->put('@type', 'Custom')->put('restricted', true)->put('value', 0)->put('range', ^Map<String, Any>()->put('@type', 'intMinMax')->put('min', -1)->put('max', 1)->put('round', 0.5)))
+function meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Custom[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value=^Map<String, Any>()->put('@type', 'Custom')->put('restricted', true)->put('value', 0)->put('range', ^Map<String, Any>()->put('@type', 'intMinMax')->put('min', -1)->put('max', 1)->put('round', 0.5)))
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue('1970-01-01T00:00:01Z')
+function meta::pure::changetoken::tests::getVersionsCustomPrimitive():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Custom[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='1970-01-01T00:00:01Z')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
+// This is test Versions: AddField with ConstValue('"1970-01-01T00:00:01Z"')
+function meta::pure::changetoken::tests::getVersionsCustomPrimitiveString():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='abc',
+                                    fieldType='Custom[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='"1970-01-01T00:00:01Z"')
+                            )
+                        ]
+                )
+            ]
+    );
 }
 
 // This is test Versions: AddField with CopyValue(../existingValue)
