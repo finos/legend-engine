@@ -21,6 +21,7 @@ import meta::pure::functions::meta::*;
 import meta::external::language::java::metamodel::*;
 import meta::pure::changetoken::cast_generation::*;
 import meta::pure::functions::collection::*;
+import meta::json::*;
 
 // entry point into cast generation
 function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
@@ -432,14 +433,26 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
 ):Code[1]  
 {
   let valVar = j_variable(javaObject(), 'value');
+  let mapVar = j_variable(objectNode(), 'value');
 
   // if (type.equals(token.class))
   j_if(
     $typeVar->j_invoke('equals', [j_string($token.class)]),
     $token.defaultValue->match([
       // objectNode.put(fieldName, defaultValue)
-      df:ConstValue[1] | $objVar->j_invoke('put', [j_string($token.fieldName), j_int($df.value->cast(@Integer))], javaVoid()),
-      df:CopyValue[1] | 
+      df:ConstValue[1] | if(_isPrimitive($token.fieldType) || !_isComplex($df.value),|
+      [
+        $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)]),
+        $objVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
+      ],| j_block([
+        $mapVar->j_declare(javaStream()->j_invoke('of',
+        $df.value->cast(@String)->parseJSON()->cast(@meta::json::JSONObject).keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
+        javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
+      ]->concatenate([
+        $objVar->j_invoke('put', [j_string($token.fieldName), $mapVar], javaVoid())
+      ]))
+      ),
+      df:CopyValue[1] |
       [
         // Object value = resolveRelativeReference(rootObjectNode, path, "../existingValue");
         $valVar->j_declare($class->j_invoke('resolveRelativeReference', [
@@ -454,6 +467,110 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
   );
 }
 
+function <<access.private>> meta::pure::changetoken::cast_generation::_inlineJsonValue(
+key: String[1],
+json:JSONElement[1]
+) : Code[1]
+{
+  simpleEntry()->j_new([j_string($key),
+    $json->match([
+      b:JSONBoolean[1] | j_boolean($b.value),
+      s:JSONString[1] | j_string($s.value),
+      n:JSONNumber[1] | $n.value->match([i:Integer[1] | j_int($i), f:Float[1] | j_double($f)]),
+      o:JSONObject[1] | javaStream()->j_invoke('of',
+      $o.keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
+      javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
+      n:JSONNull[1] | j_null()
+    ])
+  ])
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_isComplex(
+value: Any[1]
+) : Boolean[1]
+{
+  if($value->instanceOf(String) && $value->cast(@String)->startsWith('{') && $value->cast(@String)->endsWith('}'),
+     | true,
+     | false
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_isPrimitive(
+type: String[1]
+) : Boolean[1]
+{
+   if($type->equalIgnoreCase('Boolean[1]'),
+      | true,
+      |
+   if($type->equalIgnoreCase('Float[1]') || $type->equalIgnoreCase('Double[1]'),
+      | true,
+      |
+   if($type->equalIgnoreCase('Integer[1]'),
+      | true,
+      |
+   if($type->equalIgnoreCase('String[1]'),
+      | true,
+      | false
+   ))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_getValueAsFieldType(
+type: String[1],
+value: Any[1]
+) : Code[1]
+{
+   if($type->equalIgnoreCase('Boolean[1]'),
+      | $value->match([b:Boolean[1] | j_boolean($b), s:String[1] | j_boolean($s)]),
+      |
+   if($type->equalIgnoreCase('Float[1]') || $type->equalIgnoreCase('Double[1]'),
+      | $value->match([f:Float[1] | j_double($f), s:String[1] | j_double($s)]),
+      |
+   if($type->equalIgnoreCase('Integer[1]'),
+      | $value->match([i:Integer[1] | j_int($i), s:String[1] | j_int($s)]),
+      |
+   if($type->equalIgnoreCase('String[1]'),
+      | j_string(stripMatchingQuotes($value->cast(@String))),
+      | _buildJavaObject($value);
+   ))));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_buildJavaObject(
+value: Any[1]
+) : Code[1]
+{
+  if($value->instanceOf(Map),
+     | javaStream()->j_invoke('of',
+     $value->cast(@Map<String, Any>)->map(m | $m->keys()->map(k | _inlineMap($k, $m->get($k)))),
+     javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
+     |
+  if($value->instanceOf(String),
+     | j_string(stripMatchingQuotes($value->cast(@String))),
+    {| fail('Do not know how to build Java object'); j_null();}
+   ));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_inlineMap(
+key: String[1],
+value: Any[0..1]
+) : Code[1]
+{
+  simpleEntry()->j_new([j_string($key),
+    $value->match([
+      b:Boolean[1] | j_boolean($b),
+      s:String[1] | j_string($s),
+      n:Number[1] | $n->match([i:Integer[1] | j_int($i), f:Float[1] | j_double($f)]),
+      o:Map<String, Any>[1] | javaStream()->j_invoke('of',
+      $o->cast(@Map<String, Any>)->map(m | $m->keys()->map(k | _inlineMap($k, $m->get($k)))),
+      javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
+      n:Any[0] | j_null()
+    ])
+  ])
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::stripMatchingQuotes(s:String[1]):String[1]
+{
+  if($s->startsWith('"') && $s->endsWith('"'), | $s->parseJSON()->cast(@meta::json::JSONString).value, | $s);
+}
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_getChangeFieldTypeConverter(
   fromType : String[1],
@@ -496,19 +613,38 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
   class:meta::external::language::java::metamodel::Class[1],
   token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
 {
+  let valVar = j_variable(javaObject(), 'value');
+  let mapVar = j_variable(objectNode(), 'value');
+
   // if (type.equals(token.class))
   j_if(
     $typeVar->j_invoke('equals', [j_string($token.class)]),
     $token.defaultValue->match([
-      df:ConstValue[1] |
-      [
+      df:ConstValue[1] | if(_isPrimitive($token.fieldType) || !_isComplex($df.value),|
+      j_block([
+        $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)])
+      ]->concatenate([
         // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_cast(toBoxed(javaInt()))->j_ne(j_int($df->cast(@ConstValue).value->cast(@Integer))),
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not(),
             javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
         // objectNode.remove(fieldName)
         $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid()) 
-      ],
+      ])),
+      |
+      j_block([
+        $mapVar->j_declare(javaStream()->j_invoke('of',
+        $df.value->cast(@String)->parseJSON()->cast(@meta::json::JSONObject).keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
+        javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
+      ]->concatenate([
+        // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not(),
+        javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+
+        // objectNode.remove(fieldName)
+        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+      ]))
+      ),
       df:CopyValue[1] | 
       [
         // setRelativeReference(rootObjectNode, path, "../existingValue", objectNode.get("abc"));
@@ -737,3 +873,5 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
 function <<access.private>> meta::pure::changetoken::cast_generation::objectNode():meta::external::language::java::metamodel::Type[1] { javaMap(javaString(), javaObject()); }
 function <<access.private>> meta::pure::changetoken::cast_generation::arrayNode():meta::external::language::java::metamodel::Type[1] { javaList(javaObject()); }
 function <<access.private>> meta::pure::changetoken::cast_generation::javaRawMap():meta::external::language::java::metamodel::Type[1] { javaClass('java.util.Map'); }
+function <<access.private>> meta::pure::changetoken::cast_generation::AbstractMap_SimpleEntry():meta::external::language::java::metamodel::Type[1] { javaClass('java.util.AbstractMap.SimpleEntry'); }
+function <<access.private>> meta::pure::changetoken::cast_generation::simpleEntry():meta::external::language::java::metamodel::Type[1] { ^ParameterizedType(rawType=AbstractMap_SimpleEntry(), typeArguments=[javaString()->toBoxed(), javaObject()->toBoxed()]); }
