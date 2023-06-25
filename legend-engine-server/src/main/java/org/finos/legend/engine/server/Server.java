@@ -118,7 +118,6 @@ import org.finos.legend.engine.shared.core.vault.PropertyVaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
-import org.finos.legend.engine.test.runner.mapping.api.LegacyMappingRunnerApi;
 import org.finos.legend.engine.testable.api.Testable;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -342,7 +341,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Analytics
         List<EntitlementServiceExtension> entitlementServiceExtensions = EntitlementServiceExtensionLoader.extensions();
         environment.jersey().register(new MappingAnalytics(modelManager));
-        environment.jersey().register(new LegacyMappingRunnerApi(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
         environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));

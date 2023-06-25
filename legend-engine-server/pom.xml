@@ -373,10 +373,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-runner-mapping-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
         </dependency>
         <dependency>
