@@ -32,6 +32,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                   <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>generate metamodel</id>
@@ -43,8 +46,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::query::sql::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.sql.metamodel</argument>
+                                <argument>core_external_query_sql_metamodel.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>

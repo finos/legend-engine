@@ -1,3 +1,4 @@
+import meta::protocols::generation::java::translation::*;
 // Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -138,7 +139,13 @@ Class meta::protocols::generation::java::tests::model::scalar::String extends me
 
 function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToMetamodelTranslatorJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslation('meta::protocols::generation::java::tests::model', 'org.finos', 'meta::protocols::generation::java::tests::model::exclude', [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::model',
+    javaPackage  = 'org.finos',
+    elementsToBeExcluded = 'meta::protocols::generation::java::tests::model::exclude'
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::translation::generateProtocolToMetamodelTranslation($config, [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
   assertEquals(1, $sources->size());
   assertEquals( 'package org.finos;\n' +
                 '\n' +
@@ -478,9 +485,9 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
                 '                             : new Root_meta_protocols_generation_java_tests_model_store_Store_Impl("",                                                                       null,\n' +
                 '                                                                                                                                                                              pureModel.getType("meta::protocols::generation::java::tests::model::store::Store"))\n' +
                 '                                                                                                       ._includes(ListIterate.collect(store.includes == null\n' +
-                '                                                                                                                                           ? Collections.<org.finos.meta.pure.store.Store>emptyList()\n' +
+                '                                                                                                                                           ? Collections.<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>emptyList()\n' +
                 '                                                                                                                                           : store.includes,\n' +
-                '                                                                                                                                      (org.finos.meta.pure.store.Store x) -> this.translate(x, pureModel)))\n' +
+                '                                                                                                                                      (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store x) -> this.translate(x, pureModel)))\n' +
                 '                                                                                                       ._package(this.translate(store._package, pureModel))\n' +
                 '                                                                                                       ._referenceUsages(ListIterate.collect(store.referenceUsages == null\n' +
                 '                                                                                                                                                  ? Collections.<ReferenceUsage>emptyList()\n' +
@@ -501,7 +508,13 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolToM
 
 function <<test.Test>> meta::protocols::generation::java::tests::testMetamodelToProtocolTranslatorJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::translation::generateMetamodelToProtocolTranslation('meta::protocols::generation::java::tests::model', 'org.finos', ['meta::protocols::generation::java::tests::model::pojo', 'meta::protocols::generation::java::tests::model::exclude', 'meta::protocols::generation::java::tests::model::store'], [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::model',
+    javaPackage  = 'org.finos',
+    elementsToBeExcluded = ['meta::protocols::generation::java::tests::model::pojo', 'meta::protocols::generation::java::tests::model::exclude', 'meta::protocols::generation::java::tests::model::store']
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::translation::generateMetamodelToProtocolTranslation($config, [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
   assertEquals(1, $sources->size());
   assertEquals('package org.finos;\n' +
                 '\n' +
@@ -696,25 +709,20 @@ function <<test.Test>> meta::protocols::generation::java::tests::testMetamodelTo
                 '}', $sources->at(0));
 }
 
-function meta::protocols::generation::java::tests::configureConventionsForTest(p: Package[1], javaPkg: String[1], ge: meta::protocols::generation::java::JavaProtocolGenerator[1]): meta::external::language::java::transform::Conventions[1]
-{
-  meta::protocols::generation::java::defaultConfigureConventions($p, $javaPkg, $ge)
-    ->meta::protocols::generation::java::configureConventionsWithCoreProtocolClasses()
-    ->meta::external::language::java::transform::addProvidedType(meta::protocols::generation::java::tests::provided::model::pojo::ProvidedPojo, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.ProvidedPojo');
-}
-
-function meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest():meta::protocols::generation::java::JavaProtocolGenerator[1]
-{
-  let ext = meta::protocols::generation::java::basicGeneratorForProtocolWithJacksonAnnotationsAndVisitorClasses();
-
-  ^$ext(
-    configureConventions = meta::protocols::generation::java::tests::configureConventionsForTest_Package_1__String_1__JavaProtocolGenerator_1__Conventions_1_
-  );
-}
-
 function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', 'meta::protocols::generation::java::tests::model::exclude', 'meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest__JavaProtocolGenerator_1_')
+  let config = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::model',
+    javaPackage  = 'org.finos',
+    elementsToBeExcluded = 'meta::protocols::generation::java::tests::model::exclude'
+  )->meta::json::toJSON();
+
+  let dependency = ^meta::protocols::generation::java::translation::Configuration(
+    purePackage = 'meta::protocols::generation::java::tests::provided::model::pojo',
+    javaPackage  = 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement'
+  )->meta::json::toJSON();
+
+  let sources = meta::protocols::generation::java::generateProtocolClasses($config, $dependency)
         ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->sortBy(c | $c.simpleName)->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
 
   assertEquals(22, $sources->size());

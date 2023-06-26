@@ -50,6 +50,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                   <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>Generate Protocol to Metamodel Translations</id>
@@ -61,8 +64,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateProtocolToMetamodelTranslator</mainClass>
                             <arguments>
-                                <argument>meta::external::format::flatdata::metamodel</argument>
-                                <argument>org.finos.legend.engine.external.format.flatdata.metamodel</argument>
+                                <argument>core_external_format_flatdata.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                         </configuration>
@@ -77,8 +79,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetamodelToProtocolTranslator</mainClass>
                             <arguments>
-                                <argument>meta::external::format::flatdata::metamodel</argument>
-                                <argument>org.finos.legend.engine.external.format.flatdata.metamodel</argument>
+                                <argument>core_external_format_flatdata.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                         </configuration>

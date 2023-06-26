@@ -14,43 +14,29 @@
 
 package org.finos.legend.engine.protocol.generation;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
 import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
 import org.finos.legend.pure.generated.core_external_language_java_protocol_generation_generation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class GenerateMetamodelToProtocolTranslator extends GenerateJavaProject
 {
-    private final List<String> customConventionConfigFuncs;
-
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
-        List<String> elementsToBeExcluded = args.length >= 4 && args[3] != null ? Arrays.asList(args[3].split(",")) : Collections.emptyList();
-        List<String> customConventionConfigFuncs = args.length >= 5 ? Arrays.asList(args[4].split(",")) : Collections.emptyList();
-        new GenerateMetamodelToProtocolTranslator(args[0], args[1], args[2], elementsToBeExcluded, customConventionConfigFuncs).execute();
+        new GenerateMetamodelToProtocolTranslator(GenerationArgument.fromArgs(args)).execute();
     }
 
-    private final String fromPurePackage;
-    private final String toJavaPackage;
-    private final List<String> elementsToBeExcluded;
+    private final GenerationArgument argument;
 
-    protected GenerateMetamodelToProtocolTranslator(String fromPurePackage, String toJavaPackage, String outputDirectory, List<String> elementsToBeExcluded, List<String> customConventionConfigFuncs)
+    protected GenerateMetamodelToProtocolTranslator(GenerationArgument argument)
     {
-        super(outputDirectory);
-        this.fromPurePackage = fromPurePackage;
-        this.toJavaPackage = toJavaPackage;
-        this.elementsToBeExcluded = elementsToBeExcluded;
-        this.customConventionConfigFuncs = customConventionConfigFuncs;
+        super(argument.outputDirectory);
+        this.argument = argument;
     }
 
     @Override
     protected Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport)
     {
-        return core_external_language_java_protocol_generation_generation.Root_meta_protocols_generation_java_translation_generateMetamodelToProtocolTranslation_String_1__String_1__String_MANY__String_MANY__Project_1_(fromPurePackage, toJavaPackage, Lists.mutable.withAll(elementsToBeExcluded), Lists.mutable.withAll(customConventionConfigFuncs), executionSupport);
+        return core_external_language_java_protocol_generation_generation.Root_meta_protocols_generation_java_translation_generateMetamodelToProtocolTranslation_String_1__String_MANY__Project_1_(argument.configJson, argument.dependencies, executionSupport);
     }
 }

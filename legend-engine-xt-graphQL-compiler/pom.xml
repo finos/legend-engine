@@ -32,6 +32,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                   <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>Generate translator for metamodel</id>
@@ -43,8 +46,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateProtocolToMetamodelTranslator</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::metamodel::sdl</argument>
-                                <argument>org.finos.legend.engine.protocol.graphQL.metamodel</argument>
+                                <argument>core_external_query_graphql.sdl.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
@@ -60,8 +62,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateProtocolToMetamodelTranslator</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::metamodel::introspection</argument>
-                                <argument>org.finos.legend.engine.protocol.graphQL.introspection.model</argument>
+                                <argument>core_external_query_graphql.introspection.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>

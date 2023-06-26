@@ -39,11 +39,11 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
+                            <addResourcesToClasspath>true</addResourcesToClasspath>
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::language::haskell::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.haskell.metamodel</argument>
+                                <argument>core_external_language_haskell.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>

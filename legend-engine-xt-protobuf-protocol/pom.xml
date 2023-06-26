@@ -30,6 +30,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                   <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>generate metamodel</id>
@@ -41,10 +44,8 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::format::protobuf::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.protobuf3.metamodel</argument>
+                                <argument>core_external_format_protobuf.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
-                                <argument>meta::external::format::protobuf::metamodel::ProtobufSchema</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>
