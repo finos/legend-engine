@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.pure.generated.Root_meta_external_functionActivator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
@@ -28,7 +29,9 @@ public interface FunctionActivatorService<T extends Root_meta_external_functionA
 
     boolean supports(Root_meta_external_functionActivator_FunctionActivator packageableElement);
 
-    MutableList<? extends FunctionActivatorError> validate(PureModel pureModel, T functionActivator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+    MutableList<? extends FunctionActivatorError> validate(PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
-    MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, T functionActivator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+    MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+
+   FunctionActivatorArtifact renderArtifact(PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 }
