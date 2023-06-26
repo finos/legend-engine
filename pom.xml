@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.15.8-SNAPSHOT</version>
+    <version>4.16.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -66,6 +66,10 @@
         <module>legend-engine-xt-persistence-cloud-protocol</module>
         <module>legend-engine-xt-persistence-cloud-pure</module>
 
+        <module>legend-engine-xt-persistence-target-relational-grammar</module>
+        <module>legend-engine-xt-persistence-target-relational-protocol</module>
+        <module>legend-engine-xt-persistence-target-relational-pure</module>
+
         <module>legend-engine-xt-mastery-grammar</module>
         <module>legend-engine-xt-mastery-protocol</module>
         <module>legend-engine-xt-mastery-pure</module>
@@ -104,6 +108,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
+        <module>legend-engine-xt-relationalStore-h2-1.4.200-execution</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
@@ -286,7 +291,6 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-artifact-generation-api</module>
         <module>legend-engine-xt-openapi-generation</module>
-        <module>legend-engine-test-runner-mapping-api</module>
         <module>legend-engine-xt-openapi-pure</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
@@ -301,7 +305,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.7</legend.pure.version>
+        <legend.pure.version>4.5.8</legend.pure.version>
         <legend.shared.version>0.23.7</legend.shared.version>
 
         <!-- SONAR -->
@@ -393,6 +397,7 @@
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <opencsv.version>4.6</opencsv.version>
         <logback.version>1.2.3</logback.version>
+        <logback-contrib.version>0.1.5</logback-contrib.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -1119,6 +1124,22 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-target-relational-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1656,11 +1677,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-runner-mapping</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-test-runner-mapping-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2324,6 +2340,16 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-core</artifactId>
                 <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback.contrib</groupId>
+                <artifactId>logback-json-classic</artifactId>
+                <version>${logback-contrib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback.contrib</groupId>
+                <artifactId>logback-jackson</artifactId>
+                <version>${logback-contrib.version}</version>
             </dependency>
             <!-- LOGGING -->
 

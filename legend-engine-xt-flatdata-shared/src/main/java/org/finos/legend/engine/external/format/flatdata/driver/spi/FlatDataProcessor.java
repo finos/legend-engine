@@ -33,6 +33,8 @@ public interface FlatDataProcessor<T>
     {
         Builder<T> withDefiningPath(String definingPath);
 
+        Builder<T> withSchemaObject(T schemaObject);
+
         Builder<T> withToObjectFactoryFactory(String sectionId, Function<FlatDataRecordType, ParsedFlatDataToObject<?>> toObjectFactoryFactory);
 
         Builder<T> withFromObjectFactoryFactory(String sectionId, Function<FlatDataRecordType, ObjectToParsedFlatData<?>> fromObjectFactoryFactory);

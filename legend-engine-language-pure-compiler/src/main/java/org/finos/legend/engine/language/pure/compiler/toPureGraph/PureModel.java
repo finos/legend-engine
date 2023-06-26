@@ -437,6 +437,10 @@ public class PureModel implements IPureModel
             this.typesIndex.put(typeName, metadataAccessor.getPrimitiveType(typeName));
             this.immutables.add(typeName);
         });
+
+        // This is added to support legacy Binary primitive type usages
+        this.typesIndex.put("Binary", metadataAccessor.getPrimitiveType(ModelRepository.BYTE_TYPE_NAME));
+        this.immutables.add("Binary");
     }
 
 

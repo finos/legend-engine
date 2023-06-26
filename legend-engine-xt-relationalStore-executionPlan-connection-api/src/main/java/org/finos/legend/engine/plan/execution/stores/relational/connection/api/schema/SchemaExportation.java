@@ -125,7 +125,7 @@ public class SchemaExportation
             database.name = this.databaseBuilderInput.targetDatabase.name;
             if (config.patterns == null || config.patterns.isEmpty())
             {
-                config.setPatterns(FastList.newListWith(new DatabasePattern(null, null)));
+                return database;
             }
             this.preProcessInput(this.databaseBuilderInput);
             database.schemas = FastList.newList();

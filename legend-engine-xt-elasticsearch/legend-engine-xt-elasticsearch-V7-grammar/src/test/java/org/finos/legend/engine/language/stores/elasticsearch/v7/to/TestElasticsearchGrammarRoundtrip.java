@@ -147,4 +147,56 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
                 "  ];\n" +
                 "}\n\n");
     }
+
+    @Test
+    public void testStoreRoundtripSingleIndexObjectProperty()
+    {
+        test("###Elasticsearch\n" +
+                "Elasticsearch7Cluster abc::abc::Store\n" +
+                "{\n" +
+                "  indices: [\n" +
+                "    index1: {\n" +
+                "      properties: [\n" +
+                "        prop1: Object {\n" +
+                "          properties: [\n" +
+                "            nested1: Keyword,\n" +
+                "            nested2: Keyword,\n" +
+                "            nestedObject: Object {\n" +
+                "              properties: [\n" +
+                "                nested1: Integer\n" +
+                "              ];\n" +
+                "            }\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n");
+    }
+
+    @Test
+    public void testStoreRoundtripSingleIndexNestedProperty()
+    {
+        test("###Elasticsearch\n" +
+                "Elasticsearch7Cluster abc::abc::Store\n" +
+                "{\n" +
+                "  indices: [\n" +
+                "    index1: {\n" +
+                "      properties: [\n" +
+                "        prop1: Nested {\n" +
+                "          properties: [\n" +
+                "            nested1: Keyword,\n" +
+                "            nested2: Keyword,\n" +
+                "            nestedObject: Nested {\n" +
+                "              properties: [\n" +
+                "                nested1: Integer\n" +
+                "              ];\n" +
+                "            }\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n");
+    }
 }

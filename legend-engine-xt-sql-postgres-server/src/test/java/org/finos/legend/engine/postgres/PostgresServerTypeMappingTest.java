@@ -39,6 +39,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
+
 
 public class PostgresServerTypeMappingTest
 {
@@ -48,7 +50,7 @@ public class PostgresServerTypeMappingTest
     private static TestPostgresServer testPostgresServer;
 
     @BeforeClass
-    public static void setUpClass() throws Exception
+    public static void setUpClass()
     {
         LegendTdsClient client = new LegendTdsClient("http", "localhost", String.valueOf(wireMockRule.port()));
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
@@ -65,10 +67,28 @@ public class PostgresServerTypeMappingTest
 
 
     @Test
+    public void testString() throws Exception
+    {
+        validate(STRING, "\"foo\"", "varchar", "foo");
+        validate(STRING, "\"foo\"", "varchar", "foo");
+        validate(STRING, "null", "varchar", null);
+        validate(STRING, "\"\"", "varchar", "");
+    }
+
+    @Test
+    public void testEnum() throws Exception
+    {
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "null", "varchar", null);
+    }
+
+    @Test
     public void testBoolean() throws Exception
     {
-        validate("Boolean", "true", "bool", Boolean.TRUE);
-        validate("Boolean", "false", "bool", Boolean.FALSE);
+        validate(BOOLEAN, "true", "bool", Boolean.TRUE);
+        validate(BOOLEAN, "false", "bool", Boolean.FALSE);
+        validate(BOOLEAN, "null", "bool", null);
     }
 
     @Test
@@ -78,7 +98,8 @@ public class PostgresServerTypeMappingTest
         Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
-        validate("DateTime", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE_TIME, "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE_TIME, "null", "timestamp", null);
     }
 
     @Test
@@ -87,7 +108,7 @@ public class PostgresServerTypeMappingTest
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
         Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
-        validate("Date", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
 
@@ -98,7 +119,7 @@ public class PostgresServerTypeMappingTest
         LocalDate temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, LocalDate::from);
         Timestamp expected = new Timestamp(temporalAccessor.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
 
-        validate("Date", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate(DATE, "\"" + timeStamp + "\"", "timestamp", expected);
     }
 
     @Test
@@ -110,32 +131,35 @@ public class PostgresServerTypeMappingTest
         long toEpochDay = localDate.atStartOfDay(TimeZone.getDefault().toZoneId()).toInstant().toEpochMilli();
         Date expected = new Date(toEpochDay);
 
-        validate("StrictDate", "\"" + date + "\"", "date", expected);
+        validate(STRICT_DATE, "\"" + date + "\"", "date", expected);
+        validate(STRICT_DATE, "null", "date", null);
     }
 
 
     @Test
     public void testFloat() throws Exception
     {
-        validate("Float", "5.5", "float4", 5.5F);
+        validate(FLOAT, "5.5", "float4", 5.5F);
+        validate(FLOAT, "null", "float4", null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
-        validate("Integer", "5", "int4", 5);
+        validate(INTEGER, "5", "int4", 5);
+        validate(INTEGER, "null", "int4", null);
     }
 
     @Test
     public void testNumberAsInteger() throws Exception
     {
-        validate("Number", "5", "float8", 5.0D);
+        validate(NUMBER, "5", "float8", 5.0D);
     }
 
     @Test
     public void testNumberAsDouble() throws Exception
     {
-        validate("Number", "5.5", "float8", 5.5D);
+        validate(NUMBER, "5.5", "float8", 5.5D);
     }
 
 

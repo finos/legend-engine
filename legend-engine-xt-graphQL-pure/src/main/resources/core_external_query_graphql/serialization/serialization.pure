@@ -29,6 +29,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(definiti
     [
       o:OperationDefinition[1] | $o->graphQLtoString(),
       p:ObjectTypeDefinition[1] | $p->graphQLtoString(),
+      i:InputObjectTypeDefinition[1] | $i->graphQLtoString(),
       i:InterfaceTypeDefinition[1] | $i->graphQLtoString(),
       u:UnionTypeDefinition[1] | $u->graphQLtoString(),
       e:EnumTypeDefinition[1] | $e->graphQLtoString(),
@@ -48,7 +49,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(f: Fragm
 function meta::external::query::graphQL::serialization::graphQLtoString(d: DirectiveDefinition[1]):String[1]
 {
   'directive @' + $d.name +
-  $d.argumentDefinitions->graphQLtoString() +
+  $d.argumentDefinitions->graphQLtoString('(%s)') +
   ' on ' + $d.typeSystemLocation->map(e|$e.name)->concatenate($d.executableLocation->map(e|$e.name))->joinStrings(' | ')
 }
 
@@ -79,9 +80,16 @@ function meta::external::query::graphQL::serialization::graphQLtoString(type: Ob
   '\n}'
 }
 
+function meta::external::query::graphQL::serialization::graphQLtoString(type: InputObjectTypeDefinition[1]):String[1]
+{
+  'input ' + $type.name + $type.directives->graphQLtoString() + ' {\n'+
+    $type.fields->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
+  '\n}'
+}
+
 function meta::external::query::graphQL::serialization::graphQLtoString(field: FieldDefinition[1]):String[1]
 {
-  $field.name + $field.argumentDefinitions->graphQLtoString() + ': ' + $field.type->graphQLtoString() + $field.directives->graphQLtoString()
+  $field.name + $field.argumentDefinitions->graphQLtoString('(%s)') + ': ' + $field.type->graphQLtoString() + $field.directives->graphQLtoString()
 }
 
 function meta::external::query::graphQL::serialization::graphQLtoString(type: InterfaceTypeDefinition[1]):String[1]
@@ -91,11 +99,16 @@ function meta::external::query::graphQL::serialization::graphQLtoString(type: In
   '\n}'
 }
 
-function meta::external::query::graphQL::serialization::graphQLtoString(argumentDefinitions: InputValueDefinition[*]):String[1]
+function meta::external::query::graphQL::serialization::graphQLtoString(inputValueDefinitions: InputValueDefinition[*]):String[1]
 {
-  if($argumentDefinitions->isEmpty(),
+  $inputValueDefinitions->graphQLtoString('%s')
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(inputValueDefinitions: InputValueDefinition[*], format: String[1]):String[1]
+{
+  if($inputValueDefinitions->isEmpty(),
   | '',
-  | '(' + $argumentDefinitions->map(a | $a.name + ': ' + $a.type->graphQLtoString() + if($a.defaultValue->isEmpty(),|'',|' = '+$a.defaultValue->toOne()->graphQLtoString()))->joinStrings(', ') + ')'
+  | $format->format($inputValueDefinitions->map(a | $a.name + ': ' + $a.type->graphQLtoString() + if($a.defaultValue->isEmpty(),|'',|' = '+$a.defaultValue->toOne()->graphQLtoString()))->joinStrings(', '))
   )
 }
 

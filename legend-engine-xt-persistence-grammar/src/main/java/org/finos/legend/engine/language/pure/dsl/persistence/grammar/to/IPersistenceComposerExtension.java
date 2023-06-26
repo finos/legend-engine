@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -45,6 +46,11 @@ public interface IPersistenceComposerExtension extends PureGrammarComposerExtens
         return process(trigger, processors, indentLevel, context, "trigger", trigger.sourceInformation);
     }
 
+    static String process(PersistenceTarget persistenceTarget, List<Function3<PersistenceTarget, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context)
+    {
+        return process(persistenceTarget, processors, indentLevel, context, "persistence target", persistenceTarget.sourceInformation);
+    }
+
     static <T> String process(T item, List<Function3<T, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context, String type, SourceInformation srcInfo)
     {
         return ListIterate
@@ -60,6 +66,11 @@ public interface IPersistenceComposerExtension extends PureGrammarComposerExtens
     }
 
     default List<Function3<Trigger, Integer, PureGrammarComposerContext, String>> getExtraTriggerComposers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function3<PersistenceTarget, Integer, PureGrammarComposerContext, String>> getExtraPersistenceTargetComposers()
     {
         return Collections.emptyList();
     }

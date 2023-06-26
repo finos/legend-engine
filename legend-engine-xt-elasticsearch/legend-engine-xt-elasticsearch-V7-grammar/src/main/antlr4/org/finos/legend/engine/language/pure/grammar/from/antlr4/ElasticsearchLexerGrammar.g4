@@ -27,3 +27,5 @@ FLOAT:                              'Float';
 HALF_FLOAT:                         'HalfFloat';
 DOUBLE:                             'Double';
 BOOLEAN:                            'Boolean';
+OBJECT:                             'Object';
+NESTED:                             'Nested';

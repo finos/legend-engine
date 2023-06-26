@@ -29,6 +29,28 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.config.GSSConfig;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import org.finos.legend.engine.postgres.types.PGType;
+import org.finos.legend.engine.postgres.types.PGTypes;
+import org.finos.legend.engine.postgres.utils.ExceptionUtil;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
+import org.slf4j.Logger;
+
+import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
@@ -46,27 +68,6 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import javax.net.ssl.SSLSession;
-import javax.security.auth.Subject;
-
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
-import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
-import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
-import org.finos.legend.engine.postgres.config.GSSConfig;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.types.PGType;
-import org.finos.legend.engine.postgres.types.PGTypes;
-import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
-import org.slf4j.Logger;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
 
@@ -891,7 +892,7 @@ public class PostgresWireProtocol
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw ExceptionUtil.wrapException(e);
         }
     }
 

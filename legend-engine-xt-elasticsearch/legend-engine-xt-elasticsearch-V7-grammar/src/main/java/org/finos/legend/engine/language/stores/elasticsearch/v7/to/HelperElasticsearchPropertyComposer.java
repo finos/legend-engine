@@ -199,4 +199,18 @@ public class HelperElasticsearchPropertyComposer extends AbstractPropertyBaseVis
         this.builder.append("Text");
         return this.visit((CorePropertyBase) val);
     }
+
+    @Override
+    public Void visit(NestedProperty val)
+    {
+        this.builder.append("Nested");
+        return this.visit((CorePropertyBase) val);
+    }
+
+    @Override
+    public Void visit(ObjectProperty val)
+    {
+        this.builder.append("Object");
+        return this.visit((CorePropertyBase) val);
+    }
 }

@@ -16,320 +16,322 @@
 package org.finos.legend.engine.query.sql.api.sources;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
+public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
 {
     @Override
-    public List<TableSource> visit(AliasedRelation val)
+    public Set<TableSource> visit(AliasedRelation val)
     {
         return val.relation.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(AllColumns val)
+    public Set<TableSource> visit(AllColumns val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(ArithmeticExpression val)
+    public Set<TableSource> visit(ArithmeticExpression val)
     {
-        List<TableSource> leftTables = val.left.accept(this);
-        List<TableSource> rightTables = val.right.accept(this);
-        return Lists.mutable.withAll(leftTables).withAll(rightTables);
+        Set<TableSource> leftTables = val.left.accept(this);
+        Set<TableSource> rightTables = val.right.accept(this);
+        return Sets.mutable.withAll(leftTables).withAll(rightTables);
     }
 
     @Override
-    public List<TableSource> visit(ArrayLiteral val)
+    public Set<TableSource> visit(ArrayLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(BooleanLiteral val)
+    public Set<TableSource> visit(BooleanLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(Cast val)
+    public Set<TableSource> visit(Cast val)
     {
         return val.expression.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(ColumnType val)
+    public Set<TableSource> visit(ColumnType val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(ComparisonExpression val)
+    public Set<TableSource> visit(ComparisonExpression val)
     {
-        List<TableSource> leftTables = val.left.accept(this);
-        List<TableSource> rightTables = val.right.accept(this);
-        return Lists.mutable.withAll(leftTables).withAll(rightTables);
+        Set<TableSource> leftTables = val.left.accept(this);
+        Set<TableSource> rightTables = val.right.accept(this);
+        return Sets.mutable.withAll(leftTables).withAll(rightTables);
     }
 
     @Override
-    public List<TableSource> visit(CurrentTime val)
+    public Set<TableSource> visit(CurrentTime val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(DoubleLiteral val)
+    public Set<TableSource> visit(DoubleLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(Expression val)
+    public Set<TableSource> visit(Expression val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(Extract val)
+    public Set<TableSource> visit(Extract val)
     {
         return val.expression.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(FrameBound val)
+    public Set<TableSource> visit(FrameBound val)
     {
         return val.value.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(FunctionCall val)
+    public Set<TableSource> visit(FunctionCall val)
     {
-        List<TableSource> argumentTableNames = val.arguments.stream()
+        Set<TableSource> argumentTableNames = val.arguments.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        List<TableSource> filterTableNames = val.filter.accept(this);
-        return Lists.mutable.withAll(argumentTableNames).withAll(filterTableNames);
+                .collect(Collectors.toSet());
+        Set<TableSource> filterTableNames = val.filter.accept(this);
+        return Sets.mutable.withAll(argumentTableNames).withAll(filterTableNames);
     }
 
     @Override
-    public List<TableSource> visit(InListExpression val)
+    public Set<TableSource> visit(InListExpression val)
     {
         return val.values.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public List<TableSource> visit(InPredicate val)
+    public Set<TableSource> visit(InPredicate val)
     {
-        List<TableSource> valueTableNames = val.value.accept(this);
-        List<TableSource> valueListTableNames = val.valueList.accept(this);
-        return Lists.mutable.withAll(valueTableNames).withAll(valueListTableNames);
+        Set<TableSource> valueTableNames = val.value.accept(this);
+        Set<TableSource> valueListTableNames = val.valueList.accept(this);
+        return Sets.mutable.withAll(valueTableNames).withAll(valueListTableNames);
     }
 
     @Override
-    public List<TableSource> visit(IntegerLiteral val)
+    public Set<TableSource> visit(IntegerLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(IntervalLiteral val)
+    public Set<TableSource> visit(IntervalLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(IsNotNullPredicate val)
-    {
-        return val.value.accept(this);
-    }
-
-    @Override
-    public List<TableSource> visit(IsNullPredicate val)
+    public Set<TableSource> visit(IsNotNullPredicate val)
     {
         return val.value.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(Join val)
+    public Set<TableSource> visit(IsNullPredicate val)
     {
-        List<TableSource> leftTableNames = val.left.accept(this);
-        List<TableSource> rightTableNames = val.right.accept(this);
-        return Lists.mutable.withAll(leftTableNames).withAll(rightTableNames);
+        return val.value.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(Literal val)
+    public Set<TableSource> visit(Join val)
     {
-        return Collections.emptyList();
+        Set<TableSource> leftTableNames = val.left.accept(this);
+        Set<TableSource> rightTableNames = val.right.accept(this);
+        return Sets.mutable.withAll(leftTableNames).withAll(rightTableNames);
     }
 
     @Override
-    public List<TableSource> visit(LogicalBinaryExpression val)
+    public Set<TableSource> visit(Literal val)
     {
-        List<TableSource> leftTableNames = val.left.accept(this);
-        List<TableSource> rightTableNames = val.right.accept(this);
-        return Lists.mutable.withAll(leftTableNames).withAll(rightTableNames);
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(LongLiteral val)
+    public Set<TableSource> visit(LogicalBinaryExpression val)
     {
-        return Collections.emptyList();
+        Set<TableSource> leftTableNames = val.left.accept(this);
+        Set<TableSource> rightTableNames = val.right.accept(this);
+        return Sets.mutable.withAll(leftTableNames).withAll(rightTableNames);
     }
 
     @Override
-    public List<TableSource> visit(NamedArgumentExpression val)
+    public Set<TableSource> visit(LongLiteral val)
+    {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<TableSource> visit(NamedArgumentExpression val)
     {
         return val.expression.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(NegativeExpression val)
+    public Set<TableSource> visit(NegativeExpression val)
     {
         return val.value.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(NotExpression val)
+    public Set<TableSource> visit(NotExpression val)
     {
         return val.value.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(NullLiteral val)
+    public Set<TableSource> visit(NullLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(QualifiedNameReference val)
+    public Set<TableSource> visit(QualifiedNameReference val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(Query val)
+    public Set<TableSource> visit(Query val)
     {
         return val.queryBody.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(QueryBody val)
+    public Set<TableSource> visit(QueryBody val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(QuerySpecification val)
+    public Set<TableSource> visit(QuerySpecification val)
     {
         return val.from.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public List<TableSource> visit(Relation val)
+    public Set<TableSource> visit(Relation val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(SearchedCaseExpression val)
+    public Set<TableSource> visit(SearchedCaseExpression val)
     {
-        List<TableSource> whenClausesTableNames = val.whenClauses.stream()
+        Set<TableSource> whenClausesTableNames = val.whenClauses.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        List<TableSource> defaultValueTableName = val.defaultValue.accept(this);
-        return Lists.mutable.withAll(whenClausesTableNames).withAll(defaultValueTableName);
+                .collect(Collectors.toSet());
+        Set<TableSource> defaultValueTableName = val.defaultValue.accept(this);
+        return Sets.mutable.withAll(whenClausesTableNames).withAll(defaultValueTableName);
     }
 
     @Override
-    public List<TableSource> visit(Select val)
+    public Set<TableSource> visit(Select val)
     {
         return val.selectItems.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public List<TableSource> visit(SelectItem val)
+    public Set<TableSource> visit(SelectItem val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(SetOperation val)
+    public Set<TableSource> visit(SetOperation val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(SimpleCaseExpression val)
+    public Set<TableSource> visit(SimpleCaseExpression val)
     {
-        List<TableSource> whenClausesTableNames = val.whenClauses.stream()
+        Set<TableSource> whenClausesTableNames = val.whenClauses.stream()
                 .map(expression -> expression.accept(this))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        List<TableSource> defaultValueTableNames = val.defaultValue.accept(this);
-        return Lists.mutable.withAll(whenClausesTableNames).withAll(defaultValueTableNames);
+                .collect(Collectors.toSet());
+        Set<TableSource> defaultValueTableNames = val.defaultValue.accept(this);
+        return Sets.mutable.withAll(whenClausesTableNames).withAll(defaultValueTableNames);
     }
 
     @Override
-    public List<TableSource> visit(SingleColumn val)
+    public Set<TableSource> visit(SingleColumn val)
     {
         return val.expression.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(SortItem val)
+    public Set<TableSource> visit(SortItem val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(Statement val)
+    public Set<TableSource> visit(Statement val)
     {
         return val.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(StringLiteral val)
+    public Set<TableSource> visit(StringLiteral val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(SubqueryExpression val)
+    public Set<TableSource> visit(SubqueryExpression val)
     {
         return val.query.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(Table val)
+    public Set<TableSource> visit(Table val)
     {
         if (val.name.parts.size() != 2)
         {
             throw new IllegalArgumentException("All table names are expected to have 2 parts, <schema>.<name>");
         }
-        return Lists.mutable.of(new TableSource(val.name.parts.get(0), Lists.mutable.of(new TableSourceArgument(null, 0, val.name.parts.get(1)))));
+        return Sets.mutable.of(new TableSource(val.name.parts.get(0), Lists.mutable.of(new TableSourceArgument(null, 0, val.name.parts.get(1)))));
     }
 
     @Override
-    public List<TableSource> visit(TableFunction val)
+    public Set<TableSource> visit(TableFunction val)
     {
         if (val.functionCall.name.parts.size() != 1)
         {
@@ -338,7 +340,7 @@ public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
 
         List<TableSourceArgument> arguments = ListIterate.collectWithIndex(val.functionCall.arguments, this::extractArgument);
 
-        return Lists.mutable.of(new TableSource(val.functionCall.name.parts.get(0), arguments));
+        return Sets.mutable.of(new TableSource(val.functionCall.name.parts.get(0), arguments));
     }
 
     private TableSourceArgument extractArgument(Expression expression, Integer index)
@@ -389,36 +391,36 @@ public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
     }
 
     @Override
-    public List<TableSource> visit(TableSubquery val)
+    public Set<TableSource> visit(TableSubquery val)
     {
         return val.query.accept(this);
     }
 
     @Override
-    public List<TableSource> visit(Union val)
+    public Set<TableSource> visit(Union val)
     {
-        List<TableSource> leftTableNames = val.left.accept(this);
-        List<TableSource> rightTableNames = val.right.accept(this);
-        return Lists.mutable.withAll(leftTableNames).withAll(rightTableNames);
+        Set<TableSource> leftTableNames = val.left.accept(this);
+        Set<TableSource> rightTableNames = val.right.accept(this);
+        return Sets.mutable.withAll(leftTableNames).withAll(rightTableNames);
     }
 
     @Override
-    public List<TableSource> visit(WhenClause val)
+    public Set<TableSource> visit(WhenClause val)
     {
-        List<TableSource> operandTableNames = val.operand.accept(this);
-        List<TableSource> resultTableNames = val.result.accept(this);
-        return Lists.mutable.withAll(operandTableNames).withAll(resultTableNames);
+        Set<TableSource> operandTableNames = val.operand.accept(this);
+        Set<TableSource> resultTableNames = val.result.accept(this);
+        return Sets.mutable.withAll(operandTableNames).withAll(resultTableNames);
     }
 
     @Override
-    public List<TableSource> visit(Window val)
+    public Set<TableSource> visit(Window val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     @Override
-    public List<TableSource> visit(WindowFrame val)
+    public Set<TableSource> visit(WindowFrame val)
     {
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 }

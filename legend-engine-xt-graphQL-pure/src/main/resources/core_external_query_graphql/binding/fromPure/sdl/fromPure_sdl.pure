@@ -1,8 +1,9 @@
+import meta::pure::model::unit::*;
+import meta::external::query::graphQL::binding::*;
 import meta::external::query::graphQL::binding::fromPure::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
 import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
 import meta::external::query::graphQL::metamodel::sdl::executable::*;
-import meta::pure::model::unit::*;
-
 
 Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer
 {
@@ -52,89 +53,222 @@ function meta::external::query::graphQL::binding::fromPure::sdl::schemaDetailToS
                   ->joinStrings('\n');
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL(types:meta::pure::metamodel::PackageableElement[*]):meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition[*]
+function meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL(types: meta::pure::metamodel::PackageableElement[*]): meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition[*]
 {
   let allTypes = $types->findTypes();
 
-  let query = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Query'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.query, type = $x->cast(@Class<Any>).name->toOne()));
-  let mutation = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Mutation'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.mutation, type = $x->cast(@Class<Any>).name->toOne()));
-  let subscription = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Subscription'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.subscription, type = $x->cast(@Class<Any>).name->toOne()));
+  let queryClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Query'))->cast(@Class<Any>);
+  let mutationClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Mutation'))->cast(@Class<Any>);
+  let subscriptionClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Subscription'))->cast(@Class<Any>);
 
+  // Gather all allowed operations
+  let operationTypeQualifiedProperties = $queryClasses->concatenate($mutationClasses)->concatenate($subscriptionClasses).qualifiedProperties->cast(@AbstractProperty<Any>);
+  
+  // All nested classes used as return types -- will be used as object types
+  let classReturnTypes = 
+    $operationTypeQualifiedProperties
+      ->map(q | $q->functionReturnType().rawType)
+      ->map(t | 
+        $t->match(
+          [
+            c : Class<Any>[1] | $c->allNestedPropertyTypes(),
+            a : Any[1] | []
+          ]
+        ))
+      ->distinct()
+      ->filter(t | $t->instanceOf(Class));
 
-  $allTypes->map(c|
+  // All nested classes used as input types -- will be used as input types
+  let classInputTypes = 
+    $operationTypeQualifiedProperties
+      ->map(prop | $prop->functionType().parameters->evaluateAndDeactivate()->tail()->map(param | $param.genericType.rawType->toOne()))
+      ->map(t | 
+        $t->match(
+          [
+            c : Class<Any>[1] | $c->allNestedPropertyTypes(),
+            a : Any[1] | []
+          ]
+        ))
+      ->distinct()
+      ->filter(t | $t->instanceOf(Class));
+
+  // Build types
+  let graphQLTypes = $allTypes->map(c |
     $c->match(
       [
         c:Class<Any>[1] |
-            ^ObjectTypeDefinition(
-              name = $c.name->toOne(),
-              fields = $c->allProperties()->map(p|
-                                      ^FieldDefinition
-                                      (
-                                        name = $p.name->toOne(),
-                                        type = buildType($p->functionReturnType(), $p->functionReturnMultiplicity()),
-                                        argumentDefinitions = if ($p->instanceOf(QualifiedProperty),
-                                                    |$p->functionType().parameters->evaluateAndDeactivate()->tail()->map(pa|
-                                                                    ^InputValueDefinition
-                                                                    (
-                                                                      name=$pa.name,
-                                                                      type=buildType($pa.genericType, $pa.multiplicity)
-                                                                    )
-                                                                ),
-                                                    |[]
-                                               )
-                                        )
-                                      
-                                      )
-            ),
+          if ($classInputTypes->contains($c), 
+            | 
+              buildInputObjectTypeDefinition($c)->concatenate(
+                if ($classReturnTypes->contains($c),
+                  // Used as both -> needs both input and output types
+                  | buildObjectTypeDefinition($c), 
+                  // Used as input -> needs input
+                  | []
+                )
+              ),
+              // Not used as input --> needs output (unused types will result in output types)
+            | buildObjectTypeDefinition($c)
+          ),
         e:Enumeration<Any>[1] |
-            ^EnumTypeDefinition(
-              name = $c.name->toOne(),
-              values = $e->enumValues()->map(z|^EnumValueDefinition(value=$z->id()))
-            )
+          ^EnumTypeDefinition(
+            name = $c.name->toOne(),
+            values = $e->enumValues()->map(z | ^EnumValueDefinition(value = $z->id()))
+          )
       ]
     );
-  )->meta::pure::functions::collection::sortBy(t|$t->match([o:ObjectTypeDefinition[1]|$o.name,e:EnumTypeDefinition[1]|$e.name])->toOne())
-  ->concatenate(
-    if($query->concatenate($mutation)->concatenate($subscription)->isNotEmpty(),
-    |^SchemaDefinition
-    (
-      rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)
-    ),
-    |[])
   );
+
+  let query = $queryClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.query, type = $x.name->toOne()));
+  let mutation = $mutationClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.mutation, type = $x.name->toOne()));
+  let subscription = $subscriptionClasses->map(x|^RootOperationTypeDefinition(operationType = OperationType.subscription, type = $x.name->toOne()));
+
+  let partitioned = $graphQLTypes->partition(type | $type->instanceOf(ScalarTypeDefinition));
+  
+  let processingDirectives = $allTypes
+    ->map(t | $t->getTemporalStereotypes())
+    ->distinct()
+    ->map(s | temporalityToDirectives()->get($s)->toOne());
+
+  $partitioned.second.values
+    // Remove duplicated scalar definitions
+    ->concatenate($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()))
+    ->concatenate($processingDirectives)
+    ->meta::pure::functions::collection::sortBy(t | 
+      $t->match(
+        [
+          o : ObjectTypeDefinition[1] | $o.name, 
+          i : InputObjectTypeDefinition[1] | $i.name, 
+          e : EnumTypeDefinition[1] | $e.name,
+          s : ScalarTypeDefinition[1] | $s.name,
+          d : DirectiveDefinition[1] | $d.name
+        ]
+      )->toOne())
+    ->concatenate(
+      if($query->concatenate($mutation)->concatenate($subscription)->isNotEmpty(),
+        | 
+          ^SchemaDefinition
+          (
+            rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)
+          ),
+        |
+          []
+      )
+    );
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::scalarTypes(): Pair<PrimitiveType,String>[*]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::getTemporalStereotypes(t: meta::pure::metamodel::type::Type[1]): String[*]
 {
-  [
-    pair(String, 'String'),
-    pair(Integer, 'Int'),
-    pair(Float, 'Float'),
-    pair(Boolean, 'Boolean') 
-  ];
+  $t->cast(@AnnotatedElement)
+    ->map(t | $t.stereotypes)
+    ->filter(s | $s.profile == meta::pure::profiles::temporal)
+    ->map(s | $s.value)
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes(): Pair<PrimitiveType,String>[*]
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::isValidPropertyForGraphQL(p: AbstractProperty<Any>[1]): Boolean[1]
 {
-  [
-    pair(Date, 'Date'),
-    pair(DateTime, 'DateTime'),
-    pair(Decimal, 'BigDecimal')
-  ];
+  !$p.name->in(['processingDate', 'businessDate', 'milestoning']);
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildType(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]):TypeReference[1]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildNonBuiltInGraphQLScalars(props: AbstractProperty<Any>[*]): ScalarTypeDefinition[*]
 {
-  let primitives = scalarTypes()->concatenate(customScalarTypes())->newMap();
+  $props
+    ->map(p | $p.genericType.rawType->toOne())
+    ->map(p | $p->match(
+      [
+        p : PrimitiveType[1] | purePrimitivesToCustomGraphQLScalarTypes()->newMap()->get($p),
+        a : Any[1] | []
+      ]
+    ))
+  ->map(customScalar | ^ScalarTypeDefinition(name = $customScalar))
+}
 
-  let name = $primitives->get($type.rawType->toOne());
-  let fName = if ($name->isEmpty(),|$type.rawType.name->toOne(),|$name->toOne());
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildInputObjectTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
+{
+  let props = $c->allProperties()->filter(p | $p->isValidPropertyForGraphQL());
+  let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
+
+  let temporalStereotypes = $c->getTemporalStereotypes();
+  $nonBuiltInScalars
+    ->concatenate(
+      ^InputObjectTypeDefinition(
+        name = toInputTypeName($c.name->toOne()),
+        directives = if($temporalStereotypes->isEmpty(), | [], | $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))),
+        fields = $props
+                  ->map(p |
+                      ^InputValueDefinition
+                      (
+                        name = $p.name->toOne(),
+                        type = buildInputTypeCompatibleTypeReference($p.genericType, $p.multiplicity)
+                      ))
+      ));            
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
+{
+  let props = $c->allProperties()->filter(p | $p->isValidPropertyForGraphQL());
+  let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
+
+  let temporalStereotypes = $c->getTemporalStereotypes();
+  $nonBuiltInScalars
+    ->concatenate(
+      ^ObjectTypeDefinition(
+        name = $c.name->toOne(),
+        directives = if($temporalStereotypes->isEmpty(), | [], | $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))),
+        fields = $c->allProperties()
+                    ->filter(p | $p->isValidPropertyForGraphQL())
+                    ->map(p |
+                      ^FieldDefinition
+                      (
+                        name = $p.name->toOne(),
+                        type = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity()),
+                        argumentDefinitions = 
+                          if ($p->instanceOf(QualifiedProperty),
+                            | 
+                              $p->functionType().parameters->evaluateAndDeactivate()->tail()->map(pa |
+                                    ^InputValueDefinition
+                                    (
+                                      name = $pa.name,
+                                      type = buildInputTypeCompatibleTypeReference($pa.genericType, $pa.multiplicity)
+                                    )
+                                ),
+                            | 
+                              []
+                          )
+                      )
+                    )
+      ));
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeCompatibleTypeReference(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]): TypeReference[1]
+{
+  buildTypeReference($type, $mul, false)
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildInputTypeCompatibleTypeReference(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]): TypeReference[1]
+{
+  buildTypeReference($type, $mul, true)
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildTypeReference(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1], forInput: Boolean[1]): TypeReference[1]
+{
+  let typeName = 
+    if ($type.rawType->toOne()->instanceOf(Class) && $forInput, 
+      | 
+        // Must create reference to input type
+        toInputTypeName($type.rawType.name->toOne()),
+      | 
+        let primitives = purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())->newMap();
+        let foundPrimitiveName = $primitives->get($type.rawType->toOne());
+        let fName = if($foundPrimitiveName->isEmpty(), | $type.rawType.name,| $foundPrimitiveName->toOne());
+    )->toOne();
 
   if ($mul == ZeroOne,
-    | ^NamedTypeReference(name = $fName, nullable=true),
+    | ^NamedTypeReference(name = $typeName, nullable = true),
     | if ($mul == PureOne,
-      | ^NamedTypeReference(name = $fName, nullable=false),
-      | ^ListTypeReference(itemType=^NamedTypeReference(name = $fName, nullable=false), nullable=false)
+      | ^NamedTypeReference(name = $typeName, nullable = false),
+      | ^ListTypeReference(itemType=^NamedTypeReference(name = $typeName, nullable = false), nullable = false)
     )
   );
 }

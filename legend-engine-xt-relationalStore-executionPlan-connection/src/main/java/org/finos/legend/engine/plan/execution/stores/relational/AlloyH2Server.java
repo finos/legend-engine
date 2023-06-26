@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 
@@ -24,12 +25,22 @@ public class AlloyH2Server extends Server
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AlloyH2Server.class);
 
     private static final String H2_ALLOWED_CLASSES_PROPERTY = "h2.allowedClasses";
-    private static final String H2_ALLOWED_CLASSES_DEFAULT = "org.h2.*,org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions";
 
     public static Server startServer(int port) throws SQLException
     {
+        String h2AllowedClassesDefault;
+
+        if (H2Manager.getMajorVersion() == 2)
+        {
+            h2AllowedClassesDefault = "org.h2.*,org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions";
+        }
+        else
+        {
+            h2AllowedClassesDefault = "org.h2.*,org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200";
+        }
+
         LOGGER.debug("startServer port {}", port);
-        System.setProperty(H2_ALLOWED_CLASSES_PROPERTY, System.getProperty(H2_ALLOWED_CLASSES_PROPERTY, H2_ALLOWED_CLASSES_DEFAULT));
+        System.setProperty(H2_ALLOWED_CLASSES_PROPERTY, System.getProperty(H2_ALLOWED_CLASSES_PROPERTY, h2AllowedClassesDefault));
         return Server.createTcpServer("-ifNotExists", "-tcpPort", String.valueOf(port)).start();
     }
 

@@ -62,7 +62,6 @@ public class TestBindingService
                             "    {\n" +
                             "      \"_type\": \"binding\",\n" +
                             "      \"contentType\": \"application/protobuf\",\n" +
-                            "      \"includedStores\": [],\n" +
                             "      \"modelUnit\": {\n" +
                             "        \"packageableElementExcludes\": [],\n" +
                             "        \"packageableElementIncludes\": [\n" +

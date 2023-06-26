@@ -6,6 +6,7 @@
     "platform_functions",
     "platform_dsl_mapping",
     "platform_dsl_graph",
+    "platform_dsl_path",
     "platform_store_relational",
     "core",
     "core_relational"

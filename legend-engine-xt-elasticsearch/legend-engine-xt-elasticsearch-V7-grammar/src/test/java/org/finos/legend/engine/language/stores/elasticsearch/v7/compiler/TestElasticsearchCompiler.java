@@ -15,7 +15,21 @@
 
 package org.finos.legend.engine.language.stores.elasticsearch.v7.compiler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_elasticsearch_seven_metamodel_extensions_store_contract;
+import org.finos.legend.pure.generated.core_elasticsearch_seven_metamodel_store_store;
+import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_scan_buildBasePureModel;
+import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_store;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -36,11 +50,34 @@ public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCo
             "        prop8: Float,\n" +
             "        prop9: HalfFloat,\n" +
             "        prop10: Double,\n" +
-            "        prop11: Boolean\n" +
+            "        prop11: Boolean,\n" +
+            "        prop12: Text {\n" +
+            "          fields: [\n" +
+            "            field1: Keyword\n" +
+            "          ];\n" +
+            "        },\n" +
+            "        prop13: Object {\n" +
+            "          properties: [\n" +
+            "            prop1: Object {\n" +
+            "              properties: [\n" +
+            "                prop1: Keyword\n" +
+            "              ];\n" +
+            "            }\n" +
+            "          ];\n" +
+            "        },\n" +
+            "        prop14: Nested {\n" +
+            "          properties: [\n" +
+            "            prop1: Nested {\n" +
+            "              properties: [\n" +
+            "                prop1: Keyword\n" +
+            "              ];\n" +
+            "            }\n" +
+            "          ];\n" +
+            "        }\n" +
             "      ];\n" +
             "    }\n" +
             "  ];\n" +
-            "}\n";
+            "}\n\n";
 
     private static final String BASIC_CONNECTION = "###Connection\n" +
             "Elasticsearch7ClusterConnection abc::abc::Connection\n" +
@@ -67,13 +104,23 @@ public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCo
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [24:1-43:1]: Duplicated element 'abc::abc::Store'";
+        return "COMPILATION error at [48:1-90:1]: Duplicated element 'abc::abc::Store'";
     }
 
     @Test
-    public void testCompileStore()
+    public void testCompileStore() throws Exception
     {
-        test(BASIC_STORE);
+        PureModel pureModel = test(BASIC_STORE).getTwo();
+        Store store = pureModel.getStore("abc::abc::Store");
+
+        Root_meta_pure_extension_Extension extension = core_elasticsearch_seven_metamodel_extensions_store_contract.Root_meta_external_store_elasticsearch_v7_extension_elasticsearchV7Extension__Extension_1_(pureModel.getExecutionSupport());
+        String pmcdJson = core_pure_protocol_vX_X_X_scan_buildBasePureModel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_buildBasePureModelFromStoreStr_String_1__Extension_MANY__String_1_("abc::abc::Store", Lists.fixedSize.of(extension), pureModel.getExecutionSupport());
+
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        PureModelContextData pmcd = objectMapper.readValue(pmcdJson, PureModelContextData.class);
+
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        Assert.assertEquals(BASIC_STORE, grammarTransformer.renderPureModelContextData(pmcd));
     }
 
     @Test

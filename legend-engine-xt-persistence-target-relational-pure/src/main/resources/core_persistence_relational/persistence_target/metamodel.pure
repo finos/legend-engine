@@ -1,0 +1,224 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::persistence::metamodel::target::*;
+import meta::pure::persistence::relational::metamodel::*;
+
+import meta::relational::metamodel::*;
+
+/**********
+ * persistence target
+ **********/
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::RelationalPersistenceTarget extends PersistenceTarget
+{
+  table: meta::relational::metamodel::relation::Table[1];
+  database: Database[1];
+  milestoning: Milestoning[1];
+}
+
+/**********
+ * milestoning
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Milestoning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::NoMilestoning extends Milestoning
+{
+  auditing: Auditing[1];
+  updatesHandling: UpdatesHandling[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::UnitemporalMilestoning extends Milestoning
+{
+  processingDimension: ProcessingDimension[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BitemporalMilestoning extends Milestoning
+{
+  processingDimension: ProcessingDimension[1];
+  sourceDerivedDimension: SourceDerivedDimension[1];
+}
+
+/**********
+ * auditing
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Auditing
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AuditingDateTime extends Auditing
+{
+  auditingDateTimeName: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::NoAuditing extends Auditing
+{
+}
+
+/**********
+ * updates handling
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::UpdatesHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AppendOnly extends UpdatesHandling
+{
+  appendStrategy: AppendStrategy[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Overwrite extends UpdatesHandling
+{
+}
+
+/**********
+ * append strategy
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AllowDuplicates extends AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::FailOnDuplicates extends AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::FilterDuplicates extends AppendStrategy
+{
+}
+
+/**********
+ * dimensions
+ **********/
+
+// processing dimension
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::ProcessingDimension
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BatchId extends ProcessingDimension
+{
+  batchIdIn: meta::relational::metamodel::Column[1];
+  batchIdOut: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::ProcessingTime extends ProcessingDimension
+{
+  timeIn: meta::relational::metamodel::Column[1];
+  timeOut: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BatchIdAndTime extends ProcessingDimension
+{
+  batchIdIn: meta::relational::metamodel::Column[1];
+  batchIdOut: meta::relational::metamodel::Column[1];
+  timeIn: meta::relational::metamodel::Column[1];
+  timeOut: meta::relational::metamodel::Column[1];
+}
+
+// source-derived dimension
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceDerivedDimension
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceDerivedTime extends SourceDerivedDimension
+{
+  timeStart: meta::relational::metamodel::Column[1];
+  timeEnd: meta::relational::metamodel::Column[1];
+  sourceTimeFields: SourceTimeFields[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceTimeFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceTimeStart extends SourceTimeFields
+{
+  startField: String[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceTimeStartAndEnd extends SourceTimeFields
+{
+  startField: String[1];
+  endField: String[1];
+}
