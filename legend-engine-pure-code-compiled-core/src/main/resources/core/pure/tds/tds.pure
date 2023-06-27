@@ -629,7 +629,7 @@ function <<access.private>> meta::pure::tds::aggRows<X,Y>(rows : TDSRow[*], colu
          let values = $aggValues->map(aggValue|
                let rowMapValues = $rows->map(row|$aggValue.mapFn->eval($row));
                let value = $aggValue.aggregateFn->eval($rowMapValues);
-               $value;
+               if($value->isEmpty(), |^TDSNull(), |$value);
                );
          ^TDSRow(values = $values, parent=$parent);
       }, {|

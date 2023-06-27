@@ -131,6 +131,7 @@ public abstract class TDSResultToPureFormatSerializer extends Serializer
                 case "Integer":
                     return (ThrowingProcedure2<JsonGenerator, Long>) JsonGenerator::writeNumber;
                 case "Float":
+                case "Number":
                     return (ThrowingProcedure2<JsonGenerator, Double>) JsonGenerator::writeNumber;
                 case "Decimal":
                     return (ThrowingProcedure2<JsonGenerator, BigDecimal>) JsonGenerator::writeNumber;
