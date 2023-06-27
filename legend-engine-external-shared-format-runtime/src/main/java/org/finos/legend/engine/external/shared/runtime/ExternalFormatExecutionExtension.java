@@ -86,9 +86,10 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+        Result sourceResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState)));
+        InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
         StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, profiles, executionState);
-        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+        return applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
     }
 
     private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -129,11 +130,11 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
     {
         ExecutionNode inputNode = node.executionNodes().getAny();
         Result input = inputNode.accept(new ExecutionNodeExecutor(profiles, executionState));
-        StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) input;
-        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+        StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult<?>) input;
+        return applyConstraints(streamingObjectResult, streamingObjectResult.getChildResult(), node.checked, node.enableConstraints);
     }
 
-    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, boolean checked, boolean enableConstraints)
+    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, Result childResult, boolean checked, boolean enableConstraints)
     {
         Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
         Stream<IChecked<?>> withConstraints = enableConstraints
@@ -141,12 +142,12 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
                 : checkedStream;
         if (checked)
         {
-            return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+            return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), childResult);
         }
         else
         {
             Stream<?> objectStream = ExternalFormatRuntime.unwrapCheckedStream(withConstraints);
-            return new StreamingObjectResult<>(objectStream, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+            return new StreamingObjectResult<>(objectStream, streamingObjectResult.getResultBuilder(), childResult);
         }
     }
 

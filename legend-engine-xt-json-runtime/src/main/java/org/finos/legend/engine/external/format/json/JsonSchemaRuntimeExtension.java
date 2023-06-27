@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.format.json;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Spliterator;
@@ -56,12 +58,21 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
         {
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
-            IJsonDeserializeExecutionNodeSpecifics specifics = (IJsonDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
-            // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
-            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
-
-            Stream<?> objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
+            Stream<?> objectStream;
+            if (Arrays.asList(specificsClass.getInterfaces()).contains(IJsonInternalizeExecutionNodeSpecifics.class))
+            {
+                IJsonInternalizeExecutionNodeSpecifics specifics = (IJsonInternalizeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+                objectStream = specifics.createReader(inputStream).startStream();
+            }
+            else
+            {
+                // Deprecated Flow to handle old plans
+                IJsonDeserializeExecutionNodeSpecifics specifics = (IJsonDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+                // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
+                StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
+                objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
+            }
             return new StreamingObjectResult<>(objectStream);
         }
         catch (Exception e)

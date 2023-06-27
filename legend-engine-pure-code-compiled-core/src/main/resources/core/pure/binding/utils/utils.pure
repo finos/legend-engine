@@ -54,7 +54,7 @@ function meta::external::shared::format::utils::purifyName(s:String[1], firstLow
    );
 }
 
-function <<access.private>> meta::external::shared::format::utils::handleNonAlphaNumerics(word:String[1]): String[*]
+function meta::external::shared::format::utils::handleNonAlphaNumerics(word:String[1]): String[*]
 {
    $word->chunk(1)
       ->fold(

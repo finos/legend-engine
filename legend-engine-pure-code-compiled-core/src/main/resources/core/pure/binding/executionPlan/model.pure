@@ -35,7 +35,7 @@ Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeEx
 Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
    binding           : Binding[1];
-   tree              : RootGraphFetchTree<Any>[0..1]; 
+   tree              : RootGraphFetchTree<Any>[1]; 
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
 

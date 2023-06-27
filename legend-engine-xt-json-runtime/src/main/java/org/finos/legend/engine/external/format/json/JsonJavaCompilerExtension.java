@@ -15,6 +15,9 @@
 package org.finos.legend.engine.external.format.json;
 
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.read.JsonDataReader;
+import org.finos.legend.engine.external.format.json.read.JsonDataRecord;
 import org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
@@ -32,6 +35,9 @@ public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExten
     static
     {
         DEPENDENCIES.put(PURE_PACKAGE + "_IJsonDeserializeExecutionNodeSpecifics", IJsonDeserializeExecutionNodeSpecifics.class);
+        DEPENDENCIES.put("meta::external::format::json::executionPlan::model::JsonDataRecord", JsonDataRecord.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "_IJsonInternalizeExecutionNodeSpecifics", IJsonInternalizeExecutionNodeSpecifics.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "JsonDataReader", JsonDataReader.class);
     }
 
     @Override
@@ -46,8 +52,13 @@ public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExten
     public static void main(String[] args)
     {
         GeneratePureConfig extension = new GeneratePureConfig("externalFormatJson", ExternalFormatJavaCompilerExtension.class, PURE_PACKAGE);
-        DEPENDENCIES.forEach(extension::addClass);
+        DEPENDENCIES.forEach((p, c) ->
+        {
+            if (!c.isAnnotationPresent(Deprecated.class))
+            {
+                extension.addClass(p, c);
+            }
+        });
         System.out.println(extension.generate());
     }
-
 }

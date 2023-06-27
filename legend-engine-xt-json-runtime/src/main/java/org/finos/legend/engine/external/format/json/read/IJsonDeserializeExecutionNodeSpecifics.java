@@ -18,6 +18,7 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamRead
 
 import java.io.InputStream;
 
+@Deprecated
 public interface IJsonDeserializeExecutionNodeSpecifics
 {
     IStoreStreamReader streamReader(InputStream context);

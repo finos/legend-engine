@@ -82,7 +82,7 @@ public class HelperModelBuilder
                 defaultValue._functionDefinition(lambdaFunction);
             }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
-            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name)
+            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name, null, context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                     ._name(property.name)
                     ._defaultValue(defaultValue)
                     ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
