@@ -79,6 +79,11 @@ jobs:
           developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
 
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+        with:
+          theme: dark
+
       - name: Prepare release
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.client_payload.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
