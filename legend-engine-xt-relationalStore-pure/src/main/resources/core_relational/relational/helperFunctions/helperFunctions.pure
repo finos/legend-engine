@@ -136,13 +136,13 @@ function meta::alloy::service::execution::splitCsvRow(s: String[1], delimiter: S
                       | ^$splitterState(tokens = $splitterState.tokens->add($splitterState.currentTokenChars->makeString()->trim()), inQuotes= false, hasEscapeChar = false, currentTokenChars=[]),
                       | ^$splitterState(tokens = $splitterState.tokens, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
                       ),
-                    | if ($currentChar == '\"',
+                    | if ($currentChar == '"',
+                        | if ($splitterState.hasEscapeChar,
+                        | ^$splitterState(hasEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar));,
                         | if(!$splitterState.inQuotes,
                             | ^$splitterState(inQuotes = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
-                            | if ($splitterState.hasEscapeChar,
-                                | ^$splitterState(hasEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar));,
-                                | ^$splitterState(inQuotes = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
-                                )
+                            | ^$splitterState(inQuotes = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                            )
                            ),
                         | if ( $currentChar == '\\',
                            | ^$splitterState(hasEscapeChar = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
