@@ -1668,7 +1668,10 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitDefinedDataType(SqlBaseParser.DefinedDataTypeContext context)
     {
-        return unsupported();
+        StringLiteral stringLiteral = new StringLiteral();
+        stringLiteral.value = String.join(" ", ListIterate.collect(context.children, ParseTree::getText));
+
+        return stringLiteral;
     }
 
     // Helpers
