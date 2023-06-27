@@ -189,6 +189,10 @@
         <module>legend-engine-xt-snowflakeApp-grammar</module>
         <module>legend-engine-xt-snowflakeApp-api</module>
 
+        <module>legend-engine-xt-bigqueryFunc-pure</module>
+        <module>legend-engine-xt-bigqueryFunc-protocol</module>
+        <module>legend-engine-xt-bigqueryFunc-grammar</module>
+
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
         <module>legend-engine-xt-relationalStore-store-entitlement-analytics</module>
@@ -300,6 +304,7 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-xt-bigqueryFunc-compiler</module>
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
@@ -796,6 +801,32 @@
                 <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunc-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunc-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.finos.legend.engine</groupId>-->
+<!--                <artifactId>legend-engine-xt-bigQueryFunc-compiler</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunc-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.finos.legend.engine</groupId>-->
+<!--                <artifactId>legend-engine-xt-bigQueryFunc-api</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
 
 
             <dependency>
