@@ -156,6 +156,7 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
 {
   paths: meta::pure::mastery::metamodel::precedence::PropertyPath[1..*];
   scope: meta::pure::mastery::metamodel::precedence::RuleScope[*];
+  masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
   
 }
 
