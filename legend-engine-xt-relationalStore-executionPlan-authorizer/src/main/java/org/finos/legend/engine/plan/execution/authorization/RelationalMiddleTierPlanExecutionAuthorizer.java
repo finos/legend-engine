@@ -20,7 +20,6 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -35,7 +34,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.SERVICE_EXECUTION;
@@ -215,12 +214,15 @@ public class RelationalMiddleTierPlanExecutionAuthorizer implements PlanExecutio
         }
     }
 
-    private MutableList<RelationalDatabaseConnection> findNodesWithMiddleTierAuthConnections(SingleExecutionPlan executionPlan)
+    public MutableList<ExecutionNode> collectAllChildNodes(ExecutionNode node)
     {
-        List<ExecutionNode> rootExecutionNodes = executionPlan.rootExecutionNode.executionNodes;
-        MutableList<ExecutionNode> childExecutionNodes = ListIterate.flatCollect(rootExecutionNodes, executionNode -> executionNode.executionNodes);
-        MutableList<ExecutionNode> allExecutionNodes = Lists.mutable.withAll(rootExecutionNodes);
-        allExecutionNodes.addAll(childExecutionNodes);
+        return Lists.mutable.of(node).withAll(node.childNodes().stream().flatMap(c -> collectAllChildNodes(c).stream()).collect(Collectors.toList()));
+    }
+
+    public MutableList<RelationalDatabaseConnection> findNodesWithMiddleTierAuthConnections(SingleExecutionPlan executionPlan)
+    {
+        MutableList<ExecutionNode> allExecutionNodes = collectAllChildNodes(executionPlan.rootExecutionNode);
+
         MutableList<RelationalDatabaseConnection> nodesWithMiddleTierConnections = allExecutionNodes
                 .select(node -> node instanceof SQLExecutionNode)
                 .collect(node -> (SQLExecutionNode) node)
@@ -258,12 +260,9 @@ public class RelationalMiddleTierPlanExecutionAuthorizer implements PlanExecutio
         }
     }
 
-    private boolean isMiddleTierPlanImpl(SingleExecutionPlan executionPlan)
+    public boolean isMiddleTierPlanImpl(SingleExecutionPlan executionPlan)
     {
-        List<ExecutionNode> rootExecutionNodes = executionPlan.rootExecutionNode.executionNodes;
-        MutableList<ExecutionNode> childExecutionNodes = ListIterate.flatCollect(rootExecutionNodes, executionNode -> executionNode.executionNodes);
-        MutableList<ExecutionNode> allExecutionNodes = Lists.mutable.withAll(rootExecutionNodes);
-        allExecutionNodes.addAll(childExecutionNodes);
+        MutableList<ExecutionNode> allExecutionNodes = collectAllChildNodes(executionPlan.rootExecutionNode);
 
         MutableList<MiddleTierUserNamePasswordAuthenticationStrategy> middleTierUserNamePasswordAuthenticationStrategies = allExecutionNodes
                 .select(node -> node instanceof SQLExecutionNode)
