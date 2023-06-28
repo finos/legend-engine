@@ -747,7 +747,21 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedAggregatio
 {
   let supported = [
      pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Integer_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Float_MANY__Float_1_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Number_MANY__Number_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+
     ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Integer_MANY__Float_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Float_MANY__Float_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Number_MANY__Float_1_,  {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+
     ,pair(x: Function<Any>[1] | $x == meta::pure::functions::collection::count_Any_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(value_count = ^ValueCountAggregation(field = $y))})
   ];
 }

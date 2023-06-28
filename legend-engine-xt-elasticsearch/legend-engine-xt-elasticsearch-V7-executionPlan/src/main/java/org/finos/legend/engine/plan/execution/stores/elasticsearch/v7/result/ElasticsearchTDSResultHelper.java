@@ -131,6 +131,7 @@ public final class ElasticsearchTDSResultHelper
             case "Integer":
                 return JsonNode::asLong;
             case "Float":
+            case "Number":
                 return JsonNode::asDouble;
             case "Decimal":
                 return Functions.chain(JsonNode::asText, BigDecimal::new);
@@ -154,6 +155,7 @@ public final class ElasticsearchTDSResultHelper
             case "Integer":
                 return Functions.chain(Number.class::cast, Number::longValue);
             case "Float":
+            case "Number":
                 return Functions.chain(Number.class::cast, Number::doubleValue);
             case "Decimal":
                 return x ->

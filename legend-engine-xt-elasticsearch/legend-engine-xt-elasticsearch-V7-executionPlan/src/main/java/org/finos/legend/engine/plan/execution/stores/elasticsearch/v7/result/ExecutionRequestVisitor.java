@@ -56,6 +56,7 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.Ela
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.ResponseBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.Hit;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.TotalHits;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.AbstractRequestBaseVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldValue;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
@@ -64,6 +65,8 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.typ
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregateBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AvgAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MinAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SumAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.ValueCountAggregate;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
@@ -145,7 +148,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
     private Stream<Object[]> processAggregateResponse(ResponseBody<?> responseBody) throws IOException
     {
-        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor();
+        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor(responseBody.hits.total);
         List<TDSColumn> tdsColumns = ((TDSResultType) this.node.resultType).tdsColumns;
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
@@ -251,6 +254,13 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
     private static class AggregateTDSResultVisitor extends AbstractAggregateBaseVisitor<Object>
     {
+        private final TotalHits total;
+
+        private AggregateTDSResultVisitor(TotalHits total)
+        {
+            this.total = total;
+        }
+
         @Override
         protected Object defaultValue(AggregateBase val)
         {
@@ -260,13 +270,25 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         @Override
         public Object visit(AvgAggregate val)
         {
-            return val.value;
+            return this.total.value == 0L ? null : val.value;
         }
 
         @Override
         public Object visit(SumAggregate val)
         {
             return val.value;
+        }
+
+        @Override
+        public Object visit(MaxAggregate val)
+        {
+            return this.total.value == 0L ? null : val.value;
+        }
+
+        @Override
+        public Object visit(MinAggregate val)
+        {
+            return this.total.value == 0L ? null : val.value;
         }
 
         @Override
