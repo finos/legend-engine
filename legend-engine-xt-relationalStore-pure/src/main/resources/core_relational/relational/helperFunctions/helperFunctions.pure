@@ -123,7 +123,7 @@ Class <<access.private>> meta::alloy::service::execution::SplitterState
 {
    tokens:String[*];
    inQuotes:Boolean[1];
-   hasEscapeChar: Boolean[1];
+   isPrevEscapeChar: Boolean[1];
    currentTokenChars:String[*];
 }
 
@@ -133,24 +133,24 @@ function meta::alloy::service::execution::splitCsvRow(s: String[1], delimiter: S
   let finalSplitterState = $charArray->fold({currentChar,splitterState |
                   if ($currentChar == $delimiter,
                     | if(!$splitterState.inQuotes,
-                      | ^$splitterState(tokens = $splitterState.tokens->add($splitterState.currentTokenChars->makeString()->trim()), inQuotes= false, hasEscapeChar = false, currentTokenChars=[]),
-                      | ^$splitterState(tokens = $splitterState.tokens, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                      | ^$splitterState(tokens = $splitterState.tokens->add($splitterState.currentTokenChars->makeString()->trim()), inQuotes= false, isPrevEscapeChar = false, currentTokenChars=[]),
+                      | ^$splitterState(tokens = $splitterState.tokens, isPrevEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
                       ),
                     | if ($currentChar == '"',
-                        | if ($splitterState.hasEscapeChar,
-                        | ^$splitterState(hasEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar));,
+                        | if ($splitterState.isPrevEscapeChar,
+                        | ^$splitterState(isPrevEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar));,
                         | if(!$splitterState.inQuotes,
                             | ^$splitterState(inQuotes = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
                             | ^$splitterState(inQuotes = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
                             )
                            ),
                         | if ( $currentChar == '\\',
-                           | ^$splitterState(hasEscapeChar = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
-                           | ^$splitterState(currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
+                           | ^$splitterState(isPrevEscapeChar = true, currentTokenChars = $splitterState.currentTokenChars->add($currentChar)),
+                           | ^$splitterState(isPrevEscapeChar = false, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
                              )
                        )
                     )                            
-                  }, ^meta::alloy::service::execution::SplitterState(tokens=[], inQuotes= false, hasEscapeChar = false, currentTokenChars=[]));
+                  }, ^meta::alloy::service::execution::SplitterState(tokens=[], inQuotes= false, isPrevEscapeChar = false, currentTokenChars=[]));
 
   if($finalSplitterState.currentTokenChars != [],|$finalSplitterState.tokens->add($finalSplitterState.currentTokenChars->makeString()->trim()), | $finalSplitterState.tokens);
 }
