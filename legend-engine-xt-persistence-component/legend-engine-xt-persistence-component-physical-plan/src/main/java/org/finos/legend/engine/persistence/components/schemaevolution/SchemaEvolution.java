@@ -46,8 +46,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -120,9 +120,9 @@ public class SchemaEvolution
 
     //Validate all columns (allowing exceptions) in staging dataset must have a matching column in main dataset
     private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset,
-                                                          Dataset stagingDataset,
-                                                          Set<String> fieldsToIgnore,
-                                                          Set<Field> modifiedFields)
+            Dataset stagingDataset,
+            Set<String> fieldsToIgnore,
+            Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
@@ -159,7 +159,7 @@ public class SchemaEvolution
                         if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
                                 && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
-                            Field newField = evolveFieldLength(stagingField, matchedMainField);
+                            Field newField = sink.evolveFieldLength(stagingField, matchedMainField);
                             evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                         }
                         // If the datatype is a non-breaking change, we alter the datatype.
@@ -170,7 +170,7 @@ public class SchemaEvolution
                             if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
                             {
                                 //Modify the column in main table
-                                Field newField = evolveFieldLength(matchedMainField, stagingField);
+                                Field newField = sink.evolveFieldLength(matchedMainField, stagingField);
                                 evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                             }
                             else
@@ -188,7 +188,7 @@ public class SchemaEvolution
                     //If data types are same, we check if length requires any evolution
                     else
                     {
-                        Field newField = evolveFieldLength(stagingField, matchedMainField);
+                        Field newField = sink.evolveFieldLength(stagingField, matchedMainField);
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
@@ -197,7 +197,7 @@ public class SchemaEvolution
                 {
                     if (!matchedMainField.nullable() && stagingField.nullable())
                     {
-                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length(), matchedMainField.type().scale());
+                        Field newField = sink.createNewField(matchedMainField, stagingField, matchedMainField.type().length(), matchedMainField.type().scale());
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
@@ -224,7 +224,7 @@ public class SchemaEvolution
             if (!Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SCALE_CHANGE)
-                    || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Data type scale changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
                 }
@@ -279,56 +279,6 @@ public class SchemaEvolution
             }
         }
         return operations;
-    }
-
-    //new field = field to replace main column (datatype)
-    //old field = reference field to compare sizing/nullability requirements
-    private Field evolveFieldLength(Field oldField, Field newField)
-    {
-        Optional<Integer> length = newField.type().length();
-        Optional<Integer> scale = newField.type().scale();
-
-        //If the oldField and newField have a length associated, pick the greater length
-        if (oldField.type().length().isPresent() && newField.type().length().isPresent())
-        {
-            length = newField.type().length().get() >= oldField.type().length().get()
-                    ? newField.type().length()
-                    : oldField.type().length();
-        }
-        //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-        else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().length().isPresent() && !newField.type().length().isPresent())
-        {
-            length = oldField.type().length();
-        }
-
-        //If the oldField and newField have a scale associated, pick the greater scale
-        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
-        {
-            scale = newField.type().scale().get() >= oldField.type().scale().get()
-                    ? newField.type().scale()
-                    : oldField.type().scale();
-        }
-        //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-        else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
-        {
-            scale = oldField.type().scale();
-        }
-        return createNewField(newField, oldField, length, scale);
-    }
-
-
-    private Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale)
-    {
-        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), length, scale);
-        boolean nullability = newField.nullable() || oldField.nullable();
-
-        //todo : how to handle default value, identity, uniqueness ?
-        return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
-                .fieldAlias(newField.fieldAlias()).nullable(nullability)
-                .identity(newField.identity()).unique(newField.unique())
-                .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
     }
 
     private SchemaDefinition evolveSchemaDefinition(SchemaDefinition schema, Set<Field> modifiedFields)

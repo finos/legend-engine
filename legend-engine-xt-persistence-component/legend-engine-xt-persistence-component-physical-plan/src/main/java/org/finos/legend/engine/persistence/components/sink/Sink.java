@@ -16,9 +16,11 @@ package org.finos.legend.engine.persistence.components.sink;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface Sink
@@ -32,4 +34,10 @@ public interface Sink
     String quoteIdentifier();
 
     <L extends LogicalPlanNode> LogicalPlanVisitor<L> visitorForClass(Class<?> clazz);
+
+    //new field = field to replace main column (datatype)
+    //old field = reference field to compare sizing/nullability requirements
+    Field evolveFieldLength(Field oldField, Field newField);
+
+    Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale);
 }

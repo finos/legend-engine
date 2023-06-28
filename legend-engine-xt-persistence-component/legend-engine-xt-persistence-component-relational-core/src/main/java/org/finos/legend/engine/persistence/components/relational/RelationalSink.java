@@ -18,6 +18,8 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
@@ -116,6 +118,58 @@ public abstract class RelationalSink implements Sink
     public abstract Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion);
 
     public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection connection);
+
+    //new field = field to replace main column (datatype)
+    //old field = reference field to compare sizing/nullability requirements
+    @Override
+    public Field evolveFieldLength(Field oldField, Field newField)
+    {
+        Optional<Integer> length = newField.type().length();
+        Optional<Integer> scale = newField.type().scale();
+
+        //If the oldField and newField have a length associated, pick the greater length
+        if (oldField.type().length().isPresent() && newField.type().length().isPresent())
+        {
+            length = newField.type().length().get() >= oldField.type().length().get()
+                    ? newField.type().length()
+                    : oldField.type().length();
+        }
+        //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().length().isPresent() && !newField.type().length().isPresent())
+        {
+            length = oldField.type().length();
+        }
+
+        //If the oldField and newField have a scale associated, pick the greater scale
+        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
+        {
+            scale = newField.type().scale().get() >= oldField.type().scale().get()
+                    ? newField.type().scale()
+                    : oldField.type().scale();
+        }
+        //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+        {
+            scale = oldField.type().scale();
+        }
+        return createNewField(newField, oldField, length, scale);
+    }
+
+
+    @Override
+    public Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale)
+    {
+        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), length, scale);
+        boolean nullability = newField.nullable() || oldField.nullable();
+
+        //todo : how to handle default value, identity, uniqueness ?
+        return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
+                .fieldAlias(newField.fieldAlias()).nullable(nullability)
+                .identity(newField.identity()).unique(newField.unique())
+                .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
+    }
 
     public interface DatasetExists
     {

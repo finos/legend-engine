@@ -23,6 +23,8 @@ import com.google.cloud.bigquery.TableId;
 import com.opencsv.CSVReader;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -32,13 +34,19 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Deriv
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
+import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.FileInputStream;
@@ -52,25 +60,29 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BigQueryEndToEndTest
 {
+    protected static String digestName = "digest";
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
-    protected Field digest = Field.builder().name("digest").type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
+    protected Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
     protected Field insertTimestamp = Field.builder().name("insert_ts").type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty())).build();
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
 
-    private String projectId = "blueplayground";
-    private String credentialPath = "/Users/ashutosh/Downloads/blueplayground-85f1ebcae766.json";
+    protected final String projectId = "primeval-pixel-387604";
+    protected final String datasetName = "legend_bq_data_types";
+    protected final String credentialPath = "D:\\Documents\\g oauth\\primeval-pixel-387604-20450539e9a2.json";
 
     protected SchemaDefinition stagingSchema = SchemaDefinition.builder()
             .addFields(id) // PK
@@ -87,6 +99,95 @@ public class BigQueryEndToEndTest
             .build();
 
     MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("demo").metadataDatasetName("batch_metadata").build();
+
+    public static String key1Name = "key1";
+    public static String key2Name = "key2";
+    public static String valueName = "value1";
+    public static String fromName = "from";
+    public static String throughName = "through";
+    public static String batchIdInName = "batch_id_in";
+    public static String batchIdOutName = "batch_id_out";
+    public static String dateInName = "date_in";
+    public static String dateOutName = "date_out";
+    public static String deleteIndicatorName = "delete_indicator";
+    public static String[] deleteIndicatorValues = new String[] {"yes", "1", "true"};
+    public static Field key1 = Field.builder().name(key1Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key1Name).build();
+    public static Field key2 = Field.builder().name(key2Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key2Name).build();
+    public static Field value = Field.builder().name(valueName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(valueName).build();
+    public static Field from = Field.builder().name(fromName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(fromName).primaryKey(true).build();
+    public static Field through = Field.builder().name(throughName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(throughName).build();
+    public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
+    public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
+    public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
+    public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
+    public static Field deleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
+
+    public static DatasetDefinition getDefaultMainTable()
+    {
+        return DatasetDefinition.builder()
+                .group("demo")
+                .name("main")
+                .alias("sink")
+                .schema(SchemaDefinition.builder().build())
+                .build();
+    }
+
+    public DatasetDefinition getBitemporalMainTable()
+    {
+        return DatasetDefinition.builder()
+                .group("demo")
+                .name("main")
+                .alias("sink")
+                .schema(SchemaDefinition.builder()
+                        .addFields(key1)
+                        .addFields(key2)
+                        .addFields(value)
+                        .addFields(from)
+                        .addFields(through)
+                        .addFields(digest)
+                        .addFields(batchIdIn)
+                        .addFields(batchIdOut)
+                        .build()
+                )
+                .build();
+    }
+
+    public DatasetDefinition getBitemporalStagingTable()
+    {
+        return DatasetDefinition.builder()
+                .group("demo")
+                .name("staging")
+                .alias("stage")
+                .schema(SchemaDefinition.builder()
+                        .addFields(key1)
+                        .addFields(key2)
+                        .addFields(value)
+                        .addFields(dateIn)
+                        .addFields(dateOut)
+                        .addFields(digest)
+                        .build()
+                )
+                .build();
+    }
+
+    public DatasetDefinition getBitemporalStagingTableWithDeleteIndicator()
+    {
+        return DatasetDefinition.builder()
+                .group("demo")
+                .name("staging")
+                .alias("stage")
+                .schema(SchemaDefinition.builder()
+                        .addFields(key1)
+                        .addFields(key2)
+                        .addFields(value)
+                        .addFields(dateIn)
+                        .addFields(dateOut)
+                        .addFields(digest)
+                        .addFields(deleteIndicator)
+                        .build()
+                )
+                .build();
+    }
 
     protected void ingest(RelationalGenerator generator, DatasetFilter stagingFilter, String path) throws IOException, InterruptedException
     {
@@ -236,5 +337,108 @@ public class BigQueryEndToEndTest
         CSVReader csvReader = new CSVReader(fileReader);
         List<String[]> lines = csvReader.readAll();
         return lines;
+    }
+
+    protected BigQuery getBigQuery() throws IOException
+    {
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
+        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
+        return bigquery;
+    }
+
+    protected Map<String, Object> createExpectedStatsMap(int incomingRecordCount, int rowsDeleted, int rowsInserted, int rowsUpdated, int rowsTerminated)
+    {
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), incomingRecordCount);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), rowsDeleted);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), rowsInserted);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), rowsTerminated);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), rowsUpdated);
+        return expectedStats;
+    }
+
+
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    {
+        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
+    }
+
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(BigQuerySink.get())
+                .executionTimestampClock(executionTimestampClock)
+                .cleanupStagingData(options.cleanupStagingData())
+                .collectStatistics(options.collectStatistics())
+                .enableSchemaEvolution(options.enableSchemaEvolution())
+                .schemaEvolutionCapabilitySet(Collections.emptySet())
+                .caseConversion(CaseConversion.TO_UPPER)
+                .build();
+
+        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQuery()), datasets);
+
+        Map<StatisticName, Object> actualStats = result.statisticByName();
+
+        // Verify the database data
+        List<Map<String, Object>> tableData = runQuery("select * from \"TEST\".\"MAIN\"");
+
+        assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        // Verify statistics
+        Assertions.assertEquals(expectedStats.size(), actualStats.size());
+        for (String statistic : expectedStats.keySet())
+        {
+            Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+        }
+
+        // Return result (including updated datasets)
+        return result;
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet());
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), userCapabilitySet);
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
+    {
+        // Execute physical plans
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(BigQuerySink.get())
+                .executionTimestampClock(executionTimestampClock)
+                .cleanupStagingData(options.cleanupStagingData())
+                .collectStatistics(options.collectStatistics())
+                .enableSchemaEvolution(options.enableSchemaEvolution())
+                .schemaEvolutionCapabilitySet(userCapabilitySet)
+                .build();
+        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQuery()), datasets);
+
+        Map<StatisticName, Object> actualStats = result.statisticByName();
+
+        // Verify the database data
+        List<Map<String, Object>> tableData = runQuery("select * from \"TEST\".\"main\"");
+        assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        // Verify statistics
+        Assertions.assertEquals(expectedStats.size(), actualStats.size());
+        for (String statistic : expectedStats.keySet())
+        {
+            Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+        }
+
+        // Return result (including updated datasets)
+        return result;
     }
 }

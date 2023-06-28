@@ -126,10 +126,17 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public boolean doesTableExist(Dataset dataset)
     {
-        String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
-        String schema = dataset.datasetReference().group().orElse(null);
-        Table table = this.bigQuery.getTable(TableId.of(schema, name));
-        return table.exists();
+        String projectName = dataset.datasetReference().database().orElse(null);
+        String datasetName = dataset.datasetReference().group().orElseThrow(IllegalStateException::new);
+        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
+
+        TableId tableId = projectName == null ?
+                TableId.of(datasetName, tableName) :
+                TableId.of(projectName, datasetName, tableName);
+
+        Table table = this.bigQuery.getTable(tableId);
+        boolean tableExists = table != null && table.exists();
+        return tableExists;
     }
 
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
@@ -220,8 +227,8 @@ public class BigQueryHelper implements RelationalExecutionHelper
     private List<String> fetchPrimaryKeys(String tableName, String schemaName, String databaseName)
     {
         String sql = databaseName == null ?
-                "select column_name from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'" :
-                "select column_name from {DATABASE_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'"
+                "select column_name from {SCHEMA_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'" :
+                "select column_name from {DATABASE_NAME}.{SCHEMA_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'"
                         .replace("{DATABASE_NAME}", databaseName);
         sql = sql.replace("{SCHEMA_NAME}", schemaName).replace("{TABLE_NAME}", tableName);
         List<Map<String, Object>> resultSet = this.executeQuery(sql);
