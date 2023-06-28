@@ -14,24 +14,28 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourcePartition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.Tagable;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertPath;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static java.util.Objects.nonNull;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 
 /**
@@ -39,25 +43,34 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
  */
 public class HelperMasteryGrammarComposer
 {
+
+    private static final String PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX = "\\{?input: .*\\[1]\\|\\$input\\.";
+    private static final String PRECEDENCE_LAMBDA_WITH_FILTER_SUFFIX = ".*";
+
     private HelperMasteryGrammarComposer()
     {
     }
 
     public static String renderMastery(MasterRecordDefinition masterRecordDefinition, int indentLevel, PureGrammarComposerContext context)
     {
-        String masteryRendered = "MasterRecordDefinition " + convertPath(masterRecordDefinition.getPath()) + "\n" +
-                "{\n" +
-                renderModelClass(masterRecordDefinition.modelClass, indentLevel, context) +
-                renderIdentityResolution(masterRecordDefinition.identityResolution, indentLevel, context) +
-                renderRecordSources(masterRecordDefinition.sources, indentLevel, context) +
-                "}";
-        return masteryRendered;
+        StringBuilder builder = new StringBuilder();
+        builder.append("MasterRecordDefinition ").append(convertPath(masterRecordDefinition.getPath())).append("\n")
+                .append("{\n")
+                .append(renderModelClass(masterRecordDefinition.modelClass, indentLevel))
+                .append(renderIdentityResolution(masterRecordDefinition.identityResolution, indentLevel, context));
+        if (nonNull(masterRecordDefinition.precedenceRules))
+        {
+            builder.append(renderPrecedenceRules(masterRecordDefinition.precedenceRules, indentLevel, context));
+        }
+        builder.append(renderRecordSources(masterRecordDefinition.sources, indentLevel))
+                .append("}");
+        return builder.toString();
     }
 
     /*
      * MasterRecordDefinition Attributes
      */
-    private static String renderModelClass(String modelClass, int indentLevel, PureGrammarComposerContext context)
+    private static String renderModelClass(String modelClass, int indentLevel)
     {
         return getTabString(indentLevel) + "modelClass: " + modelClass + ";\n";
     }
@@ -65,15 +78,15 @@ public class HelperMasteryGrammarComposer
     /*
      * MasterRecordSources
      */
-    private static String renderRecordSources(List<RecordSource> sources, int indentLevel, PureGrammarComposerContext context)
+    private static String renderRecordSources(List<RecordSource> sources, int indentLevel)
     {
         StringBuilder sourcesStr = new StringBuilder()
-                .append(getTabString(indentLevel) + "recordSources:\n")
+                .append(getTabString(indentLevel)).append("recordSources:\n")
                 .append(getTabString(indentLevel)).append("[\n");
                 ListIterate.forEachWithIndex(sources, (source, i) ->
                 {
                     sourcesStr.append(i > 0 ? ",\n" : "");
-                    sourcesStr.append(source.accept(new RecordSourceComposer(indentLevel, context)));
+                    sourcesStr.append(source.accept(new RecordSourceComposer(indentLevel)));
                     sourcesStr.append(getTabString(indentLevel + 1)).append("}");
                 });
                 sourcesStr.append("\n").append(getTabString(indentLevel)).append("]\n");
@@ -83,28 +96,26 @@ public class HelperMasteryGrammarComposer
     private static class RecordSourceComposer implements RecordSourceVisitor<String>
     {
         private final int indentLevel;
-        private final PureGrammarComposerContext context;
 
-        private RecordSourceComposer(int indentLevel, PureGrammarComposerContext context)
+        private RecordSourceComposer(int indentLevel)
         {
             this.indentLevel = indentLevel;
-            this.context = context;
         }
 
         @Override
-        public String visit(RecordSource val)
+        public String visit(RecordSource recordSource)
         {
-              return getTabString(indentLevel + 1) + val.id + ": {\n" +
-                    getTabString(indentLevel + 2) + "description: " + convertString(val.description, true) + ";\n" +
-                    getTabString(indentLevel + 2) + "status: " + val.status + ";\n" +
-                      (val.parseService != null ? (getTabString(indentLevel + 2) + "parseService: " + val.parseService + ";\n") : "") +
-                      getTabString(indentLevel + 2) + "transformService: " + val.transformService + ";\n" +
-                      (val.sequentialData != null ? getTabString(indentLevel + 2) + "sequentialData: " + val.sequentialData + ";\n" : "") +
-                      (val.stagedLoad != null ? getTabString(indentLevel + 2) + "stagedLoad: " + val.stagedLoad + ";\n" : "") +
-                      (val.createPermitted != null ? getTabString(indentLevel + 2) + "createPermitted: " + val.createPermitted + ";\n" : "") +
-                      (val.createBlockedException != null ? getTabString(indentLevel + 2) + "createBlockedException: " + val.createBlockedException + ";\n" : "") +
-                      ((val.getTags() != null && !val.getTags().isEmpty()) ? getTabString(indentLevel + 1) + renderTags(val, indentLevel) + "\n" : "") +
-                    getTabString(indentLevel + 1) + renderPartitions(val, indentLevel) + "\n";
+            return getTabString(indentLevel + 1) + recordSource.id + ": {\n" +
+                    getTabString(indentLevel + 2) + "description: " + convertString(recordSource.description, true) + ";\n" +
+                    getTabString(indentLevel + 2) + "status: " + recordSource.status + ";\n" +
+                    (nonNull(recordSource.parseService) ? (getTabString(indentLevel + 2) + "parseService: " + recordSource.parseService + ";\n") : "") +
+                    getTabString(indentLevel + 2) + "transformService: " + recordSource.transformService + ";\n" +
+                    (nonNull(recordSource.sequentialData) ? getTabString(indentLevel + 2) + "sequentialData: " + recordSource.sequentialData + ";\n" : "") +
+                    (nonNull(recordSource.stagedLoad) ? getTabString(indentLevel + 2) + "stagedLoad: " + recordSource.stagedLoad + ";\n" : "") +
+                    (nonNull(recordSource.createPermitted) ? getTabString(indentLevel + 2) + "createPermitted: " + recordSource.createPermitted + ";\n" : "") +
+                    (nonNull(recordSource.createBlockedException) ? getTabString(indentLevel + 2) + "createBlockedException: " + recordSource.createBlockedException + ";\n" : "") +
+                    ((nonNull(recordSource.getTags()) && !recordSource.getTags().isEmpty()) ? getTabString(indentLevel + 1) + renderTags(recordSource, indentLevel) + "\n" : "") +
+                    getTabString(indentLevel + 1) + renderPartitions(recordSource, indentLevel) + "\n";
         }
     }
 
@@ -130,9 +141,9 @@ public class HelperMasteryGrammarComposer
 
     private static String renderPartition(RecordSourcePartition partition, int indentLevel)
     {
-        StringBuffer strBuf = new StringBuffer().append(getTabString(indentLevel)).append(partition.id).append(": {");
-        strBuf.append((partition.getTags() != null && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
-        return strBuf.toString();
+        StringBuilder builder = new StringBuilder().append(getTabString(indentLevel)).append(partition.id).append(": {");
+        builder.append((nonNull(partition.getTags()) && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
+        return builder.toString();
     }
 
     /*
@@ -142,6 +153,195 @@ public class HelperMasteryGrammarComposer
     private static String renderIdentityResolution(IdentityResolution identityResolution, int indentLevel, PureGrammarComposerContext context)
     {
         return identityResolution.accept(new IdentityResolutionComposer(indentLevel, context));
+    }
+
+    private static String renderPrecedenceRules(List<PrecedenceRule> precedenceRules, int indentLevel, PureGrammarComposerContext context)
+    {
+        Map<Pair<String, String>, StringBuilder> uniqueSourcePrecedenceRules = new LinkedHashMap<>();
+        StringBuilder nonSourcePrecedenceRulesBuilder = new StringBuilder()
+                .append(getTabString(indentLevel)).append("precedenceRules: [");
+
+        ListIterate.forEachWithIndex(precedenceRules, (precedenceRule, i) ->
+        {
+            String precedenceRuleString = precedenceRule.accept(new PrecedenceRuleComposer(indentLevel + 1, context, uniqueSourcePrecedenceRules));
+            nonSourcePrecedenceRulesBuilder.append(precedenceRuleString);
+            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() && !precedenceRuleString.equals("") ? "," : "");
+        });
+        return combinePrecedenceRules(uniqueSourcePrecedenceRules, nonSourcePrecedenceRulesBuilder.toString(), indentLevel);
+    }
+
+    private static String combinePrecedenceRules(Map<Pair<String, String>, StringBuilder> uniqueSourcePrecedenceRules, String nonSourcePrecedenceRules, int indentLevel)
+    {
+        StringBuilder allPrecedenceRules = new StringBuilder();
+        if (uniqueSourcePrecedenceRules.isEmpty())
+        {
+            nonSourcePrecedenceRules = StringUtils.chomp(nonSourcePrecedenceRules);
+        }
+        allPrecedenceRules.append(nonSourcePrecedenceRules);
+        List<StringBuilder> sourcePrecedenceRules = new ArrayList<>(uniqueSourcePrecedenceRules.values());
+        ListIterate.forEachWithIndex(sourcePrecedenceRules, (sourcePrecedenceRule, i) ->
+        {
+            allPrecedenceRules.append(i > 0 ? "," : "");
+            String sourcePrecedenceSTring = StringUtils.chop(sourcePrecedenceRule.toString());
+            allPrecedenceRules.append(sourcePrecedenceSTring).append("\n");
+            allPrecedenceRules.append(getTabString(indentLevel + 2)).append("];\n");
+            allPrecedenceRules.append(getTabString(indentLevel + 1)).append("}");
+        });
+        allPrecedenceRules.append("\n").append(getTabString(indentLevel)).append("]\n");
+        return allPrecedenceRules.toString();
+    }
+
+    private static class PrecedenceRuleComposer implements PrecedenceRuleVisitor<String>
+    {
+        private final int indentLevel;
+        private final PureGrammarComposerContext context;
+        private final Map<Pair<String, String>, StringBuilder> uniqueSourcePrecedenceRules;
+
+        private PrecedenceRuleComposer(int indentLevel, PureGrammarComposerContext context, Map<Pair<String, String>, StringBuilder> uniqueSourcePrecedenceRules)
+        {
+            this.indentLevel = indentLevel;
+            this.context = context;
+            this.uniqueSourcePrecedenceRules = uniqueSourcePrecedenceRules;
+        }
+
+        @Override
+        public String visit(PrecedenceRule precedenceRule)
+        {
+            String path = visitPath(precedenceRule.masterRecordFilter, precedenceRule.paths);
+            StringBuilder builder = new StringBuilder("\n");
+            if (precedenceRule instanceof SourcePrecedenceRule)
+            {
+                visitSourcePrecedenceRule(precedenceRule, builder, path);
+                return "";
+            }
+            else
+            {
+                if (precedenceRule instanceof DeleteRule)
+                {
+                    buildPrecedenceSubType(builder, precedenceRule.getType());
+                }
+                else if (precedenceRule instanceof CreateRule)
+                {
+                    buildPrecedenceSubType(builder, precedenceRule.getType());
+                }
+                else if (precedenceRule instanceof ConditionalRule)
+                {
+                    visitConditionalRule(precedenceRule, builder);
+                }
+                else
+                {
+                    throw new EngineException("Unrecognized precedence rule", EngineErrorType.COMPOSER);
+                }
+                visitPrecedenceRule(precedenceRule, builder, path);
+                return builder.toString();
+            }
+        }
+
+        private void buildPrecedenceSubType(StringBuilder builder, String precedenceSubType)
+        {
+            builder.append(getTabString(indentLevel)).append(precedenceSubType).append(": {\n");
+        }
+
+        private void visitConditionalRule(PrecedenceRule precedenceRule, StringBuilder builder)
+        {
+            ConditionalRule conditionalRule = (ConditionalRule) precedenceRule;
+            buildPrecedenceSubType(builder, precedenceRule.getType());
+            builder.append(getTabString(indentLevel + 1)).append("predicate: ")
+                    .append(lambdaToString(conditionalRule.predicate, context)).append(";\n");
+        }
+
+        private void visitPrecedenceRule(PrecedenceRule precedenceRule, StringBuilder builder, String path)
+        {
+            String ruleScope = visitRuleScopeWithoutPrecedence(precedenceRule.scopes);
+            builder.append(getTabString(indentLevel + 1)).append("path: ").append(path).append(";\n");
+            if (!ruleScope.isEmpty())
+            {
+                builder.append(getTabString(indentLevel + 1)).append("ruleScope: [").append(ruleScope).append("\n");
+                builder.append(getTabString(indentLevel + 1)).append("];\n");
+            }
+            builder.append(getTabString(indentLevel)).append("}");
+        }
+
+        private void visitSourcePrecedenceRule(PrecedenceRule precedenceRule, StringBuilder builder, String path)
+        {
+            SourcePrecedenceRule sourcePrecedenceRule = (SourcePrecedenceRule) precedenceRule;
+            String action = sourcePrecedenceRule.action.name();
+            String ruleScope = visitRuleScopeWithPrecedence(sourcePrecedenceRule.scopes, sourcePrecedenceRule.precedence);
+            buildPrecedenceSubType(builder, precedenceRule.getType());
+            builder.append(getTabString(indentLevel + 1)).append("path: ").append(path).append(";\n")
+                    .append(getTabString(indentLevel + 1)).append("action: ").append(action).append(";\n")
+                    .append(getTabString(indentLevel + 1)).append("ruleScope: [").append(ruleScope);
+            uniqueSourcePrecedenceRules.merge(Pair.of(path, action), builder, (existingValue, newValue) ->
+            {
+                existingValue.append(ruleScope);
+                return existingValue;
+            });
+        }
+
+        private String visitRuleScopeWithPrecedence(List<RuleScope> ruleScope, Long precedence)
+        {
+            StringBuilder builder = new StringBuilder();
+            ListIterate.forEach(ruleScope, scope ->
+            {
+                builder.append("\n");
+                builder.append(visitRuleScope(scope));
+                builder.append(", precedence: ").append(precedence).append("},");
+            });
+            return builder.toString();
+        }
+
+        private String visitRuleScopeWithoutPrecedence(List<RuleScope> ruleScopes)
+        {
+            StringBuilder builder = new StringBuilder();
+            ListIterate.forEachWithIndex(ruleScopes, (scope, i) ->
+            {
+                builder.append(i > 0 ? ",\n" : "\n");
+                builder.append(visitRuleScope(scope)).append("}");
+            });
+            return builder.toString();
+        }
+
+        private String visitPath(Lambda masterRecordFilter, List<PropertyPath> propertyPaths)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append(masterRecordFilter.parameters.get(0)._class);
+            builder.append(visitLambda(masterRecordFilter));
+            ListIterate.forEach(propertyPaths, propertyPath ->
+            {
+               builder.append(".").append(propertyPath.property);
+               builder.append(visitLambda(propertyPath.filter));
+            });
+            return builder.toString();
+        }
+
+        private String visitLambda(Lambda lambda)
+        {
+            StringBuilder builder = new StringBuilder();
+            String lambdaStr = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+            if (lambdaStr.matches(PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX + PRECEDENCE_LAMBDA_WITH_FILTER_SUFFIX))
+            {
+                String filterPath = lambdaStr.replaceAll(PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX, "");
+                builder.append("{$.").append(filterPath).append("}");
+            }
+            return builder.toString();
+        }
+
+        private String visitRuleScope(RuleScope ruleScope)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getTabString(indentLevel + 2));
+            if (ruleScope instanceof RecordSourceScope)
+            {
+                RecordSourceScope recordSourceScope = (RecordSourceScope) ruleScope;
+                return builder.append("RecordSourceScope { ").append(recordSourceScope.recordSourceId).toString();
+            }
+            if (ruleScope instanceof DataProviderTypeScope)
+            {
+                DataProviderTypeScope dataProviderTypeScope = (DataProviderTypeScope) ruleScope;
+                return builder.append("DataProviderTypeScope { ").append(dataProviderTypeScope.dataProviderType.name()).toString();
+            }
+            return "";
+        }
     }
 
     private static String renderResolutionQueries(IdentityResolution identityResolution, int indentLevel, PureGrammarComposerContext context)
@@ -194,17 +394,24 @@ public class HelperMasteryGrammarComposer
             {
                 builder.append(",\n").append(getTabString(indentLevel)).append("         ");
             }
-            //TODO fix internal bug - Issue with lambda builder that it sometimes wraps the whole lambda with { } so sniff (urrrgh!) for the wrappers and add only if not present
-            String lambdaStr = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
-            if (!lambdaStr.startsWith("{"))
-            {
-                builder.append("{").append(lambdaStr).append("}");
-            }
-            else
-            {
-                builder.append(lambdaStr);
-            }
+            builder.append(lambdaToString(lambda, context));
+
         });
         return builder.append("\n").toString();
+    }
+
+    private static String lambdaToString(Lambda lambda, PureGrammarComposerContext context)
+    {
+        StringBuilder builder = new StringBuilder();
+        String lambdaStr = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+        if (!lambdaStr.startsWith("{"))
+        {
+            builder.append("{").append(lambdaStr).append("}");
+        }
+        else
+        {
+            builder.append(lambdaStr);
+        }
+        return builder.toString();
     }
 }

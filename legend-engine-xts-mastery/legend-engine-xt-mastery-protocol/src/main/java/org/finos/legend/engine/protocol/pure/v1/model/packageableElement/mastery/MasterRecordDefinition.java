@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.master
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.PrecedenceRule;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,7 @@ public class MasterRecordDefinition extends PackageableElement
     public String modelClass;
     public IdentityResolution identityResolution;
     public List<RecordSource> sources = Collections.emptyList();
+    public List<PrecedenceRule> precedenceRules;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

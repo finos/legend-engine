@@ -46,7 +46,7 @@ tags:                                       TAGS COLON
                                             SEMI_COLON
 ;
 
-// -------------------------------------- MASTER_RECORD_DEFIMNITION --------------------------------------
+// -------------------------------------- MASTER_RECORD_DEFINITION --------------------------------------
 
 mastery:                                    MASTER_RECORD_DEFINITION qualifiedName
                                                 BRACE_OPEN
@@ -54,6 +54,7 @@ mastery:                                    MASTER_RECORD_DEFINITION qualifiedNa
                                                     modelClass
                                                     | identityResolution
                                                     | recordSources
+                                                    | precedenceRules
                                                 )*
                                                 BRACE_CLOSE
 ;
@@ -111,15 +112,15 @@ transformService:                           TRANSFORM_SERVICE COLON qualifiedNam
 sourcePartitions:                           SOURCE_PARTITIONS COLON
                                             BRACKET_OPEN
                                             (
-                                                sourcePartiton
+                                                sourcePartition
                                                 (
                                                     COMMA
-                                                    sourcePartiton
+                                                    sourcePartition
                                                 )*
                                             )
                                             BRACKET_CLOSE
 ;
-sourcePartiton:                             masteryIdentifier COLON BRACE_OPEN
+sourcePartition:                             masteryIdentifier COLON BRACE_OPEN
                                             (
                                                  tags
                                             )*
@@ -129,7 +130,7 @@ sourcePartiton:                             masteryIdentifier COLON BRACE_OPEN
 
 // -------------------------------------- RESOLUTION --------------------------------------
 
-identityResolution:                         IDENTITIY_RESOLUTION COLON
+identityResolution:                         IDENTITY_RESOLUTION COLON
                                             BRACE_OPEN
                                             (
                                                 modelClass
@@ -171,6 +172,112 @@ resolutionQueryKeyType:                  RESOLUTION_QUERY_KEY_TYPE COLON (
                                             )
                                             SEMI_COLON
 ;
-resolutionQueryPrecedence:               RESOLUTION_QUERY_PRECEDENCE COLON INTEGER SEMI_COLON
+resolutionQueryPrecedence:               PRECEDENCE COLON INTEGER SEMI_COLON
+;
+// -------------------------------------- PRECEDENCE RULES--------------------------------------
+
+precedenceRules:                         PRECEDENCE_RULES COLON
+                                            BRACKET_OPEN
+                                            (
+                                                precedenceRule
+                                                (
+                                                    COMMA
+                                                    precedenceRule
+                                                )*
+                                            )
+                                            BRACKET_CLOSE
 ;
 
+precedenceRule:                         (sourcePrecedenceRule
+                                        | deleteRule
+                                        | createRule
+                                        | conditionalRule
+                                        )
+;
+precedenceRuleBase:                     ruleScope
+                                        | path
+;
+sourcePrecedenceRule:                   SOURCE_PRECEDENCE_RULE COLON
+                                        BRACE_OPEN
+                                            (ruleScope
+                                            | path
+                                            | action
+                                            )*
+                                        BRACE_CLOSE
+;
+deleteRule:                             DELETE_RULE COLON
+                                        BRACE_OPEN
+                                            (precedenceRuleBase
+                                            )*
+                                        BRACE_CLOSE
+;
+createRule:                             CREATE_RULE COLON
+                                        BRACE_OPEN
+                                            (precedenceRuleBase
+                                            )*
+                                        BRACE_CLOSE
+;
+conditionalRule:                   CONDITIONAL_RULE COLON
+                                         BRACE_OPEN
+                                             (precedenceRuleBase
+                                             | predicate
+                                             )*
+                                         BRACE_CLOSE
+ ;
+path:                                   PATH COLON
+                                            masterRecordFilter
+                                                (
+                                                pathExtension
+                                                )*
+                                        SEMI_COLON
+;
+masterRecordFilter:                     qualifiedName filter?
+;
+pathExtension:                           subPath filter?
+;
+subPath:                                '.' VALID_STRING
+;
+filter:                                 BRACE_OPEN '$' '.' combinedExpression BRACE_CLOSE
+;
+predicate:                              PREDICATE COLON
+                                            lambdaFunction
+                                        SEMI_COLON
+;
+action:                                 ACTION COLON
+                                            validAction
+                                        SEMI_COLON
+;
+validAction:                            OVERWRITE
+                                        | BLOCK
+;
+precedence:                             PRECEDENCE COLON INTEGER
+;
+ruleScope:                              RULE_SCOPE COLON
+                                        BRACKET_OPEN
+                                        (
+                                        scope (COMMA scope)*
+                                        )
+                                        BRACKET_CLOSE
+                                        SEMI_COLON
+;
+scope:                                  validScopeType
+                                            (COMMA precedence)?
+                                        BRACE_CLOSE
+;
+validScopeType:                        recordSourceScope|dataProviderTypeScope
+;
+recordSourceScope:                      RECORD_SOURCE_SCOPE
+                                        BRACE_OPEN
+                                        masteryIdentifier
+;
+dataProviderTypeScope:                  DATA_PROVIDER_TYPE_SCOPE
+                                        BRACE_OPEN
+                                        validDataProviderType
+;
+validDataProviderType:                  AGGREGATOR
+                                        | EXCHANGE
+;
+dataProviderIdScope:                    DATA_PROVIDER_ID_SCOPE
+                                        BRACE_OPEN
+                                        qualifiedName
+;

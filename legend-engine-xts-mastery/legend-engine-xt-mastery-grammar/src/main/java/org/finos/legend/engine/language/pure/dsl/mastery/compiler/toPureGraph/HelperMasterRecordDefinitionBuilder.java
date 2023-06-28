@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourcePartition;
@@ -27,31 +28,29 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_RecordSource;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_RecordSourcePartition;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_RecordSourcePartition_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_RecordSource_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_IdentityResolution;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_IdentityResolution_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_ResolutionQuery;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_ResolutionQuery_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 
 public class HelperMasterRecordDefinitionBuilder
 {
     private static final String MASTERY_PACKAGE_PREFIX = "meta::pure::mastery::metamodel";
+    private static final String ROOT = "Root";
+    private static final Set<String> CONDITIONAL_BLOCK_RULE_PREDICATE_INPUT = newHashSet("incoming", "current");
     private static final IdentityResolutionBuilder IDENTITY_RESOLUTION_BUILDER = new IdentityResolutionBuilder();
 
     private HelperMasterRecordDefinitionBuilder()
@@ -68,7 +67,7 @@ public class HelperMasterRecordDefinitionBuilder
     {
         Deque<String> deque = new ArrayDeque<>();
         Package currentPackage = ((PackageableElement) type)._package();
-        while (!currentPackage._name().equals("Root"))
+        while (!ROOT.equals(currentPackage._name()))
         {
             deque.push(currentPackage._name());
             currentPackage = currentPackage._package();
@@ -106,10 +105,7 @@ public class HelperMasterRecordDefinitionBuilder
             resQuery._precedence(protocolQuery.precedence);
 
             ListIterate.forEachWithIndex(protocolQuery.queries, (lambda, i) ->
-            {
-                resQuery._queriesAdd(HelperValueSpecificationBuilder.buildLambda(lambda, context));
-            });
-
+                    resQuery._queriesAdd(HelperValueSpecificationBuilder.buildLambda(lambda, context)));
             list.add(resQuery);
             return list;
         }
@@ -120,9 +116,207 @@ public class HelperMasterRecordDefinitionBuilder
         return ListIterate.collect(recordSources, n -> n.accept(new RecordSourceBuilder(context)));
     }
 
+    public static RichIterable<Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule> buildPrecedenceRules(MasterRecordDefinition masterRecordDefinition, CompileContext context) //List<RecordSource> recordSources, List<PrecedenceRule> precedenceRules)
+    {
+        Set<String> recordSourceIds = masterRecordDefinition.sources.stream().map(recordSource -> recordSource.id).collect(Collectors.toSet());
+        return ListIterate.collect(masterRecordDefinition.precedenceRules, n -> n.accept(new PrecedenceRuleBuilder(context, recordSourceIds, masterRecordDefinition.modelClass)));
+    }
+
+    private static class PrecedenceRuleBuilder implements PrecedenceRuleVisitor<Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule>
+    {
+        private final CompileContext context;
+        private final Set<String> recordSourceIds;
+        private final String modelClass;
+
+        public PrecedenceRuleBuilder(CompileContext context, Set<String> recordSourceIds, String modelClass)
+        {
+            this.context = context;
+            this.recordSourceIds = recordSourceIds;
+            this.modelClass = modelClass;
+        }
+
+        @Override
+        public Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule visit(PrecedenceRule precedenceRule)
+        {
+            Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule purePrecedenceRule;
+            if (precedenceRule instanceof SourcePrecedenceRule)
+            {
+                purePrecedenceRule = visitSourcePrecedenceRule(precedenceRule);
+            }
+            else if (precedenceRule instanceof DeleteRule)
+            {
+                purePrecedenceRule = new Root_meta_pure_mastery_metamodel_precedence_DeleteRule_Impl("");
+            }
+            else if (precedenceRule instanceof CreateRule)
+            {
+                purePrecedenceRule = new Root_meta_pure_mastery_metamodel_precedence_CreateRule_Impl("");
+            }
+            else if (precedenceRule instanceof ConditionalRule)
+            {
+                purePrecedenceRule = visitConditionalRule(precedenceRule);
+            }
+            else
+            {
+                throw new EngineException("Unrecognized precedence rule", EngineErrorType.COMPILATION);
+            }
+            return visitPrecedenceRuleBase(precedenceRule, purePrecedenceRule);
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule visitPrecedenceRuleBase(PrecedenceRule precedenceRule, Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule purePrecedenceRule)
+        {
+            purePrecedenceRule._scope(ListIterate.collect(precedenceRule.scopes, n -> this.visitScopes(n, recordSourceIds)));
+            List<PropertyPath> propertyPaths = precedenceRule.paths;
+            Class<?> masterRecordClass = context.resolveClass(modelClass);
+            purePrecedenceRule._masterRecordFilter(validateAndSetMasterRecordLambda(precedenceRule.masterRecordFilter));
+            Class<?> parentClass = masterRecordClass;
+            for (PropertyPath propertyPath : propertyPaths)
+            {
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath purePropertyPath = visitPath(propertyPath, parentClass);
+                purePrecedenceRule._pathsAdd(purePropertyPath);
+                Type parentType = purePropertyPath._property()._genericType()._rawType();
+                if (parentType instanceof Class)
+                {
+                    parentClass = (Class<?>) parentType;
+                }
+                else
+                {
+                    parentClass = null;
+                }
+            }
+            return purePrecedenceRule;
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule visitSourcePrecedenceRule(PrecedenceRule precedenceRule)
+        {
+            SourcePrecedenceRule sourcePrecedenceRule = (SourcePrecedenceRule) precedenceRule;
+            Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule_Impl pureSourcePrecedenceRule = new Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule_Impl("");
+            pureSourcePrecedenceRule._precedence(sourcePrecedenceRule.precedence);
+            String ACTION_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::precedence::RuleAction";
+            pureSourcePrecedenceRule._action(context.resolveEnumValue(ACTION_TYPE_FULL_PATH, sourcePrecedenceRule.action.name()));
+            return pureSourcePrecedenceRule;
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_ConditionalRule visitConditionalRule(PrecedenceRule precedenceRule)
+        {
+            Root_meta_pure_mastery_metamodel_precedence_ConditionalRule pureConditionalRule = new Root_meta_pure_mastery_metamodel_precedence_ConditionalRule_Impl("");
+            ConditionalRule conditionalRule = (ConditionalRule) precedenceRule;
+            validatePredicateInput(conditionalRule.predicate);
+            pureConditionalRule._predicate(HelperValueSpecificationBuilder.buildLambda(conditionalRule.predicate, context));
+            return pureConditionalRule;
+        }
+
+        private void validatePredicateInput(Lambda predicate)
+        {
+            validateInputVariableNames(predicate);
+            validateInputVariableType(predicate);
+            validateInputMultiplicity(predicate);
+        }
+
+        private void validateInputVariableNames(Lambda predicate)
+        {
+            Set<String> actualNames = predicate.parameters.stream().map(variable -> variable.name).collect(Collectors.toSet());
+            if (!CONDITIONAL_BLOCK_RULE_PREDICATE_INPUT.equals(actualNames))
+            {
+                throw new EngineException(
+                        format("Incorrect input variable names, expect %s but received %s", CONDITIONAL_BLOCK_RULE_PREDICATE_INPUT, actualNames),
+                        EngineErrorType.COMPILATION);
+            }
+        }
+
+        private void validateInputVariableType(Lambda predicate)
+        {
+            Set<String> inputVariableTypes = predicate.parameters.stream().map(variable -> variable._class).collect(Collectors.toSet());
+            if (inputVariableTypes.size() != 1)
+            {
+                throw new EngineException(format("Two of the same Master Record Classes are expected, received: %s", inputVariableTypes), EngineErrorType.COMPILATION);
+            }
+            String actualModelClass = inputVariableTypes.stream().findFirst().get();
+            if (!modelClass.equals(actualModelClass))
+            {
+                throw new EngineException(format("Input Class is not expected Master Record class %s, instead was %s", modelClass, actualModelClass), EngineErrorType.COMPILATION);
+            }
+        }
+
+        private void validateInputMultiplicity(Lambda predicate)
+        {
+            List<Multiplicity> inputClassMultiplicity = predicate.parameters.stream().map(variable -> variable.multiplicity).collect(Collectors.toList());
+            Multiplicity masterRecord1 = inputClassMultiplicity.get(0);
+            Multiplicity masterRecord2 = inputClassMultiplicity.get(1);
+            if ((masterRecord1.lowerBound != masterRecord2.lowerBound && masterRecord1.lowerBound == 1)
+                || !(masterRecord1.getUpperBound().equals(masterRecord2.lowerBound) && masterRecord1.isUpperBoundEqualTo(1)))
+            {
+                throw new EngineException("Expected both Master Record classes defined with multiplicity 1", EngineErrorType.COMPILATION);
+            }
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_PropertyPath visitPath(PropertyPath propertyPath, Class<?> parentClass)
+        {
+            Property<?,?> property = (Property<?,?>) context.resolveProperty(determineFullPath(parentClass), propertyPath.property);
+            Type propertyClass = property._genericType()._rawType();
+            String propertyClassName;
+            if (propertyClass instanceof Class)
+            {
+                propertyClassName = determineFullPath(propertyClass);
+            }
+            else
+            {
+                propertyClassName = propertyClass.getName();
+            }
+            Root_meta_pure_mastery_metamodel_precedence_PropertyPath purePropertyPath = visitRootPath(propertyPath.filter, propertyClassName);
+            purePropertyPath._property(property);
+            return purePropertyPath;
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_PropertyPath visitRootPath(Lambda filter, String propertyPathClass)
+        {
+            Root_meta_pure_mastery_metamodel_precedence_PropertyPath purePropertyPath = new Root_meta_pure_mastery_metamodel_precedence_PropertyPath_Impl("");
+            filter.parameters.get(0)._class = propertyPathClass;
+            purePropertyPath._filter(HelperValueSpecificationBuilder.buildLambda(filter, context));
+            return purePropertyPath;
+        }
+
+        private LambdaFunction<?> validateAndSetMasterRecordLambda(Lambda filter)
+        {
+            String actualMasterRecordQualifiedName = filter.parameters.get(0)._class;
+            if (modelClass.equals(actualMasterRecordQualifiedName))
+            {
+                return HelperValueSpecificationBuilder.buildLambda(filter, context);
+            }
+            throw new EngineException(format("Path, %s does not match Master Record Class %s", actualMasterRecordQualifiedName, modelClass), EngineErrorType.COMPILATION);
+        }
+
+        private Root_meta_pure_mastery_metamodel_precedence_RuleScope visitScopes(RuleScope ruleScope, Set<String> recordSourceIds)
+        {
+            if (ruleScope instanceof RecordSourceScope)
+            {
+                RecordSourceScope recordSourceScope = (RecordSourceScope) ruleScope;
+                Root_meta_pure_mastery_metamodel_precedence_RecordSourceScope pureRecordSourceScope = new Root_meta_pure_mastery_metamodel_precedence_RecordSourceScope_Impl("");
+                if (!recordSourceIds.contains(recordSourceScope.recordSourceId))
+                {
+                    throw new EngineException(format("Record Source: %s not defined", recordSourceScope.recordSourceId));
+                }
+                pureRecordSourceScope._recordSourceId(recordSourceScope.recordSourceId);
+                return pureRecordSourceScope;
+            }
+            else if (ruleScope instanceof DataProviderTypeScope)
+            {
+                DataProviderTypeScope dataProviderTypeScope = (DataProviderTypeScope) ruleScope;
+                Root_meta_pure_mastery_metamodel_precedence_DataProviderTypeScope pureDataProviderTypeScope = new Root_meta_pure_mastery_metamodel_precedence_DataProviderTypeScope_Impl("");
+                pureDataProviderTypeScope._dataProviderType();
+                String DATA_PROVIDER_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::precedence::DataProviderType";
+                pureDataProviderTypeScope._dataProviderType(context.resolveEnumValue(DATA_PROVIDER_TYPE_FULL_PATH, dataProviderTypeScope.dataProviderType.name()));
+                return pureDataProviderTypeScope;
+            }
+            else
+            {
+                throw new EngineException("Invalid Scope defined");
+            }
+        }
+    }
+
     private static class RecordSourceBuilder implements RecordSourceVisitor<Root_meta_pure_mastery_metamodel_RecordSource>
     {
-        private CompileContext context;
+        private final CompileContext context;
 
         public RecordSourceBuilder(CompileContext context)
         {
@@ -143,8 +337,8 @@ public class HelperMasterRecordDefinitionBuilder
             pureSource._stagedLoad(protocolSource.stagedLoad);
             pureSource._createPermitted(protocolSource.createPermitted);
             pureSource._createBlockedException(protocolSource.createBlockedException);
-            pureSource._tags(ListIterate.collect(protocolSource.tags, n -> n.toString()));
-            pureSource._partitions(ListIterate.collect(protocolSource.partitions, n -> this.visitPartition(n)));
+            pureSource._tags(ListIterate.collect(protocolSource.tags, n -> n));
+            pureSource._partitions(ListIterate.collect(protocolSource.partitions, this::visitPartition));
             return pureSource;
         }
 
@@ -167,14 +361,14 @@ public class HelperMasterRecordDefinitionBuilder
             {
                 return (Root_meta_legend_service_metamodel_Service) packageableElement;
             }
-            throw new EngineException(String.format("Service '%s' is not defined", service), protocolSource.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(format("Service '%s' is not defined", service), protocolSource.sourceInformation, EngineErrorType.COMPILATION);
         }
 
         private Root_meta_pure_mastery_metamodel_RecordSourcePartition visitPartition(RecordSourcePartition protocolPartition)
         {
             Root_meta_pure_mastery_metamodel_RecordSourcePartition purePartition = new Root_meta_pure_mastery_metamodel_RecordSourcePartition_Impl("");
             purePartition._id(protocolPartition.id);
-            purePartition._tags(ListIterate.collect(protocolPartition.tags, n -> n.toString()));
+            purePartition._tags(ListIterate.collect(protocolPartition.tags, String::toString));
             return purePartition;
         }
     }

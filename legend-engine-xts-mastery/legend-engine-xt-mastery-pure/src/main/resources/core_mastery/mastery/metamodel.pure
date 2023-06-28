@@ -236,6 +236,6 @@ Enum meta::pure::mastery::metamodel::precedence::RuleAction
 
 Enum meta::pure::mastery::metamodel::precedence::DataProviderType
 {
-  Aggregate,
+  Aggregator,
   Exchange
 }
