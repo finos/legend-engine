@@ -5,13 +5,24 @@ import meta::external::query::graphQL::binding::fromPure::introspection::*;
 
 function meta::external::query::graphQL::binding::fromPure::introspection::scanTypes(t:Type[1], processed:Type[*]):Type[*]
 {
-   if (!$processed->contains($t),
-       |$t->concatenate(if($t->instanceOf(Class),
-                         |$t->cast(@Class<Any>)->allProperties().genericType.rawType->distinct()->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())->filter(t|($t->instanceOf(Class) || $t->instanceOf(meta::pure::metamodel::type::Enumeration)) && $t != Any)->map(c|$c->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes($processed->concatenate($t)))->distinct(),
-                         |[]
-                       )),
-       |[]
-   );
+  let processedContainsType = $processed->contains($t);
+  let np = if($processedContainsType, | $processed, | $processed->concatenate($t));
+  if (!$processedContainsType && $t->instanceOf(Class),    
+    | let propTypes = $t->cast(@Class<Any>)
+                          ->allProperties().genericType.rawType
+                          ->distinct()
+                          ->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())
+                          ->filter(t|($t->instanceOf(Class) || $t->instanceOf(meta::pure::metamodel::type::Enumeration)) && $t != Any)
+                          ->distinct();
+        $propTypes->fold(
+          { type,accum | 
+              $accum->concatenate(
+                $type->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes($accum)
+              )->distinct();
+          },$np
+        );,
+      | $np
+  );
 }
 
 function meta::external::query::graphQL::binding::fromPure::introspection::buildGraphQLSchemaFromPureTypes(cl:Class<Any>[1]):BaseGraphQLType[1]

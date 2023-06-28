@@ -1,0 +1,1024 @@
+###Pure
+import meta::external::query::graphQL::metamodel::introspection::*;
+import meta::external::query::graphQL::transformation::introspection::*;
+import meta::external::query::graphQL::binding::fromPure::introspection::*;
+import meta::external::query::graphQL::binding::fromPure::introspection::tests::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::introspection::tests::testScanTypesForLargeModelGraph(): Boolean[1]
+{
+  let types = meta::external::query::graphQL::binding::fromPure::introspection::scanTypes(A, []);
+  let expectedSize = 20;
+  assert($types->size() == $expectedSize, 'Number of types discovered should be ' + $expectedSize->toString() + ' but it is ' + $types->size()->toString());
+  assert($types == $types->distinct(), 'All elements must be unique');
+}
+
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::A
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::B
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::C
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::D
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::E
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::F
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::G
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::H
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::I
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::J
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::K
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::L
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::M
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::N
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::O
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::P
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::Q
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::R
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::S
+{
+}
+Class meta::external::query::graphQL::binding::fromPure::introspection::tests::T
+{
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_B
+{
+  a: A[1];
+  b: B[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_C
+{
+  a: A[1];
+  c: C[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_D
+{
+  a: A[1];
+  d: D[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_E
+{
+  a: A[1];
+  e: E[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_F
+{
+  a: A[1];
+  f: F[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_G
+{
+  a: A[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_H
+{
+  a: A[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_I
+{
+  a: A[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_J
+{
+  a: A[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_K
+{
+  a: A[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_L
+{
+  a: A[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_M
+{
+  a: A[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_N
+{
+  a: A[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_O
+{
+  a: A[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_P
+{
+  a: A[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_Q
+{
+  a: A[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_R
+{
+  a: A[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_S
+{
+  a: A[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::A_T
+{
+  a: A[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_C
+{
+  b: B[1];
+  c: C[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_D
+{
+  b: B[1];
+  d: D[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_E
+{
+  b: B[1];
+  e: E[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_F
+{
+  b: B[1];
+  f: F[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_G
+{
+  b: B[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_H
+{
+  b: B[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_I
+{
+  b: B[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_J
+{
+  b: B[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_K
+{
+  b: B[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_L
+{
+  b: B[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_M
+{
+  b: B[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_N
+{
+  b: B[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_O
+{
+  b: B[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_P
+{
+  b: B[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_Q
+{
+  b: B[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_R
+{
+  b: B[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_S
+{
+  b: B[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::B_T
+{
+  b: B[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_D
+{
+  c: C[1];
+  d: D[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_E
+{
+  c: C[1];
+  e: E[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_F
+{
+  c: C[1];
+  f: F[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_G
+{
+  c: C[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_H
+{
+  c: C[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_I
+{
+  c: C[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_J
+{
+  c: C[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_K
+{
+  c: C[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_L
+{
+  c: C[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_M
+{
+  c: C[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_N
+{
+  c: C[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_O
+{
+  c: C[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_P
+{
+  c: C[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_Q
+{
+  c: C[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_R
+{
+  c: C[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_S
+{
+  c: C[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::C_T
+{
+  c: C[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_E
+{
+  d: D[1];
+  e: E[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_F
+{
+  d: D[1];
+  f: F[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_G
+{
+  d: D[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_H
+{
+  d: D[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_I
+{
+  d: D[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_J
+{
+  d: D[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_K
+{
+  d: D[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_L
+{
+  d: D[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_M
+{
+  d: D[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_N
+{
+  d: D[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_O
+{
+  d: D[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_P
+{
+  d: D[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_Q
+{
+  d: D[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_R
+{
+  d: D[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_S
+{
+  d: D[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::D_T
+{
+  d: D[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_F
+{
+  e: E[1];
+  f: F[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_G
+{
+  e: E[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_H
+{
+  e: E[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_I
+{
+  e: E[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_J
+{
+  e: E[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_K
+{
+  e: E[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_L
+{
+  e: E[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_M
+{
+  e: E[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_N
+{
+  e: E[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_O
+{
+  e: E[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_P
+{
+  e: E[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_Q
+{
+  e: E[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_R
+{
+  e: E[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_S
+{
+  e: E[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::E_T
+{
+  e: E[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_G
+{
+  f: F[1];
+  g: G[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_H
+{
+  f: F[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_I
+{
+  f: F[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_J
+{
+  f: F[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_K
+{
+  f: F[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_L
+{
+  f: F[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_M
+{
+  f: F[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_N
+{
+  f: F[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_O
+{
+  f: F[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_P
+{
+  f: F[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_Q
+{
+  f: F[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_R
+{
+  f: F[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_S
+{
+  f: F[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::F_T
+{
+  f: F[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_H
+{
+  g: G[1];
+  h: H[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_I
+{
+  g: G[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_J
+{
+  g: G[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_K
+{
+  g: G[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_L
+{
+  g: G[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_M
+{
+  g: G[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_N
+{
+  g: G[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_O
+{
+  g: G[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_P
+{
+  g: G[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_Q
+{
+  g: G[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_R
+{
+  g: G[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_S
+{
+  g: G[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::G_T
+{
+  g: G[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_I
+{
+  h: H[1];
+  i: I[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_J
+{
+  h: H[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_K
+{
+  h: H[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_L
+{
+  h: H[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_M
+{
+  h: H[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_N
+{
+  h: H[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_O
+{
+  h: H[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_P
+{
+  h: H[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_Q
+{
+  h: H[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_R
+{
+  h: H[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_S
+{
+  h: H[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::H_T
+{
+  h: H[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_J
+{
+  i: I[1];
+  j: J[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_K
+{
+  i: I[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_L
+{
+  i: I[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_M
+{
+  i: I[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_N
+{
+  i: I[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_O
+{
+  i: I[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_P
+{
+  i: I[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_Q
+{
+  i: I[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_R
+{
+  i: I[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_S
+{
+  i: I[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::I_T
+{
+  i: I[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_K
+{
+  j: J[1];
+  k: K[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_L
+{
+  j: J[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_M
+{
+  j: J[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_N
+{
+  j: J[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_O
+{
+  j: J[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_P
+{
+  j: J[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_Q
+{
+  j: J[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_R
+{
+  j: J[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_S
+{
+  j: J[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::J_T
+{
+  j: J[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_L
+{
+  k: K[1];
+  l: L[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_M
+{
+  k: K[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_N
+{
+  k: K[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_O
+{
+  k: K[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_P
+{
+  k: K[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_Q
+{
+  k: K[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_R
+{
+  k: K[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_S
+{
+  k: K[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::K_T
+{
+  k: K[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_M
+{
+  l: L[1];
+  m: M[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_N
+{
+  l: L[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_O
+{
+  l: L[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_P
+{
+  l: L[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_Q
+{
+  l: L[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_R
+{
+  l: L[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_S
+{
+  l: L[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::L_T
+{
+  l: L[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_N
+{
+  m: M[1];
+  n: N[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_O
+{
+  m: M[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_P
+{
+  m: M[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_Q
+{
+  m: M[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_R
+{
+  m: M[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_S
+{
+  m: M[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::M_T
+{
+  m: M[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_O
+{
+  n: N[1];
+  o: O[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_P
+{
+  n: N[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_Q
+{
+  n: N[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_R
+{
+  n: N[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_S
+{
+  n: N[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::N_T
+{
+  n: N[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::O_P
+{
+  o: O[1];
+  p: P[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::O_Q
+{
+  o: O[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::O_R
+{
+  o: O[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::O_S
+{
+  o: O[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::O_T
+{
+  o: O[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::P_Q
+{
+  p: P[1];
+  q: Q[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::P_R
+{
+  p: P[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::P_S
+{
+  p: P[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::P_T
+{
+  p: P[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::Q_R
+{
+  q: Q[1];
+  r: R[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::Q_S
+{
+  q: Q[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::Q_T
+{
+  q: Q[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::R_S
+{
+  r: R[1];
+  s: S[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::R_T
+{
+  r: R[1];
+  t: T[1];
+}
+Association meta::external::query::graphQL::binding::fromPure::introspection::tests::S_T
+{
+  s: S[1];
+  t: T[1];
+}
