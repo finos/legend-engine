@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -41,19 +42,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     @Override
     public void executePhysicalPlan(SqlPlan physicalPlan)
     {
-        boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
-        List<String> sqlList = physicalPlan.getSqlList();
-        if (containsDDLStatements)
-        {
-            for (String sql : sqlList)
-            {
-                bigQueryHelper.executeQuery(sql);
-            }
-        }
-        else
-        {
-            bigQueryHelper.executeStatements(sqlList);
-        }
+        executePhysicalPlan(physicalPlan, new HashMap<>());
     }
 
     @Override
@@ -61,15 +50,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     {
         boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
         List<String> sqlList = physicalPlan.getSqlList();
+
         if (containsDDLStatements)
-        {
-            for (String sql : sqlList)
-            {
-                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-                bigQueryHelper.executeStatement(enrichedSql);
-            }
-        }
-        else
         {
             for (String sql : sqlList)
             {
@@ -77,21 +59,20 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
                 bigQueryHelper.executeQuery(enrichedSql);
             }
         }
+        else
+        {
+            for (String sql : sqlList)
+            {
+                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+                bigQueryHelper.executeStatement(enrichedSql);
+            }
+        }
     }
 
     @Override
     public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan)
     {
-        List<TabularData> resultSetList = new ArrayList<>();
-        for (String sql : physicalPlan.getSqlList())
-        {
-            List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(sql);
-            if (!queryResult.isEmpty())
-            {
-                resultSetList.add(new TabularData(queryResult));
-            }
-        }
-        return resultSetList;
+        return executePhysicalPlanAndGetResults(physicalPlan, new HashMap<>());
     }
 
     @Override

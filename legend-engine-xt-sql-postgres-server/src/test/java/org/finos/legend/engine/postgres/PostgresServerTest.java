@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -52,7 +54,7 @@ public class PostgresServerTest
     @BeforeClass
     public static void setUp()
     {
-        LegendTdsTestClient client = new LegendTdsTestClient(resources.target("sql/v1/execution/executeQueryString").request());
+        LegendTdsTestClient client = new LegendTdsTestClient(resources);
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
 
         ServerConfig serverConfig = new ServerConfig();
@@ -72,11 +74,13 @@ public class PostgresServerTest
         )
         {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            Assert.assertEquals(2, resultSetMetaData.getColumnCount());
+            Assert.assertEquals(3, resultSetMetaData.getColumnCount());
             Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
             Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
+            Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
             Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
         }
     }
 
@@ -108,6 +112,81 @@ public class PostgresServerTest
                 rows++;
             }
             Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
+    public void testTableFunctionSyntax() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
+    public void testSelectWithoutTable() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT 1");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testShowTxn() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testHikariConnection() throws SQLException
+    {
+        HikariConfig jdbcConfig = new HikariConfig();
+        jdbcConfig.setJdbcUrl("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres");
+        jdbcConfig.setUsername("dummy");
+        try (HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
+             Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
+             ResultSet resultSet = preparedStatement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
         }
     }
 
@@ -146,6 +225,33 @@ public class PostgresServerTest
             Assert.assertEquals(1, rows);
         }
     }
+
+    @Test
+    public void testConnectionIsValid() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy")
+        )
+        {
+            // This triggers an empty query and expects an empty response
+            boolean isValid = connection.isValid(1);
+            Assert.assertTrue(isValid);
+        }
+    }
+
+    @Test
+    public void testEmptyQuery() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("")
+        )
+        {
+            int rowCount = statement.executeUpdate();
+            Assert.assertEquals(0, rowCount);
+        }
+    }
+
 
     @AfterClass
     public static void tearDown()

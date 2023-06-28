@@ -74,6 +74,10 @@ public class BigQueryTransactionManager
         {
             executeSql("COMMIT TRANSACTION");
         }
+        else
+        {
+            throw new IllegalStateException("No Transaction started, nothing to commit");
+        }
     }
 
     public void revertTransaction() throws InterruptedException
@@ -81,6 +85,10 @@ public class BigQueryTransactionManager
         if (this.sessionId != null)
         {
             executeSql("ROLLBACK TRANSACTION");
+        }
+        else
+        {
+            throw new IllegalStateException("No Transaction started, nothing to revert");
         }
     }
 
@@ -102,10 +110,36 @@ public class BigQueryTransactionManager
                 for (Field field: job.getQueryResults().getSchema().getFields())
                 {
                     FieldValue value = fieldValues.get(field.getName());
-                    Object objectValue = value.getValue();
-                    if (field.getType().equals(LegacySQLTypeName.TIMESTAMP))
+                    Object objectValue;
+                    switch (field.getType().name())
                     {
-                        objectValue = value.getTimestampInstant();
+                        case "BYTES":
+                            objectValue = value.getBytesValue();
+                            break;
+                        case "STRING":
+                            objectValue = value.getStringValue();
+                            break;
+                        case "INTEGER":
+                            objectValue = value.getLongValue();
+                            break;
+                        case "FLOAT":
+                            objectValue = value.getDoubleValue();
+                            break;
+                        case "NUMERIC":
+                        case "BIGNUMERIC":
+                            objectValue = value.getNumericValue();
+                            break;
+                        case "BOOLEAN":
+                            objectValue = value.getBooleanValue();
+                            break;
+                        case "TIMESTAMP":
+                            objectValue = value.getTimestampInstant();
+                            break;
+                        case "RECORD":
+                            objectValue = value.getRecordValue();
+                            break;
+                        default:
+                            objectValue = value.getValue();
                     }
                     String key = field.getName();
                     row.put(key, objectValue);

@@ -329,7 +329,7 @@ function <<test.Test>> meta::relational::tests::advanced::structure::testIfInclu
    let values = $result.values->toOne();
    assertEquals(4,$values.rows.values->removeDuplicates()->size()); 
    assertEquals(['Allen', 'Hill', 'Johnson', 'Smith'],$values.rows.values->removeDuplicates()->sort());
-   assertSameSQL('select case when \'true\' then "persontable_2".LASTNAME else "persontable_3".LASTNAME end as "name1" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".AGE < 30 and "persontable_1".LASTNAME = \'Smith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_2" on ("root".ID = "persontable_2".FIRMID and "persontable_2".AGE < 30) left outer join personTable as "persontable_3" on ("root".ID = "persontable_3".FIRMID and "persontable_3".AGE < 130) where "persontable_0".FIRMID is not null', $result);
+   assertSameSQL('select case when true then "persontable_2".LASTNAME else "persontable_3".LASTNAME end as "name1" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".AGE < 30 and "persontable_1".LASTNAME = \'Smith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_2" on ("root".ID = "persontable_2".FIRMID and "persontable_2".AGE < 30) left outer join personTable as "persontable_3" on ("root".ID = "persontable_3".FIRMID and "persontable_3".AGE < 130) where "persontable_0".FIRMID is not null', $result);
 }
 
 

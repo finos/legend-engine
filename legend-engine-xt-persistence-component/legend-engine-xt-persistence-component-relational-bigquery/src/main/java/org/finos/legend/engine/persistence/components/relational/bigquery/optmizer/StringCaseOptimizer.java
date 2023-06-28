@@ -29,7 +29,6 @@ public abstract class StringCaseOptimizer extends org.finos.legend.engine.persis
     public PhysicalPlanNode optimize(PhysicalPlanNode component)
     {
         component = super.optimize(component);
-        // TODO Any thing left to override
         return component;
     }
 }

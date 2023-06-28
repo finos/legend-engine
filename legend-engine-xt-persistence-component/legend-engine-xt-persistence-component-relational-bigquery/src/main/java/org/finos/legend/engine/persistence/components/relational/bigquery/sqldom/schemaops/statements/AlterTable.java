@@ -32,6 +32,8 @@ public class AlterTable implements DDLStatement
     private Table table;
     private Column columnToAlter;
 
+    private static final String SET_DATA_TYPE = "SET DATA TYPE";
+
     public AlterTable(AlterOperation operation)
     {
         this.operation = operation;
@@ -43,12 +45,15 @@ public class AlterTable implements DDLStatement
     }
 
     /*
+    Add column:
         ALTER TABLE [TABLE_NAME] ADD COLUMN [NEW_COLUMN_NAME] [COLUMN_DATATYPE]
+    Drop Not Null:
+        ALTER TABLE [TABLE_NAME] ALTER COLUMN [COLUMN_NAME] DROP NOT NULL
+    Change Data type:
+        ALTER TABLE [TABLE_NAME] ALTER COLUMN [COLUMN_NAME] SET DATA TYPE column_schema
+        https://cloud.google.com/bigquery/docs/reference/standard-sql/data-definition-language#alter_column_set_data_type_statement
+      */
 
-        ALTER TABLE [TABLE_NAME] ALTER COLUMN [COLUMN_NAME]
-        [columnDefinition]
-        | DROP [NOT NULL]
-         */
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
@@ -81,7 +86,11 @@ public class AlterTable implements DDLStatement
                 columnToAlter.genSql(builder);
                 break;
             case CHANGE_DATATYPE:
-                columnToAlter.genSqlWithNameAndTypeForAlterCommand(builder);
+                columnToAlter.genSqlWithNameOnly(builder);
+                builder.append(WHITE_SPACE);
+                builder.append(SET_DATA_TYPE);
+                builder.append(WHITE_SPACE);
+                columnToAlter.genSqlWithTypeOnly(builder);
                 break;
             case NULLABLE_COLUMN:
                 columnToAlter.genSqlWithNameOnly(builder);

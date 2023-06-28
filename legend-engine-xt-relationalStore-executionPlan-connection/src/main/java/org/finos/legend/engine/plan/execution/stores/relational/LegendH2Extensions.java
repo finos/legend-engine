@@ -19,13 +19,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.value.Value;
+import org.h2.value.ValueBigint;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueDouble;
-import org.h2.value.ValueFloat;
-import org.h2.value.ValueInt;
-import org.h2.value.ValueLong;
+import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
-import org.h2.value.ValueString;
+import org.h2.value.ValueReal;
+import org.h2.value.ValueVarchar;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -62,11 +62,11 @@ public class LegendH2Extensions
         }
         else if (res instanceof Map || res instanceof List)
         {
-            return ValueString.get(OBJECT_MAPPER.writeValueAsString(res));
+            return ValueVarchar.get(OBJECT_MAPPER.writeValueAsString(res));
         }
         else if (res instanceof String)
         {
-            return ValueString.get((String) res);
+            return ValueVarchar.get((String) res);
         }
         else if (res instanceof Boolean)
         {
@@ -78,15 +78,15 @@ public class LegendH2Extensions
         }
         else if (res instanceof Float)
         {
-            return ValueFloat.get((float) res);
+            return ValueReal.get((float) res);
         }
         else if (res instanceof Integer)
         {
-            return ValueInt.get((int) res);
+            return ValueInteger.get((int) res);
         }
         else if (res instanceof Long)
         {
-            return ValueLong.get((long) res);
+            return ValueBigint.get((long) res);
         }
 
         throw new RuntimeException("Unsupported value in H2 extension function");
@@ -111,7 +111,7 @@ public class LegendH2Extensions
             throw new RuntimeException("Unable to parse json as a Map. Content: '" + json.getString() + "'. Error: '" + e.getMessage() + "'");
         }
 
-        return ValueString.get(OBJECT_MAPPER.writeValueAsString(res));
+        return ValueVarchar.get(OBJECT_MAPPER.writeValueAsString(res));
     }
 
     public static String legend_h2_extension_base64_decode(String string)

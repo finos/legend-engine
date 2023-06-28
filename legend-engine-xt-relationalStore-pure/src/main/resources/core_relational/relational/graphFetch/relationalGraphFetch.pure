@@ -359,7 +359,9 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    let store        = $sq.store->cast(@Database);
    let dbConnection = $runtime->connectionByElement($store)->toOne()->cast(@DatabaseConnection)->map(x | ^$x(element = $store));
    let oneRuntime   = ^Runtime(connections = [$dbConnection]);
-   let batchSize    = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValueAtParameter(2)->cast(@Integer), | 1000);
+   let batchSize    = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
+                       | $fe->instanceValueAtParameter(2)->cast(@Integer), 
+                       | 1000);
 
    let simplePrimitiveProperties = $rootTree.subTrees->cast(@PropertyGraphFetchTree).property
                                       ->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>)
@@ -661,7 +663,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::assertC
    assert($r->meta::relational::functions::pureToSqlQuery::getDistinct() != true,  | 'Store distinct not allowed in graph fetch flow');
    
    $simplePrimitiveProperties->forAll({prop |
-      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl->_propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
+      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl->propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
              | 'Property "' + $prop.name->toOne() + '" is not mapped in the set: "' + $setImpl.id + '"')
    });
 }

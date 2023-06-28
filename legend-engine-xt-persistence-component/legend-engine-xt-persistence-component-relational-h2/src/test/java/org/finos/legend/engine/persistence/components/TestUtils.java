@@ -130,7 +130,7 @@ public class TestUtils
     public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
     public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
-    public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 2147483647, null)).fieldAlias(digestName).build();
+    public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 1000000000, null)).fieldAlias(digestName).build();
     public static Field version = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).build();
     public static Field versionPk = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).primaryKey(true).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -1163,8 +1163,11 @@ public class TestUtils
     // This is to check the actual database table - the length (precision) of the column data type
     public static int getColumnDataTypeLengthFromTable(RelationalExecutionHelper sink, String tableName, String columnName)
     {
-        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_PRECISION FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
-        return Integer.parseInt(result.get(0).get("NUMERIC_PRECISION").toString());
+        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_PRECISION, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        Object precisionOrLength = Optional.ofNullable(result.get(0).get("NUMERIC_PRECISION")).orElseGet(() ->
+                result.get(0).get("CHARACTER_MAXIMUM_LENGTH")
+        );
+        return Integer.parseInt(precisionOrLength.toString());
     }
 
     // This is to check the actual database table - the scale of the column data type

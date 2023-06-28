@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,46 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.PKColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
-import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
-import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class FieldVisitor implements LogicalPlanVisitor<Field>
+public class FieldVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor
 {
-
-    @Override
-    public VisitorResult visit(PhysicalPlanNode prev, Field current, VisitorContext context)
+    public DataTypeMapping getDataTypeMapping()
     {
-        DataType dataType = new BigQueryDataTypeMapping().getDataType(current.type());
-        List<ColumnConstraint> columnConstraints = new ArrayList<>();
-        if (!current.nullable())
-        {
-            columnConstraints.add(new NotNullColumnConstraint());
-        }
-        if (current.primaryKey())
-        {
-            columnConstraints.add(new PKColumnConstraint());
-        }
-        // todo: check if we want to print "NULL" if all above three are false (copy paste to the other modules too)
-        Column column = new Column(current.name(), dataType, columnConstraints, context.quoteIdentifier());
-        for (Optimizer optimizer : context.optimizers())
-        {
-            column = (Column) optimizer.optimize(column);
-        }
-
-        prev.push(column);
-
-        return new VisitorResult(null);
+        return new BigQueryDataTypeMapping();
     }
 }

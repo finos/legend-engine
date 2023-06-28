@@ -182,6 +182,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    let result = execute(|Interaction.all()->filter(i| $i.active->in(['false', 'something']) && $i.id == 4)->project([i | $i.id, i | $i.active], ['id', 'active']),
                         simpleRelationalMapping,
                         testRuntime(), meta::relational::extension::relationalExtensions());
+   println($result->sqlRemoveFormatting());
    assertSize($result.values.rows, 1);
    println($result.values.rows.values);
    assertSameElements([false, '4'], $result.values.rows.values);

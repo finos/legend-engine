@@ -50,6 +50,7 @@ import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapabi
 import org.junit.jupiter.api.Assertions;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Clock;
@@ -78,7 +79,10 @@ public class BigQueryEndToEndTest
     protected Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
     protected Field insertTimestamp = Field.builder().name("insert_ts").type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty())).build();
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected final ZonedDateTime fixedZonedDateTime_2000_01_02 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
+    protected final Clock fixedClock_2000_01_02 = Clock.fixed(fixedZonedDateTime_2000_01_02.toInstant(), ZoneOffset.UTC);
 
     protected final String projectId = "primeval-pixel-387604";
     protected final String datasetName = "legend_bq_data_types";
@@ -189,8 +193,44 @@ public class BigQueryEndToEndTest
                 .build();
     }
 
-    protected void ingest(RelationalGenerator generator, DatasetFilter stagingFilter, String path) throws IOException, InterruptedException
+    protected IngestorResult ingestViaExecutor(IngestMode ingestMode, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
     {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(BigQuerySink.get())
+                .collectStatistics(true)
+                .cleanupStagingData(false)
+                .executionTimestampClock(clock)
+                .build();
+
+        DerivedDataset stagingDataset = DerivedDataset.builder()
+                .group("demo")
+                .name("staging")
+                .alias("stage")
+                .schema(stagingSchema)
+                .addDatasetFilters(stagingFilter)
+                .build();
+        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagingDataset).metadataDataset(metadataDataset).build();
+
+        // Load csv data
+        loadData(path, datasets.stagingDataset(), 1);
+        RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
+        IngestorResult ingestorResult = ingestor.ingest(connection, datasets);
+        return ingestorResult;
+    }
+
+
+    protected void ingestViaGenerator(IngestMode ingestMode, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
+    {
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(BigQuerySink.get())
+                .collectStatistics(true)
+                .cleanupStagingData(false)
+                .executionTimestampClock(clock)
+                .build();
+
         DerivedDataset stagingDataset = DerivedDataset.builder()
                 .group("demo")
                 .name("staging")
@@ -236,24 +276,29 @@ public class BigQueryEndToEndTest
         runQueries(sqlList);
     }
 
+    private BigQuery getBigQueryConnection() throws IOException
+    {
+        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
+        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
+        return bigquery;
+    }
+
     private void runQueries(List<String> sqlList) throws IOException, InterruptedException
     {
         if (sqlList == null || sqlList.isEmpty())
         {
             return;
         }
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
-        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
         String sqls = String.join(";", sqlList);
         System.out.println("Running: " + sqls);
-        bigquery.query(QueryJobConfiguration.newBuilder(sqls).build());
+        BigQuery bigQuery = getBigQueryConnection();
+        bigQuery.query(QueryJobConfiguration.newBuilder(sqls).build());
     }
 
     protected List<Map<String, Object>> runQuery(String sql) throws IOException
     {
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
-        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
-        BigQueryHelper helper = BigQueryHelper.of(bigquery);
+        BigQuery bigQuery = getBigQueryConnection();
+        BigQueryHelper helper = BigQueryHelper.of(bigQuery);
         return helper.executeQuery(sql);
     }
 
@@ -291,8 +336,7 @@ public class BigQueryEndToEndTest
         String tableName = stagingDataset.datasetReference().name().get();
         String datasetName = stagingDataset.datasetReference().group().get();
         List<String> schema = stagingDataset.schema().fields().stream().map(field -> field.name()).collect(Collectors.toList());
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
-        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
+        BigQuery bigQuery = getBigQueryConnection();
 
         TableId tableId = TableId.of(datasetName, tableName);
         List<InsertAllRequest.RowToInsert> rows = new ArrayList<>();
@@ -313,7 +357,7 @@ public class BigQueryEndToEndTest
         InsertAllRequest insertAllRequest = InsertAllRequest.newBuilder(tableId).setRows(rows).build();
         try
         {
-            bigquery.insertAll(insertAllRequest);
+            bigQuery.insertAll(insertAllRequest);
         }
         catch (Exception e)
         {
@@ -337,13 +381,6 @@ public class BigQueryEndToEndTest
         CSVReader csvReader = new CSVReader(fileReader);
         List<String[]> lines = csvReader.readAll();
         return lines;
-    }
-
-    protected BigQuery getBigQuery() throws IOException
-    {
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
-        BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
-        return bigquery;
     }
 
     protected Map<String, Object> createExpectedStatsMap(int incomingRecordCount, int rowsDeleted, int rowsInserted, int rowsUpdated, int rowsTerminated)
@@ -376,7 +413,7 @@ public class BigQueryEndToEndTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
-        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQuery()), datasets);
+        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQueryConnection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -423,7 +460,7 @@ public class BigQueryEndToEndTest
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .build();
-        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQuery()), datasets);
+        IngestorResult result = ingestor.ingest(BigQueryConnection.of(getBigQueryConnection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 

@@ -201,7 +201,7 @@ public abstract class RelationalIngestorAbstract
         }
 
         boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
-        if (mainDatasetExists)
+        if (mainDatasetExists && enableSchemaEvolution())
         {
             updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
         }

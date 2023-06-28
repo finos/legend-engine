@@ -282,6 +282,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         executeStatements(sqls);
     }
 
+    // Execute statements in a transaction - either use an existing one or use a new one
     public void executeStatements(List<String> sqls)
     {
         if (this.transactionManager != null)

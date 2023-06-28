@@ -330,6 +330,7 @@ public class PostgresWireProtocol
                         : getAccessControl.apply(session.sessionSettings());
                     Messages.sendErrorResponse(channel, accessControl, t);
                     */
+                    LOGGER.error("Unable to handle query", t);
                     Messages.sendErrorResponse(channel, t);
                 }
                 catch (Throwable ti)
