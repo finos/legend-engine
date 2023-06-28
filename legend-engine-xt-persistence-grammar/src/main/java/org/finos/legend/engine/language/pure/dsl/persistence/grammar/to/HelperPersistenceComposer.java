@@ -171,7 +171,7 @@ public class HelperPersistenceComposer
 
     private static String renderServiceOutputTargets(List<ServiceOutputTarget> serviceOutputTargets, int indentLevel, PureGrammarComposerContext context)
     {
-        if (serviceOutputTargets.isEmpty())
+        if (serviceOutputTargets == null || serviceOutputTargets.isEmpty())
         {
             return "";
         }
