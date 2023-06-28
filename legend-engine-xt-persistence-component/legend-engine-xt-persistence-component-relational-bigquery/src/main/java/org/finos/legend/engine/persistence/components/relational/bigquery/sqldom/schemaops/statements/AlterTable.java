@@ -32,8 +32,6 @@ public class AlterTable implements DDLStatement
     private Table table;
     private Column columnToAlter;
 
-    private static final String SET_DATA_TYPE = "SET DATA TYPE";
-
     public AlterTable(AlterOperation operation)
     {
         this.operation = operation;
@@ -88,7 +86,9 @@ public class AlterTable implements DDLStatement
             case CHANGE_DATATYPE:
                 columnToAlter.genSqlWithNameOnly(builder);
                 builder.append(WHITE_SPACE);
-                builder.append(SET_DATA_TYPE);
+                builder.append(Clause.SET.get());
+                builder.append(WHITE_SPACE);
+                builder.append(Clause.DATA_TYPE.get());
                 builder.append(WHITE_SPACE);
                 columnToAlter.genSqlWithTypeOnly(builder);
                 break;

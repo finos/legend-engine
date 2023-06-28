@@ -81,7 +81,7 @@ public class AlterTable implements DDLStatement
                 columnToAlter.genSql(builder);
                 break;
             case CHANGE_DATATYPE:
-                columnToAlter.genSqlWithNameAndTypeForAlterCommand(builder);
+                columnToAlter.genSqlWithNameAndTypeOnly(builder);
                 break;
             case NULLABLE_COLUMN:
                 columnToAlter.genSqlWithNameOnly(builder);

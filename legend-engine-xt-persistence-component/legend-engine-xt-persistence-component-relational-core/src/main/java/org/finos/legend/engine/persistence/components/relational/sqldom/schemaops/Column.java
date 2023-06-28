@@ -16,7 +16,6 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
-import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
@@ -76,12 +75,10 @@ public class Column implements SqlGen
         builder.append(SqlGenUtils.getQuotedField(columnName, quoteIdentifier));
     }
 
-    public void genSqlWithNameAndTypeForAlterCommand(StringBuilder builder) throws SqlDomException
+    public void genSqlWithNameAndTypeOnly(StringBuilder builder) throws SqlDomException
     {
         validate();
         builder.append(SqlGenUtils.getQuotedField(columnName, quoteIdentifier) + WHITE_SPACE);
-        builder.append(Clause.SET.get() + WHITE_SPACE);
-        builder.append(Clause.DATA_TYPE.get() + WHITE_SPACE);
         dataType.genSql(builder);
     }
 
