@@ -35,6 +35,53 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarFromJoinTable():Boolean[1]
+{
+  let sqlString = 'SELECT table1.* FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT * FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              ), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
+        )->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarAndColumnsFromJoinTable():Boolean[1]
+{
+  let sqlString = 'SELECT table1.*, table2.id, sin(table2.int) FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT ID as "id", Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->join(FlatInput.all()->project(
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->renameColumns([
+                pair('ID', 'id'),
+                pair('Integer', 'int')
+              ])->restrict(['id', 'int']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('int')}
+        )->project([
+          col(row:TDSRow[1] | $row.getBoolean('Boolean'), 'Boolean'),
+          col(row:TDSRow[1] | $row.getInteger('Integer'), 'Integer'),
+          col(row:TDSRow[1] | $row.getFloat('Float'), 'Float'),
+          col(row:TDSRow[1] | $row.getDecimal('Decimal'), 'Decimal'),
+          col(row:TDSRow[1] | $row.getStrictDate('StrictDate'), 'StrictDate'),
+          col(row:TDSRow[1] | $row.getDateTime('DateTime'), 'DateTime'),
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getInteger('id'), 'id'),
+          col(row:TDSRow[1] | sin($row.getInteger('int')), 'sin(int)')
+        ]);
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumns():Boolean[1]
 {
@@ -564,7 +611,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
 {
   let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",'
-                + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE) AS "double", CAST(String AS NUMERIC) AS "numeric",'
+                + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE PRECISION) AS "double", CAST(String AS NUMERIC) AS "numeric",'
                 + ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS Integer) AS "expression"  FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -608,7 +655,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
 {
   let sqlString = 'SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS TEXT) AS "text", CAST(NULL AS DATE) AS "date",'
-                + ' CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE) AS "double", CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"';
+                + ' CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -705,7 +752,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryUsing():Boolean[1]
 {
-  let sqlString = 'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" AS table1 LEFT OUTER JOIN (SELECT Integer, String FROM service."/service/service1") AS table2 USING (Integer) ';
+  let sqlString = 'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" AS table1 LEFT OUTER JOIN (SELECT Integer, String FROM service."/service/service1") AS table2 USING (Integer)';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -997,6 +1044,38 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+//COLLECTION FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCollectionFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT coalesce(NULL, Integer, 1) AS "COALESCE" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | if ([]->isNotEmpty(),
+                                      | [],
+                                      | if ($row.getInteger('Integer')->isNotEmpty(),
+                                        | $row.getInteger('Integer'),
+                                        | if (1->isNotEmpty(),
+                                          | 1,
+                                          | []))), 'COALESCE')
+              ])
+      };
+
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+
+  let plan = $sqlTransformContext->getPlan($sqlTransformContext.sources, $sqlTransformContext.extensions);
+  let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
+
+  assertEquals('select case when "root".integer is not null then "root".integer else 1 end as "COALESCE" from flat as "root"', $sql);
+
+
+}
+
 //WINDOW FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
 {
@@ -1033,7 +1112,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {|
         FlatInput.all()
             ->project(
-              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->extend([
               col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS')
@@ -1275,12 +1354,64 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($expectedSchema, $actualSchema);
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::doNameTest(e:meta::external::query::sql::metamodel::Expression[1], str:String[1]):Boolean[1]
+{
+  assertEquals($str, $e->extractNameFromExpression());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtractNameFromExpression():Boolean[1]
+{
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.ADD, right = ^IntegerLiteral(value = 2)), '1 + 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.SUBTRACT, right = ^IntegerLiteral(value = 2)), '1 - 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MULTIPLY, right = ^IntegerLiteral(value = 2)), '1 * 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.DIVIDE, right = ^IntegerLiteral(value = 2)), '1 / 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MODULUS, right = ^IntegerLiteral(value = 2)), '1 % 2');
+
+  doNameTest(^Cast(expression = ^StringLiteral(value = '1', quoted = true), type = ^ColumnType(name = 'INTEGER')), 'CAST(\'1\' AS INTEGER)');
+
+  doNameTest(^CurrentTime(type = CurrentTimeType.TIME), 'CURRENT_TIME');
+  doNameTest(^CurrentTime(type = CurrentTimeType.TIMESTAMP), 'CURRENT_TIMESTAMP');
+  doNameTest(^CurrentTime(type = CurrentTimeType.DATE), 'CURRENT_DATE');
+
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.EQUAL, right = ^IntegerLiteral(value = 2)), '1 = 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.NOT_EQUAL, right = ^IntegerLiteral(value = 2)), '1 != 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN, right = ^IntegerLiteral(value = 2)), '1 < 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.LESS_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 <= 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN, right = ^IntegerLiteral(value = 2)), '1 > 2');
+  doNameTest(^ComparisonExpression(left = ^IntegerLiteral(value = 1), operator = ComparisonOperator.GREATER_THAN_OR_EQUAL, right = ^IntegerLiteral(value = 2)), '1 >= 2');
+
+  doNameTest(^Extract(field = ExtractField.DOW, expression = ^QualifiedNameReference(name = ^QualifiedName(parts = 'date'))), 'EXTRACT(\'dow\' FROM date)');
+
+  doNameTest(^FunctionCall(name = ^QualifiedName(parts = 'myFunc'), arguments = ^IntegerLiteral(value = 1), distinct = false), 'myFunc(1)');
+
+  doNameTest(^InPredicate(value = ^IntegerLiteral(value =  1), valueList = ^InListExpression(values = ^IntegerLiteral(value = 1))), '1 IN (1)');
+
+  doNameTest(^LongLiteral(value = 1), '1');
+  doNameTest(^BooleanLiteral(value = true), 'true');
+  doNameTest(^DoubleLiteral(value = 1.0), '1.0');
+  doNameTest(^IntegerLiteral(value = 1), '1');
+  doNameTest(^StringLiteral(value = 'abc', quoted = false), 'abc');
+  doNameTest(^ArrayLiteral(values = [^IntegerLiteral(value = 1), ^IntegerLiteral(value = 2)]), '1,2');
+  doNameTest(^NullLiteral(), 'NULL');
+
+  doNameTest(^LogicalBinaryExpression(left = ^BooleanLiteral(value = true), right = ^BooleanLiteral(value = false),type = LogicalBinaryType.AND), 'true AND false');
+  doNameTest(^LogicalBinaryExpression(left = ^BooleanLiteral(value = true), right = ^BooleanLiteral(value = false),type = LogicalBinaryType.OR), 'true OR false');
+
+  doNameTest(^NamedArgumentExpression(name = 'arg', expression = ^IntegerLiteral(value = 1)), 'arg => 1');
+
+  doNameTest(^NegativeExpression(value = ^IntegerLiteral(value = 1)), '-1');
+
+  doNameTest(^NotExpression(value = ^BooleanLiteral(value = true)), 'NOT true');
+
+  doNameTest(^SimpleCaseExpression(operand = ^BooleanLiteral(value = true),
+                                  whenClauses = ^WhenClause(operand = ^BooleanLiteral(value = false),result = ^IntegerLiteral(value = 2)),
+                                  defaultValue = ^IntegerLiteral(value = 1)), 'CASE WHEN true = false THEN 2 ELSE 1 END');
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
 {
   processQuery($sql, false);
 }
-
-
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
