@@ -248,12 +248,15 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
       [ $expected.columns.name->joinStrings('[', ', ', ']'), $actual.columns.name->joinStrings('[', ', ', ']') ]
   );
 
-  assertEquals($expected.rows->size(), $expected.rows->size(),       
+  // println($expected.rows.values);
+  // println($actual.rows.values);
+
+  assertEquals($expected.rows->size(), $actual.rows->size(),       
       $description + ': number of rows are different.  Expected  %d, got %d', 
-      [ $expected.rows->size(), $expected.rows->size() ]
+      [ $expected.rows->size(), $actual.rows->size() ]
   );
 
-  let zipped = if ($description->startsWith('sort('),
+  let zipped = if ($description->contains('sort('),
     | $expected.rows->map(r | $expected.columns.name->map(c | $r.get($c)))
         ->zip($actual.rows->map(r | $actual.columns.name->map(c | $r.get($c)))),
     | $expected->sort($expected.columns.name).rows->map(r | $expected.columns.name->map(c | $r.get($c)))
@@ -266,5 +269,5 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
 function <<access.private>> meta::external::store::elasticsearch::executionTest::testCase::comparePrimitives(firstInstance: Any[1], secondInstance: Any[1]): Boolean[1]
 {
    $firstInstance->match([ n: Number[1] | assertEqWithinTolerance($n, $secondInstance->cast(@Number), 0.0001),
-                          a: Any[1] | assertEquals($a, $secondInstance)]);
+                           a: Any[1]    | assertEquals($a, $secondInstance)]);
 }

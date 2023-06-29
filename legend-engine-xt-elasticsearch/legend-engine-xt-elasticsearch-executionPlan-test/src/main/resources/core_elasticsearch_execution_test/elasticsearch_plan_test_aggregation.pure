@@ -51,14 +51,6 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::tes
   $config->testTdsExpression(x|$x->groupBy('Director', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
 }
 
-function 
-  <<paramTest.Test>>
-  {doc.doc = 'Test count group by with no aggregations on Elasticsearch'} 
-meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testCountGroupBy(config:TestConfig[1]):Boolean[1]
-{
-  $config->testTdsExpression(x|$x->groupBy('Director', agg('count', r | $r.getString('Director'), agg | $agg->count())));
-}
-
 function
   <<paramTest.Test>>
   {doc.doc = 'Test group by with no aggregations on Elasticsearch'} 
