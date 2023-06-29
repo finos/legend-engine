@@ -14,6 +14,17 @@
 
 package org.finos.legend.pure.elasticsearch.specification.generator;
 
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.Instant;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
@@ -27,7 +38,7 @@ import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -37,18 +48,6 @@ import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLo
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
-
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ElasticsearchPureSpecificationGenerator
 {
@@ -109,7 +108,9 @@ public class ElasticsearchPureSpecificationGenerator
                 new JavaCompilerState(null, classLoader),
                 new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, codeRepositories.collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
-                new CompositeCodeStorage(new ClassLoaderCodeStorage(classLoader, codeRepositories.with(CodeRepositoryProviderHelper.findPlatformCodeRepository()))),
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
+                        CodeRepositoryProviderHelper.findPlatformCodeRepository()
+                ), null)),
                 null,
                 null,
                 new ConsoleCompiled(),

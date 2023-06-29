@@ -40,7 +40,7 @@ function
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::testContainsFilter(config:TestConfig[1]):Boolean[1]
 {
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('the')));
-  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('the h')));
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his i')));
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity')));
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity a')));
 }
