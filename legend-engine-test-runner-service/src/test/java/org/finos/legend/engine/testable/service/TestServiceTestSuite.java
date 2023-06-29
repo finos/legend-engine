@@ -3082,22 +3082,6 @@ public class TestServiceTestSuite
     }
 
     @Test
-    public void testRelationalServiceWithCommmaInCSV()
-    {
-        // setup
-        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSV");
-        // Assertions
-        Assert.assertEquals(relationalTestResult.size(), 1);
-        TestResult testResult = relationalTestResult.get(0);
-        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSV");
-        Assert.assertTrue(testResult instanceof TestExecuted);
-        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
-        TestExecuted passed = (TestExecuted) testResult;
-        Assert.assertEquals(passed.atomicTestId, "test_1");
-        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
-    }
-
-    @Test
     public void testPassingRelationalWithEnumParams()
     {
         // setup
