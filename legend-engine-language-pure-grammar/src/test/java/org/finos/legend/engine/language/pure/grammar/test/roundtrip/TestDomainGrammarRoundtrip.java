@@ -488,6 +488,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testDecimalWithScale()
+    {
+        test("function withPath::f(d1: Decimal[1], d2: Decimal[1]): Decimal[1]\n" +
+                "{\n" +
+                "  $d1->divide($d2, 2)\n" +
+                "}\n");
+    }
+
+    @Test
     public void testBooleanPrecedence1()
     {
         testFormat("function withPath::f(s: Integer[1]): String[1]\n" +
