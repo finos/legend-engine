@@ -1045,7 +1045,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {
-  serverVersion.start='vX_X_X'
+  serverVersion.start='v1_32_0'
 }
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::testWordCountForM2MNonRecursiveFunction() : Boolean[1]
 {

@@ -291,7 +291,7 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchMissingProperty():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchMissingProperty():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -330,7 +330,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchRightOrder():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchRightOrder():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -372,7 +372,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchReverseOrder():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchReverseOrder():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -414,7 +414,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchStringKey():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchStringKey():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -453,7 +453,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchMultiLevelXStoreRequirements():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchMultiLevelXStoreRequirements():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -492,7 +492,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchPropertyLevel():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pure::graphFetch::tests::XStore::ordered::testSimpleOrderedCrossStoreGraphFetchPropertyLevel():Boolean[1]
 {
    let tree = #{
       TradeWrapper {
