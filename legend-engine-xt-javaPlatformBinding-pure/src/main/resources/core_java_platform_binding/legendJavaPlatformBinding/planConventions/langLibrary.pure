@@ -142,7 +142,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                                                        )->j_cast(javaFunction(javaObject(), $type));
    
                                                    let mainTemp = $v->cast(@LambdaFunction<Any>)->processLambda($ctx.conventions, noDebug()); 
-                                                   let main = if($v->cast(@LambdaFunction<Any>).expressionSequence->last()->toOne()->isNil(),
+                                                   let main = if($v->cast(@LambdaFunction<Any>).expressionSequence->last()->toOne()->isNil() && !$ctx.returnType->isJavaList(),
                                                               | let params = $mainTemp->cast(@Lambda).parameters;
                                                                 j_lambda($params, j_null()->j_cast($ctx.returnType), javaFunctionType($params.type, $ctx.returnType));,
                                                               | $mainTemp); 
