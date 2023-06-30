@@ -92,8 +92,8 @@ public class BigQueryEndToEndTest
     protected final Clock fixedClock_2000_01_05 = Clock.fixed(fixedZonedDateTime_2000_01_05.toInstant(), ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_06 = Clock.fixed(fixedZonedDateTime_2000_01_06.toInstant(), ZoneOffset.UTC);
 
-    protected final String projectId = "primeval-pixel-387604";
-    protected final String credentialPath = "D:\\Documents\\g oauth\\primeval-pixel-387604-20450539e9a2.json";
+    protected final String projectId = "dummy-value";
+    protected final String credentialPath = "dummy-value";
 
     protected SchemaDefinition stagingSchema = SchemaDefinition.builder()
             .addFields(id) // PK
