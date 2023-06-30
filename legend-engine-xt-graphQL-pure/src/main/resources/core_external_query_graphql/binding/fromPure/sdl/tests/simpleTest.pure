@@ -1,5 +1,6 @@
-import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
 import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
 
 Enum meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType
 {
@@ -31,33 +32,114 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Clas
   decimal: Decimal[1];
 }
 
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationPrimitive
+{
+  // Dummy implementation
+  upsertClass(class:ClassWithPrimitiveTypes[1]){ClassWithPrimitiveTypes.all()->first()}:ClassWithPrimitiveTypes[0..1];
+}
+
+Class <<temporal.bitemporal>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::BitemporalClass
+{
+  string: String[1];
+}
+
 Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Query
 {
   firmByName(n:String[1]){Firm.all()->filter(z|$z.legalName == $n)->first()}:Firm[0..1];
 }
 
-function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTransform():Boolean[1]
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Mutation
 {
-  let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([Query])
-            ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
-            ->joinStrings('\n\n');
+  // Dummy implementation
+  upsertFirm(firm:Firm[1]){Firm.all()->first()}:Firm[0..1];
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQuery():Boolean[1]
+{
+  let res = typesToGraphQLString([Query, Firm, Person, IncType]->cast(@PackageableElement));
 
   assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
     'type Query {\n' +
     '  firmByName(n: String!): Firm\n' +
-    '}\n\n' +
+    '}\n' +
+    '\n' +
     'schema {\n' +
     '  query : Query\n' +
     '}', $res);
 }
 
-function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testPrimtiveTypes():Boolean[1]
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutation():Boolean[1]
 {
-  let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([ClassWithPrimitiveTypes])
-            ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
-            ->joinStrings('\n\n');
+  let res = typesToGraphQLString([Query, Mutation, Firm, Person, IncType]->cast(@PackageableElement));
 
   assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'input FirmInput {\n' +
+    '  legalName: String!\n' +
+    '  employees: [PersonInput!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'type Mutation {\n' +
+    '  upsertFirm(firm: FirmInput!): Firm\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input PersonInput {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!): Firm\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '  mutation : Mutation\n' +
+    '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypes():Boolean[1]
+{
+  let res = typesToGraphQLString([ClassWithPrimitiveTypes]);
+
+  assertEquals(
+    'scalar BigDecimal\n' +
+    '\n' +
     'type ClassWithPrimitiveTypes {\n' +
     '  string: String!\n' +
     '  integer: Int!\n' +
@@ -66,5 +148,69 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  date: Date!\n' +
     '  datetime: DateTime!\n' +
     '  decimal: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'scalar Date\n' +
+    '\n' +
+    'scalar DateTime', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesAreNotDuplicated():Boolean[1]
+{
+  let res = typesToGraphQLString([ClassWithPrimitiveTypes, MutationPrimitive]);
+
+  assertEquals(
+    'scalar BigDecimal\n' +
+    '\n' +
+    'type ClassWithPrimitiveTypes {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input ClassWithPrimitiveTypesInput {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'scalar Date\n' +
+    '\n' +
+    'scalar DateTime\n' +
+    '\n' +
+    'type MutationPrimitive {\n' +
+    '  upsertClass(class: ClassWithPrimitiveTypesInput!): ClassWithPrimitiveTypes\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  mutation : MutationPrimitive\n' +
     '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTemporalClass():Boolean[1]
+{
+  let res = typesToGraphQLString([BitemporalClass]);
+
+  assertEquals(
+    'type BitemporalClass @bitemporal {\n' +
+    '  string: String!\n' +
+    '}\n' +
+    '\n' +
+    'directive @bitemporal on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
+{
+  meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($types)
+    ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+    ->joinStrings('\n\n');
 }

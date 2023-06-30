@@ -119,7 +119,7 @@ public class HelperRuntimeBuilder
         List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
         List<String> visitedStores = new ArrayList<>();
         Set<String> ids = new HashSet<>();
-        ListIterate.forEach(engineRuntime.connections, storeConnections ->
+        ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_shared_format_binding_Binding)).collect(Collectors.toList()), storeConnections ->
         {
             if (!storeConnections.store.path.equals("ModelStore"))
             {

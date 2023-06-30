@@ -31,6 +31,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLLexer;
 import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLParser;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Argument;
@@ -46,6 +47,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDef
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumValueDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ExecutableDirectiveLocation;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.FieldDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputValueDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ListTypeReference;
@@ -183,6 +185,10 @@ public class GraphQLGrammarParser
                 if (definitionContext.typeSystemDefinition().typeDefinition().objectTypeDefinition() != null)
                 {
                     return visitObjectTypeDefinition(definitionContext.typeSystemDefinition().typeDefinition().objectTypeDefinition());
+                }
+                else if (definitionContext.typeSystemDefinition().typeDefinition().inputObjectTypeDefinition() != null)
+                {
+                    return visitInputObjectTypeDefinition(definitionContext.typeSystemDefinition().typeDefinition().inputObjectTypeDefinition());
                 }
                 else if (definitionContext.typeSystemDefinition().typeDefinition().interfaceTypeDefinition() != null)
                 {
@@ -345,9 +351,19 @@ public class GraphQLGrammarParser
     {
         ObjectTypeDefinition objectTypeDefinition = new ObjectTypeDefinition();
         objectTypeDefinition.name = objectTypeDefinitionContext.name().getText();
+        objectTypeDefinition.directives = objectTypeDefinitionContext.directives() == null ? Collections.emptyList() : ListIterate.collect(objectTypeDefinitionContext.directives().directive(), this::visitDirectiveContext);
         objectTypeDefinition.fields = objectTypeDefinitionContext.fieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(objectTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
         objectTypeDefinition._implements = visitImplementInterface(objectTypeDefinitionContext.implementsInterfaces(), Lists.mutable.empty()).reverseThis();
         return objectTypeDefinition;
+    }
+
+    private InputObjectTypeDefinition visitInputObjectTypeDefinition(GraphQLParser.InputObjectTypeDefinitionContext inputObjectTypeDefinitionContext)
+    {
+        InputObjectTypeDefinition inputObjectTypeDefinition = new InputObjectTypeDefinition();
+        inputObjectTypeDefinition.name = inputObjectTypeDefinitionContext.name().getText();
+        inputObjectTypeDefinition.directives = inputObjectTypeDefinitionContext.directives() == null ? Collections.emptyList() : ListIterate.collect(inputObjectTypeDefinitionContext.directives().directive(), this::visitDirectiveContext);
+        inputObjectTypeDefinition.fields = inputObjectTypeDefinitionContext.inputFieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(inputObjectTypeDefinitionContext.inputFieldsDefinition().inputValueDefinition(), this::visitInputValueDefinition);
+        return inputObjectTypeDefinition;
     }
 
     private InterfaceTypeDefinition visitInterfaceTypeDefinition(GraphQLParser.InterfaceTypeDefinitionContext interfaceTypeDefinitionContext)
@@ -394,6 +410,14 @@ public class GraphQLGrammarParser
             visitImplementInterface(implementsInterfaces.implementsInterfaces(), empty);
         }
         return empty;
+    }
+    
+    private Directive visitDirectiveContext(GraphQLParser.DirectiveContext directiveContext)
+    {
+        Directive directive = new Directive();
+        directive.name = directiveContext.name().getText();
+        directive.arguments = directiveContext.arguments() == null ? Collections.emptyList() : ListIterate.collect(directiveContext.arguments().argument(), this::visitArgument);
+        return directive;
     }
 
     private FieldDefinition visitFieldsDefinitionContext(GraphQLParser.FieldDefinitionContext fieldsDefinitionContext)

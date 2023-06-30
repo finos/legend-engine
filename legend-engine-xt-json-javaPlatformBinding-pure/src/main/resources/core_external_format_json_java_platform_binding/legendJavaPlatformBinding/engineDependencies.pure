@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
  */
 
 import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
-
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonDeserializeExecutionNodeSpecifics {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonInternalizeExecutionNodeSpecifics {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::JsonDataReader {}
 
 /*
  * This function should be assigned to the router extension:
@@ -30,11 +30,24 @@ Class meta::external::format::json::executionPlan::platformBinding::legendJava::
  */
 function meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
-   let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader);
 
-   let jIJsonDeserializeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics')
-      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'streamReader', [javaParam(javaClass('java.io.InputStream'), 'p0')]));
+   let jIChecked = $conventions->className(meta::pure::dataQuality::Checked);
+
+   let jJsonDataRecord = javaClass('public', 'org.finos.legend.engine.external.format.json.read.JsonDataRecord')
+      ->addMethod(javaMethod('public', javaLong(), 'getNumber', []))
+      ->addMethod(javaMethod('public', javaString(), 'getRecord', []))
+      ->addMethod(javaMethod('public', javaString(), 'typeName$', []))
+      ->addMethod(javaMethod('public', javaString(), 'typePath$', []));
+
+   let jJsonDataReader = javaClass('public', 'org.finos.legend.engine.external.format.json.read.JsonDataReader')
+      ->addMethod(javaMethod('public', javaStream(javaParameterizedType($jIChecked, [javaTypeVar('T')])), 'startStream', []));
+
+   let jIJsonInternalizeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType($jJsonDataReader, [javaWildcard()]), 'createReader', [javaParam(javaClass('java.io.InputStream'), 'p0')]));
 
    $conventions
-      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonDeserializeExecutionNodeSpecifics, $jIJsonDeserializeExecutionNodeSpecifics);
+      ->addProvidedType(meta::external::format::json::executionPlan::model::JsonDataRecord, $jJsonDataRecord)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonInternalizeExecutionNodeSpecifics, $jIJsonInternalizeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::JsonDataReader, $jJsonDataReader);
 }
+

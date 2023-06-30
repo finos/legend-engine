@@ -40,14 +40,28 @@ public class PureModelContextPointer extends PureModelContext
         {
             throw new RuntimeException("Can't merge two context as they come from two different environment");
         }
-        PureSDLC pureSdlc = new PureSDLC();
-        pureSdlc.version = this.sdlcInfo.version;
-        pureSdlc.baseVersion = this.sdlcInfo.baseVersion;
-        MutableSet<PackageableElementPointer> set = Sets.mutable.withAll(((PureSDLC) this.sdlcInfo).packageableElementPointers);
-        set.addAll(((PureSDLC) other.sdlcInfo).packageableElementPointers);
-        pureSdlc.packageableElementPointers = set.toList();
+
+        SDLC sdlc;
+
+        if (this.sdlcInfo instanceof AlloySDLC && other.sdlcInfo instanceof AlloySDLC)
+        {
+            sdlc = new AlloySDLC();
+            ((AlloySDLC) sdlc).groupId = ((AlloySDLC) this.sdlcInfo).groupId;
+            ((AlloySDLC) sdlc).artifactId = ((AlloySDLC) this.sdlcInfo).artifactId;
+            ((AlloySDLC) sdlc).project = ((AlloySDLC) this.sdlcInfo).project;
+        }
+        else
+        {
+            sdlc = new PureSDLC();
+        }
+
+        sdlc.version = this.sdlcInfo.version;
+        sdlc.baseVersion = this.sdlcInfo.baseVersion;
+        MutableSet<PackageableElementPointer> set = Sets.mutable.withAll(this.sdlcInfo.packageableElementPointers);
+        set.addAll(other.sdlcInfo.packageableElementPointers);
+        sdlc.packageableElementPointers = set.toList();
         PureModelContextPointer pointer = new PureModelContextPointer();
-        pointer.sdlcInfo = pureSdlc;
+        pointer.sdlcInfo = sdlc;
         pointer.serializer = this.serializer;
         return pointer;
     }

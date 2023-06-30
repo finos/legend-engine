@@ -38,6 +38,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
 
 public class PostgresServerTest
 {
@@ -70,10 +72,9 @@ public class PostgresServerTest
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                 "dummy", "dummy");
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery()
         )
         {
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            ResultSetMetaData resultSetMetaData = statement.getMetaData();
             Assert.assertEquals(3, resultSetMetaData.getColumnCount());
             Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
             Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
@@ -96,6 +97,30 @@ public class PostgresServerTest
             Assert.assertEquals(0, parameterMetaData.getParameterCount());
         }
     }
+
+    @Test
+    /**
+     * Verify that schema created as part of the metadata H2 DB creation exits
+     */
+    public void testInitSchemaCreation() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("select nspname,relname from pg_catalog.pg_namespace n " +
+                        "inner join pg_catalog.pg_class c on n.oid = c.relnamespace where nspname = 'service' and c.relname= 'emptytable'");
+                ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
 
     @Test
     public void testNumberOfRows() throws SQLException
@@ -204,7 +229,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(3, rows);
+            Assert.assertEquals(4, rows);
         }
     }
 
@@ -252,6 +277,67 @@ public class PostgresServerTest
         }
     }
 
+    @Test
+    public void testUnknownServiceInExecution() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnknownColumnInExecution() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::executeQuery);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertNotNull(serverErrorMessage.getMessage());
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
+        }
+    }
+
+    @Test
+    public void testUnknownServiceInSchema() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT blah FROM service('/blah')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertEquals("IllegalArgumentException: No Service found for pattern '/blah'", serverErrorMessage.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnknownColumnInSchema() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT \"some_random_column_name\" FROM service('/personService')");
+        )
+        {
+            PSQLException exception = Assert.assertThrows(PSQLException.class, statement::getMetaData);
+            ServerErrorMessage serverErrorMessage = exception.getServerErrorMessage();
+            Assert.assertNotNull(serverErrorMessage);
+            Assert.assertNotNull(serverErrorMessage.getMessage());
+            Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named some_random_column_name\""));
+        }
+    }
 
     @AfterClass
     public static void tearDown()

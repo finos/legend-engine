@@ -73,6 +73,7 @@ import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -215,6 +216,8 @@ public class SqlExecute
         Root_meta_external_query_sql_metamodel_Node query = new ProtocolToMetamodelTranslator().translate(statement, pureModel);
 
         RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
+        LOGGER.info("{}", new LogInfo(profiles, LoggingEventType.GENERATE_PLAN_START));
+
         Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(compiledSources, query, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
         return transformExecutionPlan(plan, pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers);
@@ -222,7 +225,7 @@ public class SqlExecute
 
     private Pair<RichIterable<SQLSource>, PureModelContext> getSourcesAndModel(Statement statement, SQLContext context, MutableList<CommonProfile> profiles)
     {
-        List<TableSource> tables = new TableSourceExtractor().visit(statement);
+        Set<TableSource> tables = new TableSourceExtractor().visit(statement);
 
         MutableMultimap<String, TableSource> grouped = Iterate.groupBy(tables, TableSource::getType);
 

@@ -53,7 +53,7 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
   debug: DebugContext[1];
   debug(s : Function<{->String[1]}>[1])
   {
-    println(if($this.debug.debug, |$this.debug.space + $s->eval(), |''));
+    if($this.debug.debug, |println($this.debug.space + $s->eval()), |[]);
   }:Any[0];
 
   tdsESDetails: TDSESDetail[*];
@@ -182,7 +182,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
   let groupByCols = $vs.parametersValues->at(1)->extractSimpleValue($groupedReq)->cast(@String);
   let aggregateValues = $vs.parametersValues->at(2)->extractSimpleValue($groupedReq)->cast(@meta::pure::tds::AggregateValue<Any, Any>);
 
-  let groupByTdsESDetails = $groupedReq.tdsESDetails->filter(x | $x.name->in($groupByCols));
+  let groupByTdsESDetails = $groupByCols->map(g | $groupedReq.tdsESDetails->filter(x | $x.name == $g));
   assert($groupByCols->size() == $groupByTdsESDetails->size(), | 'grouping by unknown columns: ' + $groupByCols->removeAll($groupByTdsESDetails.name)->joinStrings('[', ', ', ']'));
 
   let aggPairs = $aggregateValues->map({x |
@@ -289,19 +289,123 @@ function meta::external::store::elasticsearch::v7::pureToEs::processSort(vs : Fu
   $initReq.debug(|'Processing ->sort');
   let debug = $initReq.debug;
   let currReq = process($vs.parametersValues->at(0), ^$initReq(debug = ^$debug(space = $debug.space + '\t')));
-  assertFalse($currReq.aggregationQuery, |'sort not supported in aggregation queries');
 
-  let columns = $sorts.column;
-  let toSort = $currReq.tdsESDetails->filter(x | $x.name->in($columns))->map(x | pair($x, $sorts->at($columns->indexOf($x.name))));
-  assert($toSort->size() == $sorts->size(), |'Sorting on unknown columns.  Missing: ' + $columns->removeAll($toSort.first.name)->joinStrings('[', ', ', ']'));
+  let columnsToSort = $sorts.column;
+
+  let toSort = $columnsToSort
+      ->map(s | $currReq.tdsESDetails->filter(x | $x.name == $s))
+      ->map(x | pair($x, if($sorts->at($columnsToSort->indexOf($x.name)).direction == SortDirection.ASC, |SortOrder.asc, |SortOrder.desc)));
+
+  assert($toSort->size() == $sorts->size(), |'Sorting on unknown columns.  Missing: ' + $columnsToSort->removeAll($toSort.first.name)->joinStrings('[', ', ', ']'));
 
   let search = $currReq.search;
-  let sortCombo = $toSort->map({x | 
-      let fieldSort = ^FieldSort(order = if($x.second.direction == SortDirection.ASC, |SortOrder.asc, |SortOrder.desc));
-      let fieldMap = newMap(pair($x.first.path(), $fieldSort));
-      ^SortCombinations(options = ^SortOptions(__additionalProperty = $fieldMap));
+
+  let newSearch = if($currReq.aggregationQuery,
+    |
+      let maybeGroupByContainer = $search.aggregations->toOne()->get('groupByComposite');
+      
+      if ($maybeGroupByContainer->isNotEmpty(),
+        |
+          let container = $maybeGroupByContainer->toOne();
+          let composite = $container.composite->toOne();
+          let compositeSources = $composite.sources->map(m | $m->keyValues());
+
+          // if all sorted fields are on the composite, we can reshuffle on it, and sort in place
+          // but cannot sort values from the actual aggregations
+          // for that, we switch to limiting TermsAggregation
+
+          let sortOnAggregatedValues = $columnsToSort->filter(x | $x->in($compositeSources.first)->not());
+
+          let toSortByName = $toSort->map(x | pair($x.first.name, $x.second));
+
+          let sortedContainer = if ($sortOnAggregatedValues->isEmpty(),
+            | sortOnCompositeAggregationContainer($toSortByName, $container.aggregations, $composite, $compositeSources)
+            ,
+            | sortOnTermsAggregationContainer($toSortByName, $container.aggregations, $composite, $compositeSources)
+          );
+
+          ^$search(aggregations = $sortedContainer);
+        ,
+        |
+          $search;
+      );
+    ,
+    |
+      let sortCombo = $toSort->map({x | 
+        let fieldSort = ^FieldSort(order = $x.second);
+        let fieldMap = newMap(pair($x.first.path(), $fieldSort));
+        ^SortCombinations(options = ^SortOptions(__additionalProperty = $fieldMap));
+        });
+     
+      ^$search(sort = $sortCombo);
+  );
+
+  ^$currReq(search = $newSearch);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::sortOnCompositeAggregationContainer(
+  toSort : Pair<String, SortOrder>[*],
+  aggregations : Map<String, AggregationContainer>[0..1],
+  composite : CompositeAggregation[1],
+  compositeSources : Pair<String, CompositeAggregationSource>[*]
+): Map<String, AggregationContainer>[1]
+{
+  let termsSorted = $toSort->map({x | 
+    let compositeSourcePair = $compositeSources->filter(m | $m.first == $x.first)->toOne();
+    let sourceTerms = $compositeSourcePair.second.terms->toOne();
+    ^$compositeSourcePair(second = ^CompositeAggregationSource(terms = ^$sourceTerms(order = ^TermsAggregationSortOrder(order = $x.second))));
   });
-  ^$currReq(search = ^$search(sort = $sortCombo));
+
+  let notSortedTerms = $compositeSources
+        ->filter(m | $m.first->in($toSort.first)->not())
+        ->map({m | 
+          let sourceTerms = $m.second.terms->toOne();
+          ^$m(second = ^CompositeAggregationSource(terms = ^$sourceTerms(order = [])));
+        });
+
+  let sortedComposite = ^$composite(sources = $termsSorted->concatenate($notSortedTerms)->map(x | $x->newMap()));
+  pair('groupByComposite', ^AggregationContainer(composite = $sortedComposite, aggregations = $aggregations))->newMap();
+}
+
+function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::sortOnTermsAggregationContainer(
+  toSort : Pair<String, SortOrder>[*],
+  aggregations : Map<String, AggregationContainer>[0..1],
+  composite : CompositeAggregation[1],
+  compositeSources : Pair<String, CompositeAggregationSource>[*]
+): Map<String, AggregationContainer>[1]
+{
+  let bucketSize = 500;// up to 500 buckets for now
+
+  let compositeSourcesToSort = $toSort->map(x | $compositeSources->filter(m | $m.first == $x.first));
+  let compositeSourcesNotToSort = $compositeSources->removeAll($compositeSourcesToSort);
+  let aggSorts = $toSort->filter(x | $x.first->in($compositeSources.first)->not());
+
+  let aggToComputeAllLevels = $aggSorts->map(s | $aggregations->map(m | $m->get($s.first)->map(v | pair($s.first, $v))));
+
+  let notSortedAgg = $compositeSourcesNotToSort->fold({x, agg |
+      let terms = $x.second.terms->toOne();
+      let sortedTerms = ^$terms(
+        size = $bucketSize,
+        missing_bucket = [],
+        order = ^TermsAggregationSortOrder(orderMap = $aggSorts->map(s | $s->newMap()))
+      );
+      pair($x.first, ^AggregationContainer(terms = $sortedTerms, aggregations = $agg->putAll($aggToComputeAllLevels)))->newMap();
+    },
+    $aggregations->orElse(newMap([]))
+  );
+
+  let termsAggregation = $compositeSourcesToSort->reverse()->fold({x, agg |
+      let sorts = $toSort->filter(s | $s->in($aggSorts) || $s.first == $x.first)->map(s | pair(if($s.first == $x.first, |'_key', |$s.first), $s.second));
+      let terms = $x.second.terms->toOne();
+      let sortedTerms = ^$terms(
+        size = $bucketSize, 
+        missing_bucket = [],
+        order = ^TermsAggregationSortOrder(orderMap = $sorts->map(s | $s->newMap()))
+      );
+      pair($x.first, ^AggregationContainer(terms = $sortedTerms, aggregations = $agg->putAll($aggToComputeAllLevels)))->newMap();
+    },
+    $notSortedAgg
+  );
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueSpecification[1], req: State[1]): State[1]
@@ -323,7 +427,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupporte
 function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1] 
 {
   let req = ^State(    
-    search = ^SearchRequestBody(_source = ^SourceConfig(fetch = false)),
+    search = ^SearchRequestBody(_source = ^SourceConfig(fetch = false), track_total_hits = ^TrackHits(count = 100)),
     inFilter = false,
     inProject = false,
     aggregationQuery = false,
@@ -526,7 +630,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   assert($req.inFilter, 'TdsRow.isNotNull only supporter on filter context');
-  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
   let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
@@ -544,7 +648,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   assert($req.inFilter, 'TdsRow.isNull only supporter on filter context');
-  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
   let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
   let query = ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
   let search = $req.search;
@@ -662,23 +766,22 @@ function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : Fun
 
 function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : Any[1], req: State[1]): Any[*]
 {
-  $req.debug(|'-- processing simple value ' + $vs->type()->toString() + ': ' + $vs->evaluateAndDeactivate()->printValueSpecification('\n'));
+  $req.debug(|'-- processing simple value ' + $vs->type()->toString());
   $vs->match([
     rfe: FunctionExpression[1] |
       let fe = $rfe->deepByPassRouterInfo()->cast(@FunctionExpression);
       if($fe.func->instanceOf(QualifiedProperty),
-        | $fe.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($fe.parametersValues, $req),
+        | $fe.func->cast(@QualifiedProperty<Any>)->qualifiedPropertyToTDSESDetail($fe.parametersValues, $req),
         | if(toOne_T_MANY__T_1_ == $fe.func,
             | $fe.parametersValues->at(0)->extractSimpleValue($req),
             | $req.supportedSimpleValueFunctions->findAndEvalSupportedFunction($fe, $req)
       ));,
     iv: InstanceValue[1] | $iv.values->map(x | $x->extractSimpleValue($req)),
-    any: Any[1] |
-      if ($any->type()->instanceOf(DataType), | $any, | fail('not supported: ' + $any->type()->toString()))
+    any: Any[*] | $any
   ]);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): Any[1]
+function meta::external::store::elasticsearch::v7::pureToEs::qualifiedPropertyToTDSESDetail(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): TDSESDetail[1]
 {
   assert($params->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow, 'Only TDSRow operations supported');
   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getNullableString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
@@ -748,7 +851,21 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedAggregatio
 {
   let supported = [
      pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Integer_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Float_MANY__Float_1_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Number_MANY__Number_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+
     ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Integer_MANY__Float_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Float_MANY__Float_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Number_MANY__Float_1_,  {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+
     ,pair(x: Function<Any>[1] | $x == meta::pure::functions::collection::count_Any_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(value_count = ^ValueCountAggregation(field = $y))})
   ];
 }

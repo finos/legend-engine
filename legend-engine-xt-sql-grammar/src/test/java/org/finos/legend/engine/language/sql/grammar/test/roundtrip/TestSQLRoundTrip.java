@@ -86,6 +86,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testOffset()
+    {
+        check("SELECT * FROM myTable OFFSET 1");
+    }
+
+    @Test
     public void testOrderBy()
     {
         check("SELECT * FROM myTable ORDER BY col1 DESC, col2 ASC");

@@ -104,10 +104,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromTempFileTempTableStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromResultSetAsValueTuplesTempTableStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromSubQueryTempTableStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LoadFromTempFileTempTableStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalClassQueryTempTableGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootGraphFetchExecutionNode;
@@ -292,7 +292,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", relationalExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("sql", relationalExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.profiles, this.executionState);
-                if (result instanceof RelationalResult)
+                if (result instanceof RelationalResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((RelationalResult) result).executedSQl);
                 }
@@ -313,7 +313,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
-                if (result instanceof SQLExecutionResult)
+                if (result instanceof SQLExecutionResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                 }
@@ -1757,11 +1757,25 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             String databaseTimeZone = ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone() == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : ((SQLExecutionNode) node.executionNodes.get(0)).getDatabaseTimeZone();
                             if (node.parentTempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                             {
+                                try
+                                {
+                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                }
+                                catch (Exception ignored2)
+                                {
+                                }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
                                 loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, databaseTimeZone);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {
+                                try
+                                {
+                                    node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                                }
+                                catch (Exception ignored2)
+                                {
+                                }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
                                 String requestId = new RequestIdGenerator().generateId();

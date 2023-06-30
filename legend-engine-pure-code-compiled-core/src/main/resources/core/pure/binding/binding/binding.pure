@@ -17,7 +17,7 @@ import meta::external::shared::format::metamodel::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::model::unit::*;
 
-Class meta::external::shared::format::binding::Binding extends meta::pure::mapping::modelToModel::ModelStore
+Class meta::external::shared::format::binding::Binding extends PackageableElement
 {
    schemaSet    : SchemaSet[0..1];
    schemaId     : String[0..1];

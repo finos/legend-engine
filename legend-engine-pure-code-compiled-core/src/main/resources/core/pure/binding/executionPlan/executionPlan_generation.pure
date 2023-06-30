@@ -104,17 +104,13 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
    let tree            = $parameters->at(2)->byPassValueSpecificationWrapper()->match([
                               v:VariableExpression[1]       | $inScopeVars->get($v.name).values->cast(@RootGraphFetchTree<Any>)->toOne(),
                               i:InstanceValue[1]            | $i.values->cast(@RootGraphFetchTree<Any>)->toOne(),
-                              s:SimpleFunctionExpression[1] | assert($s.func == checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_, | 'Please provide a tree or use a checked function as a parameter for externalize');
-                                                              let valueTree  = $s.parametersValues->at(0)->match([
-                                                                                                              v:VariableExpression[1] | $inScopeVars->get($v.name).values,
-                                                                                                              i:InstanceValue[1]      | $i.values
-                                                                                                            ])->cast(@RootGraphFetchTree<Any>)->toOne();
-                                                              let binding    = $s.parametersValues->at(1)->match([
-                                                                                                              v:VariableExpression[1] | $inScopeVars->get($v.name).values,
-                                                                                                              i:InstanceValue[1]      | $i.values
-                                                                                                            ])->cast(@Binding)->toOne();
-                                                              let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordSerializeTree;
-                                                              assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $binding.contentType);
+                              s:SimpleFunctionExpression[1] | assert($s.func == checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_ || $s.func == checked_RootGraphFetchTree_1__String_1__RootGraphFetchTree_1_, | 'Please provide a tree or use a checked function as a parameter for externalize');
+                                                              let valueTree   = $s.parametersValues->at(0)->cast(@InstanceValue).values->cast(@RootGraphFetchTree<Any>)->toOne();
+                                                              let contentType = $s.parametersValues->at(1)->cast(@InstanceValue).values->match([ b:Binding[1] | $b.contentType,
+                                                                                                                                                 s:String[1]  | $s
+                                                                                                                                              ]);
+                                                              let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($contentType).sourceRecordSerializeTree;
+                                                              assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $contentType);
                                                               checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
                               ]); 
 
@@ -126,7 +122,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
    let bindingArg      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper();
    let binding         = $bindingArg->cast(@InstanceValue).values->match([
                                                                     b:meta::external::shared::format::binding::Binding[1] | $b,
-                                                                    s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = extractClassesFromTree($tree)))
+                                                                    s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = extractPackageableElementFromTree($tree)))
                                                                   ]);
 
    ^ExternalFormatExternalizeExecutionNode
@@ -155,9 +151,9 @@ function <<access.private>> meta::external::shared::format::executionPlan::inter
    assert($bindingArg->instanceOf(InstanceValue), 'Only literal binding is supported');
    let binding            = $bindingArg->cast(@InstanceValue).values->match([
                                                                         b:meta::external::shared::format::binding::Binding[1] | $b,
-                                                                        s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = if($graphFetchTree->isEmpty(), | $class, |extractClassesFromTree($graphFetchTree->toOne()))))
+                                                                        s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::external::shared::format::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = if($graphFetchTree->isEmpty(), | $class, |extractPackageableElementFromTree($graphFetchTree->toOne()))))
                                                                       ]);
-   
+                                                                      
    ^ExternalFormatInternalizeExecutionNode
    (
       resultType        = ^ClassResultType(type=$class),
@@ -165,10 +161,19 @@ function <<access.private>> meta::external::shared::format::executionPlan::inter
       binding           = $binding,
       enableConstraints = $enableConstraints,
       checked           = $checked,
-      tree              = $graphFetchTree,
+      tree              = $graphFetchTree->orElse(generateTreeWithPrimitiveProperties($class)),
       executionNodes    = generateSourceNodeFromFunctionExpression($fe),
       fromCluster       = ^ExternalFormatClusteredValueSpecification(val = $fe, executable=true, binding = $binding, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([]))
    );
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::generateTreeWithPrimitiveProperties(class:Class<Any>[1]):RootGraphFetchTree<Any>[1]
+{
+  ^RootGraphFetchTree<Any>
+  (
+    class=$class,
+    subTrees=$class->hierarchicalProperties()->filter(p | $p->isPrimitiveValueProperty())->map(p | ^PropertyGraphFetchTree(property=$p))
+  )
 }
 
 function <<access.private>> meta::external::shared::format::executionPlan::generateSourceNodeFromFunctionExpression(fe:FunctionExpression[1]): ExecutionNode[1]
@@ -191,14 +196,18 @@ function <<access.private>> meta::external::shared::format::executionPlan::gener
                                       ]);
 }
 
-function <<access.private>> meta::external::shared::format::executionPlan::extractClassesFromTree(tree:GraphFetchTree[1]): Class<Any>[*]
+function <<access.private>> meta::external::shared::format::executionPlan::extractPackageableElementFromTree(tree:GraphFetchTree[1]): PackageableElement[*]
 {
   let classesFromTree = $tree->match([
                                   r:RootGraphFetchTree<Any>[1] | $r.class,
-                                  p:PropertyGraphFetchTree[1]  | if($p.isPrimitive(), |[], |$p.property.genericType.rawType->cast(@Class<Any>)),
+                                  p:PropertyGraphFetchTree[1]  | if($p.isPrimitive(), 
+                                                                    | [], 
+                                                                    | let rawType = $p.property.genericType.rawType->toOne();
+                                                                      if($rawType->instanceOf(Class), | $rawType->cast(@Class<Any>), | $rawType->cast(@Unit).measure)->concatenate($p.property.owner);
+                                                                 ),
                                   s:SubTypeGraphFetchTree[1]   | $s.subTypeClass
-                                ]);
-  $classesFromTree->concatenate($tree.subTrees->map(s | $s->extractClassesFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractClassesFromTree()));
+                                ])->cast(@PackageableElement);
+  $classesFromTree->concatenate($tree.subTrees->map(s | $s->extractPackageableElementFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractPackageableElementFromTree()));
 }
 
 function <<access.private>> meta::external::shared::format::executionPlan::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]

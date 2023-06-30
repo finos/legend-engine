@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.15.8-SNAPSHOT</version>
+        <version>4.16.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server</artifactId>
@@ -158,6 +158,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-cloud-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-target-relational-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -370,10 +375,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-test-runner-mapping-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -19,7 +19,7 @@ public class EmailNotifyee extends Notifyee
     public String address;
 
     @Override
-    public <T> T acceptVisitor(NotifyeeVisitor<T> visitor)
+    public <T> T accept(NotifyeeVisitor<T> visitor)
     {
         return visitor.visit(this);
     }

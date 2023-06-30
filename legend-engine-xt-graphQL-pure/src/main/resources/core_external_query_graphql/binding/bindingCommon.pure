@@ -1,0 +1,64 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+
+// These two functions must roundtrip
+function meta::external::query::graphQL::binding::toInputTypeName(pureClassName: String[1]) : String[1]
+{
+  $pureClassName + 'Input'
+}
+
+function meta::external::query::graphQL::binding::fromInputTypeName(inputTypeName: String[1]) : String[1]
+{
+  if($inputTypeName->endsWith('Input'), | $inputTypeName->substring(0, $inputTypeName->length() - 5), | '')
+}
+
+function meta::external::query::graphQL::binding::purePrimitivesToGraphQLScalarTypes(): Pair<PrimitiveType,String>[*]
+{
+  [
+    pair(String, 'String'),
+    pair(Integer, 'Int'),
+    pair(Float, 'Float'),
+    pair(Boolean, 'Boolean')
+  ]
+}
+
+function meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes(): Pair<PrimitiveType,String>[*]
+{
+  [
+    pair(Date, 'Date'),
+    pair(StrictDate, 'StrictDate'),
+    pair(DateTime, 'DateTime'),
+    pair(Decimal, 'BigDecimal')
+  ]
+}
+
+// Concat and invert the pure primitives to graphQL
+function meta::external::query::graphQL::binding::graphQLScalarTypesToPurePrimitives(): Pair<String,PrimitiveType>[*]
+{
+  purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())
+    ->map(p | pair($p.second, $p.first))
+    ->concatenate(pair('ID', String))
+}
+
+function meta::external::query::graphQL::binding::temporalityToDirectives(): Map<String,DirectiveDefinition>[1]
+{
+  [
+    pair('bitemporal', ^DirectiveDefinition(name = 'bitemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT])),
+    pair('businesstemporal', ^DirectiveDefinition(name = 'businesstemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT])),
+    pair('processingtemporal', ^DirectiveDefinition(name = 'processingtemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]))
+  ]->newMap();
+}

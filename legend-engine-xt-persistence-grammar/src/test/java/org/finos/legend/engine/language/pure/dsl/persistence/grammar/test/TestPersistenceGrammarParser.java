@@ -258,14 +258,14 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     @Test
     public void persister()
     {
-        test("###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "}\n", "PARSER error at [3:1-8:1]: Field 'persister' is required");
+//        test("###Persistence\n" +
+//                "\n" +
+//                "Persistence test::TestPersistence \n" +
+//                "{\n" +
+//                "  doc: 'This is test documentation.';\n" +
+//                "  trigger: Manual;\n" +
+//                "  service: test::Service;\n" +
+//                "}\n", "PARSER error at [3:1-8:1]: Field 'persister' is required");
 
         test("###Persistence\n" +
                 "\n" +

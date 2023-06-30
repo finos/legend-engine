@@ -33,6 +33,34 @@ public class TestGraphQLRoundtrip
                 "  length(unit: LengthUnit = METER): Float\n" +
                 "}");
     }
+    
+    @Test
+    public void testInputTypeRoundtrip()
+    {
+        check("input CarInput {\n" +
+                "  id: ID!\n" +
+                "  name: String!\n" +
+                "  values: [String]\n" +
+                "  length: Float\n" +
+                "}");
+    }
+
+    @Test
+    public void testNestedInputTypeRoundtrip()
+    {
+        check("input CarInput {\n" +
+                "  id: ID!\n" +
+                "  name: String!\n" +
+                "  values: [String]\n" +
+                "  length: Float\n" +
+                "  wheels: [WheelInput!]!\n" +
+                "}\n" +
+                "\n" +
+                "input WheelInput {\n" +
+                "  id: ID!\n" +
+                "  brand: String!\n" +
+                "}");
+    }
 
     @Test
     public void testParsingError()

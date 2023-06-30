@@ -16,6 +16,7 @@
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import io.opentracing.Scope;
@@ -30,15 +31,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -56,15 +65,25 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.Ela
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.ResponseBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.Hit;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.TotalHits;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.AbstractRequestBaseVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldValue;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AbstractAggregateBaseVisitor;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AbstractMultiBucketBaseVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Aggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregateBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AvgAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.DoubleTermsBucket;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.LongTermsBucket;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MinAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MultiBucketBase;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.StringTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SumAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.TermsAggregateBase;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.TermsBucketBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.ValueCountAggregate;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -145,7 +164,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
     private Stream<Object[]> processAggregateResponse(ResponseBody<?> responseBody) throws IOException
     {
-        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor();
+        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor(responseBody.hits.total);
         List<TDSColumn> tdsColumns = ((TDSResultType) this.node.resultType).tdsColumns;
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
@@ -161,30 +180,14 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
             Object result = topAggEntry.getValue().unionValue();
             if (result instanceof CompositeAggregate)
             {
-                CompositeAggregate compositeAggregate = (CompositeAggregate) result;
-                Assert.assertTrue(compositeAggregate.buckets.keyed.isEmpty(), () -> "Keyed buckets not supported");
-
-                objectNodeStream = compositeAggregate.buckets.array.stream().map(b ->
-                {
-                    try (TokenBuffer tokenBuffer = new TokenBuffer(ElasticsearchObjectMapperProvider.OBJECT_MAPPER, false))
-                    {
-                        for (Map.Entry<String, FieldValue> entry : b.key.entrySet())
-                        {
-                            tokenBuffer.writeObjectField(entry.getKey(), entry.getValue().unionValue());
-                        }
-
-                        for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
-                        {
-                            tokenBuffer.writeObjectField(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
-                        }
-
-                        return tokenBuffer.asParser().readValueAsTree();
-                    }
-                    catch (IOException e)
-                    {
-                        throw new UncheckedIOException(e);
-                    }
-                });
+                objectNodeStream = processComposite(aggregateTDSResultVisitor, (CompositeAggregate) result);
+            }
+            else if (result instanceof TermsAggregateBase)
+            {
+                TermsAggregateBase<? extends MultiBucketBase> termsAggregateBase = (TermsAggregateBase<? extends TermsBucketBase>) result;
+                List<Map<String, Object>> rows = processBucket(topAggEntry.getKey(), termsAggregateBase, Maps.immutable.empty(), aggregateTDSResultVisitor);
+                ArrayNode jsonNodes = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(rows);
+                objectNodeStream = StreamSupport.stream(Spliterators.spliterator(jsonNodes.elements(), jsonNodes.size(), 0), false).map(ObjectNode.class::cast);
             }
         }
 
@@ -206,6 +209,75 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         }
 
         return objectNodeStream.map(h -> extractors.stream().map(x -> x.apply(h)).toArray());
+    }
+
+    private static Stream<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, CompositeAggregate compositeAggregate)
+    {
+        Assert.assertTrue(compositeAggregate.buckets.keyed.isEmpty(), () -> "Keyed buckets not supported");
+
+        return compositeAggregate.buckets.array.stream().map(b ->
+        {
+            try (TokenBuffer tokenBuffer = new TokenBuffer(ElasticsearchObjectMapperProvider.OBJECT_MAPPER, false))
+            {
+                for (Map.Entry<String, FieldValue> entry : b.key.entrySet())
+                {
+                    tokenBuffer.writeObjectField(entry.getKey(), entry.getValue().unionValue());
+                }
+
+                for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
+                {
+                    tokenBuffer.writeObjectField(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+                }
+
+                return tokenBuffer.asParser().readValueAsTree();
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
+        });
+    }
+
+    private List<Map<String, Object>> processBucket(String key, TermsAggregateBase<? extends MultiBucketBase> terms, ImmutableMap<String, Object> rowSoFar, AggregateTDSResultVisitor aggregateTDSResultVisitor)
+    {
+        Assert.assertTrue(terms.buckets.keyed.isEmpty(), () -> "Keyed buckets not supported");
+
+        MultiBucketKeyVisitor bucketKeyVisitor = new MultiBucketKeyVisitor();
+
+        List<Map<String, Object>> rows = Lists.mutable.empty();
+
+        if (terms.buckets.array.isEmpty())
+        {
+            rows.add(rowSoFar.toMap().withKeyValue(key, null));
+        }
+        else
+        {
+            for (MultiBucketBase bucket : terms.buckets.array)
+            {
+                MutableMap<String, Object> newRow = rowSoFar.toMap();
+
+                newRow.put(key, bucket.accept(bucketKeyVisitor));
+
+                Set<Map.Entry<String, Aggregate>> entries = bucket.additionalProperties().entrySet();
+
+                Optional<Map.Entry<String, Aggregate>> maybeNestedTerms = entries.stream().filter(x -> x.getValue().unionValue() instanceof TermsAggregateBase).findAny();
+
+                entries.stream().filter(x -> !(x.getValue().unionValue() instanceof TermsAggregateBase))
+                        .forEach(entry -> newRow.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor)));
+
+                if (maybeNestedTerms.isPresent())
+                {
+                    Map.Entry<String, Aggregate> entry = maybeNestedTerms.get();
+                    rows.addAll(processBucket(entry.getKey(), (TermsAggregateBase<? extends MultiBucketBase>) entry.getValue().unionValue(), newRow.toImmutable(), aggregateTDSResultVisitor));
+                }
+                else
+                {
+                    rows.add(newRow);
+                }
+            }
+        }
+
+        return rows;
     }
 
     private Stream<Object[]> processNotAggregateResponse(ResponseBody<ObjectNode> responseBody) throws IOException
@@ -249,8 +321,42 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         }
     }
 
+    private static class MultiBucketKeyVisitor extends AbstractMultiBucketBaseVisitor<Object>
+    {
+        @Override
+        protected Object defaultValue(MultiBucketBase val)
+        {
+            throw new UnsupportedOperationException(val.getClass() + " not supported");
+        }
+
+        @Override
+        public Object visit(StringTermsBucket val)
+        {
+            return val.key.unionValue();
+        }
+
+        @Override
+        public Object visit(LongTermsBucket val)
+        {
+            return Long.parseLong(val.key);
+        }
+
+        @Override
+        public Object visit(DoubleTermsBucket val)
+        {
+            return val.key;
+        }
+    }
+
     private static class AggregateTDSResultVisitor extends AbstractAggregateBaseVisitor<Object>
     {
+        private final TotalHits total;
+
+        private AggregateTDSResultVisitor(TotalHits total)
+        {
+            this.total = total;
+        }
+
         @Override
         protected Object defaultValue(AggregateBase val)
         {
@@ -260,13 +366,25 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         @Override
         public Object visit(AvgAggregate val)
         {
-            return val.value;
+            return this.total.value == 0L ? null : val.value;
         }
 
         @Override
         public Object visit(SumAggregate val)
         {
             return val.value;
+        }
+
+        @Override
+        public Object visit(MaxAggregate val)
+        {
+            return this.total.value == 0L ? null : val.value;
+        }
+
+        @Override
+        public Object visit(MinAggregate val)
+        {
+            return this.total.value == 0L ? null : val.value;
         }
 
         @Override

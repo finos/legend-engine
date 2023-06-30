@@ -15,30 +15,17 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.dropwizard.testing.junit.ResourceTestRule;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.slf4j.Logger;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
 
 public class LegendTdsTestClient extends LegendTdsClient
 {
     private final ResourceTestRule resourceTestRule;
-    private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(LegendTdsTestClient.class);
-
 
     public LegendTdsTestClient(ResourceTestRule resourceTestRule)
     {
@@ -50,42 +37,21 @@ public class LegendTdsTestClient extends LegendTdsClient
     @Override
     protected JsonNode executeQueryApi(String query)
     {
-        Invocation.Builder builder = resourceTestRule.target("sql/v1/execution/executeQueryString").request();
-        Response response = builder.post(Entity.text(query));
-        String responseString = response.readEntity(String.class);
-
-        if (response.getStatus() != 200)
-        {
-            LOGGER.error(String.format("Status: [%s], Response: [%s]", response.getStatusInfo(), responseString));
-        }
-        try
-        {
-            return mapper.readValue(responseString, JsonNode.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
+        String path = "sql/v1/execution/executeQueryString";
+        return executeApi(query, path);
     }
 
     @Override
     protected JsonNode executeSchemaApi(String query)
     {
-        Invocation.Builder builder = resourceTestRule.target("sql/v1/execution/getSchemaFromQueryString").request();
-        Response response = builder.post(Entity.text(query));
-        String responseString = response.readEntity(String.class);
+        String path = "sql/v1/execution/getSchemaFromQueryString";
+        return executeApi(query, path);
+    }
 
-        if (response.getStatus() != 200)
-        {
-            LOGGER.error(String.format("Status: [%s], Response: [%s]", response.getStatusInfo(), responseString));
-        }
-        try
-        {
-            return mapper.readValue(responseString, JsonNode.class);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
+    private JsonNode executeApi(String query, String path)
+    {
+        Invocation.Builder builder = resourceTestRule.target(path).request();
+        Response response = builder.post(Entity.text(query));
+        return handleResponse(query, () -> (InputStream) response.getEntity(), response::getStatus);
     }
 }

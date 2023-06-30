@@ -750,6 +750,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 
         List<SortItem> orderBy = visitCollection(context.sortItem(), SortItem.class);
         Optional<Expression> limit = visitIfPresent(context.limitClause(), Expression.class);
+        Optional<Expression> offset = visitIfPresent(context.offsetClause(), Expression.class);
 
         if (term instanceof QuerySpecification)
         {
@@ -761,12 +762,14 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
             // to columns defined in the query specification)
             body.orderBy = orderBy;
             body.limit = limit.orElse(null);
+            body.offset = offset.orElse(null);
 
             return query;
         }
 
         query.orderBy = orderBy;
         query.limit = limit.orElse(null);
+        query.offset = offset.orElse(null);
 
         return query;
     }
@@ -1665,7 +1668,10 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitDefinedDataType(SqlBaseParser.DefinedDataTypeContext context)
     {
-        return unsupported();
+        StringLiteral stringLiteral = new StringLiteral();
+        stringLiteral.value = String.join(" ", ListIterate.collect(context.children, ParseTree::getText));
+
+        return stringLiteral;
     }
 
     // Helpers

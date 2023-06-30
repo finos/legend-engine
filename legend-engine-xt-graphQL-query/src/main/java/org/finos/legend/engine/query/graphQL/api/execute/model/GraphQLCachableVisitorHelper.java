@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.SelectionVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
@@ -138,6 +139,12 @@ public class GraphQLCachableVisitorHelper
                 return val;
             }
 
+            @Override
+            public Definition visit(InputObjectTypeDefinition val)
+            {
+                return val;
+            }
+            
             @Override
             public Definition visit(OperationDefinition val)
             {

@@ -212,7 +212,7 @@ function meta::external::store::service::executionPlan::generation::querySupport
 
 // Helper Functions to generate node for connection with query context
 
-function meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], serviceSetImpl:RootServiceInstanceSetImplementation[1], serviceStoreQueryProcessedState:ServiceStoreQueryProcessedState[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionNode[1]
+function meta::external::store::service::executionPlan::generation::nodeFromServiceStoreConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[1], serviceSetImpl:RootServiceInstanceSetImplementation[1], serviceStoreQueryProcessedState:ServiceStoreQueryProcessedState[1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionNode[1]
 {
   let serviceMapping = $serviceSetImpl->getServiceMappingForParameters($serviceStoreQueryProcessedState.paramMap->keys());
   let s              = $c->cast(@ServiceStoreConnection);
@@ -251,7 +251,7 @@ function meta::external::store::service::executionPlan::generation::nodeFromServ
   ^ExternalFormatInternalizeExecutionNode
   (
       resultType        = ^PartialClassResultType(
-                            type = $tree.class->toOne(),
+                            type = $tree.class,
                             propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
                           ),
       resultSizeRange   = ZeroMany,

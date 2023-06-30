@@ -143,7 +143,7 @@ public class RelationalExecutor
         {
             if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
-                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
+                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
             }
             else if (node.isResultVoid())
             {
@@ -152,7 +152,7 @@ public class RelationalExecutor
             else
             {
                 // Refactor and clean up the flush to Constant
-                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
+                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
 
                 if (node.isResultPrimitiveType())
                 {
@@ -207,7 +207,7 @@ public class RelationalExecutor
         }
         else
         {
-            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
+            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
         }
     }
 
@@ -245,7 +245,7 @@ public class RelationalExecutor
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
 
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
+        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
     }
 
     public SQLUpdateResult execute(RelationalSaveNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -314,7 +314,7 @@ public class RelationalExecutor
             sqlComment = sqlComment != null ? FreeMarkerExecutor.process(sqlComment, executionState, databaseTypeName, databaseTimeZone) : null;
             sqlQuery = FreeMarkerExecutor.process(sqlQuery, executionState, databaseTypeName, databaseTimeZone);
             Span span = GlobalTracer.get().activeSpan();
-            if (span != null && shouldLogSQL)
+            if (span != null && shouldLogSQL && executionState.logSQLWithParamValues())
             {
                 span.setTag("generatedSQL", sqlQuery);
             }
@@ -324,7 +324,10 @@ public class RelationalExecutor
             throw new IllegalStateException("Reprocessing sql failed with vars " + executionState.getResults().keySet(), e);
         }
 
-        LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
+        if (executionState.logSQLWithParamValues())
+        {
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
+        }
 
         executionState.activities.add(new RelationalExecutionActivity(sqlQuery, sqlComment));
     }

@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DefaultH2AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
@@ -39,14 +40,16 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
     private static final String SA_USER = "sa";
     private static final String SA_PASSWORD = "";
     private static final List<String> LEGEND_H2_EXTENSION_SQLs = getLegendH2ExtensionSQLs();
+    private static final List<String> LEGEND_H2_1_4_200_EXTENSION_SQLs = getLegendH2_1_4_200_ExtensionSQLs();
 
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         try
         {
+            List<String> legendH2ExtensionSQLs = H2Manager.getMajorVersion() == 2 ? LEGEND_H2_EXTENSION_SQLs : LEGEND_H2_1_4_200_EXTENSION_SQLs;
             Connection connection = ds.getDataSource().getConnection();
-            for (String sql : LEGEND_H2_EXTENSION_SQLs)
+            for (String sql : legendH2ExtensionSQLs)
             {
                 try (Statement statement = connection.createStatement())
                 {
@@ -103,6 +106,16 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_parse FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_parse\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_decode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_decode\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_encode\";"
+        );
+    }
+
+    private static List<String> getLegendH2_1_4_200_ExtensionSQLs()
+    {
+        return Arrays.asList(
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_json_navigate\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_parse FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_json_parse\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_decode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_base64_decode\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_base64_encode\";"
         );
     }
 }

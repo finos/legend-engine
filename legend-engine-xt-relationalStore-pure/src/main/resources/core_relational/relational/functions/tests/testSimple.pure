@@ -46,7 +46,7 @@ function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]
+function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_32_0'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]
 {
    let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assert($result.activities->at(0)->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"'));

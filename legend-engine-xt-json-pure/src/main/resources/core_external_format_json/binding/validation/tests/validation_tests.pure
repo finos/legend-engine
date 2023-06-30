@@ -39,3 +39,9 @@ function <<test.Test, test.AlloyOnly>> meta::external::format::json::binding::va
   meta::legend::compileLegendGrammar($binding);
   true;
 }
+
+function <<test.Test, test.AlloyOnly>> meta::external::format::json::binding::validation::tests::testBindingWithSchemaHavingSpecialCharacters(): Boolean[1]
+{
+  let ele = meta::legend::compileLegendGrammar(readFile('/core_external_format_json/binding/validation/tests/resources/customSchema.txt')->toOne());
+  true;
+}

@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
-public class Binding extends Store
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Binding extends PackageableElement
 {
     public String schemaSet;
     public String schemaId;

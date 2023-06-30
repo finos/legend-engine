@@ -107,7 +107,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         RootMongoDBClassMapping classMapping = (RootMongoDBClassMapping) cm;
                         Set<Class<?>> processedClasses = new HashSet<>();
 
-                        Root_meta_external_shared_format_binding_Binding binding = ((Root_meta_external_shared_format_binding_Binding)context.pureModel.getStore(((RootMongoDBClassMapping) cm).bindingPath, cm.sourceInformation));
+                        Root_meta_external_shared_format_binding_Binding binding = ((Root_meta_external_shared_format_binding_Binding)context.pureModel.getPackageableElement(((RootMongoDBClassMapping) cm).bindingPath, cm.sourceInformation));
                         MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
                         Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = MongoDBCompilerHelper.createMongoDBSetImplementation(classMapping, context, parentMapping, cm, binding);
 

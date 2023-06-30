@@ -1,0 +1,91 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+
+import meta::pure::persistence::metamodel::dataset::*;
+import meta::pure::persistence::metamodel::dataset::deduplication::*;
+import meta::pure::persistence::metamodel::dataset::emptyhandling::*;
+import meta::pure::persistence::metamodel::dataset::partitioning::*;
+import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::service::output::*;
+import meta::pure::persistence::metamodel::target::*;
+import meta::pure::persistence::test::example::*;
+
+/**********
+ * service root tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::metamodel::tests::keyNames_tdsRoot(): Boolean[1]
+{
+  let serviceOutput = TdsRoot();
+  assertSameElements(['id1', 'id2'], $serviceOutput.keyNames());
+}
+
+function <<test.Test>> meta::pure::persistence::metamodel::tests::keyNames_graphFetchRoot(): Boolean[1]
+{
+  let serviceOutput = GraphFetchRoot();
+  assertSameElements(['id'], $serviceOutput.keyNames());
+}
+
+function <<test.Test>> meta::pure::persistence::metamodel::tests::keyNames_graphFetchPath(): Boolean[1]
+{
+  let serviceOutput = GraphFetchPath();
+  assertSameElements(['value'], $serviceOutput.keyNames());
+}
+
+/**********
+ * service roots
+ **********/
+
+Class meta::pure::persistence::test::example::TestResult
+{
+  id: Integer[1];
+  part1: TestResultPart[1];
+  part2: TestResultPart[1];
+}
+
+Class meta::pure::persistence::test::example::TestResultPart
+{
+  id: Integer[1];
+  value: String[1];
+}
+
+function meta::pure::persistence::test::example::TdsRoot(): TdsServiceOutput[1]
+{
+  ^TdsServiceOutput(
+    keys = ['id1', 'id2'],
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
+  );
+}
+
+function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchServiceOutput[1]
+{
+  ^GraphFetchServiceOutput(
+    keys = [#/TestResult/id#],
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
+  );
+}
+
+function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchServiceOutput[1]
+{
+  ^GraphFetchServiceOutput(
+    path = #/TestResult/part1#,
+    keys = [#/TestResult/part1/value#],
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
+  );
+}

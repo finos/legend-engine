@@ -119,6 +119,7 @@ public class TDSResultToCSVSerializer extends CsvSerializer
                 case "Integer":
                     return ((Function<Object, Number>) Number.class::cast).andThen(Number::longValue);
                 case "Float":
+                case "Number":
                     return ((Function<Object, Number>) Number.class::cast).andThen(Number::doubleValue);
                 case "Decimal":
                     return BigDecimal.class::cast;

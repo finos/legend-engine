@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.query.sql.api.sources;
 
+import org.eclipse.collections.api.LazyIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -74,10 +75,26 @@ public class TestSQLSourceProvider implements SQLSourceProvider
             String PROJECT_ID = "projectId";
             Optional<TableSourceArgument> projectId = source.getNamedArgument(PROJECT_ID);
 
-            Service service = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
+            if (pureModelContextData == null)
+            {
+                throw new IllegalArgumentException("No Service found for pattern '" + pattern + "'");
+            }
+
+            LazyIterable<Service> services = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
                     .collect(e -> (Service) e)
-                    .select(s -> s.pattern.equals(pattern))
-                    .getFirst();
+                    .select(s -> s.pattern.equals(pattern));
+
+            if (services.isEmpty())
+            {
+                throw new IllegalArgumentException("No Service found for pattern '" + pattern + "'");
+            }
+
+            if (services.size() > 1)
+            {
+                throw new IllegalArgumentException("Multiple Services found for pattern '" + pattern + "'");
+            }
+
+            Service service = services.getOnly();
 
             List<SQLSourceArgument> keys = FastList.newListWith(new SQLSourceArgument(PATTERN, 0, pattern));
             projectId.ifPresent(tsa -> keys.add(new SQLSourceArgument(PROJECT_ID, 1, tsa.getValue())));

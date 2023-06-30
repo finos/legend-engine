@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-elasticsearch</artifactId>
-        <version>4.15.8-SNAPSHOT</version>
+        <version>4.16.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,9 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
                 <executions>
                     <execution>
                         <id>generate ES specification java protocol code</id>
@@ -40,13 +43,10 @@
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                            <mainClass>org.finos.legend.pure.elasticsearch.specification.generator.ElasticsearchGenerateSpecificationClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::store::elasticsearch::v7::metamodel::specification</argument>
-                                <argument>org.finos.legend.engine.protocol.store.elasticsearch.v7.specification</argument>
+                                <argument>core_elasticsearch_specification_metamodel.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
-                                <argument />
-                                <argument>meta::external::store::elasticsearch::specification::metamodel::elasticsearchGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>
@@ -61,11 +61,12 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::store::elasticsearch::v7::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel</argument>
+                                <argument>core_elasticsearch_seven_metamodel.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
-                                <argument>meta::external::store::elasticsearch::v7::metamodel::specification,meta::external::store::elasticsearch::v7::metamodel::executionPlan::ElasticsearchV7ExecutionActivity</argument>
-                                <argument>meta::external::store::elasticsearch::v7::metamodel::java::elasticsearchProtocolGenerator__JavaProtocolGenerator_1_</argument>
+                                <argument>
+                                    core_elasticsearch_specification_metamodel.protocol.json,
+                                    core_authentication.protocol.json
+                                </argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>

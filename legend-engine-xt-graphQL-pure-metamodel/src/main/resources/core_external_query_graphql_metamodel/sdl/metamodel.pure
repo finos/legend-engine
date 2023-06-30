@@ -198,6 +198,13 @@ Class meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefi
   implements: String[*];
 }
 
+Class meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTypeDefinition extends meta::external::query::graphQL::metamodel::sdl::typeSystem::Type
+{
+  name: String[1];
+  directives: meta::external::query::graphQL::metamodel::sdl::Directive[*];
+  fields: meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition[*];
+}
+
 Class meta::external::query::graphQL::metamodel::sdl::value::ObjectValue extends meta::external::query::graphQL::metamodel::sdl::value::Value
 {
 }

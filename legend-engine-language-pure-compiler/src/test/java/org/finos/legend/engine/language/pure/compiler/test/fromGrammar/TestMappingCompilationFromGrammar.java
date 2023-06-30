@@ -2140,22 +2140,22 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "       ModelStore: ModelStore\n" +
-                "        #{\n" +
-                "           test::model:\n" +
-                "            Reference \n" +
-                "            #{ \n" +
-                "              test::data::MyData\n" +
-                "            }#\n" +
-                "        }#\n" +
-                "      ];\n" +
+                "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore: ModelStore\n" +
+                "            #{\n" +
+                "               test::model:\n" +
+                "                Reference \n" +
+                "                #{ \n" +
+                "                  test::data::MyData\n" +
+                "                }#\n" +
+                "            }#\n" +
+                "          ];\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
@@ -2207,25 +2207,215 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "       ModelStore: ModelStore\n" +
-                "        #{\n" +
-                "           test::model:\n" +
-                "            Reference\n" +
-                "            #{\n" +
-                "              test::data::MyData\n" +
-                "            }#\n" +
-                "        }#\n" +
-                "      ];\n" +
+                "      function: |test::changedModel.all();\n" +
                 "      tests:\n" +
                 "      [];\n" +
                 "    }\n" +
                 "  ]\n" +
                 ")\n" +
                 "\n",
-                "COMPILATION error at [30:5-45:5]: Mapping TestSuites should have at least 1 test");
+                "COMPILATION error at [30:5-35:5]: Mapping TestSuites should have at least 1 test");
+        test("###Pure\n" +
+                "Class test::model\n" +
+                "{\n" +
+                "    name: String[1];\n" +
+                "    id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::changedModel{    name: String[1];    id: Integer[1];}\n" +
+                "###Data\n" +
+                "Data test::data::MyData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::modelToModelMapping\n" +
+                "(\n" +
+                "    *test::changedModel: Pure\n" +
+                "{\n" +
+                "    ~src test::model\n" +
+                "    name: $src.name,\n" +
+                "    id: $src.id->parseInteger()\n" +
+                "}\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore: ModelStore\n" +
+                "            #{\n" +
+                "               test::model:\n" +
+                "                Reference \n" +
+                "                #{ \n" +
+                "                  test::data::MyData\n" +
+                "                }#\n" +
+                "            }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n" +
+                "\n", "COMPILATION error at [35:9-71:9]: Mapping Tests can only have one assertion");
 
     }
 
+    @Test
+    public void testMappingSuiteDataReference()
+    {
+        test("###Data\n" +
+                "Data model::PersonData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "Data model::ModelStoreRef\n" +
+                "{\n" +
+                "  ModelStore\n" +
+                "  #{\n" +
+                "    model::Person:\n" +
+                "      Reference\n" +
+                "      #{\n" +
+                "        model::PersonData\n" +
+                "      }#\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class model::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::TargetPerson\n" +
+                "{\n" +
+                "  fullName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::M2MSimpleMapping\n" +
+                "(\n" +
+                "  *model::TargetPerson: Pure\n" +
+                "  {\n" +
+                "    ~src model::Person\n" +
+                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    graphFetchSuite:\n" +
+                "    {\n" +
+                "      function: |model::TargetPerson.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    model::TargetPerson{\n" +
+                "      fullName\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    model::TargetPerson{\n" +
+                "      fullName\n" +
+                "    }\n" +
+                "  }#\n" +
+                ");\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        dataReferenceOnPerson:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "              ModelStore\n" +
+                "              #{\n" +
+                "                model::Person:\n" +
+                "                  Reference\n" +
+                "                  #{\n" +
+                "                    model::PersonData\n" +
+                "                  }#\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            expectedAssertion:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        },\n" +
+                "        dataReference:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                model::ModelStoreRef\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            expectedAssertion:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
 }

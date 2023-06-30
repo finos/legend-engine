@@ -1,0 +1,38 @@
+###ExternalFormat
+SchemaSet meta::external::format::json::executionPlan::test::customSchema::PersonSchema
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Person;
+      location: 'Person.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "meta::external::format::json::executionPlan::test::customSchema::Person",\n  "type": "object",\n  "properties": {\n    "first.name": {\n      "type": "string"\n    },\n    "last@name": {\n      "type": "string"\n    },\n    "age": {\n      "type": "integer"\n    },\n    "address": {\n      "type": "array",\n      "items": {\n        "$ref": "#/definitions/meta::external::format::json::executionPlan::test::customSchema::Address"\n      }\n    }\n  },\n  "required": [\n    "first.name",\n    "last@name",\n    "age"\n  ],\n  "definitions": {\n    "meta::external::format::json::executionPlan::test::customSchema::Address": {\n      "$schema": "http://json-schema.org/draft-07/schema#",\n      "title": "meta::external::format::json::executionPlan::test::customSchema::Address",\n      "type": "object",\n      "properties": {\n        "street name": {\n          "type": "string"\n        }\n      },\n      "required": [\n        "street name"\n      ]\n    }\n  }\n}';
+    }
+  ];
+}
+
+Binding meta::external::format::json::executionPlan::test::customSchema::PersonBinding
+{
+  schemaSet: meta::external::format::json::executionPlan::test::customSchema::PersonSchema;
+  contentType: 'application/json';
+  modelIncludes: [
+    meta::external::format::json::executionPlan::test::customSchema::Person,
+    meta::external::format::json::executionPlan::test::customSchema::Address
+  ];
+}
+
+###Pure
+import meta::external::format::json::executionPlan::test::customSchema::*;
+
+Class meta::external::format::json::executionPlan::test::customSchema::Person
+{
+  firstName  : String[1];
+  lastAtName : String[1];
+  age        : Integer[1];
+  address    : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::customSchema::Address
+{
+  streetName : String[1];
+}

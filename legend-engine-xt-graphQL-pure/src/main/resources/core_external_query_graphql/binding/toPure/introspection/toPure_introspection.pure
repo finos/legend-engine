@@ -24,7 +24,7 @@ function meta::external::query::graphQL::binding::toPure::introspection::buildPu
 {
   let pack = meta::external::query::graphQL::binding::toPure::buildTransientPackageFromString($package);
 
-  let simpleTypes = meta::external::query::graphQL::binding::toPure::primitiveTypeMapping()->newMap();
+  let simpleTypes = meta::external::query::graphQL::binding::graphQLScalarTypesToPurePrimitives()->newMap();
 
   let dispatch = [
     pair(__TypeKind.OBJECT, t:__Type[1]| let no = newClass($t.name->toOne());

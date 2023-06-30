@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.15.8-SNAPSHOT</version>
+        <version>4.16.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,11 +39,11 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
+                            <addResourcesToClasspath>true</addResourcesToClasspath>
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::language::haskell::metamodel</argument>
-                                <argument>org.finos.legend.engine.protocol.haskell.metamodel</argument>
+                                <argument>core_external_language_haskell.protocol.json</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>

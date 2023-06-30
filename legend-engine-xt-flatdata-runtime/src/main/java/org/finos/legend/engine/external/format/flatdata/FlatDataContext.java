@@ -33,6 +33,7 @@ public class FlatDataContext<T>
 
     private final FlatData flatData;
     private final String definingPath;
+    private T schemaObject;
     private final Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<?>>> toObjectFactories = Maps.mutable.empty();
     private final Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<?>>> fromObjectFactories = Maps.mutable.empty();
 
@@ -40,6 +41,12 @@ public class FlatDataContext<T>
     {
         this.flatData = flatData;
         this.definingPath = definingPath;
+    }
+
+    public FlatDataContext<T> withSchemaObject(T schemaObject)
+    {
+        this.schemaObject = schemaObject;
+        return this;
     }
 
     public FlatDataContext<T> withSectionToObjectFactory(String sectionName, Function<FlatDataRecordType, ParsedFlatDataToObject<?>> factoryFactory)
@@ -58,6 +65,10 @@ public class FlatDataContext<T>
     {
         FlatDataSection firstSection = flatData.sections.get(0);
         FlatDataProcessor.Builder<T> builder = descriptionFor(firstSection).<T>getProcessorBuilderFactory().apply(flatData).withDefiningPath(definingPath);
+        if (schemaObject != null)
+        {
+            builder.withSchemaObject(schemaObject);
+        }
 
         for (FlatDataSection section : flatData.sections)
         {
