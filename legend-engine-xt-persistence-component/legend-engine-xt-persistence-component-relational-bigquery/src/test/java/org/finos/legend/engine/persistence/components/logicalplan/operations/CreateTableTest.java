@@ -58,9 +58,9 @@ public class CreateTableTest
                 "`col_int64` INT64," +
                 "`col_number` NUMERIC," +
                 "`col_numeric` NUMERIC," +
+                "`col_numeric_with_precision` NUMERIC(29)," +
+                "`col_numeric_with_scale` NUMERIC(33,4)," +
                 "`col_decimal` NUMERIC," +
-                "`col_decimal_with_precision` NUMERIC(29)," +
-                "`col_decimal_with_scale` NUMERIC(33,4)," +
                 "`col_real` FLOAT64," +
                 "`col_float` FLOAT64," +
                 "`col_double` FLOAT64," +
@@ -113,9 +113,9 @@ public class CreateTableTest
                 "`COL_INT64` INT64," +
                 "`COL_NUMBER` NUMERIC," +
                 "`COL_NUMERIC` NUMERIC," +
+                "`COL_NUMERIC_WITH_PRECISION` NUMERIC(29)," +
+                "`COL_NUMERIC_WITH_SCALE` NUMERIC(33,4)," +
                 "`COL_DECIMAL` NUMERIC," +
-                "`COL_DECIMAL_WITH_PRECISION` NUMERIC(29)," +
-                "`COL_DECIMAL_WITH_SCALE` NUMERIC(33,4)," +
                 "`COL_REAL` FLOAT64," +
                 "`COL_FLOAT` FLOAT64," +
                 "`COL_DOUBLE` FLOAT64," +
