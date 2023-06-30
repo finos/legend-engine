@@ -72,12 +72,11 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     @Override
     public MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, Root_meta_external_functionActivator_bigQueryFunc_BigQueryFunction functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        ConnectionManagerSelector connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(), Lists.fixedSize.empty());
         try
         {
             BigQueryFunctionDeployableArtifact deployableArtifact = BigQueryFunctionDeployableArtifact.buildArtifact(pureModel, functionActivator, routerExtensions);
             LOGGER.info("Starting deployment of {}!", functionActivator._functionName());
-            deployableArtifact.deploy(connectionManagerSelector);
+            deployableArtifact.deploy();
             LOGGER.info("Completed deployment of {} successfully!", functionActivator._functionName());
             return Lists.mutable.empty();
         }

@@ -74,6 +74,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-bigquery-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-bigquery-pure</artifactId>
         </dependency>
         <dependency>
@@ -104,6 +108,13 @@
             <scope>runtime</scope>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- BigQuery -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-bigquery</artifactId>
+            <version>2.29.0</version>
+        </dependency>
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

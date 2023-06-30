@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.bigqueryFunc.api;
 
+import com.google.cloud.bigquery.*;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
@@ -93,29 +94,53 @@ final class BigQueryFunctionDeployableArtifact
     }
 
     // TODO HSO: Handle parameterized SQL statements
-    public void deploy(ConnectionManagerSelector connectionManagerSelector) throws SQLException
+    public void deploy() throws SQLException
     {
-        BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
-        datasourceSpecification.defaultDataset = this.datasourceSpecification._defaultDataset();
-        datasourceSpecification.projectId = this.datasourceSpecification._projectId();
-        datasourceSpecification.proxyHost = this.datasourceSpecification._proxyHost();
-        datasourceSpecification.proxyPort = this.datasourceSpecification._proxyPort();
+        String projectId = this.datasourceSpecification._projectId();
+        String dataset = this.datasourceSpecification._defaultDataset();
 
-        GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+//        BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
+//        datasourceSpecification.defaultDataset = this.datasourceSpecification._defaultDataset();
+//        datasourceSpecification.projectId = this.datasourceSpecification._projectId();
+//        datasourceSpecification.proxyHost = this.datasourceSpecification._proxyHost();
+//        datasourceSpecification.proxyPort = this.datasourceSpecification._proxyPort();
+//
+//        GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+//
+//        RelationalDatabaseConnection connection = new RelationalDatabaseConnection(
+//                datasourceSpecification,
+//                authenticationStrategy,
+//                DatabaseType.BigQuery);
+//
+//        try (Connection jdbcConnection = connectionManagerSelector.getDatabaseConnection(new Identity("anonymous"), connection))
+//        {
+//            jdbcConnection.setAutoCommit(false);
+//            Statement statement = jdbcConnection.createStatement();
+//            String createTableFunctionExpression =
+//                    String.format("CREATE OR REPLACE TABLE FUNCTION %s.%s() AS (%s)", this.datasourceSpecification._projectId(), this.functionName, this.functionAsSQLStatement);
+//            statement.execute(createTableFunctionExpression);
+//            jdbcConnection.commit();
+//        }
 
-        RelationalDatabaseConnection connection = new RelationalDatabaseConnection(
-                datasourceSpecification,
-                authenticationStrategy,
-                DatabaseType.BigQuery);
+        BigQuery bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().getService();
 
-        try (Connection jdbcConnection = connectionManagerSelector.getDatabaseConnection(new Identity("anonymous"), connection))
+        RoutineId routineId = RoutineId.of(projectId, dataset, this.functionName);
+
+        RoutineInfo routineInfo =
+                RoutineInfo
+                        .newBuilder(routineId)
+                        .setRoutineType("TABLE_VALUED_FUNCTION")
+                        .setLanguage("SQL")
+                        .setBody(this.functionAsSQLStatement)
+                        .build();
+        try
         {
-            jdbcConnection.setAutoCommit(false);
-            Statement statement = jdbcConnection.createStatement();
-            String createTableFunctionExpression =
-                    String.format("CREATE OR REPLACE TABLE FUNCTION %s.%s() AS (%s)", this.datasourceSpecification._projectId(), this.functionName, this.functionAsSQLStatement);
-            statement.execute(createTableFunctionExpression);
-            jdbcConnection.commit();
+            bigQuery.create(routineInfo);
+            System.out.println("Created table function!");
+        }
+        catch (BigQueryException e)
+        {
+            System.out.println(e);
         }
     }
 
