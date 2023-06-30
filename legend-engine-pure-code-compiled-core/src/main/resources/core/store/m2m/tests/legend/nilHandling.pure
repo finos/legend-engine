@@ -110,7 +110,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleComplexProperty
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
-{  serverVersion.start='vX_X_X',
+{  serverVersion.start='v1_32_0',
    doc.doc='Given: a mapping that uses new operator for complex property',
    doc.doc='When:  a mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping conversion should succeed.'

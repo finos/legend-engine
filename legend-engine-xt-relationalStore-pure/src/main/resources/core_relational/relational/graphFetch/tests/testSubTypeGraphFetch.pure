@@ -63,7 +63,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::se
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithSimpleProperty(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithSimpleProperty(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -90,7 +90,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithComplexProperty(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithComplexProperty(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -125,7 +125,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithFilter(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithFilter(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -156,7 +156,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testMultipleSubTypeAtRootLevel(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testMultipleSubTypeAtRootLevel(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -194,7 +194,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithInheritanceMapping(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithInheritanceMapping(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -229,7 +229,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
                          $result);
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithAlloySerializationConfig(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testSubTypeAtRootLevelWithAlloySerializationConfig(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -311,7 +311,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
                          $result3);
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testCommonPropertyAtRootLevelWithSubTypeSpecificMapping(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testCommonPropertyAtRootLevelWithSubTypeSpecificMapping(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -342,7 +342,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testCommonPropertyAtSubTypeLevelWithSubTypeSpecificMapping(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testCommonPropertyAtSubTypeLevelWithSubTypeSpecificMapping(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -373,7 +373,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
   );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testInheritanceMappingWithoutSubType(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testInheritanceMappingWithoutSubType(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
@@ -398,7 +398,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::rela
                          $result);
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='vX_X_X'} meta::relational::graphFetch::tests::subType::testUnionMappingWithoutSubType(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::testUnionMappingWithoutSubType(): Boolean[1]
 {
   let treeString =  '#{\n'+
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
