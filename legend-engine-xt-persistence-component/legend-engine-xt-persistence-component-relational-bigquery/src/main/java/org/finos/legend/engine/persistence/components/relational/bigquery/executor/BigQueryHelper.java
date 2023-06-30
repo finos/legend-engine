@@ -141,7 +141,6 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
     {
-        // TODO # 10: Fetch and validate unique keys and indices
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
 
@@ -187,7 +186,6 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
     {
-        // TODO # 9: Fetch and construct unique keys and indices
         List<String> primaryKeysInDb = this.fetchPrimaryKeys(tableName, schemaName, databaseName);
         Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
 
@@ -253,7 +251,6 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public static List<Column> convertUserProvidedFieldsToColumns(List<Field> userFields, DataTypeMapping datatypeMapping)
     {
-        // TODO # 11: Handle unique keys and indices
         List<Column> columnList = new ArrayList<>();
 
         for (Field f : userFields)

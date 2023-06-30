@@ -96,7 +96,6 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(BatchStartTimestamp.class, new BatchStartTimestampVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
-        // TODO: To review the capabilities for Schema Evolution
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.INT, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
         implicitDataTypeMapping.put(DataType.NUMERIC, new HashSet<>(Arrays.asList(DataType.NUMERIC, DataType.NUMBER, DataType.DECIMAL, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
@@ -219,7 +218,6 @@ public class BigQuerySink extends AnsiSqlSink
         FieldType modifiedFieldType = length.isPresent() ? FieldType.of(evolveTo.type().dataType(), length, scale) : FieldType.of(evolveTo.type().dataType(), Optional.empty(), Optional.empty());
         boolean nullability = evolveTo.nullable() || evolveFrom.nullable();
 
-        //todo : how to handle default value, identity, uniqueness ?
         return Field.builder().name(evolveTo.name()).primaryKey(evolveTo.primaryKey())
                 .fieldAlias(evolveTo.fieldAlias()).nullable(nullability)
                 .identity(evolveTo.identity()).unique(evolveTo.unique())
