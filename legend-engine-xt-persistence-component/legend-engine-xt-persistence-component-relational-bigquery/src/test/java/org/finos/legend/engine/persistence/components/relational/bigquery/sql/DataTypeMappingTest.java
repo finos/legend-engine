@@ -30,8 +30,6 @@ import static org.finos.legend.engine.persistence.components.BaseTestUtils.colCh
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDate;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDatetime;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimal;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimalWithPrecision;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimalWithScale;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDouble;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat64;
@@ -44,6 +42,8 @@ import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLo
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongtext;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumber;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumeric;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumericWithPrecision;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumericWithScale;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colReal;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colSmallint;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colString;
@@ -70,8 +70,8 @@ public class DataTypeMappingTest
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumber.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumeric.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimal.type())));
-        Assertions.assertEquals("NUMERIC(29)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithPrecision.type())));
-        Assertions.assertEquals("NUMERIC(33,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithScale.type())));
+        Assertions.assertEquals("NUMERIC(29)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumericWithPrecision.type())));
+        Assertions.assertEquals("NUMERIC(33,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumericWithScale.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colReal.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDouble.type())));

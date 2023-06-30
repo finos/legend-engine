@@ -119,56 +119,56 @@ public abstract class RelationalSink implements Sink
 
     public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection connection);
 
-    //new field = field to replace main column (datatype)
-    //old field = reference field to compare sizing/nullability requirements
+    //evolve to = field to replace main column (datatype)
+    //evolve from = reference field to compare sizing/nullability requirements
     @Override
-    public Field evolveFieldLength(Field oldField, Field newField)
+    public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
-        Optional<Integer> length = newField.type().length();
-        Optional<Integer> scale = newField.type().scale();
+        Optional<Integer> length = evolveTo.type().length();
+        Optional<Integer> scale = evolveTo.type().scale();
 
         //If the oldField and newField have a length associated, pick the greater length
-        if (oldField.type().length().isPresent() && newField.type().length().isPresent())
+        if (evolveFrom.type().length().isPresent() && evolveTo.type().length().isPresent())
         {
-            length = newField.type().length().get() >= oldField.type().length().get()
-                    ? newField.type().length()
-                    : oldField.type().length();
+            length = evolveTo.type().length().get() >= evolveFrom.type().length().get()
+                    ? evolveTo.type().length()
+                    : evolveFrom.type().length();
         }
         //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-        else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().length().isPresent() && !newField.type().length().isPresent())
+        else if (evolveFrom.type().dataType().equals(evolveTo.type().dataType())
+                && evolveFrom.type().length().isPresent() && !evolveTo.type().length().isPresent())
         {
-            length = oldField.type().length();
+            length = evolveFrom.type().length();
         }
 
         //If the oldField and newField have a scale associated, pick the greater scale
-        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
+        if (evolveFrom.type().scale().isPresent() && evolveTo.type().scale().isPresent())
         {
-            scale = newField.type().scale().get() >= oldField.type().scale().get()
-                    ? newField.type().scale()
-                    : oldField.type().scale();
+            scale = evolveTo.type().scale().get() >= evolveFrom.type().scale().get()
+                    ? evolveTo.type().scale()
+                    : evolveFrom.type().scale();
         }
         //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-        else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+        else if (evolveFrom.type().dataType().equals(evolveTo.type().dataType())
+                && evolveFrom.type().scale().isPresent() && !evolveTo.type().scale().isPresent())
         {
-            scale = oldField.type().scale();
+            scale = evolveFrom.type().scale();
         }
-        return createNewField(newField, oldField, length, scale);
+        return createNewField(evolveTo, evolveFrom, length, scale);
     }
 
 
     @Override
-    public Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale)
+    public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {
-        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), length, scale);
-        boolean nullability = newField.nullable() || oldField.nullable();
+        FieldType modifiedFieldType = FieldType.of(evolveTo.type().dataType(), length, scale);
+        boolean nullability = evolveTo.nullable() || evolveFrom.nullable();
 
         //todo : how to handle default value, identity, uniqueness ?
-        return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
-                .fieldAlias(newField.fieldAlias()).nullable(nullability)
-                .identity(newField.identity()).unique(newField.unique())
-                .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
+        return Field.builder().name(evolveTo.name()).primaryKey(evolveTo.primaryKey())
+                .fieldAlias(evolveTo.fieldAlias()).nullable(nullability)
+                .identity(evolveTo.identity()).unique(evolveTo.unique())
+                .defaultValue(evolveTo.defaultValue()).type(modifiedFieldType).build();
     }
 
     public interface DatasetExists

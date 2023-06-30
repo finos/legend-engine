@@ -24,7 +24,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
@@ -99,28 +98,11 @@ public class BigQuerySink extends AnsiSqlSink
 
         // TODO: To review the capabilities for Schema Evolution
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
-        implicitDataTypeMapping.put(DataType.INT, new HashSet<>(Arrays.asList(DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
         implicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.INT, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.INT, DataType.INTEGER, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.TINYINT, new HashSet<>(Arrays.asList(DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.SMALLINT, new HashSet<>(Arrays.asList(DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.INT64, new HashSet<>(Arrays.asList(DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT)));
-        implicitDataTypeMapping.put(DataType.NUMBER, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
         implicitDataTypeMapping.put(DataType.NUMERIC, new HashSet<>(Arrays.asList(DataType.NUMERIC, DataType.NUMBER, DataType.DECIMAL, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.DECIMAL, DataType.NUMBER, DataType.NUMERIC, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.REAL, new HashSet<>(Arrays.asList(DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL)));
         implicitDataTypeMapping.put(DataType.FLOAT, new HashSet<>(Arrays.asList(DataType.REAL, DataType.DOUBLE, DataType.FLOAT64, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL)));
-        implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.REAL, DataType.FLOAT, DataType.FLOAT64, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL)));
-        implicitDataTypeMapping.put(DataType.FLOAT64, new HashSet<>(Arrays.asList(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL)));
-        implicitDataTypeMapping.put(DataType.CHAR, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT, DataType.STRING)));
-        implicitDataTypeMapping.put(DataType.CHARACTER, new HashSet<>(Arrays.asList(DataType.CHARACTER, DataType.CHAR, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT, DataType.STRING)));
-        implicitDataTypeMapping.put(DataType.VARCHAR, new HashSet<>(Arrays.asList(DataType.VARCHAR, DataType.CHAR, DataType.CHARACTER, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT, DataType.STRING)));
-        implicitDataTypeMapping.put(DataType.LONGNVARCHAR, new HashSet<>(Arrays.asList(DataType.LONGNVARCHAR, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGTEXT, DataType.TEXT, DataType.STRING)));
-        implicitDataTypeMapping.put(DataType.LONGTEXT, new HashSet<>(Arrays.asList(DataType.LONGTEXT, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.TEXT, DataType.STRING)));
-        implicitDataTypeMapping.put(DataType.TEXT, new HashSet<>(Arrays.asList(DataType.TEXT, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.STRING)));
         implicitDataTypeMapping.put(DataType.STRING, new HashSet<>(Arrays.asList(DataType.STRING, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT)));
         implicitDataTypeMapping.put(DataType.DATETIME, Collections.singleton(DataType.DATE));
-        implicitDataTypeMapping.put(DataType.BOOL, Collections.singleton(DataType.BOOLEAN));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         Map<DataType, Set<DataType>> explicitDataTypeMapping = new HashMap<>();
@@ -185,15 +167,17 @@ public class BigQuerySink extends AnsiSqlSink
         }
     }
 
+    //evolve to = field to replace main column (datatype)
+    //evolve from = reference field to compare sizing/nullability requirements
     @Override
-    public Field evolveFieldLength(Field oldField, Field newField)
+    public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
     {
-        Optional<Integer> oldScale = oldField.type().scale();
-        Optional<Integer> newScale = newField.type().scale();
+        Optional<Integer> oldScale = evolveFrom.type().scale();
+        Optional<Integer> newScale = evolveTo.type().scale();
         Optional<Integer> scale = getMaximumValue(oldScale, newScale, true);
 
-        Optional<Integer> oldLength = oldField.type().length();
-        Optional<Integer> newLength = newField.type().length();
+        Optional<Integer> oldLength = evolveFrom.type().length();
+        Optional<Integer> newLength = evolveTo.type().length();
         Optional<Integer> length;
 
         if (scale.isPresent())
@@ -209,7 +193,7 @@ public class BigQuerySink extends AnsiSqlSink
             length = getMaximumValue(oldLength, newLength, false);
         }
 
-        return this.createNewField(newField, oldField, length, scale);
+        return this.createNewField(evolveTo, evolveFrom, length, scale);
     }
 
     private static Optional<Integer> getMaximumValue(Optional<Integer> oldValue, Optional<Integer> newValue, boolean classifyEmptyValueAsZero)
@@ -230,15 +214,15 @@ public class BigQuerySink extends AnsiSqlSink
     }
 
     @Override
-    public Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale)
+    public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
     {
-        FieldType modifiedFieldType = length.isPresent() ? FieldType.of(newField.type().dataType(), length, scale) : FieldType.of(newField.type().dataType(), Optional.empty(), Optional.empty());
-        boolean nullability = newField.nullable() || oldField.nullable();
+        FieldType modifiedFieldType = length.isPresent() ? FieldType.of(evolveTo.type().dataType(), length, scale) : FieldType.of(evolveTo.type().dataType(), Optional.empty(), Optional.empty());
+        boolean nullability = evolveTo.nullable() || evolveFrom.nullable();
 
         //todo : how to handle default value, identity, uniqueness ?
-        return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
-                .fieldAlias(newField.fieldAlias()).nullable(nullability)
-                .identity(newField.identity()).unique(newField.unique())
-                .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
+        return Field.builder().name(evolveTo.name()).primaryKey(evolveTo.primaryKey())
+                .fieldAlias(evolveTo.fieldAlias()).nullable(nullability)
+                .identity(evolveTo.identity()).unique(evolveTo.unique())
+                .defaultValue(evolveTo.defaultValue()).type(modifiedFieldType).build();
     }
 }

@@ -28,16 +28,16 @@ import java.util.Optional;
 public class BaseTestUtils
 {
     public static Field colInt = Field.builder().name("col_int").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    public static Field colInteger = Field.builder().name("col_integer").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).unique(true).build();
+    public static Field colInteger = Field.builder().name("col_integer").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).build();
     public static Field colBigint = Field.builder().name("col_bigint").type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).build();
     public static Field colTinyint = Field.builder().name("col_tinyint").type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).build();
     public static Field colSmallint = Field.builder().name("col_smallint").type(FieldType.of(DataType.SMALLINT, Optional.empty(), Optional.empty())).build();
     public static Field colInt64 = Field.builder().name("col_int64").type(FieldType.of(DataType.INT64, Optional.empty(), Optional.empty())).build();
     public static Field colNumber = Field.builder().name("col_number").type(FieldType.of(DataType.NUMBER, Optional.empty(), Optional.empty())).build();
     public static Field colNumeric = Field.builder().name("col_numeric").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).build();
+    public static Field colNumericWithPrecision = Field.builder().name("col_numeric_with_precision").type(FieldType.of(DataType.NUMERIC, Optional.of(29), Optional.empty())).build();
+    public static Field colNumericWithScale = Field.builder().name("col_numeric_with_scale").type(FieldType.of(DataType.NUMERIC, Optional.of(33), Optional.of(4))).build();
     public static Field colDecimal = Field.builder().name("col_decimal").type(FieldType.of(DataType.DECIMAL, Optional.empty(), Optional.empty())).build();
-    public static Field colDecimalWithPrecision = Field.builder().name("col_decimal_with_precision").type(FieldType.of(DataType.DECIMAL, Optional.of(29), Optional.empty())).build();
-    public static Field colDecimalWithScale = Field.builder().name("col_decimal_with_scale").type(FieldType.of(DataType.DECIMAL, Optional.of(33), Optional.of(4))).build();
     public static Field colReal = Field.builder().name("col_real").type(FieldType.of(DataType.REAL, Optional.empty(), Optional.empty())).build();
     public static Field colFloat = Field.builder().name("col_float").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     public static Field colDouble = Field.builder().name("col_double").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
@@ -79,9 +79,9 @@ public class BaseTestUtils
             .addFields(colInt64)
             .addFields(colNumber)
             .addFields(colNumeric)
+            .addFields(colNumericWithPrecision)
+            .addFields(colNumericWithScale)
             .addFields(colDecimal)
-            .addFields(colDecimalWithPrecision)
-            .addFields(colDecimalWithScale)
             .addFields(colReal)
             .addFields(colFloat)
             .addFields(colDouble)
@@ -108,14 +108,53 @@ public class BaseTestUtils
             .addFields(colJson)
             .build();
 
+
+    public static SchemaDefinition schemaWithAllColumnsFromDb = SchemaDefinition.builder()
+            .addFields(colInt.withType(colInt.type().withDataType(DataType.INTEGER)))
+            .addFields(colInteger)
+            .addFields(colBigint.withType(colBigint.type().withDataType(DataType.INTEGER)))
+            .addFields(colTinyint.withType(colTinyint.type().withDataType(DataType.INTEGER)))
+            .addFields(colSmallint.withType(colSmallint.type().withDataType(DataType.INTEGER)))
+            .addFields(colInt64.withType(colInt64.type().withDataType(DataType.INTEGER)))
+            .addFields(colNumber.withType(colNumber.type().withDataType(DataType.NUMERIC)))
+            .addFields(colNumeric)
+            .addFields(colNumericWithPrecision)
+            .addFields(colNumericWithScale)
+            .addFields(colDecimal.withType(colDecimal.type().withDataType(DataType.NUMERIC)))
+            .addFields(colReal.withType(colReal.type().withDataType(DataType.FLOAT)))
+            .addFields(colFloat)
+            .addFields(colDouble.withType(colDouble.type().withDataType(DataType.FLOAT)))
+            .addFields(colFloat64.withType(colFloat64.type().withDataType(DataType.FLOAT)))
+            .addFields(colChar.withType(colChar.type().withDataType(DataType.STRING)))
+            .addFields(colCharacter.withType(colCharacter.type().withDataType(DataType.STRING)))
+            .addFields(colVarchar.withType(colVarchar.type().withDataType(DataType.STRING)))
+            .addFields(colLongVarchar.withType(colLongVarchar.type().withDataType(DataType.STRING)))
+            .addFields(colLongtext.withType(colLongtext.type().withDataType(DataType.STRING)))
+            .addFields(colText.withType(colText.type().withDataType(DataType.STRING)))
+            .addFields(colString)
+            .addFields(colStringWithLength)
+            .addFields(colBinary.withType(colBinary.type().withDataType(DataType.BYTES)))
+            .addFields(colVarBinary.withType(colVarBinary.type().withDataType(DataType.BYTES)))
+            .addFields(colLongVarBinary.withType(colLongVarBinary.type().withDataType(DataType.BYTES)))
+            .addFields(colBytes)
+            .addFields(colBytesWithLength)
+            .addFields(colDate)
+            .addFields(colTime)
+            .addFields(colDatetime)
+            .addFields(colTimestamp)
+            .addFields(colBoolean)
+            .addFields(colBool.withType(colBool.type().withDataType(DataType.BOOLEAN)))
+            .addFields(colJson)
+            .build();
+
     public static SchemaDefinition schemaWithClusteringKey = SchemaDefinition.builder()
-        .addFields(colInt)
-        .addFields(colInteger)
-        .addFields(colString)
-        .addFields(colTimestamp)
-        .addFields(colDouble)
-        .addClusterKeys(clusterKey1, clusterKey2)
-        .build();
+            .addFields(colInt)
+            .addFields(colInteger)
+            .addFields(colString)
+            .addFields(colTimestamp)
+            .addFields(colDouble)
+            .addClusterKeys(clusterKey1, clusterKey2)
+            .build();
 
     public static SchemaDefinition schemaWithClusteringAndPartitionKey = SchemaDefinition.builder()
             .addFields(colInt)

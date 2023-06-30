@@ -380,7 +380,6 @@ public class BigQueryHelper implements RelationalExecutionHelper
         }
     }
 
-
     @Override
     public void close()
     {

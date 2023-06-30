@@ -55,6 +55,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithAllColumns;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithAllColumnsFromDb;
 
 @Disabled
 public class SchemaEvolutionTest extends BigQueryEndToEndTest
@@ -79,15 +80,12 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
 
         dropTable(relationalExecutor, transformer, dataset);
-
-        LogicalPlan logicalPlan2 = LogicalPlan.builder().addOps(Create.of(true, dataset)).build();
-        relationalExecutor.executePhysicalPlan(transformer.generatePhysicalPlan(logicalPlan2));
+        createTable(relationalExecutor, transformer, dataset);
 
         relationalSink.validateMainDatasetSchemaFn().execute(relationalExecutor, bigQueryHelper, dataset);
         Dataset datasetConstructedFromDb = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, tableName, datasetName, projectId);
         relationalSink.validateMainDatasetSchemaFn().execute(relationalExecutor, bigQueryHelper, datasetConstructedFromDb);
-        Dataset datasetConstructedAgainFromDb = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, tableName, datasetName, projectId);
-        Assertions.assertEquals(datasetConstructedAgainFromDb, datasetConstructedFromDb);
+        Assertions.assertEquals(dataset.withSchema(schemaWithAllColumnsFromDb), datasetConstructedFromDb);
     }
 
     @Test
@@ -111,23 +109,23 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 DatasetDefinition.builder()
                         .database(projectId)
                         .group(datasetName)
-                        .name("tsm_decimal_with_precision")
-                        .alias("tsm_decimal_with_precision")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithPrecision.withName("col")).build())
+                        .name("tsm_numeric_with_precision")
+                        .alias("tsm_numeric_with_precision")
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithPrecision.withName("col")).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)
                         .group(datasetName)
-                        .name("tsm_decimal_with_scale")
-                        .alias("tsm_decimal_with_scale")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")).build())
+                        .name("tsm_numeric_with_scale")
+                        .alias("tsm_numeric_with_scale")
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)
                         .group(datasetName)
-                        .name("tsm_decimal_with_less_scale")
-                        .alias("tsm_decimal_with_less_scale")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col").withType(BaseTestUtils.colDecimalWithScale.type().withLength(32).withScale(3))).build())
+                        .name("tsm_numeric_with_less_scale")
+                        .alias("tsm_numeric_with_less_scale")
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col").withType(BaseTestUtils.colNumericWithScale.type().withLength(32).withScale(3))).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)
@@ -202,35 +200,35 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
 
         List<List<String>> alterSqls = Arrays.asList(
                 Arrays.asList(),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
                 Arrays.asList(),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList(),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
-                Arrays.asList(),
-                Arrays.asList(),
-                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
                 Arrays.asList(),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
                 Arrays.asList(),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
+                Arrays.asList(),
+                Arrays.asList(),
                 Arrays.asList(),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
                 Arrays.asList(),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(32,3)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(32,3)"),
                 Arrays.asList(),
                 Arrays.asList(),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
-                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_precision` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_with_less_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_string_with_length` ALTER COLUMN `col` SET DATA TYPE STRING"),
                 Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_string_with_big_length` ALTER COLUMN `col` SET DATA TYPE STRING"),
                 Arrays.asList(),
@@ -240,13 +238,191 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 Arrays.asList()
         );
 
+        List<String> exceptionMessages = Arrays.asList(
+                "Breaking schema change from datatype \"STRING\" to \"INT64\"",
+                "Breaking schema change from datatype \"STRING\" to \"INT64\"",
+                "Breaking schema change from datatype \"STRING\" to \"INT64\"",
+                "Breaking schema change from datatype \"DATE\" to \"INT64\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"INT64\"",
+                "Breaking schema change from datatype \"TIME\" to \"INT64\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"INT64\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"INT64\"",
+                "Breaking schema change from datatype \"JSON\" to \"INT64\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATE\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"JSON\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATE\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"JSON\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATE\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"JSON\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATE\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIME\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"JSON\" to \"NUMERIC\"",
+                "Breaking schema change from datatype \"STRING\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"STRING\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"STRING\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"DATE\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"TIME\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"JSON\" to \"FLOAT64\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATE\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"STRING\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"STRING\"",
+                "Breaking schema change from datatype \"JSON\" to \"STRING\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATE\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"STRING\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"STRING\"",
+                "Breaking schema change from datatype \"JSON\" to \"STRING\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"STRING\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATE\" to \"STRING\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIME\" to \"STRING\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"STRING\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"STRING\"",
+                "Breaking schema change from datatype \"JSON\" to \"STRING\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"DATE\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATE\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATE\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATE\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATE\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"DATE\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATE\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATE\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATE\"",
+                "Breaking schema change from datatype \"TIME\" to \"DATE\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"DATE\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"DATE\"",
+                "Breaking schema change from datatype \"JSON\" to \"DATE\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"DATE\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"TIME\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"JSON\" to \"DATETIME\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"TIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIME\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIME\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"TIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIME\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIME\"",
+                "Breaking schema change from datatype \"DATE\" to \"TIME\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"TIME\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"TIME\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"TIME\"",
+                "Breaking schema change from datatype \"JSON\" to \"TIME\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"STRING\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"DATE\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"TIME\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"JSON\" to \"TIMESTAMP\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"BOOL\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"BOOL\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"BOOL\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"BOOL\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"BOOL\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"BOOL\"",
+                "Breaking schema change from datatype \"STRING\" to \"BOOL\"",
+                "Breaking schema change from datatype \"STRING\" to \"BOOL\"",
+                "Breaking schema change from datatype \"STRING\" to \"BOOL\"",
+                "Breaking schema change from datatype \"DATE\" to \"BOOL\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"BOOL\"",
+                "Breaking schema change from datatype \"TIME\" to \"BOOL\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"BOOL\"",
+                "Breaking schema change from datatype \"JSON\" to \"BOOL\"",
+                "Breaking schema change from datatype \"INTEGER\" to \"JSON\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"JSON\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"JSON\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"JSON\"",
+                "Breaking schema change from datatype \"NUMERIC\" to \"JSON\"",
+                "Breaking schema change from datatype \"FLOAT\" to \"JSON\"",
+                "Breaking schema change from datatype \"STRING\" to \"JSON\"",
+                "Breaking schema change from datatype \"STRING\" to \"JSON\"",
+                "Breaking schema change from datatype \"STRING\" to \"JSON\"",
+                "Breaking schema change from datatype \"DATE\" to \"JSON\"",
+                "Breaking schema change from datatype \"DATETIME\" to \"JSON\"",
+                "Breaking schema change from datatype \"TIME\" to \"JSON\"",
+                "Breaking schema change from datatype \"TIMESTAMP\" to \"JSON\"",
+                "Breaking schema change from datatype \"BOOLEAN\" to \"JSON\""
+        );
+
         BigQuery bigquery = getBigQueryConnection();
         RelationalSink relationalSink = BigQuerySink.get();
+        BigQueryHelper bigQueryHelper = BigQueryHelper.of(bigquery);
         Executor<SqlGen, TabularData, SqlPlan> relationalExecutor = relationalSink.getRelationalExecutor(BigQueryConnection.of(bigquery));
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
 
         int size = list.size();
         int alterCallIndex = 0;
+        int exceptionMessageIndex = 0;
         for (int stage = 0; stage < size; stage++)
         {
             for (int main = 0; main < size; main++)
@@ -258,15 +434,16 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build(), Arrays.stream(SchemaEvolutionCapability.values()).collect(Collectors.toSet()));
                 DatasetDefinition datasetDefinitionStage = list.get(stage);
                 DatasetDefinition datasetDefinitionMain = list.get(main);
+                refreshDataset(relationalExecutor, transformer, datasetDefinitionMain, null);
+                Dataset datasetMain = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, datasetDefinitionMain.name(), datasetName, projectId);
                 FieldType typeStage = datasetDefinitionStage.schema().fields().get(0).type();
-                FieldType typeMain = datasetDefinitionMain.schema().fields().get(0).type();
+                FieldType typeMain = datasetMain.schema().fields().get(0).type();
                 DataType dataTypeStage = typeStage.dataType();
                 DataType dataTypeMain = typeMain.dataType();
-                refreshDataset(relationalExecutor, transformer, datasetDefinitionMain, null);
                 if (typeMain.equals(typeStage))
                 {
                     //assert no change
-                    schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetDefinitionMain, alterSqls.get(alterCallIndex++));
+                    schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetMain, datasetDefinitionStage, datasetMain, alterSqls.get(alterCallIndex++));
                 }
                 else
                 {
@@ -278,7 +455,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                     }
 
                     Optional<Integer> scaleToAssert = typeMain.scale();
-                    if (dataTypeMain.equals(dataTypeStage) && typeStage.scale().isPresent() && (!scaleToAssert.isPresent() || typeStage.scale().get() > scaleToAssert.get()))
+                    if (typeStage.scale().isPresent() && (!scaleToAssert.isPresent() || typeStage.scale().get() > scaleToAssert.get()))
                     {
                         scaleToAssert = typeStage.scale();
                     }
@@ -291,25 +468,26 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                     {
                         //assert no changes
                         typeToAssert = typeMain.withLength(lengthToAssert).withScale(scaleToAssert);
-                        DatasetDefinition datasetToAssert = datasetDefinitionMain.withSchema(datasetDefinitionMain.schema().withFields(datasetDefinitionMain.schema().fields().get(0).withType(typeToAssert)));
-                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
+                        Dataset datasetToAssert = datasetMain.withSchema(datasetMain.schema().withFields(datasetMain.schema().fields().get(0).withType(typeToAssert)));
+                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
                     }
                     else if (relationalSink.supportsExplicitMapping(dataTypeMain, dataTypeStage))
                     {
                         //assert stage schema
                         typeToAssert = typeStage.withLength(lengthToAssert).withScale(scaleToAssert);
-                        DatasetDefinition datasetToAssert = datasetDefinitionMain.withSchema(datasetDefinitionStage.schema().withFields(datasetDefinitionStage.schema().fields().get(0).withType(typeToAssert)));
-                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
+                        Dataset datasetToAssert = datasetMain.withSchema(datasetDefinitionStage.schema().withFields(datasetDefinitionStage.schema().fields().get(0).withType(typeToAssert)));
+                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
                     }
                     else
                     {
                         try
                         {
-                            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, null, null);
+                            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetMain, datasetDefinitionStage, null, null);
                         }
                         catch (Exception e)
                         {
                             Assertions.assertTrue(e instanceof IncompatibleSchemaChangeException);
+                            Assertions.assertEquals(exceptionMessages.get(exceptionMessageIndex++), e.getMessage());
                         }
                     }
                 }
@@ -325,54 +503,54 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 .group(datasetName)
                 .name("tsm_numeric_1")
                 .alias("tsm_numeric_1")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")
-                        .withType(BaseTestUtils.colDecimalWithScale.type().withLength(20).withScale(3))).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")
+                        .withType(BaseTestUtils.colNumericWithScale.type().withLength(20).withScale(3))).build())
                 .build();
         DatasetDefinition numeric2 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_2")
                 .alias("tsm_numeric_2")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")
-                        .withType(BaseTestUtils.colDecimalWithScale.type().withLength(20).withScale(5))).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")
+                        .withType(BaseTestUtils.colNumericWithScale.type().withLength(20).withScale(5))).build())
                 .build();
         DatasetDefinition numeric3 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_3")
                 .alias("tsm_numeric_3")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")
-                        .withType(BaseTestUtils.colDecimalWithScale.type().withLength(22).withScale(5))).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")
+                        .withType(BaseTestUtils.colNumericWithScale.type().withLength(22).withScale(5))).build())
                 .build();
         DatasetDefinition numeric4 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_4")
                 .alias("tsm_numeric_4")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithPrecision.withName("col")).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithPrecision.withName("col")).build())
                 .build();
         DatasetDefinition numeric5 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_5")
                 .alias("tsm_numeric_5")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")
-                        .withType(BaseTestUtils.colDecimalWithScale.type().withLength(32).withScale(3))).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")
+                        .withType(BaseTestUtils.colNumericWithScale.type().withLength(32).withScale(3))).build())
                 .build();
         DatasetDefinition numeric6 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_6")
                 .alias("tsm_numeric_6")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimalWithScale.withName("col")
-                        .withType(BaseTestUtils.colDecimalWithScale.type().withLength(34).withScale(5))).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumericWithScale.withName("col")
+                        .withType(BaseTestUtils.colNumericWithScale.type().withLength(34).withScale(5))).build())
                 .build();
         DatasetDefinition numeric7 = DatasetDefinition.builder()
                 .database(projectId)
                 .group(datasetName)
                 .name("tsm_numeric_7")
                 .alias("tsm_numeric_7")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimal.withName("col")).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumeric.withName("col")).build())
                 .build();
 
         List<DatasetDefinition> stageDefinition = Arrays.asList(
@@ -408,7 +586,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
         }
     }
 
-    private static void schemaEvolve(Executor<SqlGen, TabularData, SqlPlan> relationalExecutor, RelationalTransformer transformer, SchemaEvolution schemaEvolution, Dataset datasetMain, Dataset datasetStage, DatasetDefinition datasetToAssert, List<String> alterSqlsToAssert)
+    private static void schemaEvolve(Executor<SqlGen, TabularData, SqlPlan> relationalExecutor, RelationalTransformer transformer, SchemaEvolution schemaEvolution, Dataset datasetMain, Dataset datasetStage, Dataset datasetToAssert, List<String> alterSqlsToAssert)
     {
         SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetMain, datasetStage);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(schemaEvolutionResult.logicalPlan());

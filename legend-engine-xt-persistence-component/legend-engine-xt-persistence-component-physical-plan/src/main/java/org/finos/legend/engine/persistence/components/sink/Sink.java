@@ -35,9 +35,7 @@ public interface Sink
 
     <L extends LogicalPlanNode> LogicalPlanVisitor<L> visitorForClass(Class<?> clazz);
 
-    //new field = field to replace main column (datatype)
-    //old field = reference field to compare sizing/nullability requirements
-    Field evolveFieldLength(Field oldField, Field newField);
+    Field evolveFieldLength(Field evolveFrom, Field evolveTo);
 
-    Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale);
+    Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale);
 }
