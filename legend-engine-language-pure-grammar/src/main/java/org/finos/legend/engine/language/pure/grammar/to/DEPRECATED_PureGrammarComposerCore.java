@@ -762,6 +762,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "!(" + parameters.get(0).accept(this) + ")";
         }
+        // Special case divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_ so that we don't use infix version
+        else if ("divide".equals(function) && parameters.size() == 3)
+        {
+            return HelperValueSpecificationGrammarComposer.renderFunction(appliedFunction, this);
+        }
         else if (HelperValueSpecificationGrammarComposer.SPECIAL_INFIX.get(function) != null)
         {
             // handle arithmetic operators that we might need to add parenthesis to force precedence
