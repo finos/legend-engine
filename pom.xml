@@ -305,6 +305,7 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-xt-bigqueryFunc-compiler</module>
+        <module>legend-engine-xt-bigqueryFunc-api</module>
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
@@ -812,21 +813,21 @@
                 <artifactId>legend-engine-xt-bigqueryFunc-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.finos.legend.engine</groupId>-->
-<!--                <artifactId>legend-engine-xt-bigQueryFunc-compiler</artifactId>-->
-<!--                <version>${project.version}</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunc-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-bigqueryFunc-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.finos.legend.engine</groupId>-->
-<!--                <artifactId>legend-engine-xt-bigQueryFunc-api</artifactId>-->
-<!--                <version>${project.version}</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunc-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <dependency>
