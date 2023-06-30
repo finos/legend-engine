@@ -126,12 +126,13 @@ final class BigQueryFunctionDeployableArtifact
 
         RoutineId routineId = RoutineId.of(projectId, dataset, this.functionName);
 
+        String functionAsSQLStatementWithProjectId = this.functionAsSQLStatement.replace(dataset, String.format("`%s.%s`", projectId, dataset));
         RoutineInfo routineInfo =
                 RoutineInfo
                         .newBuilder(routineId)
                         .setRoutineType("TABLE_VALUED_FUNCTION")
                         .setLanguage("SQL")
-                        .setBody(this.functionAsSQLStatement)
+                        .setBody(functionAsSQLStatementWithProjectId)
                         .build();
         try
         {
@@ -142,10 +143,5 @@ final class BigQueryFunctionDeployableArtifact
         {
             System.out.println(e);
         }
-    }
-
-    public String getFunctionName()
-    {
-        return this.functionName;
     }
 }
