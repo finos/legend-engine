@@ -92,6 +92,9 @@ public class BigQueryEndToEndTest
     protected final Clock fixedClock_2000_01_05 = Clock.fixed(fixedZonedDateTime_2000_01_05.toInstant(), ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_06 = Clock.fixed(fixedZonedDateTime_2000_01_06.toInstant(), ZoneOffset.UTC);
 
+    // replace these values with actual project id and service account credential path
+    // for creating a service account, refer https://cloud.google.com/iam/docs/service-accounts-create#creating_a_service_account
+    // and for getting the service account credential, refer https://cloud.google.com/iam/docs/keys-create-delete
     protected final String projectId = "dummy-value";
     protected final String credentialPath = "dummy-value";
 
