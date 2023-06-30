@@ -53,7 +53,7 @@ public class AppendOnlyExecutorTest extends BigQueryEndToEndTest
         System.out.println("--------- Batch 1 started ------------");
         String pathPass1 = "src/test/resources/input/data_pass1.csv";
         DatasetFilter stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-01 00:00:00");
-        IngestorResult result = ingestViaExecutor(ingestMode, stagingFilter, pathPass1, fixedClock_2000_01_01);
+        IngestorResult result = ingestViaExecutor(ingestMode, stagingSchema, stagingFilter, pathPass1, fixedClock_2000_01_01);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
@@ -72,7 +72,7 @@ public class AppendOnlyExecutorTest extends BigQueryEndToEndTest
         System.out.println("--------- Batch 2 started ------------");
         String pathPass2 = "src/test/resources/input/data_pass2.csv";
         stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-02 00:00:00");
-        result = ingestViaExecutor(ingestMode, stagingFilter, pathPass2, fixedClock_2000_01_02);
+        result = ingestViaExecutor(ingestMode, stagingSchema, stagingFilter, pathPass2, fixedClock_2000_01_02);
 
         // Verify
         tableData = runQuery("select * from `demo`.`main` order by id asc, insert_ts");

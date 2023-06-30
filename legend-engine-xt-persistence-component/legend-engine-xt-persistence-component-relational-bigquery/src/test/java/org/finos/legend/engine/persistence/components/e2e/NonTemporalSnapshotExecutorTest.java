@@ -16,12 +16,8 @@ package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -31,7 +27,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.*;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 
 @Disabled
 public class NonTemporalSnapshotExecutorTest extends BigQueryEndToEndTest
@@ -53,7 +51,7 @@ public class NonTemporalSnapshotExecutorTest extends BigQueryEndToEndTest
         System.out.println("--------- Batch 1 started ------------");
         String pathPass1 = "src/test/resources/input/data_pass1.csv";
         DatasetFilter stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-01 00:00:00");
-        IngestorResult result = ingestViaExecutor(ingestMode, stagingFilter, pathPass1, fixedClock_2000_01_01);
+        IngestorResult result = ingestViaExecutor(ingestMode, stagingSchema, stagingFilter, pathPass1, fixedClock_2000_01_01);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
@@ -70,7 +68,7 @@ public class NonTemporalSnapshotExecutorTest extends BigQueryEndToEndTest
         System.out.println("--------- Batch 2 started ------------");
         String pathPass2 = "src/test/resources/input/data_pass2.csv";
         stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-02 00:00:00");
-        result = ingestViaExecutor(ingestMode, stagingFilter, pathPass2, fixedClock_2000_01_02);
+        result = ingestViaExecutor(ingestMode, stagingSchema, stagingFilter, pathPass2, fixedClock_2000_01_02);
 
         // Verify
         tableData = runQuery("select * from `demo`.`main` order by id asc");

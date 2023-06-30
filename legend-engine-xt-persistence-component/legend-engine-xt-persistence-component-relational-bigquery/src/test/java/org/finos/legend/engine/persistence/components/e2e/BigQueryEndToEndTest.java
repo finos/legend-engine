@@ -80,12 +80,19 @@ public class BigQueryEndToEndTest
     protected Field insertTimestamp = Field.builder().name("insert_ts").type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty())).build();
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final ZonedDateTime fixedZonedDateTime_2000_01_02 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected final ZonedDateTime fixedZonedDateTime_2000_01_03 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected final ZonedDateTime fixedZonedDateTime_2000_01_04 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected final ZonedDateTime fixedZonedDateTime_2000_01_05 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected final ZonedDateTime fixedZonedDateTime_2000_01_06 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
 
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_02 = Clock.fixed(fixedZonedDateTime_2000_01_02.toInstant(), ZoneOffset.UTC);
+    protected final Clock fixedClock_2000_01_03 = Clock.fixed(fixedZonedDateTime_2000_01_03.toInstant(), ZoneOffset.UTC);
+    protected final Clock fixedClock_2000_01_04 = Clock.fixed(fixedZonedDateTime_2000_01_04.toInstant(), ZoneOffset.UTC);
+    protected final Clock fixedClock_2000_01_05 = Clock.fixed(fixedZonedDateTime_2000_01_05.toInstant(), ZoneOffset.UTC);
+    protected final Clock fixedClock_2000_01_06 = Clock.fixed(fixedZonedDateTime_2000_01_06.toInstant(), ZoneOffset.UTC);
 
     protected final String projectId = "primeval-pixel-387604";
-    protected final String datasetName = "legend_bq_data_types";
     protected final String credentialPath = "D:\\Documents\\g oauth\\primeval-pixel-387604-20450539e9a2.json";
 
     protected SchemaDefinition stagingSchema = SchemaDefinition.builder()
@@ -104,96 +111,24 @@ public class BigQueryEndToEndTest
 
     MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("demo").metadataDatasetName("batch_metadata").build();
 
-    public static String key1Name = "key1";
-    public static String key2Name = "key2";
-    public static String valueName = "value1";
-    public static String fromName = "from";
-    public static String throughName = "through";
     public static String batchIdInName = "batch_id_in";
     public static String batchIdOutName = "batch_id_out";
-    public static String dateInName = "date_in";
-    public static String dateOutName = "date_out";
-    public static String deleteIndicatorName = "delete_indicator";
-    public static String[] deleteIndicatorValues = new String[] {"yes", "1", "true"};
-    public static Field key1 = Field.builder().name(key1Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key1Name).build();
-    public static Field key2 = Field.builder().name(key2Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key2Name).build();
-    public static Field value = Field.builder().name(valueName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(valueName).build();
-    public static Field from = Field.builder().name(fromName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(fromName).primaryKey(true).build();
-    public static Field through = Field.builder().name(throughName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(throughName).build();
-    public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
-    public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
-    public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
-    public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
-    public static Field deleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
+    public static String indexName = "index";
+    public static String dateTimeName = "datetime";
+    public static String balanceName = "balance";
+    public static String startDateTimeName = "start_datetime";
+    public static String endDateTimeName = "end_datetime";
+    public static Field index = Field.builder().name(indexName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(indexName).build();
+    public static Field dateTime = Field.builder().name(dateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateTimeName).primaryKey(true).build();
+    public static Field balance = Field.builder().name(balanceName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(balanceName).build();
+    protected SchemaDefinition bitempStagingSchema = SchemaDefinition.builder()
+            .addFields(index)
+            .addFields(dateTime)
+            .addFields(balance)
+            .addFields(digest)
+            .build();
 
-    public static DatasetDefinition getDefaultMainTable()
-    {
-        return DatasetDefinition.builder()
-                .group("demo")
-                .name("main")
-                .alias("sink")
-                .schema(SchemaDefinition.builder().build())
-                .build();
-    }
-
-    public DatasetDefinition getBitemporalMainTable()
-    {
-        return DatasetDefinition.builder()
-                .group("demo")
-                .name("main")
-                .alias("sink")
-                .schema(SchemaDefinition.builder()
-                        .addFields(key1)
-                        .addFields(key2)
-                        .addFields(value)
-                        .addFields(from)
-                        .addFields(through)
-                        .addFields(digest)
-                        .addFields(batchIdIn)
-                        .addFields(batchIdOut)
-                        .build()
-                )
-                .build();
-    }
-
-    public DatasetDefinition getBitemporalStagingTable()
-    {
-        return DatasetDefinition.builder()
-                .group("demo")
-                .name("staging")
-                .alias("stage")
-                .schema(SchemaDefinition.builder()
-                        .addFields(key1)
-                        .addFields(key2)
-                        .addFields(value)
-                        .addFields(dateIn)
-                        .addFields(dateOut)
-                        .addFields(digest)
-                        .build()
-                )
-                .build();
-    }
-
-    public DatasetDefinition getBitemporalStagingTableWithDeleteIndicator()
-    {
-        return DatasetDefinition.builder()
-                .group("demo")
-                .name("staging")
-                .alias("stage")
-                .schema(SchemaDefinition.builder()
-                        .addFields(key1)
-                        .addFields(key2)
-                        .addFields(value)
-                        .addFields(dateIn)
-                        .addFields(dateOut)
-                        .addFields(digest)
-                        .addFields(deleteIndicator)
-                        .build()
-                )
-                .build();
-    }
-
-    protected IngestorResult ingestViaExecutor(IngestMode ingestMode, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
+    protected IngestorResult ingestViaExecutor(IngestMode ingestMode, SchemaDefinition stagingSchema, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -220,7 +155,7 @@ public class BigQueryEndToEndTest
     }
 
 
-    protected void ingestViaGenerator(IngestMode ingestMode, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
+    protected void ingestViaGenerator(IngestMode ingestMode, SchemaDefinition stagingSchema, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
     {
 
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -276,7 +211,7 @@ public class BigQueryEndToEndTest
         runQueries(sqlList);
     }
 
-    private BigQuery getBigQueryConnection() throws IOException
+    protected BigQuery getBigQueryConnection() throws IOException
     {
         GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialPath));
         BigQuery bigquery = BigQueryOptions.newBuilder().setCredentials(credentials).setProjectId(projectId).build().getService();
@@ -354,23 +289,26 @@ public class BigQueryEndToEndTest
             rows.add(rowToInsert);
         }
 
-        InsertAllRequest insertAllRequest = InsertAllRequest.newBuilder(tableId).setRows(rows).build();
-        try
+        if (!rows.isEmpty())
         {
-            bigQuery.insertAll(insertAllRequest);
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error occurred: " + e.getMessage());
-            if (attempt <= 10)
+            InsertAllRequest insertAllRequest = InsertAllRequest.newBuilder(tableId).setRows(rows).build();
+            try
             {
-                // Retry
-                Thread.sleep(5000);
-                loadData(path, stagingDataset, attempt);
+                bigQuery.insertAll(insertAllRequest);
             }
-            else
+            catch (Exception e)
             {
-                throw e;
+                System.out.println("Error occurred: " + e.getMessage());
+                if (attempt <= 10)
+                {
+                    // Retry
+                    Thread.sleep(5000);
+                    loadData(path, stagingDataset, attempt);
+                }
+                else
+                {
+                    throw e;
+                }
             }
         }
     }

@@ -59,6 +59,8 @@ import static org.finos.legend.engine.persistence.components.BaseTestUtils.schem
 @Disabled
 public class SchemaEvolutionTest extends BigQueryEndToEndTest
 {
+    protected final String datasetName = "demo";
+
     @Test
     public void testSchemaValidation() throws IOException
     {
@@ -70,7 +72,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 .alias(tableName)
                 .schema(schemaWithAllColumns)
                 .build();
-        BigQuery bigquery = getBigQuery();
+        BigQuery bigquery = getBigQueryConnection();
         BigQueryHelper bigQueryHelper = BigQueryHelper.of(bigquery);
         RelationalSink relationalSink = BigQuerySink.get();
         Executor<SqlGen, TabularData, SqlPlan> relationalExecutor = relationalSink.getRelationalExecutor(BigQueryConnection.of(bigquery));
@@ -198,12 +200,53 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                         .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colJson.withName("col")).build())
                         .build());
 
-        BigQuery bigquery = getBigQuery();
+        List<List<String>> alterSqls = Arrays.asList(
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE NUMERIC(33,4)"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE NUMERIC(32,3)"),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_int64` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_precision` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_decimal_with_less_scale` ALTER COLUMN `col` SET DATA TYPE FLOAT64"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_string_with_length` ALTER COLUMN `col` SET DATA TYPE STRING"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_string_with_big_length` ALTER COLUMN `col` SET DATA TYPE STRING"),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList(),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_string_with_length` ALTER COLUMN `col` SET DATA TYPE STRING(100)"),
+                Arrays.asList()
+        );
+
+        BigQuery bigquery = getBigQueryConnection();
         RelationalSink relationalSink = BigQuerySink.get();
         Executor<SqlGen, TabularData, SqlPlan> relationalExecutor = relationalSink.getRelationalExecutor(BigQueryConnection.of(bigquery));
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
 
         int size = list.size();
+        int alterCallIndex = 0;
         for (int stage = 0; stage < size; stage++)
         {
             for (int main = 0; main < size; main++)
@@ -223,7 +266,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 if (typeMain.equals(typeStage))
                 {
                     //assert no change
-                    schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetDefinitionMain);
+                    schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetDefinitionMain, alterSqls.get(alterCallIndex++));
                 }
                 else
                 {
@@ -249,20 +292,20 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                         //assert no changes
                         typeToAssert = typeMain.withLength(lengthToAssert).withScale(scaleToAssert);
                         DatasetDefinition datasetToAssert = datasetDefinitionMain.withSchema(datasetDefinitionMain.schema().withFields(datasetDefinitionMain.schema().fields().get(0).withType(typeToAssert)));
-                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert);
+                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
                     }
                     else if (relationalSink.supportsExplicitMapping(dataTypeMain, dataTypeStage))
                     {
                         //assert stage schema
                         typeToAssert = typeStage.withLength(lengthToAssert).withScale(scaleToAssert);
                         DatasetDefinition datasetToAssert = datasetDefinitionMain.withSchema(datasetDefinitionStage.schema().withFields(datasetDefinitionStage.schema().fields().get(0).withType(typeToAssert)));
-                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert);
+                        schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetToAssert, alterSqls.get(alterCallIndex++));
                     }
                     else
                     {
                         try
                         {
-                            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, null);
+                            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, null, null);
                         }
                         catch (Exception e)
                         {
@@ -329,19 +372,30 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 .group(datasetName)
                 .name("tsm_numeric_7")
                 .alias("tsm_numeric_7")
-                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colNumeric.withName("col")).build())
+                .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colDecimal.withName("col")).build())
                 .build();
 
         List<DatasetDefinition> stageDefinition = Arrays.asList(
-                numeric1, numeric2, numeric1, numeric3, numeric1, numeric4, numeric1, numeric4, numeric6);
+                numeric1, numeric2, numeric3, numeric3, numeric1, numeric4, numeric7, numeric7, numeric7);
         List<DatasetDefinition> mainDefinition = Arrays.asList(
-                numeric2, numeric1, numeric3, numeric2, numeric4, numeric2, numeric7, numeric7, numeric7);
+                numeric2, numeric1, numeric1, numeric2, numeric4, numeric2, numeric1, numeric4, numeric6);
         List<DatasetDefinition> assertionDefinition = Arrays.asList(
                 numeric3, numeric3, numeric3, numeric3, numeric5, numeric6, numeric7, numeric7, numeric7);
+        List<List<String>> alterSqlToAssert = Arrays.asList(
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_2` ALTER COLUMN `col` SET DATA TYPE NUMERIC(22,5)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_1` ALTER COLUMN `col` SET DATA TYPE NUMERIC(22,5)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_1` ALTER COLUMN `col` SET DATA TYPE NUMERIC(22,5)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_2` ALTER COLUMN `col` SET DATA TYPE NUMERIC(22,5)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_4` ALTER COLUMN `col` SET DATA TYPE NUMERIC(32,3)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_2` ALTER COLUMN `col` SET DATA TYPE NUMERIC(34,5)"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_1` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_4` ALTER COLUMN `col` SET DATA TYPE NUMERIC"),
+                Arrays.asList("ALTER TABLE `" + projectId + "`.`" + datasetName + "`.`tsm_numeric_6` ALTER COLUMN `col` SET DATA TYPE NUMERIC"));
 
-        for (int i = 0; i < 9; i++)
+        int size = stageDefinition.size();
+        for (int i = 0; i < size; i++)
         {
-            BigQuery bigquery = getBigQuery();
+            BigQuery bigquery = getBigQueryConnection();
             RelationalSink relationalSink = BigQuerySink.get();
             Executor<SqlGen, TabularData, SqlPlan> relationalExecutor = relationalSink.getRelationalExecutor(BigQueryConnection.of(bigquery));
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -350,14 +404,15 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
             DatasetDefinition datasetDefinitionMain = mainDefinition.get(i);
             DatasetDefinition datasetDefinitionAssert = assertionDefinition.get(i);
             refreshDataset(relationalExecutor, transformer, datasetDefinitionMain, null);
-            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetDefinitionAssert.withName(datasetDefinitionMain.name()).withAlias(datasetDefinitionMain.alias()));
+            schemaEvolve(relationalExecutor, transformer, schemaEvolution, datasetDefinitionMain, datasetDefinitionStage, datasetDefinitionAssert.withName(datasetDefinitionMain.name()).withAlias(datasetDefinitionMain.alias()), alterSqlToAssert.get(i));
         }
     }
 
-    private static void schemaEvolve(Executor<SqlGen, TabularData, SqlPlan> relationalExecutor, RelationalTransformer transformer, SchemaEvolution schemaEvolution, Dataset datasetMain, Dataset datasetStage, DatasetDefinition datasetToAssert)
+    private static void schemaEvolve(Executor<SqlGen, TabularData, SqlPlan> relationalExecutor, RelationalTransformer transformer, SchemaEvolution schemaEvolution, Dataset datasetMain, Dataset datasetStage, DatasetDefinition datasetToAssert, List<String> alterSqlsToAssert)
     {
         SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasetMain, datasetStage);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(schemaEvolutionResult.logicalPlan());
+        Assertions.assertEquals(alterSqlsToAssert, physicalPlan.getSqlList());
         relationalExecutor.executePhysicalPlan(physicalPlan);
         Assertions.assertEquals(datasetToAssert, schemaEvolutionResult.evolvedDataset());
     }

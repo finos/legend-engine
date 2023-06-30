@@ -70,8 +70,8 @@ public class DataTypeMappingTest
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumber.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumeric.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimal.type())));
-        Assertions.assertEquals("NUMERIC(10)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithPrecision.type())));
-        Assertions.assertEquals("NUMERIC(10,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithScale.type())));
+        Assertions.assertEquals("NUMERIC(29)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithPrecision.type())));
+        Assertions.assertEquals("NUMERIC(33,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithScale.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colReal.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDouble.type())));
