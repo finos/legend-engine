@@ -42,13 +42,7 @@
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
         <module>legend-engine-xt-authentication-experimental</module>
 
-        <module>legend-engine-xt-graphQL-grammar</module>
-        <module>legend-engine-xt-graphQL-grammar-integration</module>
-        <module>legend-engine-xt-graphQL-compiler</module>
-        <module>legend-engine-xt-graphQL-protocol</module>
-        <module>legend-engine-xt-graphQL-query</module>
-        <module>legend-engine-xt-graphQL-pure</module>
-        <module>legend-engine-xt-graphQL-pure-metamodel</module>
+        <module>legend-engine-xt-graphQL</module>
 
         <module>legend-engine-xt-protobuf-grammar</module>
         <module>legend-engine-xt-protobuf-protocol</module>
@@ -832,47 +826,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-experimental</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-query</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-compiler</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-grammar</artifactId>
-                <version>${project.version}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-grammar</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

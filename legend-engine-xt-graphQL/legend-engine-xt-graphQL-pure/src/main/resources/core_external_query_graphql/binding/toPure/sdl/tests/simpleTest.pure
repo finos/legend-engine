@@ -1,0 +1,231 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::toPure::sdl::*;
+import meta::external::query::graphQL::binding::toPure::sdl::tests::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testQuery(): Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Firm {\n' +
+      '  legalName: String!\n' +
+      '  employees: [Person!]!\n' +
+      '  incType: IncType!\n' +
+      '}\n' +
+      '\n' +
+      'enum IncType {\n' +
+      '  LLC\n' +
+      '  CORP\n' +
+      '}\n' +
+      '\n' +
+      'type Person {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type Query {\n' +
+      '  firmByName(n: String!): Firm\n' +
+      '}\n' +
+      '\n' +
+      'schema {\n' +
+      '  query : Query\n' +
+      '}\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Firm\n' +
+    '{\n' +
+    '  legalName : String[1];\n' +
+    '  employees : meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
+    '  incType : meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
+    '}\n' +
+    '\n' +
+    'Enum meta::external::query::graphQL::metamodel::sql::IncType\n' +
+    '{\n' +
+    '  LLC,\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  firstName : String[0..1];\n' +
+    '  lastName : String[1];\n' +
+    '  age : Integer[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
+    '{\n' +
+    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '}',
+    $pureTypes);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testQueryAndMutation(): Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Firm {\n' +
+      '  legalName: String!\n' +
+      '  employees: [Person!]!\n' +
+      '  incType: IncType!\n' +
+      '}\n' +
+      '\n' +
+      'input FirmInput {\n' +
+      '  legalName: String!\n' +
+      '  employees: [PersonInput!]!\n' +
+      '  incType: IncType!\n' +
+      '}\n' +
+      '\n' +
+      'enum IncType {\n' +
+      '  LLC\n' +
+      '  CORP\n' +
+      '}\n' +
+      '\n' +
+      'type Mutation {\n' +
+      '  upsertFirm(firm: FirmInput!): Firm\n' +
+      '}\n' +
+      '\n' +
+      'type Person {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'input PersonInput {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type Query {\n' +
+      '  firmByName(n: String!): Firm\n' +
+      '}\n' +
+      '\n' +
+      'schema {\n' +
+      '  query : Query\n' +
+      '  mutation : Mutation\n' +
+      '}\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Firm\n' +
+    '{\n' +
+    '  legalName : String[1];\n' +
+    '  employees : meta::external::query::graphQL::metamodel::sql::Person[*];\n' +
+    '  incType : meta::external::query::graphQL::metamodel::sql::IncType[1];\n' +
+    '}\n' +
+    '\n' +
+    'Enum meta::external::query::graphQL::metamodel::sql::IncType\n' +
+    '{\n' +
+    '  LLC,\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Mutation\n' +
+    '{\n' +
+    '  upsertFirm(firm: meta::external::query::graphQL::metamodel::sql::Firm[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  firstName : String[0..1];\n' +
+    '  lastName : String[1];\n' +
+    '  age : Integer[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Query\n' +
+    '{\n' +
+    '  firmByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Firm[0..1];\n' +
+    '}',
+    $pureTypes);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testNonBuiltInPrimitiveTypes(): Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type ClassWithPrimitiveTypes {\n' +
+      '  string: String!\n' +
+      '  integer: Int!\n' +
+      '  float: Float!\n' +
+      '  boolean: Boolean!\n' +
+      '  date: Date!\n' +
+      '  datetime: DateTime!\n' +
+      '  decimal: BigDecimal!\n' +
+      '}\n' +
+      '\n' +
+      'scalar Date\n' +
+      '\n' +
+      'scalar DateTime\n' +
+      '\n' +
+      'scalar BigDecimal\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::ClassWithPrimitiveTypes\n' +
+    '{\n' +
+    '  string : String[1];\n' +
+    '  integer : Integer[1];\n' +
+    '  float : Float[1];\n' +
+    '  boolean : Boolean[1];\n' +
+    '  date : Date[1];\n' +
+    '  datetime : DateTime[1];\n' +
+    '  decimal : Decimal[1];\n' +
+    '}',
+    $pureTypes);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testTemporalClass(): Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type BitemporalClass @bitemporal {\n' +
+      '  string: String!\n' +
+      '}\n' +
+      '\n' +
+      'directive @bitemporal on OBJECT | INPUT_OBJECT\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class <<meta::pure::profiles::temporal.bitemporal>> meta::external::query::graphQL::metamodel::sql::BitemporalClass\n' +
+    '{\n' +
+    '  string : String[1];\n' +
+    '}',
+    $pureTypes);
+}
+
+
+function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::tests::graphQLToPure(graphQLDocument: String[1], purePackage: String[1]): String[1]
+{
+  let sql = meta::legend::compileVS($graphQLDocument)->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+
+  graphQLTypeSystemtoPure($sql->toOne(), $purePackage)
+    ->sortBy(t | $t->elementToPath())
+    ->map(t | $t->meta::pure::metamodel::serialization::grammar::printType())
+    ->joinStrings('\n\n');
+}
