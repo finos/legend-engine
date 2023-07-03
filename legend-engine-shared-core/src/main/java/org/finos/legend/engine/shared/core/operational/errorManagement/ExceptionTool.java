@@ -16,6 +16,8 @@ package org.finos.legend.engine.shared.core.operational.errorManagement;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -68,9 +70,12 @@ public class ExceptionTool
         {
             throw new RuntimeException(exception);
         }
-        if (GlobalTracer.get().activeSpan() != null)
+
+        Span activeSpan = GlobalTracer.get().activeSpan();
+        if (activeSpan != null)
         {
-            GlobalTracer.get().activeSpan().setTag("error", text);
+            Tags.ERROR.set(activeSpan, true);
+            activeSpan.setTag("error.message", text);
         }
         return Response.status(status).type(MediaType.APPLICATION_JSON_TYPE).entity(error).build();
     }
