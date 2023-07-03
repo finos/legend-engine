@@ -54,7 +54,6 @@ public class JdbcHelper implements RelationalExecutionHelper
     private final Connection connection;
     private JdbcTransactionManager transactionManager;
 
-    public static final String COLUMN_NAME = "COLUMN_NAME";
     public static final String TYPE_NAME = "TYPE_NAME";
     public static final String DATA_TYPE = "DATA_TYPE";
     public static final String COLUMN_SIZE = "COLUMN_SIZE";
@@ -180,7 +179,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(database, schema, name);
             while (primaryKeyResult.next())
             {
-                primaryKeys.add(primaryKeyResult.getString(COLUMN_NAME));
+                primaryKeys.add(primaryKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             // Get unique keys
@@ -188,12 +187,12 @@ public class JdbcHelper implements RelationalExecutionHelper
             ResultSet uniqueKeyResult = dbMetaData.getIndexInfo(database, schema, name, true, false);
             while (uniqueKeyResult.next())
             {
-                uniqueKeys.add(uniqueKeyResult.getString(COLUMN_NAME));
+                uniqueKeys.add(uniqueKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             while (result.next())
             {
-                String columnName = result.getString(COLUMN_NAME);
+                String columnName = result.getString(RelationalExecutionHelper.COLUMN_NAME);
 
                 // Get the datatype
                 String typeName = result.getString(TYPE_NAME);
@@ -262,7 +261,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(databaseName, schemaName, tableName);
             while (primaryKeyResult.next())
             {
-                primaryKeys.add(primaryKeyResult.getString(COLUMN_NAME));
+                primaryKeys.add(primaryKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             // Get all unique constraints and indices
@@ -273,7 +272,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             while (indexResult.next())
             {
                 String indexName = indexResult.getString(INDEX_NAME);
-                String columnName = indexResult.getString(COLUMN_NAME);
+                String columnName = indexResult.getString(RelationalExecutionHelper.COLUMN_NAME);
                 boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
 
                 if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
@@ -311,7 +310,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             ResultSet columnResult = dbMetaData.getColumns(databaseName, schemaName, tableName, null);
             while (columnResult.next())
             {
-                String columnName = columnResult.getString(COLUMN_NAME);
+                String columnName = columnResult.getString(RelationalExecutionHelper.COLUMN_NAME);
                 String typeName = columnResult.getString(TYPE_NAME);
                 String dataType = JDBCType.valueOf(columnResult.getInt(DATA_TYPE)).getName();
                 int columnSize = columnResult.getInt(COLUMN_SIZE);

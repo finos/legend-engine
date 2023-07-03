@@ -16,13 +16,21 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.execu
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
+import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.constraints.columns.PKColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
@@ -31,19 +39,28 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.constrai
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
+import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BigQueryHelper implements RelationalExecutionHelper
 {
+    public static final String PRIMARY_KEY_INFO_TABLE_NAME = "INFORMATION_SCHEMA.KEY_COLUMN_USAGE";
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryHelper.class);
+    private static final String TABLE_NAME = "TABLE_NAME";
+    private static final String TABLE_SCHEMA = "TABLE_SCHEMA";
+    private static final String CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    private static final String CONSTRAINT_NAME_QUANTIFIER_PK = ".pk$";
+    private static final Function<String, String> CONSTRAINT_NAME_PROVIDER_PK = tableName -> tableName + CONSTRAINT_NAME_QUANTIFIER_PK;
 
     private final BigQuery bigQuery;
     private BigQueryTransactionManager transactionManager;
@@ -134,7 +151,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
                 TableId.of(datasetName, tableName) :
                 TableId.of(projectName, datasetName, tableName);
 
-        Table table = this.bigQuery.getTable(tableId);
+        com.google.cloud.bigquery.Table table = this.bigQuery.getTable(tableId);
         boolean tableExists = table != null && table.exists();
         return tableExists;
     }
@@ -144,7 +161,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
 
-        Table table = this.bigQuery.getTable(TableId.of(schema, name));
+        com.google.cloud.bigquery.Table table = this.bigQuery.getTable(TableId.of(schema, name));
         List<String> primaryKeysInDb = this.fetchPrimaryKeys(name, schema, dataset.datasetReference().database().orElse(null));
         FieldList dbFields = table.getDefinition().getSchema().getFields();
         List<Field> userFields = new ArrayList<>(dataset.schema().fields());
@@ -187,7 +204,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
     {
         List<String> primaryKeysInDb = this.fetchPrimaryKeys(tableName, schemaName, databaseName);
-        Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
+        com.google.cloud.bigquery.Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
 
         // Get all columns
         List<Field> fields = new ArrayList<>();
@@ -224,13 +241,29 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     private List<String> fetchPrimaryKeys(String tableName, String schemaName, String databaseName)
     {
-        String sql = databaseName == null ?
-                "select column_name from {SCHEMA_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'" :
-                "select column_name from {DATABASE_NAME}.{SCHEMA_NAME}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE where table_name = '{TABLE_NAME}' and table_schema = '{SCHEMA_NAME}' and constraint_name = '{TABLE_NAME}.pk$'"
-                        .replace("{DATABASE_NAME}", databaseName);
-        sql = sql.replace("{SCHEMA_NAME}", schemaName).replace("{TABLE_NAME}", tableName);
-        List<Map<String, Object>> resultSet = this.executeQuery(sql);
-        return resultSet.stream().map(resultEntry -> (String) resultEntry.get("column_name")).collect(Collectors.toList());
+        RelationalTransformer relationalTransformer = new RelationalTransformer(BigQuerySink.get());
+        LogicalPlan logicalPlanFetchPrimaryKeys = getLogicalPlanFetchPrimaryKeys(tableName, schemaName, databaseName);
+        SqlPlan sqlPlan = relationalTransformer.generatePhysicalPlan(logicalPlanFetchPrimaryKeys);
+        List<Map<String, Object>> resultSet = executeQuery(sqlPlan.getSql());
+        return resultSet.stream().map(resultEntry -> (String) resultEntry.get(COLUMN_NAME)).collect(Collectors.toList());
+    }
+
+    private static LogicalPlan getLogicalPlanFetchPrimaryKeys(String tableName, String schemaName, String databaseName)
+    {
+        return LogicalPlan.builder().addOps(Selection.builder()
+                .addFields(FieldValue.builder().fieldName(COLUMN_NAME).build())
+                .source(DatasetReferenceImpl.builder()
+                        .database(databaseName)
+                        .group(schemaName)
+                        .name(PRIMARY_KEY_INFO_TABLE_NAME).build())
+                .condition(And.of(Arrays.asList(
+                        Equals.of(FieldValue.builder().fieldName(TABLE_SCHEMA).build(),
+                                StringValue.of(schemaName)),
+                        Equals.of(FieldValue.builder().fieldName(TABLE_NAME).build(),
+                                StringValue.of(tableName)),
+                        Equals.of(FieldValue.builder().fieldName(CONSTRAINT_NAME).build(),
+                                StringValue.of(CONSTRAINT_NAME_PROVIDER_PK.apply(tableName))))))
+                .build()).build();
     }
 
     public static void validateColumns(List<Column> userColumns, List<Column> dbColumns)

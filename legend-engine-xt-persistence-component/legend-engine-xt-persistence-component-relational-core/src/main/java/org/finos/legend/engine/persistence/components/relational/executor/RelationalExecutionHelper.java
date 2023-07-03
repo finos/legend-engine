@@ -24,6 +24,8 @@ import java.util.Map;
 public interface RelationalExecutionHelper
 {
 
+    String COLUMN_NAME = "COLUMN_NAME";
+
     void beginTransaction();
 
     void commitTransaction();
