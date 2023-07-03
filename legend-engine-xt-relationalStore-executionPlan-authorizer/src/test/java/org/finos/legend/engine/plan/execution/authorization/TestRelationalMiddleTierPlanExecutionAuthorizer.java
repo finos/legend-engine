@@ -104,6 +104,24 @@ public class TestRelationalMiddleTierPlanExecutionAuthorizer
     }
 
     @Test
+    public void planWithSingleMiddleTierNode_GraphFetch_ServiceExecutionAllowed() throws Exception
+    {
+        RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(
+                Lists.immutable.of(new RelationalMiddleTierPlanExecutionAuthorizer(new AlwaysAllowRelationalMiddleTierConnectionCredentialAuthorizer()))
+        );
+
+        SingleExecutionPlan planWithMiddleTierAuth = this.loadPlanFromFile("/plans/graphFetchPlanWithMiddleTierConnections.json");
+
+        PlanExecutionAuthorizerInput authorizationInput = PlanExecutionAuthorizerInput.with(SERVICE_EXECUTION)
+                .withResourceContext("legend.servicePath", "/api/foobar")
+                .withResourceContext("legend.serviceUniqueId", "v1:1234")
+                .build();
+
+        PlanExecutionAuthorizerOutput authorizationResult = planExecutionAuthorizer.evaluate(alice, planWithMiddleTierAuth, authorizationInput);
+        this.compare(authorizationResult, "/plans/graphFetchPlanWithMiddleTierConnections_expected_authz_allow_service_execution.json");
+    }
+
+    @Test
     public void planWithMultipleMiddleTierNode_InteractiveExecutionDenied() throws Exception
     {
         RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(
