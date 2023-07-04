@@ -36,8 +36,8 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalC
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
-import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.LowerCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.AlterVisitor;
@@ -97,25 +97,30 @@ public class BigQuerySink extends AnsiSqlSink
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
-        implicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.INT, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.NUMERIC, new HashSet<>(Arrays.asList(DataType.NUMERIC, DataType.NUMBER, DataType.DECIMAL, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64)));
-        implicitDataTypeMapping.put(DataType.FLOAT, new HashSet<>(Arrays.asList(DataType.REAL, DataType.DOUBLE, DataType.FLOAT64, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL)));
-        implicitDataTypeMapping.put(DataType.STRING, new HashSet<>(Arrays.asList(DataType.STRING, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT)));
+        implicitDataTypeMapping.put(DataType.INTEGER, getUnmodifiableDataTypesSet(DataType.INT, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64));
+        implicitDataTypeMapping.put(DataType.NUMERIC, getUnmodifiableDataTypesSet(DataType.NUMERIC, DataType.NUMBER, DataType.DECIMAL, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64));
+        implicitDataTypeMapping.put(DataType.FLOAT, getUnmodifiableDataTypesSet(DataType.REAL, DataType.DOUBLE, DataType.FLOAT64, DataType.INT, DataType.INTEGER, DataType.BIGINT, DataType.TINYINT, DataType.SMALLINT, DataType.INT64, DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL));
+        implicitDataTypeMapping.put(DataType.STRING, getUnmodifiableDataTypesSet(DataType.STRING, DataType.CHAR, DataType.CHARACTER, DataType.VARCHAR, DataType.LONGNVARCHAR, DataType.LONGTEXT, DataType.TEXT));
         implicitDataTypeMapping.put(DataType.DATETIME, Collections.singleton(DataType.DATE));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         Map<DataType, Set<DataType>> explicitDataTypeMapping = new HashMap<>();
-        explicitDataTypeMapping.put(DataType.INT, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.TINYINT, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.SMALLINT, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.INT64, new HashSet<>(Arrays.asList(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.NUMBER, new HashSet<>(Arrays.asList(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.NUMERIC, new HashSet<>(Arrays.asList(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
-        explicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64)));
+        explicitDataTypeMapping.put(DataType.INT, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.INTEGER, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.BIGINT, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.TINYINT, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.SMALLINT, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.INT64, getUnmodifiableDataTypesSet(DataType.NUMBER, DataType.NUMERIC, DataType.DECIMAL, DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.NUMBER, getUnmodifiableDataTypesSet(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.NUMERIC, getUnmodifiableDataTypesSet(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
+        explicitDataTypeMapping.put(DataType.DECIMAL, getUnmodifiableDataTypesSet(DataType.REAL, DataType.FLOAT, DataType.DOUBLE, DataType.FLOAT64));
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(explicitDataTypeMapping);
         INSTANCE = new BigQuerySink();
+    }
+
+    private static Set getUnmodifiableDataTypesSet(DataType... dataTypes)
+    {
+        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(dataTypes)));
     }
 
     public static RelationalSink get()

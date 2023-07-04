@@ -39,21 +39,13 @@ public class DeleteVisitor implements LogicalPlanVisitor<Delete>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Delete current, VisitorContext context)
     {
-        Optional<Condition> condition = current.condition();
-        if (!condition.isPresent())
-        {
-            condition = Optional.of(Equals.of(ObjectValue.of(1), ObjectValue.of(1)));
-        }
-
+        Condition condition = current.condition().orElseGet(() -> Equals.of(ObjectValue.of(1), ObjectValue.of(1)));
         DeleteStatement deleteStatement = new DeleteStatement();
         prev.push(deleteStatement);
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
         logicalPlanNodeList.add(current.dataset());
-        if (condition.isPresent())
-        {
-            logicalPlanNodeList.add(condition.get());
-        }
+        logicalPlanNodeList.add(condition);
 
         return new VisitorResult(deleteStatement, logicalPlanNodeList);
     }

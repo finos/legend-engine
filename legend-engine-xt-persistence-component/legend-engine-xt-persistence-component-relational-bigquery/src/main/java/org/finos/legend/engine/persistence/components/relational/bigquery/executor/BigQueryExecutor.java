@@ -130,7 +130,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     @Override
     public void close()
     {
-        bigQueryHelper.closeTransactionManager();
+        bigQueryHelper.close();
     }
 
     private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)

@@ -36,15 +36,7 @@ public class BatchStartTimestampVisitor implements LogicalPlanVisitor<BatchStart
         Optional<String> batchStartTimestampPattern = context.batchStartTimestampPattern();
         StringValue dateTimeFormat = StringValue.of(DATE_TIME_FORMAT);
         StringValue datetimeValue;
-        if (batchStartTimestampPattern.isPresent())
-        {
-            datetimeValue = StringValue.of(batchStartTimestampPattern.get());
-        }
-        else
-        {
-            datetimeValue = StringValue.of(context.batchStartTimestamp());
-        }
-
+        datetimeValue = StringValue.of(batchStartTimestampPattern.orElse(context.batchStartTimestamp()));
         FunctionImpl parseDateTime = FunctionImpl.builder().functionName(FunctionName.PARSE_DATETIME).addValue(dateTimeFormat, datetimeValue).build();
         return new FunctionVisitor().visit(prev, parseDateTime, context);
     }
