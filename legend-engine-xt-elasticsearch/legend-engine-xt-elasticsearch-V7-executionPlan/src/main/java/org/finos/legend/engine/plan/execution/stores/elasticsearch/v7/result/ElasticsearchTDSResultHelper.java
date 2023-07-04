@@ -71,7 +71,7 @@ public final class ElasticsearchTDSResultHelper
             @Override
             public Function<Hit<ObjectNode>, Object> visit(_IDResultPath val)
             {
-                return hit -> hit._id;
+                return hit -> hit._id.getLiteral();
             }
 
             @Override

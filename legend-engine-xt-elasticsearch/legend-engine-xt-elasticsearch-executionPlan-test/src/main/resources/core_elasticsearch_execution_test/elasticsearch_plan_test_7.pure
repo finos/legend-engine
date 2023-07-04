@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::elasticsearch::v7::specification::utils::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
@@ -47,7 +48,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
           ),
       pair('Director', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
       pair('MPAA', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
-      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ssa'))),
+      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ssa'->literal()))),
       pair('Budget', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())),
       pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
       pair('MainActor', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object =
@@ -77,8 +78,8 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
 function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::index(name: String[1], records: Any[*]): Any[*]
 {
   let deletIndex = ^DeleteRequest(
-      index = $name,
-      ignore_unavailable = true
+      index = $name->literal(),
+      ignore_unavailable = true->literal()
   );
 
   let mappings = $records->type()->mapping();
@@ -87,17 +88,17 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
     body = ^CreateRequestBody(
       mappings = $mappings
     ),
-    index = $name
+    index = $name->literal()
   );
 
   let indexData = ^BulkRequest<Any, Any>(
-      operations = $records->map(r | [^IndexOperation(_id = $r->_id()), $r])->toOneMany(),
-      index = $name,
+      operations = $records->map(r | [^IndexOperation(_id = $r->_id()->literal()), $r])->toOneMany(),
+      index = $name->literal(),
       refresh = Refresh._true
   );
 
   let countData = ^CountRequest(
-      index = $name,
+      index = $name->literal(),
       body = ^CountRequestBody()
   );
 

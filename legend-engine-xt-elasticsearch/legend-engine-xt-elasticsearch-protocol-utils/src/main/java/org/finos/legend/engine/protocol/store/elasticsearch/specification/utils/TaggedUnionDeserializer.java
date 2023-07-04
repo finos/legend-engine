@@ -44,6 +44,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Multimaps;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 
 /**
  * Elasticsearch have 3 union variants: externally tagged, internally tagged, and simple union
@@ -85,23 +86,30 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
         for (BeanPropertyDefinition f : fields)
         {
             // disambiguate primitives + lists (they don't occur twice in unions)
-            if (f.getRawPrimaryType().equals(String.class))
+            JavaType primaryType = f.getPrimaryType();
+            Class<?> rawClass = primaryType.getRawClass();
+            if (rawClass.equals(LiteralOrExpression.class))
+            {
+                rawClass = primaryType.containedType(0).getRawClass();
+            }
+
+            if (rawClass.equals(String.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isTextual));
             }
-            else if (f.getRawPrimaryType().equals(Long.class))
+            else if (rawClass.equals(Long.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isIntegralNumber));
             }
-            else if (f.getRawPrimaryType().equals(Double.class))
+            else if (rawClass.equals(Double.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isDouble));
             }
-            else if (f.getRawPrimaryType().equals(Boolean.class))
+            else if (rawClass.equals(Boolean.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isBoolean));
             }
-            else if (List.class.isAssignableFrom(f.getRawPrimaryType()))
+            else if (List.class.isAssignableFrom(rawClass))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isArray));
             }

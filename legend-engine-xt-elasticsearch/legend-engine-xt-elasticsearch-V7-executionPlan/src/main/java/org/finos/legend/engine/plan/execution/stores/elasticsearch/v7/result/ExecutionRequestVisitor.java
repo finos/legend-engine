@@ -338,7 +338,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         @Override
         public Object visit(LongTermsBucket val)
         {
-            return Long.parseLong(val.key);
+            return Long.parseLong(val.key.getLiteral());
         }
 
         @Override
@@ -350,11 +350,11 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
     private static class AggregateTDSResultVisitor extends AbstractAggregateBaseVisitor<Object>
     {
-        private final TotalHits total;
+        private final boolean noHits;
 
         private AggregateTDSResultVisitor(TotalHits total)
         {
-            this.total = total;
+            this.noHits = total.value.getLiteral() == 0L;
         }
 
         @Override
@@ -366,7 +366,12 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         @Override
         public Object visit(AvgAggregate val)
         {
-            return this.total.value == 0L ? null : val.value;
+            return isNoHits() ? null : val.value;
+        }
+
+        private boolean isNoHits()
+        {
+            return this.noHits;
         }
 
         @Override
@@ -378,13 +383,13 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         @Override
         public Object visit(MaxAggregate val)
         {
-            return this.total.value == 0L ? null : val.value;
+            return isNoHits() ? null : val.value;
         }
 
         @Override
         public Object visit(MinAggregate val)
         {
-            return this.total.value == 0L ? null : val.value;
+            return isNoHits() ? null : val.value;
         }
 
         @Override

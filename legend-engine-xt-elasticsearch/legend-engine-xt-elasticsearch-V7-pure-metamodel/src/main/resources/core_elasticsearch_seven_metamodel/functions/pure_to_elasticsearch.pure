@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::elasticsearch::v7::specification::utils::*;
 import meta::external::store::elasticsearch::v7::metamodel::specification::types::aggregations::*;
 import meta::pure::router::utils::*;
 import meta::external::store::elasticsearch::v7::metamodel::property::*;
@@ -111,7 +112,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::resultPathToQuery(r
   let srps = $resultPaths->concatenate($frps.readFrom)->filter(x | $x->instanceOf(SourceFieldResultPath))->cast(@SourceFieldResultPath);
   let docps = $resultPaths->concatenate($frps.readFrom)->filter(x | $x->instanceOf(DocValueResultPath))->cast(@DocValueResultPath);
 
-  let seachWithSrps = $srps->isNotEmpty()->if(| ^$search(_source = ^SourceConfig(filter = ^SourceFilter(includes = $srps.path()))), | $search);
+  let seachWithSrps = $srps->isNotEmpty()->if(| ^$search(_source = ^SourceConfig(filter = ^SourceFilter(includes = $srps.path()->literal()))), | $search);
   let fields = $docps->map(x | $x->resultPathToFieldAndFormat());
   $fields->isEmpty()->if(|$seachWithSrps, |^$seachWithSrps(docvalue_fields = $fields));
 }
@@ -119,7 +120,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::resultPathToQuery(r
 function meta::external::store::elasticsearch::v7::pureToEs::resultPathToFieldAndFormat(resultPath: DocValueResultPath[1]): FieldAndFormat[1]
 {
   let format = if($resultPath.property->propertySupport().pureType == Date, | 'date_optional_time', | []);
-  ^FieldAndFormat(field = $resultPath.path(), format = $format);
+  ^FieldAndFormat(field = $resultPath.path()->literal(), format = $format->literal());
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1]): State[1] 
@@ -154,7 +155,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processLimit(vs : F
   assertFalse($currReq.aggregationQuery, |'limit not supported in aggregation queries');
   let limit = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->cast(@Integer)->toOne();
   let search = $currReq.search;
-  ^$currReq(search = ^$search(size = $limit));
+  ^$currReq(search = ^$search(size = $limit->literal()));
 }
 
 
@@ -165,7 +166,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processDrop(vs : Fu
   assertFalse($currReq.aggregationQuery, |'drop not supported in aggregstion queries');
   let drop = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->cast(@Integer)->toOne();
   let search = $currReq.search;
-  ^$currReq(search = ^$search(from = $drop));
+  ^$currReq(search = ^$search(from = $drop->literal()));
 }
 
 
@@ -213,8 +214,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
     |
       // with group by fields, we need to wrap it on composite
       let composite = ^CompositeAggregation(
-        size = 100, // todo deal with pagination
-        sources = $groupByTdsESDetails->map(x | newMap(pair($x.name, ^CompositeAggregationSource( terms = ^TermsAggregation(field = $x.path(), missing_bucket = true)))))
+        size = 100->literal(), // todo deal with pagination
+        sources = $groupByTdsESDetails->map(x | newMap(pair($x.name, ^CompositeAggregationSource( terms = ^TermsAggregation(field = $x.path()->literal(), missing_bucket = true->literal())))))
       );
       newMap(pair('groupByComposite', ^AggregationContainer(composite = $composite, aggregations = $aggregations)));
   );
@@ -226,9 +227,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
 
   let search = $groupedReq.search;
   let newSearch = ^$search(
-     size = 0 // avoiding reading all the matches, we just want the aggregate results
+     size = 0->literal() // avoiding reading all the matches, we just want the aggregate results
     ,aggregations = $aggregationsForSearch
-    ,_source = ^SourceConfig(fetch = false)
+    ,_source = ^SourceConfig(fetch = false->literal())
   );
 
   ^$groupedReq(
@@ -374,7 +375,7 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
   compositeSources : Pair<String, CompositeAggregationSource>[*]
 ): Map<String, AggregationContainer>[1]
 {
-  let bucketSize = 500;// up to 500 buckets for now
+  let bucketSize = 500->literal();// up to 500 buckets for now
 
   let compositeSourcesToSort = $toSort->map(x | $compositeSources->filter(m | $m.first == $x.first));
   let compositeSourcesNotToSort = $compositeSources->removeAll($compositeSourcesToSort);
@@ -427,7 +428,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupporte
 function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1] 
 {
   let req = ^State(    
-    search = ^SearchRequestBody(_source = ^SourceConfig(fetch = false), track_total_hits = ^TrackHits(count = 100)),
+    search = ^SearchRequestBody(_source = ^SourceConfig(fetch = false->literal()), track_total_hits = ^TrackHits(count = 100->literal())),
     inFilter = false,
     inProject = false,
     aggregationQuery = false,
@@ -443,7 +444,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQue
   let processedReq = $sq.fe->process($req);
   let search = $processedReq.search;
   // todo need to default to a number, using the default max per search operation - 10k - any better idea?
-  ^$processedReq(search = if($search.size->isEmpty(), | ^$search(size = if ($search.from->isEmpty(), | 10000, | 10000 - $search.from->toOne())), | $search));
+  ^$processedReq(search = if($search.size->isEmpty(), | ^$search(size = literal(if ($search.from->isEmpty(), | 10000, | 10000 - $search.from.value->toOne('Not a literal; expression not supported')))), | $search));
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions():Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*]
@@ -486,8 +487,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
       $tdsESDetail.resultPath.property->match([
         keyword: KeywordProperty[1] |
           if($tdsESDetail.resultPath->instanceOf(_IDResultPath),
-            | ^QueryContainer(ids = ^IdsQuery(values = $string)),
-            | ^QueryContainer(term = newMap(pair($tdsESDetail.path(), ^TermQuery(value = ^FieldValue(string = $string)))))
+            | ^QueryContainer(ids = ^IdsQuery(values = $string->literal())),
+            | ^QueryContainer(term = newMap(pair($tdsESDetail.path(), ^TermQuery(value = ^FieldValue(string = $string->literal())))))
           ),
         any: Any[1] | fail(|'not supported \'==\' on type: ' + $any->type()->toString() + '.'); $req.search.query;
       ])
@@ -496,7 +497,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
       ^QueryContainer(
         term = newMap(pair(
           $tdsESDetail.path(),
-          ^TermQuery(value = ^FieldValue(_long = $integer))
+          ^TermQuery(value = ^FieldValue(_long = $integer->literal()))
         ))
       );
     ,
@@ -504,7 +505,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
       ^QueryContainer(
         term = newMap(pair(
           $tdsESDetail.path(),
-          ^TermQuery(value = ^FieldValue(_double = $float))
+          ^TermQuery(value = ^FieldValue(_double = $float->literal()))
         ))
       );
     ,
@@ -512,7 +513,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
       ^QueryContainer(
         term = newMap(pair(
           $tdsESDetail.path(),
-          ^TermQuery(value = ^FieldValue(_boolean = $boolean))
+          ^TermQuery(value = ^FieldValue(_boolean = $boolean->literal()))
         ))
       );
     ,
@@ -520,12 +521,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
       ^QueryContainer(
         range = newMap(pair(
             $tdsESDetail.path(),
-            ^RangeQuery(date = ^DateRangeQuery(gte = $date->toString(), lte = $date->toString(), format = 'date_optional_time'))
+            ^RangeQuery(date = ^DateRangeQuery(gte = $date->toString()->literal(), lte = $date->toString()->literal(), format = 'date_optional_time'->literal()))
         ))
       );
     ,
     none: Any[0] |
-      let exists = ^QueryContainer(exists = ^ExistsQuery(field = $tdsESDetail.path()));
+      let exists = ^QueryContainer(exists = ^ExistsQuery(field = $tdsESDetail.path()->literal()));
       ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
     ,
     any: Any[*] | fail('not supported equality type: ' + $any->type()->toString() + '.  Only support simple data types')->cast(@QueryContainer);
@@ -554,20 +555,20 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : Func
       $tdsESDetail.resultPath.property->match([
         keyword: KeywordProperty[1] |
           if($tdsESDetail.resultPath->instanceOf(_IDResultPath),
-            | ^QueryContainer(ids = ^IdsQuery(values = $string)),
-            | ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $string->map(val | ^FieldValue(string = $val)))))))
+            | ^QueryContainer(ids = ^IdsQuery(values = $string->literal())),
+            | ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $string->map(val | ^FieldValue(string = $val->literal())))))))
           ),
         any: Any[1] | fail(|'not supported \'==\' on type: ' + $any->type()->toString() + '.'); $req.search.query;
       ])
     ,
     integer: Integer[*] |
-      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $integer->map(val | ^FieldValue(_long = $val)))))))
+      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $integer->map(val | ^FieldValue(_long = $val->literal())))))))
     ,
     float: Float[*] |
-      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $float->map(val | ^FieldValue(_double = $val)))))))
+      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $float->map(val | ^FieldValue(_double = $val->literal())))))))
     ,
     boolean: Boolean[*] |
-      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $boolean->map(val | ^FieldValue(_boolean = $val)))))))
+      ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $boolean->map(val | ^FieldValue(_boolean = $val->literal())))))))
     ,
     any: Any[*] | fail('not supported in type: ' + $any->type()->toString() + '.  Only support simple data types')->cast(@QueryContainer);
   ]);
@@ -578,22 +579,22 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : Func
 
 function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThan(vs : FunctionExpression[1], req: State[1]): State[1]
 {
-  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gt = $x), x: String[1] | ^DateRangeQuery(gt = $x, format = 'date_optional_time')), pair(x: Float[1] | ^NumberRangeQuery(lt = $x), x: String[1] | ^DateRangeQuery(lt = $x, format = 'date_optional_time'))], $req);
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gt = $x->literal()), x: String[1] | ^DateRangeQuery(gt = $x->literal(), format = 'date_optional_time'->literal())), pair(x: Float[1] | ^NumberRangeQuery(lt = $x->literal()), x: String[1] | ^DateRangeQuery(lt = $x->literal(), format = 'date_optional_time'->literal()))], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThanEqual(vs : FunctionExpression[1], req: State[1]): State[1]
 {
-  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gte = $x), x: String[1] | ^DateRangeQuery(gte = $x, format = 'date_optional_time')), pair(x: Float[1] | ^NumberRangeQuery(lte = $x), x: String[1] | ^DateRangeQuery(lte = $x, format = 'date_optional_time'))], $req);
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gte = $x->literal()), x: String[1] | ^DateRangeQuery(gte = $x->literal(), format = 'date_optional_time'->literal())), pair(x: Float[1] | ^NumberRangeQuery(lte = $x->literal()), x: String[1] | ^DateRangeQuery(lte = $x->literal(), format = 'date_optional_time'->literal()))], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processLessThan(vs : FunctionExpression[1], req: State[1]): State[1]
 {
-  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lt = $x), x: String[1] | ^DateRangeQuery(lt = $x, format = 'date_optional_time')), pair(x: Float[1] | ^NumberRangeQuery(gt = $x), x: String[1] | ^DateRangeQuery(gt = $x, format = 'date_optional_time'))], $req);
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lt = $x->literal()), x: String[1] | ^DateRangeQuery(lt = $x->literal(), format = 'date_optional_time'->literal())), pair(x: Float[1] | ^NumberRangeQuery(gt = $x->literal()), x: String[1] | ^DateRangeQuery(gt = $x->literal(), format = 'date_optional_time'->literal()))], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqual(vs : FunctionExpression[1], req: State[1]): State[1]
 {
-  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lte = $x), x: String[1] | ^DateRangeQuery(lte = $x, format = 'date_optional_time')), pair(x: Float[1] | ^NumberRangeQuery(gte = $x), x: String[1] | ^DateRangeQuery(gte = $x, format = 'date_optional_time'))], $req);
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lte = $x->literal()), x: String[1] | ^DateRangeQuery(lte = $x->literal(), format = 'date_optional_time'->literal())), pair(x: Float[1] | ^NumberRangeQuery(gte = $x->literal()), x: String[1] | ^DateRangeQuery(gte = $x->literal(), format = 'date_optional_time'->literal()))], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(vs : FunctionExpression[1], options: Pair<Function<{Float[1]->NumberRangeQuery[1]}>, Function<{String[1]->DateRangeQuery[1]}>>[2], req: State[1]): State[1]
@@ -631,7 +632,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull
 {
   assert($req.inFilter, 'TdsRow.isNotNull only supporter on filter context');
   let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
-  let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
 }
@@ -640,7 +641,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(v
 {
   assert($req.inFilter, '->isNotEmpty only supporter on filter context');
   let columnForNullCheck = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne()->cast(@TDSESDetail);
-  let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
 }
@@ -649,7 +650,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs
 {
   assert($req.inFilter, 'TdsRow.isNull only supporter on filter context');
   let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
-  let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let query = ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
@@ -659,7 +660,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIsEmpty(vs :
 {
   assert($req.inFilter, '->isEmpty only supporter on filter context');
   let columnForNullCheck = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne()->cast(@TDSESDetail);
-  let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let query = ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
@@ -677,7 +678,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processStartsWith(v
   let val = $rightSide->cast(@String);
 
   let query = $tdsESDetail.resultPath.property->match([
-    keyword: KeywordProperty[1] | ^QueryContainer(prefix = newMap(pair($tdsESDetail.path(), ^PrefixQuery(value = $val)))),
+    keyword: KeywordProperty[1] | ^QueryContainer(prefix = newMap(pair($tdsESDetail.path(), ^PrefixQuery(value = $val->literal())))),
     any: Any[1] | fail(|'not supported startsWith type: ' + $any->type()->toString() + '.'); $req.search.query;
   ]);
 
@@ -697,7 +698,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs 
   let val = $rightSide->cast(@String);
 
   let query = $tdsESDetail.resultPath.property->match([
-    keyword: KeywordProperty[1] | ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = '*' + $val)))),
+    keyword: KeywordProperty[1] | ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = literal('*' + $val))))),
     any: Any[1] | fail('not supported endsWith type: ' + $any->type()->toString() + '.'); $req.search.query;
   ]);
 
@@ -717,8 +718,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs 
   let val = $rightSide->cast(@String);
 
   let query = $tdsESDetail.resultPath.property->match([
-    keyword: KeywordProperty[1] | ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = '*' + $val + '*')))),
-    text: TextProperty[1] | ^QueryContainer(match_phrase_prefix = newMap(pair($tdsESDetail.path(), ^MatchPhrasePrefixQuery(query = $val)))),
+    keyword: KeywordProperty[1] | ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = literal('*' + $val + '*'))))),
+    text: TextProperty[1] | ^QueryContainer(match_phrase_prefix = newMap(pair($tdsESDetail.path(), ^MatchPhrasePrefixQuery(query = $val->literal())))),
     any: Any[1] | fail('not supported contains type: ' + $any->type()->toString() + '.'); $req.search.query;
   ]);
 
@@ -744,7 +745,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processOr(vs : Func
   let leftSide = $vs.parametersValues->at(0)->processFilterLambda($req);
   let rightSide = $vs.parametersValues->at(1)->processFilterLambda($req);
 
-  let bool = ^BoolQuery(minimum_should_match = '1', should = [ $leftSide.search.query->toOne(), $rightSide.search.query->toOne() ]);
+  let bool = ^BoolQuery(minimum_should_match = literal('1'), should = [ $leftSide.search.query->toOne(), $rightSide.search.query->toOne() ]);
   let query = ^QueryContainer( bool = $bool );
 
   let search = $req.search;
@@ -850,22 +851,22 @@ function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: Fu
 function meta::external::store::elasticsearch::v7::pureToEs::supportedAggregationFunctions(): Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  String[1]->AggregationContainer[1]}>>[*]
 {
   let supported = [
-     pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Integer_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Float_MANY__Float_1_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Number_MANY__Number_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y))})
+     pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Integer_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Float_MANY__Float_1_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::sum_Number_MANY__Number_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
     
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::max_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
     
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Float_MANY__Float_$0_1$_,     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::min_Number_MANY__Number_$0_1$_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
 
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Integer_MANY__Float_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Float_MANY__Float_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Number_MANY__Float_1_,  {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Integer_MANY__Float_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Float_MANY__Float_1_,   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y->literal()))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::math::average_Number_MANY__Float_1_,  {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(avg = ^AverageAggregation(field = $y->literal()))})
 
-    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::collection::count_Any_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(value_count = ^ValueCountAggregation(field = $y))})
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::collection::count_Any_MANY__Integer_1_, {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(value_count = ^ValueCountAggregation(field = $y->literal()))})
   ];
 }

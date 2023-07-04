@@ -59,12 +59,31 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
     tags = ['esQuirk', 'docURL', 'specLocation', 'since', 'stability', 'name', 'internalTag']
   );
 
+  let literalOrExpression = ^meta::protocols::pure::vX_X_X::metamodel::domain::Class(
+     _type = 'class',
+     package = $pkgPrefix,
+     name = 'LiteralOrExpression<T>',
+     properties = [
+        ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+          name = 'value',
+          type = 'T',
+          multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+        ),
+        ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
+          name = 'expression',
+          type = 'String',
+          multiplicity = ZeroOne->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+        )
+     ],
+    stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $pkgPrefix + '::ESProfile', value = 'TaggedUnion')
+  )->addConstraints();
+
   let generated = $specAsJson->parse()->specToPure($pkgPrefix, $apisToGenerate, $debug).generated;
   let protocol = ^meta::protocols::Protocol(name='pure', version='vX_X_X');
   let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData(
       _type = 'data',
       serializer = $protocol,
-      elements = $esProfile->concatenate($generated)
+      elements = [$esProfile, $literalOrExpression]->concatenate($generated)
   );
 
   let pureCode = $pmcd->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
@@ -220,16 +239,38 @@ meta::external::store::elasticsearch::specification::metamodel::getBuiltInTypes(
 {
   [
     pair(^TypeName(namespace = '_builtins', name = 'null'), 'Nil'),
-    pair(^TypeName(namespace = '_builtins', name = 'boolean'), 'Boolean'),
-    pair(^TypeName(namespace = '_builtins', name = 'string'), 'String'),
-    pair(^TypeName(namespace = '_builtins', name = 'number'), 'Number'),
-    pair(^TypeName(namespace = '_types', name = 'integer'), 'Integer'),
-    pair(^TypeName(namespace = '_types', name = 'long'), 'Integer'),
-    pair(^TypeName(namespace = '_types', name = 'double'), 'Float'),
-    pair(^TypeName(namespace = '_types', name = 'float'), 'Float'),
+    pair(^TypeName(namespace = '_builtins', name = 'boolean'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Boolean>'),
+    pair(^TypeName(namespace = '_builtins', name = 'string'), stringType()),
+    pair(^TypeName(namespace = '_builtins', name = 'number'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Number>'),
+    pair(^TypeName(namespace = '_types', name = 'integer'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>'),
+    pair(^TypeName(namespace = '_types', name = 'long'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>'),
+    pair(^TypeName(namespace = '_types', name = 'double'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>'),
+    pair(^TypeName(namespace = '_types', name = 'float'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>'),
     pair(^TypeName(namespace = '_types', name = 'DictionaryResponseBase'), 'Map'),
     pair(^TypeName(namespace = '_spec_utils', name = 'Void'), 'Nil')
   ];
+}
+
+function
+<<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::primitiveTypes(): String[*]
+{
+  [
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Boolean>',
+    stringType(),
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Number>',
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>',
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>',
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>',
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>'
+  ];
+}
+
+function
+<<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::stringType(): String[1]
+{
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<String>';
 }
 
 function
@@ -479,7 +520,7 @@ meta::external::store::elasticsearch::specification::metamodel::propertyTypeToPu
       let valueType = $mapT.value->propertyTypeToPureType($state);
       let valueMult = $mapT.value->propertyTypeMultiplicity(false, $state);
       let mapValue = if($valueMult->isToMany(), |'List<%s>'->format($valueType), |$valueType);
-      'Map<%s, %s>'->format([ $keyType, $mapValue ]);
+      'Map<%s, %s>'->format([ if ($keyType->endsWith(stringType()), |'String', |$keyType), $mapValue ]);
     },
     instanceT: InstanceOf[1] | $instanceT->instanceOfTypeToPureType($state),
     unionT: UnionOf[1] | $unionT->unionOfTypeToPureType($state),
@@ -501,12 +542,12 @@ meta::external::store::elasticsearch::specification::metamodel::unionOfTypeToPur
       $distinct->at(0);
     },
     {|
-      let noPrimitives = $distinct->filter(x | $x->contains('::'));
+      let noPrimitives = $distinct->removeAll(primitiveTypes());
       if($noPrimitives->size() == 1,
         |$noPrimitives->at(0),
         |
-          if($distinct->exists(x | $x == 'String'),
-            |'String',
+          if($distinct->contains(stringType()),
+            |stringType(),
             |'Any'
           )
       );
