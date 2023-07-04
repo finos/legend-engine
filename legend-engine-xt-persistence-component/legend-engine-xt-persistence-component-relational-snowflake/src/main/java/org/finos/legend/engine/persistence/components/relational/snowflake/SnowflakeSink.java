@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
@@ -28,6 +30,10 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
@@ -37,8 +43,10 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -82,6 +90,8 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
+        logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
+
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -145,6 +155,20 @@ public class SnowflakeSink extends AnsiSqlSink
             },
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
             (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
+    }
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
+    {
+        if (relationalConnection instanceof JdbcConnection)
+        {
+            JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
+            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only JdbcConnection is supported for Snowflake Sink");
+        }
     }
 
     @Override

@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 
@@ -30,19 +29,19 @@ import java.util.regex.Pattern;
 public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 {
     private final RelationalSink relationalSink;
-    private final JdbcHelper jdbcHelper;
+    private final RelationalExecutionHelper relationalExecutionHelper;
 
-    public RelationalExecutor(RelationalSink relationalSink, JdbcHelper jdbcHelper)
+    public RelationalExecutor(RelationalSink relationalSink, RelationalExecutionHelper relationalExecutionHelper)
     {
         this.relationalSink = relationalSink;
-        this.jdbcHelper = jdbcHelper;
+        this.relationalExecutionHelper = relationalExecutionHelper;
     }
 
     @Override
     public void executePhysicalPlan(SqlPlan physicalPlan)
     {
         List<String> sqlList = physicalPlan.getSqlList();
-        jdbcHelper.executeStatements(sqlList);
+        relationalExecutionHelper.executeStatements(sqlList);
     }
 
     @Override
@@ -52,7 +51,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : sqlList)
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            jdbcHelper.executeStatement(enrichedSql);
+            relationalExecutionHelper.executeStatement(enrichedSql);
         }
     }
 
@@ -62,7 +61,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(sql);
+            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql);
             if (!queryResult.isEmpty())
             {
                 resultSetList.add(new TabularData(queryResult));
@@ -78,7 +77,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(enrichedSql);
+            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {
                 resultSetList.add(new TabularData(queryResult));
@@ -90,43 +89,43 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     @Override
     public boolean datasetExists(Dataset dataset)
     {
-        return relationalSink.datasetExistsFn().apply(this, jdbcHelper, dataset);
+        return relationalSink.datasetExistsFn().apply(this, relationalExecutionHelper, dataset);
     }
 
     @Override
     public void validateMainDatasetSchema(Dataset dataset)
     {
-        relationalSink.validateMainDatasetSchemaFn().execute(this, jdbcHelper, dataset);
+        relationalSink.validateMainDatasetSchemaFn().execute(this, relationalExecutionHelper, dataset);
     }
 
     @Override
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName)
     {
-        return relationalSink.constructDatasetFromDatabaseFn().execute(this, jdbcHelper, tableName, schemaName, databaseName);
+        return relationalSink.constructDatasetFromDatabaseFn().execute(this, relationalExecutionHelper, tableName, schemaName, databaseName);
     }
 
     @Override
     public void begin()
     {
-        jdbcHelper.beginTransaction();
+        relationalExecutionHelper.beginTransaction();
     }
 
     @Override
     public void commit()
     {
-        jdbcHelper.commitTransaction();
+        relationalExecutionHelper.commitTransaction();
     }
 
     @Override
     public void revert()
     {
-        jdbcHelper.revertTransaction();
+        relationalExecutionHelper.revertTransaction();
     }
 
     @Override
     public void close()
     {
-        jdbcHelper.closeTransactionManager();
+        relationalExecutionHelper.closeTransactionManager();
     }
 
     private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)

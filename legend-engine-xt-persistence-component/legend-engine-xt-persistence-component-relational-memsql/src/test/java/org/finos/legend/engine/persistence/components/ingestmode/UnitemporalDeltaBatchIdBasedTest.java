@@ -293,22 +293,20 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
-        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
-                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
-                "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
-                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-                "(sink.`digest` <> stage.`digest`)))";
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
+                "WHERE (sink.`batch_id_out` = 999999999) AND (EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
+                "WHERE (((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`)) " +
+                "AND (stage.`batch_id_in` > 5)))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999 " +
-                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE (sink.`batch_id_out` = 999999999) " +
-                "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE " +
+                "UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 FROM `mydb`.`staging` as stage " +
+                "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) " +
+                "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) " +
+                "AND (stage.`batch_id_in` > 5))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -365,20 +363,18 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         List<String> metadataIngestSql = operations.metadataIngestSql();
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
-                "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
-                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-                "(stage.`version` > sink.`version`)))";
+                "WHERE (sink.`batch_id_out` = 999999999) AND (EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
+                "WHERE (((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(stage.`version` > sink.`version`)) AND (stage.`batch_id_in` > 5)))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999 " +
-                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE (sink.`batch_id_out` = 999999999) " +
-                "AND (stage.`version` <= sink.`version`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
+                "999999999 FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS " +
+                "(SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) AND " +
+                "(stage.`version` <= sink.`version`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) " +
+                "AND (stage.`batch_id_in` > 5))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));

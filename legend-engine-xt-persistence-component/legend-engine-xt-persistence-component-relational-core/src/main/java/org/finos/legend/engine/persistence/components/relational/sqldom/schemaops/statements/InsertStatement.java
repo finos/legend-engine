@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.select.SelectExpression;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.select.ValuesExpression;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
 
@@ -81,9 +82,16 @@ public class InsertStatement implements DMLStatement
         }
 
         builder.append(WHITE_SPACE);
-        builder.append(OPEN_PARENTHESIS);
-        selectExpression.genSql(builder);
-        builder.append(CLOSING_PARENTHESIS);
+        if (selectExpression instanceof ValuesExpression)
+        {
+            selectExpression.genSql(builder);
+        }
+        else
+        {
+            builder.append(OPEN_PARENTHESIS);
+            selectExpression.genSql(builder);
+            builder.append(CLOSING_PARENTHESIS);
+        }
     }
 
     @Override

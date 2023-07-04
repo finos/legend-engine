@@ -105,17 +105,10 @@ public class LogicalPlanFactory
     public static LogicalPlan getLogicalPlanForMinAndMaxForField(Dataset dataset, String fieldName)
     {
         FieldValue field = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(fieldName).build();
-        Selection.Builder selectionBuilder = Selection.builder()
+        Selection selection = Selection.builder()
             .addFields(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(field).alias(MIN_OF_FIELD).build())
             .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
-            .source(dataset);
-
-        Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(dataset);
-        if (filterCondition.isPresent())
-        {
-            selectionBuilder = selectionBuilder.condition(filterCondition);
-        }
-
-        return LogicalPlan.builder().addOps(selectionBuilder.build()).build();
+            .source(dataset).build();
+        return LogicalPlan.builder().addOps(selection).build();
     }
 }

@@ -56,7 +56,7 @@ class InsertTest
 
         String sql = BaseTest.genSqlIgnoringErrors(insertStatement);
 
-        assertEquals("INSERT INTO \"mydb\".\"mytable\" (\"col1\", \"col2\", \"col3\", \"col4\") (VALUES (1,'2',3.05,4),(11,'22',33.05,44))", sql);
+        assertEquals("INSERT INTO \"mydb\".\"mytable\" (\"col1\", \"col2\", \"col3\", \"col4\") VALUES (1,'2',3.05,4),(11,'22',33.05,44)", sql);
     }
 
     @Test

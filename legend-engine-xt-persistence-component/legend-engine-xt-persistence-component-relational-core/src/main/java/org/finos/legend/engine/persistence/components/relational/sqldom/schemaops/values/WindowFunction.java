@@ -20,8 +20,13 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.*;
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.ORDER_BY;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.OVER;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.PARTITION_BY;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class WindowFunction extends Value
 {

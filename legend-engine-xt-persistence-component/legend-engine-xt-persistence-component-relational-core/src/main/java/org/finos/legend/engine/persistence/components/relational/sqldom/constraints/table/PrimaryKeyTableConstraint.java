@@ -20,15 +20,27 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.NOT_ENFORCED;
+
 public class PrimaryKeyTableConstraint extends TableConstraint
 {
     private final List<String> columnNames;
     private final String quoteIdentifier;
 
+    private boolean notEnforced;
+
     public PrimaryKeyTableConstraint(List<String> columnNames, String quoteIdentifier)
     {
         this.columnNames = columnNames;
         this.quoteIdentifier = quoteIdentifier;
+        this.notEnforced = false;
+    }
+
+    public PrimaryKeyTableConstraint(List<String> columnNames, String quoteIdentifier, boolean notEnforced)
+    {
+        this.columnNames = columnNames;
+        this.quoteIdentifier = quoteIdentifier;
+        this.notEnforced = notEnforced;
     }
 
     public List<String> getColumnNames()
@@ -38,7 +50,7 @@ public class PrimaryKeyTableConstraint extends TableConstraint
 
     public PrimaryKeyTableConstraint withColumnNames(List<String> columnNames)
     {
-        return new PrimaryKeyTableConstraint(columnNames, quoteIdentifier);
+        return new PrimaryKeyTableConstraint(columnNames, quoteIdentifier, notEnforced);
     }
 
     @Override
@@ -47,6 +59,10 @@ public class PrimaryKeyTableConstraint extends TableConstraint
         validate();
         String primaryKeys = columnNames.stream().map(column -> SqlGenUtils.getQuotedField(column, quoteIdentifier)).collect(Collectors.joining(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE));
         builder.append(String.format("PRIMARY KEY (%s)", primaryKeys));
+        if (notEnforced)
+        {
+            builder.append(" " + NOT_ENFORCED.get());
+        }
     }
 
     @Override

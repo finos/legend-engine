@@ -54,7 +54,9 @@ public enum Clause
     OVER("OVER"),
     PARTITION_BY("PARTITION BY"),
     ORDER_BY("ORDER BY"),
-    CLUSTER_BY("CLUSTER BY");
+    CLUSTER_BY("CLUSTER BY"),
+    NOT_ENFORCED("NOT ENFORCED"),
+    DATA_TYPE("DATA TYPE");
 
     private final String clause;
 

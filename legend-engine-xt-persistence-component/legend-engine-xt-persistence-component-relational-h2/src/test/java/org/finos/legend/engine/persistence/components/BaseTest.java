@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.relational.api.IngestorRes
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
@@ -145,7 +146,7 @@ public class BaseTest
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .build();
-        IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
+        IngestorResult result = ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -185,7 +186,7 @@ public class BaseTest
             .enableSchemaEvolution(options.enableSchemaEvolution())
             .build();
 
-        List<IngestorResult> results = ingestor.ingestWithDataSplits(h2Sink.connection(), datasets, dataSplitRanges);
+        List<IngestorResult> results = ingestor.ingestWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
@@ -231,7 +232,7 @@ public class BaseTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
-        IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
+        IngestorResult result = ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 

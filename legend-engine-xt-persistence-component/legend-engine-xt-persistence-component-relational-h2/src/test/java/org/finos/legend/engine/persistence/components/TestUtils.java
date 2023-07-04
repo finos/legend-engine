@@ -26,7 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
@@ -1154,14 +1154,14 @@ public class TestUtils
     }
 
     // This is to check the actual database table - whether columns have the right nullability
-    public static String getIsColumnNullableFromTable(JdbcHelper sink, String tableName, String columnName)
+    public static String getIsColumnNullableFromTable(RelationalExecutionHelper sink, String tableName, String columnName)
     {
         List<Map<String, Object>> result = sink.executeQuery("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
         return result.get(0).get("IS_NULLABLE").toString();
     }
 
     // This is to check the actual database table - the length (precision) of the column data type
-    public static int getColumnDataTypeLengthFromTable(JdbcHelper sink, String tableName, String columnName)
+    public static int getColumnDataTypeLengthFromTable(RelationalExecutionHelper sink, String tableName, String columnName)
     {
         List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_PRECISION, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
         Object precisionOrLength = Optional.ofNullable(result.get(0).get("NUMERIC_PRECISION")).orElseGet(() ->
@@ -1171,7 +1171,7 @@ public class TestUtils
     }
 
     // This is to check the actual database table - the scale of the column data type
-    public static int getColumnDataTypeScaleFromTable(JdbcHelper sink, String tableName, String columnName)
+    public static int getColumnDataTypeScaleFromTable(RelationalExecutionHelper sink, String tableName, String columnName)
     {
         List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
         return Integer.parseInt(result.get(0).get("NUMERIC_SCALE").toString());

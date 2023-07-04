@@ -28,5 +28,12 @@ public enum FunctionName
     UPPER,
     ROW_NUMBER,
     SUBSTRING,
-    PARSE_JSON;
+    PARSE_JSON,
+    DATE,
+    DATE_TRUNC,
+    DATETIME_TRUNC,
+    TIMESTAMP_TRUNC,
+    RANGE_BUCKET,
+    GENERATE_ARRAY,
+    PARSE_DATETIME;
 }

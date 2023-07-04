@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
@@ -46,14 +47,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class JdbcHelper
+public class JdbcHelper implements RelationalExecutionHelper
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
     private final Connection connection;
     private JdbcTransactionManager transactionManager;
 
-    public static final String COLUMN_NAME = "COLUMN_NAME";
     public static final String TYPE_NAME = "TYPE_NAME";
     public static final String DATA_TYPE = "DATA_TYPE";
     public static final String COLUMN_SIZE = "COLUMN_SIZE";
@@ -79,6 +79,7 @@ public class JdbcHelper
         return connection;
     }
 
+    @Override
     public void beginTransaction()
     {
         try
@@ -92,6 +93,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void commitTransaction()
     {
         if (this.transactionManager != null)
@@ -107,6 +109,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void revertTransaction()
     {
         if (this.transactionManager != null)
@@ -122,6 +125,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void closeTransactionManager()
     {
         try
@@ -138,6 +142,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public boolean doesTableExist(Dataset dataset)
     {
         try
@@ -145,7 +150,7 @@ public class JdbcHelper
             String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
-            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[]{Clause.TABLE.get()});
+            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[] {Clause.TABLE.get()});
             return result.isBeforeFirst(); // This method returns true if ResultSet is not empty
         }
         catch (SQLException e)
@@ -154,6 +159,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
     {
         try
@@ -173,7 +179,7 @@ public class JdbcHelper
             ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(database, schema, name);
             while (primaryKeyResult.next())
             {
-                primaryKeys.add(primaryKeyResult.getString(COLUMN_NAME));
+                primaryKeys.add(primaryKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             // Get unique keys
@@ -181,12 +187,12 @@ public class JdbcHelper
             ResultSet uniqueKeyResult = dbMetaData.getIndexInfo(database, schema, name, true, false);
             while (uniqueKeyResult.next())
             {
-                uniqueKeys.add(uniqueKeyResult.getString(COLUMN_NAME));
+                uniqueKeys.add(uniqueKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             while (result.next())
             {
-                String columnName = result.getString(COLUMN_NAME);
+                String columnName = result.getString(RelationalExecutionHelper.COLUMN_NAME);
 
                 // Get the datatype
                 String typeName = result.getString(TYPE_NAME);
@@ -243,6 +249,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
     {
         try
@@ -254,7 +261,7 @@ public class JdbcHelper
             ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(databaseName, schemaName, tableName);
             while (primaryKeyResult.next())
             {
-                primaryKeys.add(primaryKeyResult.getString(COLUMN_NAME));
+                primaryKeys.add(primaryKeyResult.getString(RelationalExecutionHelper.COLUMN_NAME));
             }
 
             // Get all unique constraints and indices
@@ -265,7 +272,7 @@ public class JdbcHelper
             while (indexResult.next())
             {
                 String indexName = indexResult.getString(INDEX_NAME);
-                String columnName = indexResult.getString(COLUMN_NAME);
+                String columnName = indexResult.getString(RelationalExecutionHelper.COLUMN_NAME);
                 boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
 
                 if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
@@ -303,7 +310,7 @@ public class JdbcHelper
             ResultSet columnResult = dbMetaData.getColumns(databaseName, schemaName, tableName, null);
             while (columnResult.next())
             {
-                String columnName = columnResult.getString(COLUMN_NAME);
+                String columnName = columnResult.getString(RelationalExecutionHelper.COLUMN_NAME);
                 String typeName = columnResult.getString(TYPE_NAME);
                 String dataType = JDBCType.valueOf(columnResult.getInt(DATA_TYPE)).getName();
                 int columnSize = columnResult.getInt(COLUMN_SIZE);
@@ -379,12 +386,14 @@ public class JdbcHelper
     }
 
 
+    @Override
     public void executeStatement(String sql)
     {
         List<String> sqls = Collections.singletonList(sql);
         executeStatements(sqls);
     }
 
+    @Override
     public void executeStatements(List<String> sqls)
     {
         if (this.transactionManager != null)
@@ -447,6 +456,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public List<Map<String, Object>> executeQuery(String sql)
     {
         if (this.transactionManager != null)
@@ -482,6 +492,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void close()
     {
         try

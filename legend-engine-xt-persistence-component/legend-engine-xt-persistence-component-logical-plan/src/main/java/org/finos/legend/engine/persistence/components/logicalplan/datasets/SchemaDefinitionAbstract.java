@@ -36,6 +36,8 @@ public interface SchemaDefinitionAbstract extends Schema
 
     List<ClusterKey> clusterKeys();
 
+    List<PartitionKey> partitionKeys();
+
     Optional<ColumnStoreSpecification> columnStoreSpecification();
 
     Optional<ShardSpecification> shardSpecification();

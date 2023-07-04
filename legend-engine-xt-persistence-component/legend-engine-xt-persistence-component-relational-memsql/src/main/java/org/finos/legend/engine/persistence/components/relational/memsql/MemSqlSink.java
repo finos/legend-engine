@@ -33,6 +33,10 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
@@ -40,6 +44,7 @@ import org.finos.legend.engine.persistence.components.relational.memsql.sql.visi
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -91,6 +96,7 @@ public class MemSqlSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
+        logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -156,6 +162,20 @@ public class MemSqlSink extends AnsiSqlSink
             });
     }
 
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
+    {
+        if (relationalConnection instanceof JdbcConnection)
+        {
+            JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
+            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only JdbcConnection is supported for MemSql Sink");
+        }
+    }
+
 
     @Override
     public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
@@ -176,7 +196,7 @@ public class MemSqlSink extends AnsiSqlSink
     static final ValidateMainDatasetSchema VALIDATE_MAIN_DATASET_SCHEMA = new ValidateMainDatasetSchema()
     {
         @Override
-        public void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset)
+        public void execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset)
         {
             RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get());
             LogicalPlan validateDatasetSchemaLogicalPlan = LogicalPlanFactory.getLogicalPlanForValidateDatasetSchema(dataset);

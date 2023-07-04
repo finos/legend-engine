@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.*;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.findCommonPrimaryFieldsBetweenMainAndStaging;
 
 public class IngestModeOptimizationColumnHandler implements IngestModeVisitor<IngestMode>
 {
@@ -92,9 +93,9 @@ public class IngestModeOptimizationColumnHandler implements IngestModeVisitor<In
             List<Field> primaryKeys = findCommonPrimaryFieldsBetweenMainAndStaging(datasets.mainDataset(), datasets.stagingDataset());
             List<Field> comparablePrimaryKeys = primaryKeys.stream().filter(field -> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(field.type().dataType())).collect(Collectors.toList());
             optimizationFilters = new ArrayList<>();
-            for (Field field: comparablePrimaryKeys)
+            for (Field field : comparablePrimaryKeys)
             {
-                OptimizationFilter filter = OptimizationFilter.of(field.name(),field.name().toUpperCase() + "_LOWER", field.name().toUpperCase() + "_UPPER");
+                OptimizationFilter filter = OptimizationFilter.of(field.name(), field.name().toUpperCase() + "_LOWER", field.name().toUpperCase() + "_UPPER");
                 optimizationFilters.add(filter);
             }
         }

@@ -56,6 +56,8 @@ public enum DataType
     LONGNVARCHAR,
     UNDEFINED,
     INT64,
+    FLOAT64,
+    BYTES,
     STRING,
     BOOL,
     LONGTEXT,
@@ -67,13 +69,13 @@ public enum DataType
 
     public static boolean isStringDatatype(DataType type)
     {
-        List<DataType> stringDatatype = new ArrayList<DataType>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON, STRING));
+        List<DataType> stringDatatype = new ArrayList<>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON, STRING));
         return stringDatatype.contains(type);
     }
 
     public static Set<DataType> getComparableDataTypes()
     {
-        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
+        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, FLOAT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
             TIME, TIMESTAMP, TIMESTAMP_NTZ, TIMESTAMP_TZ, TIMESTAMP_LTZ, DATETIME, TIMESTAMPTZ, DATE));
     }
 }

@@ -18,8 +18,11 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.sink.Sink;
@@ -114,18 +117,72 @@ public abstract class RelationalSink implements Sink
 
     public abstract Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion);
 
+    public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection connection);
+
+    //evolve to = field to replace main column (datatype)
+    //evolve from = reference field to compare sizing/nullability requirements
+    @Override
+    public Field evolveFieldLength(Field evolveFrom, Field evolveTo)
+    {
+        Optional<Integer> length = evolveTo.type().length();
+        Optional<Integer> scale = evolveTo.type().scale();
+
+        //If the oldField and newField have a length associated, pick the greater length
+        if (evolveFrom.type().length().isPresent() && evolveTo.type().length().isPresent())
+        {
+            length = evolveTo.type().length().get() >= evolveFrom.type().length().get()
+                    ? evolveTo.type().length()
+                    : evolveFrom.type().length();
+        }
+        //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (evolveFrom.type().dataType().equals(evolveTo.type().dataType())
+                && evolveFrom.type().length().isPresent() && !evolveTo.type().length().isPresent())
+        {
+            length = evolveFrom.type().length();
+        }
+
+        //If the oldField and newField have a scale associated, pick the greater scale
+        if (evolveFrom.type().scale().isPresent() && evolveTo.type().scale().isPresent())
+        {
+            scale = evolveTo.type().scale().get() >= evolveFrom.type().scale().get()
+                    ? evolveTo.type().scale()
+                    : evolveFrom.type().scale();
+        }
+        //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (evolveFrom.type().dataType().equals(evolveTo.type().dataType())
+                && evolveFrom.type().scale().isPresent() && !evolveTo.type().scale().isPresent())
+        {
+            scale = evolveFrom.type().scale();
+        }
+        return createNewField(evolveTo, evolveFrom, length, scale);
+    }
+
+
+    @Override
+    public Field createNewField(Field evolveTo, Field evolveFrom, Optional<Integer> length, Optional<Integer> scale)
+    {
+        FieldType modifiedFieldType = FieldType.of(evolveTo.type().dataType(), length, scale);
+        boolean nullability = evolveTo.nullable() || evolveFrom.nullable();
+
+        //todo : how to handle default value, identity, uniqueness ?
+        return Field.builder().name(evolveTo.name()).primaryKey(evolveTo.primaryKey())
+                .fieldAlias(evolveTo.fieldAlias()).nullable(nullability)
+                .identity(evolveTo.identity()).unique(evolveTo.unique())
+                .defaultValue(evolveTo.defaultValue()).type(modifiedFieldType).build();
+    }
+
     public interface DatasetExists
     {
-        boolean apply(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset);
+        boolean apply(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
     public interface ValidateMainDatasetSchema
     {
-        void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset);
+        void execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
     public interface ConstructDatasetFromDatabase
     {
-        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, String tableName, String schemaName, String databaseName);
+        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, String tableName, String schemaName, String databaseName);
     }
 }

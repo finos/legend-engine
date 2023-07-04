@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi;
 
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
@@ -77,6 +78,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.WindowF
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
+import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.AllQuantifierVisitor;
@@ -135,6 +137,9 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -284,6 +289,12 @@ public class AnsiSqlSink extends RelationalSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
+    }
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection connection)
+    {
+        throw new UnsupportedOperationException("No executor supported for AnsiSql Sink");
     }
 
     // utility methods

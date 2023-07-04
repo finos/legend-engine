@@ -20,7 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -93,7 +93,7 @@ class NontemporalDeltaPlanner extends Planner
 
         // Perform Deduplication & Filtering of Staging Dataset
         this.enrichedStagingDataset = ingestMode().versioningStrategy()
-            .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
+            .accept(new DatasetDeduplicator(stagingDataset(), primaryKeys));
     }
 
     @Override
@@ -194,6 +194,12 @@ class NontemporalDeltaPlanner extends Planner
             versioningCondition = this.versioningCondition;
         }
 
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
+        }
+
         Merge merge = Merge.builder()
             .dataset(mainDataset())
             .usingDataset(stagingDataset)
@@ -202,13 +208,6 @@ class NontemporalDeltaPlanner extends Planner
             .onCondition(this.pkMatchCondition)
             .matchedCondition(versioningCondition)
             .build();
-
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
-            merge = merge.withUnmatchedKeyValuePairs(keyValuePairs);
-        }
 
         return merge;
     }

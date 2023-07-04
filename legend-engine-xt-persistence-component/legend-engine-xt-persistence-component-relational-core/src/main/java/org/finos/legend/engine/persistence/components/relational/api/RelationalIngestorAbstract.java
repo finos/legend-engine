@@ -158,12 +158,12 @@ public abstract class RelationalIngestorAbstract
 
     // ---------- API ----------
 
-    public IngestorResult ingest(Connection connection, Datasets datasets)
+    public IngestorResult ingest(RelationalConnection connection, Datasets datasets)
     {
         return ingest(connection, datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
     }
 
-    public List<IngestorResult> ingestWithDataSplits(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    public List<IngestorResult> ingestWithDataSplits(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
         // Provide the default dataSplit ranges if missing
         if (dataSplitRanges == null || dataSplitRanges.isEmpty())
@@ -175,13 +175,13 @@ public abstract class RelationalIngestorAbstract
 
     // ---------- UTILITY METHODS ----------
 
-    private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    private List<IngestorResult> ingest(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
         IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
         Datasets enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
-        Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
+        Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
 
         Resources.Builder resourcesBuilder = Resources.builder();
         Datasets updatedDatasets = enrichedDatasets;
@@ -201,7 +201,7 @@ public abstract class RelationalIngestorAbstract
         }
 
         boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
-        if (mainDatasetExists)
+        if (mainDatasetExists && enableSchemaEvolution())
         {
             updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
         }
