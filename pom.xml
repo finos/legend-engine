@@ -35,6 +35,9 @@
             otherwise, publishing could fail
         -->
 
+        <module>legend-engine-core-executionPlan-execution</module>
+        <module>legend-engine-core-language-pure</module>
+
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
         <module>legend-engine-xts-relationalStore</module>
@@ -113,20 +116,10 @@
         <module>legend-engine-pure-runtime-compiler</module>
 
         <module>legend-engine-executionPlan-generation</module>
-        <module>legend-engine-executionPlan-dependencies</module>
-        <module>legend-engine-executionPlan-execution</module>
-        <module>legend-engine-executionPlan-execution-api</module>
-        <module>legend-engine-executionPlan-execution-store-inMemory</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
         <module>legend-engine-external-language-java</module>
-        <module>legend-engine-language-pure-modelManager</module>
-        <module>legend-engine-language-pure-modelManager-sdlc</module>
-        <module>legend-engine-language-pure-compiler</module>
-        <module>legend-engine-language-pure-compiler-api</module>
-        <module>legend-engine-language-pure-grammar</module>
-        <module>legend-engine-language-pure-grammar-api</module>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
@@ -147,7 +140,6 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
         <module>legend-engine-testable</module>
-        <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
