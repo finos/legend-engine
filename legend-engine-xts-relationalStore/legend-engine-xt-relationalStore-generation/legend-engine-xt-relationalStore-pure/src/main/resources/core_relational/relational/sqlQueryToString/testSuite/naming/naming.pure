@@ -116,7 +116,8 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
   //  'insert into "test Table2"("Column&ID", "My#Data") values (3,\'Description A\');'
   //  ];
    
-   let records ='default\n'+
+   let records =
+               'default\n'+
                 'testTable\n'+
                 'ID, "Column Name with Space", "Column&A", "Column.ID"\n'+
                 '1,2,0,3\n'+
@@ -129,7 +130,7 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
                  '---\n'+
                 'default\n'+
                 'testTable3\n'+
-                'ABCDEFGHIJKLMNOPQRSTUVWXYZ,"0123456789","!\"#$%&()*+-./:;<=>?@[\]^_`{|}",abcdefghijklmnopqrstuvwxzy\n'+
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ,"0123456789","!\\"#$%&()*+-./:;<=>?@[\]^_`{|}",abcdefghijklmnopqrstuvwxzy\n'+
                 '0,1,testData,2\n'+
                  '---\n'+
                 'default\n'+
@@ -202,7 +203,7 @@ Database meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::m
     (
       ABCDEFGHIJKLMNOPQRSTUVWXYZ INT PRIMARY KEY,
       "0123456789" INT,
-      "!\"#$%&()*+-./:;<=>?@[\]^_`{|}" VARCHAR(20),   //single and double quotes not working
+      "!\\"#$%&()*+-./:;<=>?@[\]^_`{|}" VARCHAR(20),   //single and double quotes not working
       abcdefghijklmnopqrstuvwxzy INT
     )
 
@@ -249,7 +250,7 @@ Mapping meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::te
        capitalAlphabets: [myDB] testTable3.ABCDEFGHIJKLMNOPQRSTUVWXYZ,
        smallAlphabets: [myDB] testTable3.abcdefghijklmnopqrstuvwxzy,
        numbers: [myDB] testTable3."0123456789",
-       specialCharacters: [myDB] testTable3."!\"#$%&()*+-./:;<=>?@[\]^_`{|}"
+       specialCharacters: [myDB] testTable3."!\\"#$%&()*+-./:;<=>?@[\]^_`{|}"
     }
 
     MyClassD: Relational
