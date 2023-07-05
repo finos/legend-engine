@@ -1084,6 +1084,17 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::alloy::testSimpleJ
 
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::alloy::testTwoJoinsWithinConcatenate():Boolean[1]
+{
+  let result = execute({|testJoinTDS_Person.all()->meta::pure::tds::project([p|$p.personID, p|$p.lastName, p|$p.employerID], ['personID', 'personName', 'eID'])
+                  ->join(testJoinTDS_Firm.all()->project([p|$p.legalName, p|$p.firmID], ['firmName','fID']), JoinType.LEFT_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID')})
+                  ->concatenate(testJoinTDS_Person.all()->meta::pure::tds::project([p|$p.personID, p|$p.firstName, p|$p.employerID], ['personID', 'personName', 'eID'])
+                  ->join(testJoinTDS_Firm.all()->project([p|$p.legalName, p|$p.firmID], ['firmName','fID']), JoinType.RIGHT_OUTER, {a,b|$a.getInteger('eID')  == $b.getInteger('fID')}))
+                  }, testJoinTDSMappingTwoDatabase, twoDBRunTime(), meta::relational::extension::relationalExtensions());
+    
+  assertSize($result.values.rows, 14 );
+  assertSameElements(['1,Smith,1,Firm B,3' , '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3', '5,Roberts,2,Firm C,4', '6,Hill,3,TDSNull,TDSNull', '7,Harris,4,TDSNull,TDSNull', '1,Peter,1,Firm X,1', '2,John,1,Firm X,1', '3,John,1,Firm X,1', '4,Anthony,1,Firm X,1', '5,Fabrice,2,Firm A,2', '6,Oliver,3,Firm B,3', '7,David,4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
+}
 
 ###Relational
 Database meta::relational::tests::tds::tdsJoin::database2
