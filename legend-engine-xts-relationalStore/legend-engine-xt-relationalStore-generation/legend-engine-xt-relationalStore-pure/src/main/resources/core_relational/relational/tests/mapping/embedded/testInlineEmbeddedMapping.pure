@@ -137,6 +137,7 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Party', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BondClassificationTable', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Person', $connection);
 
   let s = 'insert into PRODUCT_DENORM (PRODUCT_ID, PRODUCT_NAME, MARKET_NAME, BOND_DETAILS, BOND_TYPE,BOND_STATUS,ISSUER,HOLDER,ISSUER_ADDRESS_NAME,HOLDER_ADDRESS_NAME,SUBPRODUCT_ID,SUBPRODUCT_NAME ) values ';
 
@@ -161,6 +162,11 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   let d = 'insert into BondClassificationTable(PRODUCT_ID, TYPE) values ';
    
   executeInDb($d + '(1, \'Corporate\');', $connection);
+
+  let e = 'insert into Person (id, state, unitNumber, in_z, out_z ) values ';
+  executeInDb($e + '(1, \'CA\', 7, \'2022-10-21 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(2, \'TX\', 8, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(3, \'NY\', 9, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
 
   true;
 }
@@ -228,6 +234,48 @@ Association meta::relational::tests::mapping::embedded::advanced::model::BondDet
     bondClassification : meta::relational::tests::mapping::embedded::advanced::model::BondClassification[*];
 }
 
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Person
+{
+  id: Integer[1];
+  address: AddressInfo[1];
+  division: meta::relational::tests::mapping::embedded::advanced::model::Division[0..1];
+  department: meta::relational::tests::mapping::embedded::advanced::model::Department[0..1];
+  firm: FirmWithRegion[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::AddressInfo
+{
+  state: String[1];
+  unit: meta::relational::tests::mapping::embedded::advanced::model::Unit[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Unit
+{
+  number: Integer[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Org
+{
+  indId: Integer[0..1];
+  departmentCode: String[0..1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Division extends Org
+{
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Department extends Org
+{
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::FirmWithRegion extends meta::relational::tests::mapping::embedded::advanced::model::Firm
+{
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Firm
+{
+  firmName: String[1];
+}
 
 ###Relational
 
@@ -277,6 +325,19 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
   (
      PRODUCT_ID INT PRIMARY KEY,
      type VARCHAR(200) PRIMARY KEY
+  )
+
+  Table Person
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+    )
+    id INT PRIMARY KEY,
+    state VARCHAR(25),
+    unitNumber INT,
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
   )
 
   Join BondDetailJoin(PRODUCT_DENORM.PRODUCT_ID = BOND_DETAIL.BOND_ID)
@@ -340,5 +401,40 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
    }
 )
 
-
-
+Mapping meta::relational::tests::mapping::embedded::advanced::model::testMilestonedEmbeddedInlineMapping
+(
+   meta::relational::tests::mapping::embedded::advanced::model::Person[personMapping] : Relational
+   {
+      id : [eDB]Person.id,
+      address
+      (
+        state : [eDB]Person.state,
+        unit () Inline[UnitInfoMapping]
+      ),
+      division() Inline[divisionMapping],
+      department() Inline[departmentMapping],
+      firm () Inline[firmMapping]
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::Unit[UnitInfoMapping] : Relational
+   {
+      scope([eDB]Person)
+      (
+         number : unitNumber
+      )
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::Division[divisionMapping]: Relational
+   {
+      ~mainTable [eDB]Person
+      indId: 10334
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::Department[departmentMapping]: Relational
+   {
+      ~mainTable [eDB]Person
+      departmentCode: 'IIRA'
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::FirmWithRegion[firmMapping]: Relational
+   {
+    ~mainTable [eDB]Person
+    firmName: 'NNIP'
+   }
+)
