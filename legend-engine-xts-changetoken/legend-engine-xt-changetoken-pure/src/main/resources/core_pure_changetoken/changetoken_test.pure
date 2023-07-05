@@ -115,6 +115,44 @@ function meta::pure::changetoken::tests::getVersions():Versions[1]
   ); 
 }
 
+// This is test Versions: AddField with ConstValue(100) and ConstValue(value=200)
+function meta::pure::changetoken::tests::getVersionsChain():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^AddField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='abc',
+            fieldType='Integer[1]',
+            safeCast=true,
+            defaultValue=^ConstValue(value=100)
+          )
+        ]
+      ),
+      ^Version(
+        version='ftdm:abcdefg789',
+        prevVersion='ftdm:abcdefg456',
+        changeTokens=[
+          ^AddField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='def',
+            fieldType='Integer[1]',
+            safeCast=true,
+            defaultValue=^ConstValue(value=200)
+          )
+        ]
+      )
+    ]
+  );
+}
+
 // This is test Versions: AddField with ConstValue('100')
 function meta::pure::changetoken::tests::getVersionsIntegerString():Versions[1]
 {
