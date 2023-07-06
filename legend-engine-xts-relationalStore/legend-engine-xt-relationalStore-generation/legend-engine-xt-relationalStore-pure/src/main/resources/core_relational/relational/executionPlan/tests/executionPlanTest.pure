@@ -1634,7 +1634,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBWithColumnM
                      '    Allocation\n'+
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (managerID, Integer, INT, \"\")]\n'+
-                     '      name = tdsVar1_0\n'+
+                     '      name = tdsVar1_0_0\n'+
                      '      value = \n'+
                      '        (\n'+
                      '          Relational\n'+
@@ -1650,7 +1650,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBWithColumnM
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (managerID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
                      '      resultColumns = [(\"firstName\", INT), (\"eID\", INT), (\"managerID\", INT), (\"fID\", INT), (\"legalName\", VARCHAR(200))]\n'+
-                     '      sql = select \"tdsvar1_0_0\".firstName as \"firstName\", \"tdsvar1_0_0\".eID as \"eID\", \"tdsvar1_0_0\".managerID as \"managerID\", \"tdsvar1_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0}) as \"tdsvar1_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0\"\n'+
+                     '      sql = select \"tdsvar1_0_0_0\".firstName as \"firstName\", \"tdsvar1_0_0_0\".eID as \"eID\", \"tdsvar1_0_0_0\".managerID as \"managerID\", \"tdsvar1_0_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0_0}) as \"tdsvar1_0_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0_0\"\n'+
                      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
                      '    )\n'+
                      '  )\n'+
@@ -1709,7 +1709,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSpaceIdentifie
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar2_0\n'+
+     '      name = tdsVar2_0_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
@@ -1725,7 +1725,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSpaceIdentifie
      '    (\n'+
      '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
      '      resultColumns = [("first name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select "tdsvar2_0_0"."first name" as "first name", "tdsvar2_0_0".eID as "eID", "tdsvar2_0_0"."fID" as "fID", "tdsvar2_0_0"."legalName" as "legalName" from (select * from (${tdsVar2_0}) as "tdsvar2_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar2_0_1".eID = "firmtable_0"."fID")) as "tdsvar2_0_0" where ("tdsvar2_0_0"."first name" = \'Adam\' and "tdsvar2_0_0"."legalName" = \'Firm X\')\n'+
+     '      sql = select "tdsvar2_0_0_0_0"."first name" as "first name", "tdsvar2_0_0_0_0".eID as "eID", "tdsvar2_0_0_0_0"."fID" as "fID", "tdsvar2_0_0_0_0"."legalName" as "legalName" from (select * from (${tdsVar2_0_0_0}) as "tdsvar2_0_0_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar2_0_0_0_1".eID = "firmtable_0"."fID")) as "tdsvar2_0_0_0_0" where ("tdsvar2_0_0_0_0"."first name" = \'Adam\' and "tdsvar2_0_0_0_0"."legalName" = \'Firm X\')\n'+
      '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
      '    )\n'+
      '  )\n'+
@@ -1747,7 +1747,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSlashSybaseIQ(
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar2_0\n'+
+     '      name = tdsVar2_0_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
@@ -1763,7 +1763,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSlashSybaseIQ(
      '    (\n'+
      '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
      '      resultColumns = [("first/name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select "tdsvar2_0_0"."first/name" as "first/name", "tdsvar2_0_0".eID as "eID", "tdsvar2_0_0"."fID" as "fID", "tdsvar2_0_0"."legalName" as "legalName" from (select * from (${tdsVar2_0}) as "tdsvar2_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar2_0_1".eID = "firmtable_0"."fID")) as "tdsvar2_0_0" where ("tdsvar2_0_0"."first/name" = \'Adam\' and "tdsvar2_0_0"."legalName" = \'Firm X\')\n'+
+     '      sql = select "tdsvar2_0_0_0_0"."first/name" as "first/name", "tdsvar2_0_0_0_0".eID as "eID", "tdsvar2_0_0_0_0"."fID" as "fID", "tdsvar2_0_0_0_0"."legalName" as "legalName" from (select * from (${tdsVar2_0_0_0}) as "tdsvar2_0_0_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar2_0_0_0_1".eID = "firmtable_0"."fID")) as "tdsvar2_0_0_0_0" where ("tdsvar2_0_0_0_0"."first/name" = \'Adam\' and "tdsvar2_0_0_0_0"."legalName" = \'Firm X\')\n'+
      '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
      '    )\n'+
      '  )\n'+
@@ -1785,7 +1785,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Bo
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar1_0\n'+
+     '      name = tdsVar1_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
@@ -1801,7 +1801,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Bo
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
      '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select \"tdsvar1_0_0\".firstName as "firstName", \"tdsvar1_0_0\".eID as "eID", \"tdsvar1_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0}) as \"tdsvar1_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0\"\n'+
+     '      sql = select \"tdsvar1_0_0_0\".firstName as "firstName", \"tdsvar1_0_0_0\".eID as "eID", \"tdsvar1_0_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0_0}) as \"tdsvar1_0_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
      '    )\n'+
      '  )\n'+
@@ -1825,7 +1825,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsTwoJoinThreeDB():Boo
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar2_0\n'+
+     '      name = tdsVar2_0_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
@@ -1840,14 +1840,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsTwoJoinThreeDB():Boo
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (firmAddrID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar1_0\n'+
+     '      name = tdsVar1_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
      '          (\n'+
      '            type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (firmAddrID, Integer, INT, \"\")]\n'+
      '            resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("firmAddrID", INT)]\n'+
-     '            sql = select \"tdsvar2_0_0\".firstName as "firstName", \"tdsvar2_0_0\".eID as "eID", \"tdsvar2_0_0\".\"fID\" as \"fID\", \"tdsvar2_0_0\".\"firmAddrID\" as \"firmAddrID\" from (select * from (${tdsVar2_0}) as \"tdsvar2_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".ADDRESSID as \"firmAddrID\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar2_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar2_0_0\"\n'+
+     '            sql = select \"tdsvar2_0_0_0_0\".firstName as "firstName", \"tdsvar2_0_0_0_0\".eID as "eID", \"tdsvar2_0_0_0_0\".\"fID\" as \"fID\", \"tdsvar2_0_0_0_0\".\"firmAddrID\" as \"firmAddrID\" from (select * from (${tdsVar2_0_0_0}) as \"tdsvar2_0_0_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".ADDRESSID as \"firmAddrID\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar2_0_0_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar2_0_0_0_0\"\n'+
      '            connection = TestDatabaseConnection(type = \"H2\")\n'+
      '          )\n'+
      '        )\n'+
@@ -1856,7 +1856,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsTwoJoinThreeDB():Boo
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (firmAddrID, Integer, INT, \"\"), (addrName, String, VARCHAR(200), \"\"), (addrID, Integer, INT, \"\")]\n'+
      '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("firmAddrID", INT), ("addrName", VARCHAR(200)), ("addrID", INT)]\n'+
-     '      sql = select \"tdsvar1_0_0\".firstName as "firstName", \"tdsvar1_0_0\".eID as "eID", \"tdsvar1_0_0\".fID as "fID", \"tdsvar1_0_0\".firmAddrID as "firmAddrID", \"tdsvar1_0_0\".\"addrName\" as \"addrName\", \"tdsvar1_0_0\".\"addrID\" as \"addrID\" from (select * from (${tdsVar1_0}) as \"tdsvar1_0_1\" inner join (select \"root\".NAME as \"addrName\", \"root\".ID as \"addrID\" from addressTable as \"root\") as \"addresstable_0\" on (\"tdsvar1_0_1\".firmAddrID = \"addresstable_0\".\"addrID\")) as \"tdsvar1_0_0\"\n'+
+     '      sql = select \"tdsvar1_0_0_0\".firstName as "firstName", \"tdsvar1_0_0_0\".eID as "eID", \"tdsvar1_0_0_0\".fID as "fID", \"tdsvar1_0_0_0\".firmAddrID as "firmAddrID", \"tdsvar1_0_0_0\".\"addrName\" as \"addrName\", \"tdsvar1_0_0_0\".\"addrID\" as \"addrID\" from (select * from (${tdsVar1_0_0}) as \"tdsvar1_0_0_1\" inner join (select \"root\".NAME as \"addrName\", \"root\".ID as \"addrID\" from addressTable as \"root\") as \"addresstable_0\" on (\"tdsvar1_0_0_1\".firmAddrID = \"addresstable_0\".\"addrID\")) as \"tdsvar1_0_0_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
     '    )\n'+
     '  )\n'+
@@ -1905,7 +1905,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerati
      '    Allocation\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar1_0\n'+
+     '      name = tdsVar1_0_0\n'+
      '      value = \n'+
      '        (\n'+
      '          Relational\n'+
@@ -1921,7 +1921,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerati
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
      '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select \"tdsvar1_0_0\".firstName as "firstName", \"tdsvar1_0_0\".eID as "eID", \"tdsvar1_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0}) as \"tdsvar1_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0\"\n'+
+     '      sql = select \"tdsvar1_0_0_0\".firstName as "firstName", \"tdsvar1_0_0_0\".eID as "eID", \"tdsvar1_0_0_0\".\"fID\" as \"fID\", \"tdsvar1_0_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar1_0_0}) as \"tdsvar1_0_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar1_0_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar1_0_0_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
      '    )\n'+
      '  )\n'+
