@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
@@ -191,7 +192,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.ingest(connection, enrichedDatasets);
+        IngestorResult result = ingestor.ingest(JdbcConnection.of(connection), enrichedDatasets);
         return result;
     }
 
@@ -209,7 +210,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.ingest(connection, enrichedDatasets);
+        IngestorResult result = ingestor.ingest(JdbcConnection.of(connection), enrichedDatasets);
         return result;
     }
 

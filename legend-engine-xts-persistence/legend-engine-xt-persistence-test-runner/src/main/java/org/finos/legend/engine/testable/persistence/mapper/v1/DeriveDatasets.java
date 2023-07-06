@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.persistence.mapper;
+package org.finos.legend.engine.testable.persistence.mapper.v1;
 
 import java.util.Optional;
 import org.finos.legend.engine.persistence.components.common.Datasets;
@@ -31,9 +31,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
-import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.STAGING_SUFFIX;
-import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.isFieldNamePresent;
-import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.DIGEST_FIELD_DEFAULT;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper.STAGING_SUFFIX;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper.isFieldNamePresent;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class DeriveDatasets implements IngestModeVisitor<Datasets>
 {

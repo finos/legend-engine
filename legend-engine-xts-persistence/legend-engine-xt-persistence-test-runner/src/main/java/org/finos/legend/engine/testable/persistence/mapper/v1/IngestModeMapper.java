@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.persistence.mapper;
+package org.finos.legend.engine.testable.persistence.mapper.v1;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
@@ -26,6 +25,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.testable.persistence.mapper.AppendOnlyMapper;
+import org.finos.legend.engine.testable.persistence.mapper.BitemporalDeltaMapper;
+import org.finos.legend.engine.testable.persistence.mapper.BitemporalSnapshotMapper;
+import org.finos.legend.engine.testable.persistence.mapper.NontemporalDeltaMapper;
+import org.finos.legend.engine.testable.persistence.mapper.NontemporalSnapshotMapper;
+import org.finos.legend.engine.testable.persistence.mapper.UnitemporalDeltaMapper;
+import org.finos.legend.engine.testable.persistence.mapper.UnitemporalSnapshotMapper;
 
 import java.util.Set;
 
