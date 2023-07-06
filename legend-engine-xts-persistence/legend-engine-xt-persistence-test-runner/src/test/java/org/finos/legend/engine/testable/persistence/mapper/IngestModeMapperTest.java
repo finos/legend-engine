@@ -37,6 +37,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
+import org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper;
 import org.junit.Assert;
 import org.junit.Test;
 

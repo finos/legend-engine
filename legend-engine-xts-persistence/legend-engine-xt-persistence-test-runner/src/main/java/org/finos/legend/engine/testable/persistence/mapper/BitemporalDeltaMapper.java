@@ -14,9 +14,14 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Bitemporal;
+import org.finos.legend.engine.testable.persistence.mapper.v1.MappingVisitors;
 
-import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.DIGEST_FIELD_DEFAULT;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class BitemporalDeltaMapper
 {
@@ -27,6 +32,20 @@ public class BitemporalDeltaMapper
                 .mergeStrategy(bitemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
                 .transactionMilestoning(bitemporalDelta.transactionMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_TRANSACTION_MILESTONING))
                 .validityMilestoning(bitemporalDelta.validityMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_VALIDITY_MILESTONING))
+                .build();
+    }
+
+    public static org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta from(Bitemporal temporality, DatasetType datasetType)
+    {
+        if (((Delta) datasetType).actionIndicator == null)
+        {
+            ((Delta) datasetType).actionIndicator = new NoActionIndicator();
+        }
+        return org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta.builder()
+                .digestField(DIGEST_FIELD_DEFAULT)
+                .mergeStrategy(((Delta)datasetType).actionIndicator.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_DELETE_STRATEGY))
+                .transactionMilestoning(temporality.processingDimension.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_PROCESSING_DIMENSION))
+                .validityMilestoning(temporality.sourceDerivedDimension.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_SOURCE_DERIVED_DIMENSION))
                 .build();
     }
 }

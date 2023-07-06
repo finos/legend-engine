@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.persistence.mapper;
+package org.finos.legend.engine.testable.persistence.mapper.v1;
 
 import java.util.Optional;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
@@ -43,7 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.isFieldNamePresent;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper.isFieldNamePresent;
 
 public class MappingVisitors
 {

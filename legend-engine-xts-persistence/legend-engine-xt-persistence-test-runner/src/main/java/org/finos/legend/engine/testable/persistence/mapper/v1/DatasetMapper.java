@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.persistence.mapper;
+package org.finos.legend.engine.testable.persistence.mapper.v1;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -24,6 +24,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
+import org.finos.legend.engine.testable.persistence.mapper.FieldTypeMapper;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_Sink;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape;
@@ -35,7 +36,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.SchemaAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
-import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.getIngestMode;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.getIngestMode;
 import static org.finos.legend.pure.generated.platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToSqlText_DataType_1__String_1_;
 
 public class DatasetMapper

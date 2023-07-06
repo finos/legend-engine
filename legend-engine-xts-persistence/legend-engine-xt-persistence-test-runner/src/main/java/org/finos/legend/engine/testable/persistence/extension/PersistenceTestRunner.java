@@ -28,6 +28,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
@@ -40,8 +41,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
-import org.finos.legend.engine.testable.persistence.mapper.DatasetMapper;
-import org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper;
+import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
+import org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper;
+import org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
@@ -81,16 +83,34 @@ public class PersistenceTestRunner implements TestRunner
 
         PersistenceTestH2Connection persistenceTestH2Connection = new PersistenceTestH2Connection();
         Connection connection = persistenceTestH2Connection.getConnection();
+        boolean isPersistenceSpecModelV1 = persistence.persister != null ? true : false;
 
         try
         {
-            Dataset targetDataset = DatasetMapper.getTargetDataset(purePersistence);
-            DatasetDefinition datasetDefinition = (DatasetDefinition) targetDataset;
-
+            validatePersistenceSpec(persistence);
             List<AssertionStatus> assertStatuses = new ArrayList<>();
-            Set<String> fieldsToIgnore = IngestModeMapper.getFieldsToIgnore(persistence);
-            boolean isTransactionMilestoningTimeBased = IngestModeMapper.isTransactionMilestoningTimeBased(persistence);
+            Dataset targetDataset;
+            Set<String> fieldsToIgnore;
+            boolean isTransactionMilestoningTimeBased;
+            ServiceOutputTarget serviceOutputTarget = null;
 
+            // Test runner flow for v1
+            if (isPersistenceSpecModelV1)
+            {
+                targetDataset = DatasetMapper.getTargetDataset(purePersistence);
+                fieldsToIgnore = IngestModeMapper.getFieldsToIgnore(persistence);
+                isTransactionMilestoningTimeBased = IngestModeMapper.isTransactionMilestoningTimeBased(persistence);
+            }
+            // Test runner flow for v2
+            else
+            {
+                targetDataset = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.getTargetDatasetV2(purePersistence);
+                serviceOutputTarget = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getServiceOutputTarget(persistence);
+                fieldsToIgnore = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getFieldsToIgnoreForComparison(serviceOutputTarget);
+                isTransactionMilestoningTimeBased = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.isTransactionMilestoningTimeBased(serviceOutputTarget);
+
+            }
+            DatasetDefinition datasetDefinition = (DatasetDefinition) targetDataset;
             if (!(persistenceTest.isTestDataFromServiceOutput))
             {
                 throw new UnsupportedOperationException(String.format("Persistence Test %s " +
@@ -108,7 +128,17 @@ public class PersistenceTestRunner implements TestRunner
                     {
                         // Retrieve testData
                         String testDataString = getConnectionTestData(testBatch.testData);
-                        invokePersistence(targetDataset, persistence, testDataString, connection);
+
+                        // Test runner flow for v2
+                        if (!isPersistenceSpecModelV1)
+                        {
+                            invokePersistence(targetDataset, serviceOutputTarget, testDataString, connection);
+                        }
+                        // Test runner flow for v1
+                        else
+                        {
+                            invokePersistence(targetDataset, persistence, testDataString, connection);
+                        }
                         List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
 
                         batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore));
@@ -139,11 +169,38 @@ public class PersistenceTestRunner implements TestRunner
         return result;
     }
 
+    private void validatePersistenceSpec(Persistence persistence) throws PersistenceException
+    {
+        if ((persistence.persister != null && persistence.serviceOutputTargets != null && persistence.serviceOutputTargets.size() > 0)
+                || (persistence.persister == null && persistence.serviceOutputTargets == null))
+        {
+            throw new PersistenceException("Persistence spec should contain either persister or serviceOutputTarget blocks ");
+        }
+    }
+
     private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData,
                                              Connection connection) throws Exception
     {
         Datasets enrichedDatasets = DatasetMapper.enrichAndDeriveDatasets(persistence, targetDataset, testData);
         IngestMode ingestMode = IngestModeMapper.from(persistence);
+
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get())
+                .cleanupStagingData(CLEAN_STAGING_DATA_DEFAULT)
+                .collectStatistics(STATS_COLLECTION_DEFAULT)
+                .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
+                .build();
+
+        IngestorResult result = ingestor.ingest(JdbcConnection.of(connection), enrichedDatasets);
+        return result;
+    }
+
+    private IngestorResult invokePersistence(Dataset targetDataset, ServiceOutputTarget serviceOutputTarget, String testData,
+                                             Connection connection) throws Exception
+    {
+        Datasets enrichedDatasets = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.enrichAndDeriveDatasets(serviceOutputTarget, targetDataset, testData);
+        IngestMode ingestMode = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.from(serviceOutputTarget);
 
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)

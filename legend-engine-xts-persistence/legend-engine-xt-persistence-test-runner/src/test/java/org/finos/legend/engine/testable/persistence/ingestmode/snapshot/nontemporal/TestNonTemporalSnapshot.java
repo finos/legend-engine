@@ -48,4 +48,28 @@ public class TestNonTemporalSnapshot extends TestPersistenceBase
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
         Assert.assertEquals("test::TestPersistence", result.testable);
     }
+
+    @Test
+    public void testSnapshotWithNoAuditingV2() throws Exception
+    {
+        String path = "src/test/resources/v2/non-temporal-snapshot/persistence_no_audit.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testSnapshotWithDateTimeAuditingV2() throws Exception
+    {
+        String path = "src/test/resources/v2/non-temporal-snapshot/persistence_date_time_audit.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
 }
