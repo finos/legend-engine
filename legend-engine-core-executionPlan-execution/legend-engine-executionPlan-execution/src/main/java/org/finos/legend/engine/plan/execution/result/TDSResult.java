@@ -139,8 +139,9 @@ public final class TDSResult extends StreamingResult implements IResult, StoreEx
             case DEFAULT:
                 return new TDSResultToPureTDSSerializer(this);
             case PURE_TDSOBJECT:
-            case RAW:
                 return new TDSResultToPureTDSToObjectSerializer(this);
+            case RAW:
+                return new TDSResultToRawTDSObjectSerializer(this);
             case CSV:
             case CSV_TRANSFORMED:
                 return new TDSResultToCSVSerializer(this, true);

@@ -19,33 +19,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure;
+import org.finos.legend.engine.plan.execution.result.TDSResult;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure;
-import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure2;
-import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
-import org.finos.legend.engine.plan.execution.result.TDSResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 
-public abstract class TDSResultToPureFormatSerializer extends Serializer
+public class TDSResultToRawTDSObjectSerializer extends Serializer
 {
+    private final TDSResult tdsResult;
     protected final ObjectMapper objectMapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
     private final ThrowingProcedure<JsonGenerator> start_token;
     private final ThrowingProcedure<JsonGenerator> end_token;
-    protected final TDSResult tdsResult;
     protected final List<TDSColumnWithSerializer<Object>> valueSerializers;
 
-    public TDSResultToPureFormatSerializer(TDSResult tdsResult, ThrowingProcedure<JsonGenerator> start_token, ThrowingProcedure<JsonGenerator> end_token)
+    public TDSResultToRawTDSObjectSerializer(TDSResult tdsResult)
     {
         this.tdsResult = tdsResult;
-        this.start_token = start_token;
-        this.end_token = end_token;
+        this.start_token = JsonGenerator::writeStartObject;
+        this.end_token = JsonGenerator::writeEndObject;
         this.valueSerializers = this.tdsResult.getResultBuilder().columns.stream().map(TDSColumnWithSerializer::new).collect(Collectors.toList());
     }
 
@@ -68,12 +64,26 @@ public abstract class TDSResultToPureFormatSerializer extends Serializer
         }
     }
 
-    public abstract void streamValues(JsonGenerator generator) throws IOException;
-
-    public abstract void processRow(JsonGenerator generator, Object[] row) throws IOException;
-
-    protected final void streamRows(JsonGenerator generator) throws IOException
+    public void streamValues(JsonGenerator generator) throws IOException
     {
+        processColumns(generator);
+        processRows(generator);
+        generator.writeObjectField("activities", this.tdsResult.activities);
+    }
+
+    private void processColumns(JsonGenerator generator) throws IOException
+    {
+        generator.writeArrayFieldStart("columns");
+        for (TDSColumnWithSerializer<Object> c : this.valueSerializers)
+        {
+            generator.writeObject(c.tdsColumn);
+        }
+        generator.writeEndArray();
+    }
+
+    protected final void processRows(JsonGenerator generator) throws IOException
+    {
+        generator.writeArrayFieldStart("rows");
         int rowCount = 0;
 
         try (Stream<Object[]> rows = tdsResult.rowsStream())
@@ -108,7 +118,17 @@ public abstract class TDSResultToPureFormatSerializer extends Serializer
             {
                 remainingSpan.finish();
             }
+            generator.writeEndArray();
         }
     }
 
+    public void processRow(JsonGenerator generator, Object[] rowValues) throws IOException
+    {
+        generator.writeStartArray();
+        for (int i = 0; i < this.valueSerializers.size(); i++)
+        {
+            this.valueSerializers.get(i).serialize(generator, rowValues[i]);
+        }
+        generator.writeEndArray();
+    }
 }
