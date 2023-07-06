@@ -47,8 +47,6 @@ import java.util.function.Consumer;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 public class MasteryParseTreeWalker
 {
@@ -78,7 +76,7 @@ public class MasteryParseTreeWalker
     {
         MasterRecordDefinition masterRecordDefinition = new MasterRecordDefinition();
         masterRecordDefinition.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        masterRecordDefinition._package = isNull(ctx.qualifiedName().packagePath()) ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        masterRecordDefinition._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         masterRecordDefinition.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         //modelClass
@@ -95,7 +93,7 @@ public class MasteryParseTreeWalker
 
         //Vendor Precedence
         MasteryParserGrammar.PrecedenceRulesContext precedenceRulesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.precedenceRules(), "precedenceRules", masterRecordDefinition.sourceInformation);
-        if (nonNull(precedenceRulesContext))
+        if (precedenceRulesContext != null)
         {
             Map<String, Set<String>> allUniquePrecedenceRules = new HashMap<>();
             masterRecordDefinition.precedenceRules = ListIterate.flatCollect(precedenceRulesContext.precedenceRule(), precedenceRuleContext -> visitPrecedenceRules(precedenceRuleContext, allUniquePrecedenceRules));
@@ -107,20 +105,20 @@ public class MasteryParseTreeWalker
 
     private List<PrecedenceRule> visitPrecedenceRules(MasteryParserGrammar.PrecedenceRuleContext ctx, Map<String, Set<String>> allUniquePrecedenceRules)
     {
-        if (nonNull(ctx.sourcePrecedenceRule()))
+        if (ctx.sourcePrecedenceRule() != null)
         {
             return visitSourcePrecedenceRule(ctx.sourcePrecedenceRule(),
                     allUniquePrecedenceRules);
         }
-        else if (nonNull(ctx.deleteRule()))
+        else if (ctx.deleteRule() != null)
         {
             return singletonList(visitDeleteRules(ctx.deleteRule(), allUniquePrecedenceRules));
         }
-        else if (nonNull(ctx.createRule()))
+        else if (ctx.createRule() != null)
         {
             return singletonList(visitCreateRules(ctx.createRule(), allUniquePrecedenceRules));
         }
-        else if (nonNull(ctx.conditionalRule()))
+        else if (ctx.conditionalRule() != null)
         {
             return singletonList(visitConditionalRule(ctx.conditionalRule(), allUniquePrecedenceRules));
         }
@@ -199,14 +197,14 @@ public class MasteryParseTreeWalker
     private void visitPrecedenceRuleBase(MasteryParserGrammar.PrecedenceRuleBaseContext ctx, PrecedenceRule precedenceRule, Map<String, Set<String>> allUniquePrecedenceRules)
     {
         MasteryParserGrammar.RuleScopeContext ruleScopeContext = ctx.ruleScope();
-        if (nonNull(ruleScopeContext))
+        if (ruleScopeContext != null)
         {
             Set<String> uniqueScopes = new HashSet<>();
             precedenceRule.scopes = ListIterate.collect(ruleScopeContext.scope(), scopeContext ->
                     visitRuleScopeWithoutPrecedence(scopeContext, uniqueScopes, precedenceRule));
         }
         MasteryParserGrammar.PathContext pathContext = ctx.path();
-        if (nonNull(pathContext))
+        if (pathContext != null)
         {
             precedenceRule.paths = visitPath(pathContext, precedenceRule);
             validateUniquePrecedenceRule(allUniquePrecedenceRules, pathContext, precedenceRule.getType());
@@ -236,7 +234,7 @@ public class MasteryParseTreeWalker
     {
         List<PropertyPath> propertyPaths = new ArrayList<>();
         precedenceRule.masterRecordFilter = visitMasterRecordFilter(ctx.masterRecordFilter());
-        if (nonNull(ctx.pathExtension()))
+        if (ctx.pathExtension() != null)
         {
             propertyPaths.addAll(ListIterate.collect(ctx.pathExtension(), this::visitPathExtension));
         }
@@ -246,7 +244,7 @@ public class MasteryParseTreeWalker
     private Lambda visitMasterRecordFilter(MasteryParserGrammar.MasterRecordFilterContext ctx)
     {
         String qualifiedName = ctx.qualifiedName().getText();
-        if (nonNull(ctx.filter()))
+        if (ctx.filter() != null)
         {
             return visitLambdaWithFilter(qualifiedName, ctx.filter().combinedExpression());
         }
@@ -261,7 +259,7 @@ public class MasteryParseTreeWalker
         MasteryParserGrammar.SubPathContext subPathContext = ctx.subPath();
         PropertyPath propertyPath = new PropertyPath();
         propertyPath.property = subPathContext.VALID_STRING().getText();
-        if (nonNull(ctx.filter()))
+        if (ctx.filter() != null)
         {
             propertyPath.filter = visitLambdaWithFilter(propertyPath.property, ctx.filter().combinedExpression());
         }
@@ -291,7 +289,7 @@ public class MasteryParseTreeWalker
     {
         validateUniqueRuleScope(uniqueScopes, ctx.validScopeType().getText(), precedenceRule);
         RuleScope recordSourceScope = visitRuleScope(ctx.validScopeType());
-        if (nonNull(ctx.precedence()))
+        if (ctx.precedence() != null)
         {
             throw  new EngineException(format("Precedence is not expected on rule scopes for %s", precedenceRule.getType()), EngineErrorType.PARSER);
         }
@@ -302,7 +300,7 @@ public class MasteryParseTreeWalker
     {
         validateUniqueRuleScope(uniqueScopes, ctx.validScopeType().getText(), sourcePrecedenceRule);
         RuleScope ruleScope = visitRuleScope(ctx.validScopeType());
-        if (isNull(ctx.precedence()))
+        if (ctx.precedence() == null)
         {
             throw new EngineException("Precedence is expected on all rule scope on SourcePrecedenceRule", EngineErrorType.PARSER);
         }
@@ -324,12 +322,12 @@ public class MasteryParseTreeWalker
 
     private RuleScope visitRuleScope(MasteryParserGrammar.ValidScopeTypeContext ctx)
     {
-        if (nonNull(ctx.recordSourceScope()))
+        if (ctx.recordSourceScope() != null)
         {
             MasteryParserGrammar.RecordSourceScopeContext recordSourceScopeContext = ctx.recordSourceScope();
             return visitRecordSourceScope(recordSourceScopeContext);
         }
-        if (nonNull(ctx.dataProviderTypeScope()))
+        if (ctx.dataProviderTypeScope() != null)
         {
             MasteryParserGrammar.DataProviderTypeScopeContext dataProviderTypeScopeContext = ctx.dataProviderTypeScope();
             return visitDataProvideTypeScope(dataProviderTypeScopeContext.validDataProviderType());
@@ -356,11 +354,11 @@ public class MasteryParseTreeWalker
     private RuleAction visitAction(MasteryParserGrammar.ValidActionContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (nonNull(ctx.OVERWRITE()))
+        if (ctx.OVERWRITE() != null)
         {
             return RuleAction.Overwrite;
         }
-        if (nonNull(ctx.BLOCK()))
+        if (ctx.BLOCK() != null)
         {
             return RuleAction.Block;
         }
@@ -370,11 +368,11 @@ public class MasteryParseTreeWalker
     private DataProviderType visitDataProviderType(MasteryParserGrammar.ValidDataProviderTypeContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (nonNull(ctx.AGGREGATOR()))
+        if (ctx.AGGREGATOR() != null)
         {
             return DataProviderType.Aggregator;
         }
-        if (nonNull(ctx.EXCHANGE()))
+        if (ctx.EXCHANGE() != null)
         {
             return DataProviderType.Exchange;
         }
@@ -411,20 +409,20 @@ public class MasteryParseTreeWalker
         source.status = visitRecordStatus(statusContext);
 
         MasteryParserGrammar.SequentialDataContext sequentialDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.sequentialData(), "sequentialData", source.sourceInformation);
-        source.sequentialData = evaluateBoolean(sequentialDataContext, (nonNull(sequentialDataContext) ? sequentialDataContext.boolean_value() : null), null);
+        source.sequentialData = evaluateBoolean(sequentialDataContext, (sequentialDataContext != null ? sequentialDataContext.boolean_value() : null), null);
 
         MasteryParserGrammar.StagedLoadContext stagedLoadContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.stagedLoad(), "stagedLoad", source.sourceInformation);
-        source.stagedLoad = evaluateBoolean(stagedLoadContext, (nonNull(stagedLoadContext) ? stagedLoadContext.boolean_value() : null), null);
+        source.stagedLoad = evaluateBoolean(stagedLoadContext, (stagedLoadContext != null ? stagedLoadContext.boolean_value() : null), null);
 
         MasteryParserGrammar.CreatePermittedContext createPermittedContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.createPermitted(), "createPermitted", source.sourceInformation);
-        source.createPermitted = evaluateBoolean(createPermittedContext, (nonNull(createPermittedContext) ? createPermittedContext.boolean_value() : null), null);
+        source.createPermitted = evaluateBoolean(createPermittedContext, (createPermittedContext != null ? createPermittedContext.boolean_value() : null), null);
 
         MasteryParserGrammar.CreateBlockedExceptionContext createBlockedExceptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.createBlockedException(), "createBlockedException", source.sourceInformation);
-        source.createBlockedException = evaluateBoolean(createBlockedExceptionContext, (nonNull(createBlockedExceptionContext) ? createBlockedExceptionContext.boolean_value() : null), null);
+        source.createBlockedException = evaluateBoolean(createBlockedExceptionContext, (createBlockedExceptionContext != null ? createBlockedExceptionContext.boolean_value() : null), null);
 
         //Tags
         MasteryParserGrammar.TagsContext tagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tags(), "tags", source.sourceInformation);
-        if (nonNull(tagsContext))
+        if (tagsContext != null)
         {
             ListIterator<TerminalNode> stringIterator = tagsContext.STRING().listIterator();
             while (stringIterator.hasNext())
@@ -435,13 +433,13 @@ public class MasteryParseTreeWalker
 
         //Services
         MasteryParserGrammar.ParseServiceContext parseServiceContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.parseService(), "parseService", source.sourceInformation);
-        if (nonNull(parseServiceContext))
+        if (parseServiceContext != null)
         {
-            source.parseService = PureGrammarParserUtility.fromQualifiedName(isNull(parseServiceContext.qualifiedName().packagePath()) ? Collections.emptyList() : parseServiceContext.qualifiedName().packagePath().identifier(), parseServiceContext.qualifiedName().identifier());
+            source.parseService = PureGrammarParserUtility.fromQualifiedName(parseServiceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : parseServiceContext.qualifiedName().packagePath().identifier(), parseServiceContext.qualifiedName().identifier());
         }
 
         MasteryParserGrammar.TransformServiceContext transformServiceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.transformService(), "transformService", source.sourceInformation);
-        source.transformService = PureGrammarParserUtility.fromQualifiedName(isNull(transformServiceContext.qualifiedName().packagePath()) ? Collections.emptyList() : transformServiceContext.qualifiedName().packagePath().identifier(), transformServiceContext.qualifiedName().identifier());
+        source.transformService = PureGrammarParserUtility.fromQualifiedName(transformServiceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : transformServiceContext.qualifiedName().packagePath().identifier(), transformServiceContext.qualifiedName().identifier());
 
         //Partitions
         MasteryParserGrammar.SourcePartitionsContext partitionsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sourcePartitions(), "partitions", source.sourceInformation);
@@ -453,15 +451,15 @@ public class MasteryParseTreeWalker
     private Boolean evaluateBoolean(ParserRuleContext context, MasteryParserGrammar.Boolean_valueContext booleanValueContext, Boolean defaultVal)
     {
         Boolean result;
-        if (isNull(context))
+        if (context == null)
         {
             result = defaultVal;
         }
-        else if (nonNull(booleanValueContext.TRUE()))
+        else if (booleanValueContext.TRUE() != null)
         {
             result = Boolean.TRUE;
         }
-        else if (nonNull(booleanValueContext.FALSE()))
+        else if (booleanValueContext.FALSE() != null)
         {
             result = Boolean.FALSE;
         }
@@ -475,23 +473,23 @@ public class MasteryParseTreeWalker
     private RecordSourceStatus visitRecordStatus(MasteryParserGrammar.RecordStatusContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (nonNull(ctx.RECORD_SOURCE_STATUS_DEVELOPMENT()))
+        if (ctx.RECORD_SOURCE_STATUS_DEVELOPMENT() != null)
         {
             return RecordSourceStatus.Development;
         }
-        if (nonNull(ctx.RECORD_SOURCE_STATUS_TEST_ONLY()))
+        if (ctx.RECORD_SOURCE_STATUS_TEST_ONLY() != null)
         {
             return RecordSourceStatus.TestOnly;
         }
-        if (nonNull(ctx.RECORD_SOURCE_STATUS_PRODUCTION()))
+        if (ctx.RECORD_SOURCE_STATUS_PRODUCTION() != null)
         {
             return RecordSourceStatus.Production;
         }
-        if (nonNull(ctx.RECORD_SOURCE_STATUS_DORMANT()))
+        if (ctx.RECORD_SOURCE_STATUS_DORMANT() != null)
         {
             return RecordSourceStatus.Dormant;
         }
-        if (nonNull(ctx.RECORD_SOURCE_STATUS_DECOMMINISSIONED()))
+        if (ctx.RECORD_SOURCE_STATUS_DECOMMINISSIONED() != null)
         {
             return RecordSourceStatus.Decommissioned;
         }
@@ -506,7 +504,7 @@ public class MasteryParseTreeWalker
         partition.id = PureGrammarParserUtility.fromIdentifier(ctx.masteryIdentifier());
 
         MasteryParserGrammar.TagsContext tagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tags(), "tags", sourceInformation);
-        if (nonNull(tagsContext))
+        if (tagsContext != null)
         {
             ListIterator<TerminalNode> stringIterator = tagsContext.STRING().listIterator();
             while (stringIterator.hasNext())
@@ -571,25 +569,25 @@ public class MasteryParseTreeWalker
     private String visitModelClass(MasteryParserGrammar.ModelClassContext ctx)
     {
         MasteryParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
-        return PureGrammarParserUtility.fromQualifiedName(isNull(qualifiedNameContext.packagePath()) ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
+        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
     }
 
     private ResolutionKeyType visitResolutionKeyType(MasteryParserGrammar.ResolutionQueryKeyTypeContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (nonNull(ctx.RESOLUTION_QUERY_KEY_TYPE_GENERATED_PRIMARY_KEY()))
+        if (ctx.RESOLUTION_QUERY_KEY_TYPE_GENERATED_PRIMARY_KEY() != null)
         {
             return ResolutionKeyType.GeneratedPrimaryKey;
         }
-        if (nonNull(ctx.RESOLUTION_QUERY_KEY_TYPE_SUPPLIED_PRIMARY_KEY()))
+        if (ctx.RESOLUTION_QUERY_KEY_TYPE_SUPPLIED_PRIMARY_KEY() != null)
         {
             return ResolutionKeyType.SuppliedPrimaryKey;
         }
-        if (nonNull(ctx.RESOLUTION_QUERY_KEY_TYPE_ALTERNATE_KEY()))
+        if (ctx.RESOLUTION_QUERY_KEY_TYPE_ALTERNATE_KEY() != null)
         {
             return ResolutionKeyType.AlternateKey;
         }
-        if (nonNull(ctx.RESOLUTION_QUERY_KEY_TYPE_OPTIONAL()))
+        if (ctx.RESOLUTION_QUERY_KEY_TYPE_OPTIONAL() != null)
         {
             return ResolutionKeyType.Optional;
         }

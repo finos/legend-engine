@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
-import static java.util.Objects.isNull;
 
 public class HelperMasterRecordDefinitionBuilder
 {
@@ -344,7 +343,7 @@ public class HelperMasterRecordDefinitionBuilder
 
         public static Root_meta_legend_service_metamodel_Service buildOptionalService(String service, RecordSource protocolSource, CompileContext context)
         {
-            if (isNull(service))
+            if (service == null)
             {
                 return null;
             }

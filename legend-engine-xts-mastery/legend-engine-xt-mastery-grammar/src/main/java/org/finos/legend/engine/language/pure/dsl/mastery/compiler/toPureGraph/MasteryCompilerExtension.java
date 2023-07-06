@@ -27,8 +27,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRe
 
 import java.util.Collections;
 
-import static java.util.Objects.nonNull;
-
 public class MasteryCompilerExtension implements CompilerExtension
 {
     @Override
@@ -53,7 +51,7 @@ public class MasteryCompilerExtension implements CompilerExtension
                     Root_meta_pure_mastery_metamodel_MasterRecordDefinition pureMasteryMetamodelMasterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) context.pureModel.getOrCreatePackage(masterRecordDefinition._package)._children().detect(c -> masterRecordDefinition.name.equals(c._name()));
                     pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, context));
                     pureMasteryMetamodelMasterRecordDefinition._sources(HelperMasterRecordDefinitionBuilder.buildRecordSources(masterRecordDefinition.sources, context));
-                    if (nonNull(masterRecordDefinition.precedenceRules))
+                    if (masterRecordDefinition.precedenceRules != null)
                     {
                         pureMasteryMetamodelMasterRecordDefinition._precedenceRules(HelperMasterRecordDefinitionBuilder.buildPrecedenceRules(masterRecordDefinition, context));
                     }

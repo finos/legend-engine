@@ -34,7 +34,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Objects.nonNull;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 
@@ -58,7 +57,7 @@ public class HelperMasteryGrammarComposer
                 .append("{\n")
                 .append(renderModelClass(masterRecordDefinition.modelClass, indentLevel))
                 .append(renderIdentityResolution(masterRecordDefinition.identityResolution, indentLevel, context));
-        if (nonNull(masterRecordDefinition.precedenceRules))
+        if (masterRecordDefinition.precedenceRules != null)
         {
             builder.append(renderPrecedenceRules(masterRecordDefinition.precedenceRules, indentLevel, context));
         }
@@ -108,13 +107,13 @@ public class HelperMasteryGrammarComposer
             return getTabString(indentLevel + 1) + recordSource.id + ": {\n" +
                     getTabString(indentLevel + 2) + "description: " + convertString(recordSource.description, true) + ";\n" +
                     getTabString(indentLevel + 2) + "status: " + recordSource.status + ";\n" +
-                    (nonNull(recordSource.parseService) ? (getTabString(indentLevel + 2) + "parseService: " + recordSource.parseService + ";\n") : "") +
+                    (recordSource.parseService != null ? (getTabString(indentLevel + 2) + "parseService: " + recordSource.parseService + ";\n") : "") +
                     getTabString(indentLevel + 2) + "transformService: " + recordSource.transformService + ";\n" +
-                    (nonNull(recordSource.sequentialData) ? getTabString(indentLevel + 2) + "sequentialData: " + recordSource.sequentialData + ";\n" : "") +
-                    (nonNull(recordSource.stagedLoad) ? getTabString(indentLevel + 2) + "stagedLoad: " + recordSource.stagedLoad + ";\n" : "") +
-                    (nonNull(recordSource.createPermitted) ? getTabString(indentLevel + 2) + "createPermitted: " + recordSource.createPermitted + ";\n" : "") +
-                    (nonNull(recordSource.createBlockedException) ? getTabString(indentLevel + 2) + "createBlockedException: " + recordSource.createBlockedException + ";\n" : "") +
-                    ((nonNull(recordSource.getTags()) && !recordSource.getTags().isEmpty()) ? getTabString(indentLevel + 1) + renderTags(recordSource, indentLevel) + "\n" : "") +
+                    (recordSource.sequentialData != null ? getTabString(indentLevel + 2) + "sequentialData: " + recordSource.sequentialData + ";\n" : "") +
+                    (recordSource.stagedLoad != null ? getTabString(indentLevel + 2) + "stagedLoad: " + recordSource.stagedLoad + ";\n" : "") +
+                    (recordSource.createPermitted != null ? getTabString(indentLevel + 2) + "createPermitted: " + recordSource.createPermitted + ";\n" : "") +
+                    (recordSource.createBlockedException != null ? getTabString(indentLevel + 2) + "createBlockedException: " + recordSource.createBlockedException + ";\n" : "") +
+                    ((recordSource.getTags() != null && !recordSource.getTags().isEmpty()) ? getTabString(indentLevel + 1) + renderTags(recordSource, indentLevel) + "\n" : "") +
                     getTabString(indentLevel + 1) + renderPartitions(recordSource, indentLevel) + "\n";
         }
     }
@@ -142,7 +141,7 @@ public class HelperMasteryGrammarComposer
     private static String renderPartition(RecordSourcePartition partition, int indentLevel)
     {
         StringBuilder builder = new StringBuilder().append(getTabString(indentLevel)).append(partition.id).append(": {");
-        builder.append((nonNull(partition.getTags()) && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
+        builder.append((partition.getTags() != null && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
         return builder.toString();
     }
 
