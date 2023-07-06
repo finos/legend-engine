@@ -1,0 +1,150 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::ServiceResult
+{
+   ID: String[1];
+   NAME: String[1];
+   DELETED: String[1];
+}
+
+###Mapping
+Mapping test::Mapping ()
+
+###Relational
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP
+  )
+)
+###Service
+Service test::Service
+{
+  pattern : 'test';
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::Person[1]|$src.name;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts: [];
+  }
+}
+
+###Persistence
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: [ ID ]
+    deduplication: None;
+    datasetType: Delta
+    {
+      actionIndicator: DeleteIndicator
+      {
+        deleteField: DELETED;
+        deleteValues: ['Y', 'true'];
+      }
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: Unitemporal
+    {
+      processingDimension: DateTime
+      {
+        dateTimeIn: 'IN_Z';
+        dateTimeOut: 'OUT_Z';
+      }
+    }
+  }#
+  ];
+  tests:
+  [
+   test1:
+   {
+     testBatches:
+     [
+       testBatch1:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":1, "NAME":"ANDY", "DELETED": "N"},{"ID":2, "NAME":"BRAD","DELETED": "N"},{"ID":3, "NAME":"CATHY","DELETED": "N"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected:
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"}]';
+                 }#;
+             }#
+         ]
+       },
+       testBatch2:
+       {
+         data:
+         {
+           connection:
+           {
+             ExternalFormat
+             #{
+               contentType: 'application/json';
+               data: '[{"ID":2, "NAME":"BRAD","DELETED": "Y"},{"ID":3, "NAME":"CATHERINE","DELETED": "N"},{"ID":4, "NAME":"TOM","DELETED": "N"}]';
+             }#
+           }
+         }
+         asserts:
+         [
+           assert1:
+             EqualToJson
+             #{
+               expected :
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":3, "NAME":"CATHERINE"},{"ID":4, "NAME":"TOM"}]';
+                 }#;
+             }#
+         ]
+       }
+     ]
+     isTestDataFromServiceOutput: true;
+   }
+  ]
+}

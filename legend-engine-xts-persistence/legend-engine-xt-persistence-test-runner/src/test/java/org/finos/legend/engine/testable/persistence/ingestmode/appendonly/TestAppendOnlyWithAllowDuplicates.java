@@ -87,4 +87,51 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         AssertFail batch1Status = (AssertFail) testFailed.assertStatuses.get(0);
         Assert.assertTrue(batch1Status.message.contains("Unexpected close marker '}'"));
     }
+
+    // v2 tests
+
+    @Test
+    public void testAppendOnlyWithNoAuditingV2() throws Exception
+    {
+        String path = "src/test/resources/v2/append-only/allow_duplicates/persistence_no_audit_success.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testAppendOnlyWithDateTimeAuditingV2() throws Exception
+    {
+        String path = "src/test/resources/v2/append-only/allow_duplicates/persistence_date_time_auditing.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testAppendOnlyWithFailureV2() throws Exception
+    {
+        String path = "src/test/resources/v2/append-only/allow_duplicates/persistence_no_audit_fail.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+        TestExecuted testFailed = (TestExecuted) result;
+        EqualToJsonAssertFail batch1Status = (EqualToJsonAssertFail) testFailed.assertStatuses.get(0);
+        AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
+
+        // no space
+        Assert.assertEquals("[{\"ID\":1,\"NAME\":\"ANDY\"},{\"ID\":2,\"NAME\":\"BRAD\"}]", batch1Status.actual);
+        // with space
+        Assert.assertEquals("[{\"ID\":1, \"NAME\":\"CHLOE\"},{\"ID\":2, \"NAME\":\"BRAD\"}]", batch1Status.expected);
+        Assert.assertTrue(batch1Status.message.contains("AssertionError: Results do not match the expected data"));
+    }
 }

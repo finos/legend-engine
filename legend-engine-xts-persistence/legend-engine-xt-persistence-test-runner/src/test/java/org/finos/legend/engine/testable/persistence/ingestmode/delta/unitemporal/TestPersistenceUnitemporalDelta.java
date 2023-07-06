@@ -63,4 +63,43 @@ public class TestPersistenceUnitemporalDelta extends TestPersistenceBase
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
         Assert.assertEquals("test::TestPersistence", result.testable);
     }
+
+    @Test
+    public void testBatchIdBasedNoDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-delta/batch_id_based/persistence_no_delete_indicator.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdAndTimeBasedNoDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-delta/batch_id_and_date_time_based/persistence_no_delete_indicator.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBasedWithDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-delta/date_time_based/persistence_with_delete_indicator.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
 }

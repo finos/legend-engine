@@ -15,6 +15,7 @@
 package org.finos.legend.engine.testable.persistence.mapper;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
+import org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeVisitors;
 import org.junit.Assert;
 import org.junit.Test;
 

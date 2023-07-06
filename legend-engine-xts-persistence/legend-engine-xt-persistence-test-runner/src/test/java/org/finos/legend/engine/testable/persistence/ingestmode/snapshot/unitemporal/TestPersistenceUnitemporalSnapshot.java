@@ -63,4 +63,43 @@ public class TestPersistenceUnitemporalSnapshot extends TestPersistenceBase
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
         Assert.assertEquals("test::TestPersistence", result.testable);
     }
+
+    @Test
+    public void testBatchIdBasedV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-snapshot/batch_id_based/persistence.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdAndTimeBasedV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-snapshot/batch_id_and_date_time_based/persistence.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBasedV2() throws Exception
+    {
+        String path = "src/test/resources/v2/unitemporal-snapshot/date_time_based/persistence.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
 }

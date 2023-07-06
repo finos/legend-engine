@@ -39,6 +39,19 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
     }
 
     @Test
+    public void testBatchIdBasedWithDeleteIndicatorUserSpecifiesFrom() throws Exception
+    {
+        String path = "src/test/resources/bitemporal-delta/batch_id_based/persistence_with_del_ind_user_specifies_from.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
     public void testBatchIdAndTimeBasedNoDeleteIndicatorUserSpecifiesFromAndThru() throws Exception
     {
         String path = "src/test/resources/bitemporal-delta/batch_id_and_date_time_based/persistence_no_del_ind_user_specifies_from_and_thru.txt";
@@ -52,9 +65,113 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
     }
 
     @Test
-    public void testTimeBasedWithDeleteIndicatorUserSpecifiesFromAndThru() throws Exception
+    public void testBatchIdAndTimeBasedNoDeleteIndicatorUserSpecifiesFrom() throws Exception
+    {
+        String path = "src/test/resources/bitemporal-delta/batch_id_and_date_time_based/persistence_no_del_ind_user_specifies_from.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBaseNoDeleteIndicatorUserSpecifiesFromAndThru() throws Exception
     {
         String path = "src/test/resources/bitemporal-delta/date_time_based/persistence_no_del_ind_user_specifies_from_and_thru.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBasedNoDeleteIndicatorUserSpecifiesFrom() throws Exception
+    {
+        String path = "src/test/resources/bitemporal-delta/date_time_based/persistence_no_del_ind_user_specifies_from.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdBasedNoDeleteIndicatorUserSpecifiesFromAndThruV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/batch_id_based/persistence_no_del_ind_user_specifies_from_and_thru.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdBasedWithDeleteIndicatorUserSpecifiesFromV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/batch_id_based/persistence_with_del_ind_user_specifies_from.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdAndTimeBasedNoDeleteIndicatorUserSpecifiesFromAndThruV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/batch_id_and_date_time_based/persistence_no_del_ind_user_specifies_from_and_thru.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testBatchIdAndTimeBasedNoDeleteIndicatorUserSpecifiesFromV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/batch_id_and_date_time_based/persistence_no_del_ind_user_specifies_from.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBaseNoDeleteIndicatorUserSpecifiesFromAndThruV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/date_time_based/persistence_no_del_ind_user_specifies_from_and_thru.txt";
+        String persistenceSpec = readPureCode(path);
+
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testTimeBasedNoDeleteIndicatorUserSpecifiesFromV2() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/date_time_based/persistence_no_del_ind_user_specifies_from.txt";
         String persistenceSpec = readPureCode(path);
 
         TestResult result = testPersistence(persistenceSpec).results.get(0);

@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestPersistenceNonTemporalDelta extends TestPersistenceBase
 {
-    // TODO: (kminky) to add the tests based on delete indicator
 
     @Test
     public void testDeltaWithNoAuditingNoDeleteIndicator() throws Exception
@@ -43,6 +42,56 @@ public class TestPersistenceNonTemporalDelta extends TestPersistenceBase
     public void testDeltaWithDateTimeAuditingNoDeleteIndicator() throws Exception
     {
         String path = "src/test/resources/non-temporal-delta/persistence_date_time_audit.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testDeltaWithDateTimeAuditingAndDeleteIndicator() throws Exception
+    {
+        String path = "src/test/resources/non-temporal-delta/persistence_date_time_audit_delete_indicator.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    // v2 tests
+
+    @Test
+    public void testDeltaWithNoAuditingNoDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/non-temporal-delta/persistence_no_audit.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testDeltaWithDateTimeAuditingNoDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/non-temporal-delta/persistence_date_time_audit.txt";
+        String persistenceSpec = readPureCode(path);
+        TestResult result = testPersistence(persistenceSpec).results.get(0);
+
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+    }
+
+    @Test
+    public void testDeltaWithDateTimeAuditingAndDeleteIndicatorV2() throws Exception
+    {
+        String path = "src/test/resources/v2/non-temporal-delta/persistence_date_time_audit_delete_indicator.txt";
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 

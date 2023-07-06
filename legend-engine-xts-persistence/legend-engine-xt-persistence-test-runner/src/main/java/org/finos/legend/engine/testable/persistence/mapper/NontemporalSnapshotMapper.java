@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
+import org.finos.legend.engine.testable.persistence.mapper.v1.MappingVisitors;
 
 public class NontemporalSnapshotMapper
 {
@@ -22,6 +25,19 @@ public class NontemporalSnapshotMapper
     {
         return org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot.builder()
                 .auditing(nontemporalSnapshot.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
+                .build();
+    }
+
+    public static org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot from(Nontemporal temporality, DatasetType datasetType)
+    {
+        if (temporality.auditing != null)
+        {
+            return org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot.builder()
+                    .auditing(temporality.auditing.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_NONTEMPORAL_AUDITING))
+                    .build();
+        }
+        return org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot.builder()
+                .auditing(org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing.builder().build())
                 .build();
     }
 }

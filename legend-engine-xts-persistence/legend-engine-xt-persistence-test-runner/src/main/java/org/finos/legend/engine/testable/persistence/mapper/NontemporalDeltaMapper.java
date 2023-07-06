@@ -14,9 +14,15 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
+import org.finos.legend.engine.testable.persistence.mapper.v1.MappingVisitors;
 
-import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.DIGEST_FIELD_DEFAULT;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class NontemporalDeltaMapper
 {
@@ -26,6 +32,23 @@ public class NontemporalDeltaMapper
                 .digestField(DIGEST_FIELD_DEFAULT)
                 .auditing(nontemporalDelta.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
                 .mergeStrategy(nontemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
+                .build();
+    }
+
+    public static org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta from(Nontemporal temporality, DatasetType datasetType)
+    {
+        if (temporality.auditing == null)
+        {
+            temporality.auditing = new NoAuditing();
+        }
+        if (((Delta) datasetType).actionIndicator == null)
+        {
+            ((Delta) datasetType).actionIndicator = new NoActionIndicator();
+        }
+        return org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta.builder()
+                .digestField(DIGEST_FIELD_DEFAULT)
+                .auditing(temporality.auditing.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_NONTEMPORAL_AUDITING))
+                .mergeStrategy(((Delta) datasetType).actionIndicator.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_DELETE_STRATEGY))
                 .build();
     }
 }
