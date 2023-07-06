@@ -57,7 +57,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateD
       ver, resP |
       if($ver.prevVersion->size() != 0,
       {|
-        let p = $class->_generateSingleDowncastFunction($ver, $paramVersion);
+        let p = $resP.second->_generateSingleDowncastFunction($ver, $paramVersion);
         let resPF = $resP.first;
         pair(^$resPF(values+=$p.first), $p.second);
       },
@@ -112,7 +112,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
       ver, resP |
       if($ver.prevVersion->size() != 0,
       {|
-        let p = $class->_generateSingleUpcastFunction($ver);
+        let p = $resP.second->_generateSingleUpcastFunction($ver);
         let resPF = $resP.first;
         pair(^$resPF(values+=$p.first), $p.second);
       },
