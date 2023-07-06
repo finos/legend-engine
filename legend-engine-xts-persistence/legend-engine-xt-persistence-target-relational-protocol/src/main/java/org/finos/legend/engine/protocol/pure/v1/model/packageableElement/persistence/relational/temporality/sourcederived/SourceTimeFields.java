@@ -20,8 +20,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SourceTimeStart.class, name = "sourceTimeStartAndEnd"),
-        @JsonSubTypes.Type(value = SourceTimeStartAndEnd.class, name = "sourceTimeStart")
+        @JsonSubTypes.Type(value = SourceTimeStart.class, name = "sourceTimeStart"),
+        @JsonSubTypes.Type(value = SourceTimeStartAndEnd.class, name = "sourceTimeStartAndEnd")
 })
 public abstract class SourceTimeFields
 {

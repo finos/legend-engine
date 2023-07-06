@@ -21,8 +21,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = AllowDuplicates.class)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = AllowDuplicates.class, name = "allowDuplicates"),
-    @JsonSubTypes.Type(value = FailOnDuplicates.class, name = "FailOnDuplicates"),
-    @JsonSubTypes.Type(value = FilterDuplicates.class, name = "FilterDuplicates")
+    @JsonSubTypes.Type(value = FailOnDuplicates.class, name = "failOnDuplicates"),
+    @JsonSubTypes.Type(value = FilterDuplicates.class, name = "filterDuplicates")
 })
 public abstract class AppendStrategy
 {
