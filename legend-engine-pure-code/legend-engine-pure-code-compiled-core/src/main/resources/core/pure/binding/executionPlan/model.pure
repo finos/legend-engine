@@ -27,17 +27,19 @@ import meta::pure::graphFetch::*;
 
 Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode extends ExecutionNode
 {
-   binding : Binding[1];
-   checked : Boolean[1];
-   tree    : RootGraphFetchTree<Any>[1];
+  binding : Binding[1];
+  checked : Boolean[1];
+  tree    : RootGraphFetchTree<Any>[1];
+
+  config  : ExternalFormatExternalizeConfig[0..1];
 }
 
 Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
-   binding           : Binding[1];
-   tree              : RootGraphFetchTree<Any>[1]; 
-   enableConstraints : Boolean[1];
-   checked           : Boolean[1];
+  binding           : Binding[1];
+  tree              : RootGraphFetchTree<Any>[1]; 
+  enableConstraints : Boolean[1];
+  checked           : Boolean[1];
 
-   config            : ExternalFormatInternalizeConfig[0..1];   
+  config            : ExternalFormatInternalizeConfig[0..1];   
 }

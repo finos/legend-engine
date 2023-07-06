@@ -31,6 +31,10 @@ import meta::json::schema::fromSchema::*;
 Class meta::external::format::json::binding::validation::JsonSchemaBindingDetail extends SuccessfulBindingDetail
 {
   propertyToFieldNameGenerator : Function<{AbstractProperty<Any>[1] -> String[1]}>[1];
+  fieldNameForProperty(prop:AbstractProperty<Any>[1])
+  {
+    $this.propertyToFieldNameGenerator->eval($prop)
+  }:String[1];
 }
 
 function meta::external::format::json::binding::validation::bindDetails(binding: Binding[1]): BindingDetail[1]

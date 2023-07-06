@@ -22,6 +22,7 @@ import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerialize
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSerializeResult;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -73,16 +74,18 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     {
         try
         {
-            Stream inputStream = node.checked
-                    ? ExternalFormatRuntime.unwrapCheckedStream(((StreamingObjectResult) result).getObjectStream())
-                    : ((StreamingObjectResult) result).getObjectStream();
+            Stream<?> inputStream = node.checked
+                    ? ExternalFormatRuntime.unwrapCheckedStream(((StreamingObjectResult<IChecked<?>>) result).getObjectStream())
+                    : ((StreamingObjectResult<?>) result).getObjectStream();
 
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IFlatDataSerializeExecutionNodeSpecifics<?> specifics = (IFlatDataSerializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
-            FlatDataContext context = specifics.createContext();
-            FlatDataWriter serializer = new FlatDataWriter(context, inputStream);
-            return new ExternalFormatSerializeResult(serializer);
+
+            FlatDataContext<?> context = specifics.createContext();
+            FlatDataWriter<?> serializer = new FlatDataWriter(context, inputStream);
+
+            return new ExternalFormatSerializeResult(serializer, result);
         }
         catch (Exception e)
         {

@@ -111,7 +111,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
                                                                                                                                               ]);
                                                               let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($contentType).sourceRecordSerializeTree;
                                                               assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $contentType);
-                                                              checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
+                                                              checked($valueTree, defaultDefectTree(), $sourceTree->toOne());
                               ]); 
 
    let inputType       = $parameters->at(0)->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression).genericType.rawType;
@@ -200,11 +200,11 @@ function <<access.private>> meta::external::shared::format::executionPlan::extra
 {
   let classesFromTree = $tree->match([
                                   r:RootGraphFetchTree<Any>[1] | $r.class,
-                                  p:PropertyGraphFetchTree[1]  | if($p.isPrimitive(), 
+                                  p:PropertyGraphFetchTree[1]  | if($p.property.genericType.rawType->isEmpty() || $p.isPrimitive(), 
                                                                     | [], 
                                                                     | let rawType = $p.property.genericType.rawType->toOne();
                                                                       if($rawType->instanceOf(Class), | $rawType->cast(@Class<Any>), | $rawType->cast(@Unit).measure)->concatenate($p.property.owner);
-                                                                 ),
+                                                                 )->concatenate($p.subType),
                                   s:SubTypeGraphFetchTree[1]   | $s.subTypeClass
                                 ])->cast(@PackageableElement);
   $classesFromTree->concatenate($tree.subTrees->map(s | $s->extractPackageableElementFromTree()))->concatenate($tree.subTypeTrees->map(s | $s->extractPackageableElementFromTree()));

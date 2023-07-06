@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.shared.runtime.write;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
@@ -24,11 +25,13 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 public class ExternalFormatSerializeResult extends StreamingResult
 {
     private final ExternalFormatWriter externalFormatWriter;
+    private final Result childResult;
 
-    public ExternalFormatSerializeResult(ExternalFormatWriter externalFormatWriter)
+    public ExternalFormatSerializeResult(ExternalFormatWriter externalFormatWriter, Result childResult)
     {
         super(Lists.mutable.empty());
         this.externalFormatWriter = externalFormatWriter;
+        this.childResult = childResult;
     }
 
     @Override
@@ -40,15 +43,15 @@ public class ExternalFormatSerializeResult extends StreamingResult
     @Override
     public Serializer getSerializer(SerializationFormat format)
     {
-        switch (format)
+        return new ExternalFormatDefaultSerializer(externalFormatWriter, this);
+    }
+
+    @Override
+    public void close()
+    {
+        if (this.childResult != null)
         {
-            case DEFAULT:
-                return new ExternalFormatDefaultSerializer(externalFormatWriter);
-            case RAW:
-                return new ExternalFormatDefaultSerializer(externalFormatWriter);
-            default:
-                this.close();
-                throw new RuntimeException(format.toString() + " format not currently supported with ExternalFormatSerializeResult");
+            this.childResult.close();
         }
     }
 

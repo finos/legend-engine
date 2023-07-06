@@ -22,15 +22,24 @@ import java.io.OutputStream;
 public class ExternalFormatDefaultSerializer extends Serializer
 {
     private final ExternalFormatWriter externalFormatWriter;
+    private final ExternalFormatSerializeResult result;
 
-    public ExternalFormatDefaultSerializer(ExternalFormatWriter externalFormatWriter)
+    public ExternalFormatDefaultSerializer(ExternalFormatWriter externalFormatWriter, ExternalFormatSerializeResult result)
     {
         this.externalFormatWriter = externalFormatWriter;
+        this.result = result;
     }
 
     @Override
     public void stream(OutputStream targetStream) throws IOException
     {
-        externalFormatWriter.writeData(targetStream);
+        try
+        {
+            externalFormatWriter.writeData(targetStream);
+        }
+        finally
+        {
+            result.close();
+        }
     }
 }

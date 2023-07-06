@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.external.shared.runtime.write;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 public abstract class ExternalFormatWriter
 {
-    public abstract void writeData(OutputStream stream);
+    public abstract void writeData(OutputStream stream) throws IOException;
 }

@@ -1,13 +1,8 @@
-{
-  "builder": {
-    "_type": "json"
+[
+  {
+    "fullName": "Nancy Fraher_gen"
   },
-  "values": [
-    {
-      "fullName": "Nancy Fraher_gen"
-    },
-    {
-      "fullName": "Jason Schlichting_gen"
-    }
-  ]
-}
+  {
+    "fullName": "Jason Schlichting_gen"
+  }
+]

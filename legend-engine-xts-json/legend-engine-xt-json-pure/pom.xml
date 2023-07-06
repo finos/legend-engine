@@ -199,14 +199,5 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
-
-        <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-
-        <!-- TEST -->
-
     </dependencies>
 </project>
