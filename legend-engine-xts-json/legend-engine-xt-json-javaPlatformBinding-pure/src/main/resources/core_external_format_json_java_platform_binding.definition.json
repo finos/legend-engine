@@ -5,6 +5,7 @@
     "platform",
     "platform_functions",
     "platform_dsl_graph",
+    "core_functions",
     "core",
     "core_external_format_json",
     "core_external_language_java",

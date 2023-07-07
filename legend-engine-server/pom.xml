@@ -25,6 +25,10 @@
     <artifactId>legend-engine-server</artifactId>
     <name>Legend Engine - Server</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <packaging>jar</packaging>
 
     <build>

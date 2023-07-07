@@ -26,6 +26,10 @@
     <artifactId>legend-engine-language-pure-dsl-service-generation</artifactId>
     <name>Legend Engine - Language Pure - DSL Service - Generation</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
 
         <!-- PURE -->

@@ -25,6 +25,10 @@
     <artifactId>legend-engine-server-integration-tests</artifactId>
     <name>Legend Engine - Server - Integration Tests</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <packaging>jar</packaging>
 
     <dependencies>

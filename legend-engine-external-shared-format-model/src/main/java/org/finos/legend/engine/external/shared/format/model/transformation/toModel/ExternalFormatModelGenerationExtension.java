@@ -23,7 +23,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_External
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
-import org.finos.legend.pure.generated.core_pure_generation_generations;
+import org.finos.legend.pure.generated.core_generation_generation_generations;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support model generation");
         }
-        return core_pure_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(), descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
+        return core_generation_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(), descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 
     /**

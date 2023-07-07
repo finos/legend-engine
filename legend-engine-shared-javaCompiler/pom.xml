@@ -25,6 +25,10 @@
     <artifactId>legend-engine-shared-javaCompiler</artifactId>
     <name>Legend Engine - Shared - Java Compiler</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- LEGEND -->
         <dependency>

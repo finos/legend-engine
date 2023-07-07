@@ -26,6 +26,10 @@
     <artifactId>legend-engine-executionPlan-generation</artifactId>
     <name>Legend Engine - Execution Plan - Generation</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- PURE -->
         <dependency>

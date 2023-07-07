@@ -24,7 +24,11 @@
 
     <artifactId>legend-engine-xts-functionActivator</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - JSON</name>
+    <name>Legend Engine - XTS - Function Activator</name>
+
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
 
     <modules>
         <module>legend-engine-xt-functionActivator-api</module>

@@ -25,6 +25,10 @@
     <artifactId>legend-engine-test-server-shared</artifactId>
     <name>Legend Engine - Test Server - Shared</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <packaging>jar</packaging>
 
     <dependencies>

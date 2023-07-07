@@ -146,9 +146,6 @@
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
                             <trimStackTrace>false</trimStackTrace>
-                            <reportsDirectory>
-                                ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
-                            </reportsDirectory>                            
                             <argLine>${argLine} ${surefire.vm.params}</argLine>
                             <additionalClasspathElements>
                                 <additionalClasspathElement>

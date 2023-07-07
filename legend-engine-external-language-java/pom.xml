@@ -26,6 +26,10 @@
     <artifactId>legend-engine-external-language-java</artifactId>
     <name>Legend Engine - External - Language - Java</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- ENGINE -->
         <dependency>

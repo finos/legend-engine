@@ -26,6 +26,10 @@
     <artifactId>legend-engine-test-runner-mapping</artifactId>
     <name>Legend Engine - Test Runner - Mapping</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

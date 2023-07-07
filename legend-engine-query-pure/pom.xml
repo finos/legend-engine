@@ -25,6 +25,10 @@
     <artifactId>legend-engine-query-pure</artifactId>
     <name>Legend Engine - Query - Pure</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- PURE -->
         <dependency>

@@ -26,6 +26,10 @@
     <artifactId>legend-engine-test-runner-service</artifactId>
     <name>Legend Engine - Test Runner - Service</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- PURE -->
         <dependency>
