@@ -179,7 +179,7 @@
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
-        <h2.version>2.1.214</h2.version>
+        <h2.version>2.2.220</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
         <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
