@@ -512,7 +512,20 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
    let instancesProvider          = $mc.instancesProvider->get($sourceTree.class)->evaluateAndDeactivate();
    let varName                    = $instancesProvider.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters.name->toOne();
    let expressionWithTreeInjected = $instancesProvider.expressionSequence->toOne()->meta::pure::functions::meta::reprocessVSWithInScopeVars(newMap(pair($varName, list($sourceTree))));
-   let fd                         = ^LambdaFunction<{->Any[*]}>(expressionSequence = $expressionWithTreeInjected);
+   let expressionWithChecked      = if($checked,
+                                      | ^SimpleFunctionExpression
+                                        (
+                                          func = checked_T_MANY__Checked_MANY_,
+                                          functionName = 'checked',
+                                          genericType = ^GenericType(rawType = Checked, typeArguments = $expressionWithTreeInjected.genericType),
+                                          multiplicity = ZeroMany,
+                                          importGroup = system::imports::coreImport,
+                                          resolvedTypeParameters = ^GenericType(rawType = $expressionWithTreeInjected.genericType.rawType->orElse(Any)),
+                                          parametersValues = $expressionWithTreeInjected
+                                        )->evaluateAndDeactivate(),
+                                      | $expressionWithTreeInjected);
+   let fd                         = ^LambdaFunction<{->Any[*]}>(expressionSequence = $expressionWithChecked);
+
    meta::pure::executionPlan::executionPlan($fd, $exeCtx, $extensions, $debug).rootExecutionNode;
 }
 
