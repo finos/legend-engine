@@ -184,7 +184,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
     dynaFnToSql('group',                  $allStates,            ^ToSql(format='(%s)')),
     dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false])),
-    dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
+    dynaFnToSql('in',                     $allStates,            ^ToSql(format='(%s in %s)', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
     dynaFnToSql('objectReferenceIn',      $allStates,            ^ToSql(format='%s objectReferenceIn %s', transform={p:String[*] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | [$p->at(0), $p->at(1)], | [$p->at(0), ('(' + $p->at(1) + ')')])})),
     dynaFnToSql('isDistinct',             $allStates,            ^ToSql(format='count(distinct(%s)) = count(%s)', transform={p:String[*]|assert($p->isNotEmpty(), |'"isDistinct" aggregation can be applied on primitive values only'); $p->concatenate($p);})),
     dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='%s is null')),
