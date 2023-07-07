@@ -251,7 +251,15 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         MongoDBStoreExecutorConfiguration mongoDBExecutorConfiguration = MongoDBStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
         MongoDBStoreExecutor mongoDBStoreExecutor = (MongoDBStoreExecutor) new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
 
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+        PlanExecutor planExecutor;
+        if (serverConfiguration.graphFetchExecutionConfiguration != null)
+        {
+            planExecutor = PlanExecutor.newPlanExecutor(serverConfiguration.graphFetchExecutionConfiguration, relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+        }
+        else
+        {
+            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+        }
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();

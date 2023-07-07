@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -95,14 +96,26 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
         this(servicePath, executionPlanResource, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation));
     }
 
+    @Deprecated
     protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation, long graphFetchBatchMemoryLimit)
     {
         this(servicePath, plan, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchBatchMemoryLimit));
     }
 
+    @Deprecated
     protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, boolean allowJavaCompilation, long graphFetchBatchMemoryLimit)
     {
         this(servicePath, executionPlanResource, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchBatchMemoryLimit));
+    }
+
+    protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        this(servicePath, plan, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchExecutionConfiguration));
+    }
+
+    protected AbstractServicePlanExecutor(String servicePath, String executionPlanResource, boolean allowJavaCompilation, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        this(servicePath, executionPlanResource, PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(allowJavaCompilation, graphFetchExecutionConfiguration));
     }
 
     protected AbstractServicePlanExecutor(String servicePath, ExecutionPlan plan, boolean allowJavaCompilation, StoreExecutor... storeExecutors)
@@ -198,7 +211,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     @Override
     public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
     {
-        this.executor.setGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit);
+        this.executor.setGraphFetchExecutionConfiguration(new GraphFetchExecutionConfiguration(graphFetchBatchMemoryLimit));
     }
 
     @Override

@@ -15,15 +15,13 @@
 package org.finos.legend.engine.plan.execution.nodes.state;
 
 import io.opentracing.Span;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
@@ -31,6 +29,7 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.graphFetch.AdaptiveGraphBatchStats;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
@@ -38,6 +37,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.pac4j.core.profile.CommonProfile;
+
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * copy method is used to create a copy of ExecutionState to be used in isolated/concurrent environment. Do update the copy method in case of any field addition.
@@ -54,8 +60,9 @@ public class ExecutionState
     public boolean realizeAllocationResults;
     public String execID;
 
-    private final long graphFetchBatchMemoryLimit;
+    private final GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     public GraphObjectsBatch graphObjectsBatch;
+    public AdaptiveGraphBatchStats adaptiveGraphBatchStats;
     public List<GraphFetchCache> graphFetchCaches;
 
     private EngineJavaCompiler javaCompiler;
@@ -88,8 +95,9 @@ public class ExecutionState
         this.realizeAllocationResults = state.realizeAllocationResults;
         this.isJavaCompilationAllowed = state.isJavaCompilationAllowed;
         this.javaCompiler = state.javaCompiler;
-        this.graphFetchBatchMemoryLimit = state.graphFetchBatchMemoryLimit;
+        this.graphFetchExecutionConfiguration = state.graphFetchExecutionConfiguration;
         this.graphObjectsBatch = state.graphObjectsBatch;
+        this.adaptiveGraphBatchStats = state.adaptiveGraphBatchStats;
         this.graphFetchCaches = state.graphFetchCaches;
         this.concurrentExecutionNodeExecutorPool = state.concurrentExecutionNodeExecutorPool;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
@@ -101,17 +109,40 @@ public class ExecutionState
         this.logSQLWithParamValues = state.logSQLWithParamValues;
     }
 
+    @Deprecated
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
         this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext,  CredentialProviderProvider credentialProviderProvider)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, new RequestContext(), null, graphFetchExecutionConfiguration);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, requestContext, credentialProviderProvider, new GraphFetchExecutionConfiguration());
+    }
+
+    @Deprecated
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider)
     {
         this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, requestContext, credentialProviderProvider, true);
     }
 
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, requestContext, credentialProviderProvider, graphFetchExecutionConfiguration, true);
+    }
+
+    @Deprecated
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, boolean logSQLWithParamValues)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, requestContext, credentialProviderProvider, new GraphFetchExecutionConfiguration(graphFetchBatchMemoryLimit), logSQLWithParamValues);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration, boolean logSQLWithParamValues)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -120,7 +151,7 @@ public class ExecutionState
         this.templateFunctions = templateFunctions;
         this.realizeAllocationResults = false;
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
-        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.graphFetchExecutionConfiguration = graphFetchExecutionConfiguration;
         extraStates.forEach(storeExecutionState -> this.states.put(storeExecutionState.getStoreState().getStoreType(), storeExecutionState));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
@@ -132,7 +163,7 @@ public class ExecutionState
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, new GraphFetchExecutionConfiguration());
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates)
@@ -145,7 +176,7 @@ public class ExecutionState
         Map<String, Result> resCopy = Maps.mutable.ofMap(this.res);
         List<? extends String> templateFunctionsCopy = Lists.mutable.ofAll(this.templateFunctions);
         List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
-        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.requestContext, this.credentialProviderProvider, this.logSQLWithParamValues);
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.requestContext, this.credentialProviderProvider, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
 
         copy.activities = Lists.mutable.withAll(this.activities);
         copy.allocationNodeName = this.allocationNodeName;
@@ -236,9 +267,15 @@ public class ExecutionState
         this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
     }
 
+    @Deprecated
     public long getGraphFetchBatchMemoryLimit()
     {
-        return this.graphFetchBatchMemoryLimit;
+        return this.graphFetchExecutionConfiguration.getGraphFetchBatchMemoryHardLimit();
+    }
+
+    public GraphFetchExecutionConfiguration getGraphFetchExecutionConfiguration()
+    {
+        return this.graphFetchExecutionConfiguration;
     }
 
     public ExecutionState setGraphObjectsBatch(GraphObjectsBatch graphObjectsBatch)

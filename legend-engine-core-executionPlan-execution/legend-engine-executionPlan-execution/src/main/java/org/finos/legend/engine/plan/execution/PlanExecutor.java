@@ -15,17 +15,6 @@
 package org.finos.legend.engine.plan.execution;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -35,12 +24,18 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.*;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilderLoader;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -54,9 +49,20 @@ import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
 public class PlanExecutor
 {
-    public static final long DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
     public static final String USER_ID = "userId";
     public static final String EXEC_ID = "execID";
     public static final String REFERER = "referer";
@@ -68,25 +74,31 @@ public class PlanExecutor
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
-    private long graphFetchBatchMemoryLimit;
+    private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
     private final boolean logSQLWithParamValues;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, boolean logSQLWithParamValues)
+
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, CredentialProviderProvider credentialProviderProvider, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration, boolean logSQLWithParamValues)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
-        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.credentialProviderProvider = credentialProviderProvider;
+        this.graphFetchExecutionConfiguration = graphFetchExecutionConfiguration;
         this.logSQLWithParamValues = logSQLWithParamValues;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
     {
         return this.planExecutorInfo;
+    }
+
+    public void setGraphFetchExecutionConfiguration(GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        this.graphFetchExecutionConfiguration = graphFetchExecutionConfiguration;
     }
 
     public ImmutableList<StoreExecutor> getExtraExecutors()
@@ -309,11 +321,6 @@ public class PlanExecutor
         state.addResult(REFERER, new ConstantResult(String.valueOf(RequestContext.getReferral(state.requestContext)).replace("'", "''")));
     }
 
-    public void setGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
-    {
-        this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
-    }
-
     public void injectConcurrentExecutionNodeExecutorPool(ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool)
     {
         if (this.concurrentExecutionNodeExecutorPool != null)
@@ -355,7 +362,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider, this.logSQLWithParamValues);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, null, this.credentialProviderProvider, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
 
         if (planExecutionContext != null)
         {
@@ -411,7 +418,7 @@ public class PlanExecutor
     {
         private boolean isJavaCompilationAllowed = DEFAULT_IS_JAVA_COMPILATION_ALLOWED;
         private final MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
-        private long graphFetchBatchMemoryLimit = DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT;
+        private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = new GraphFetchExecutionConfiguration();
         private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
         private boolean logSQLWithParamValues = true;
 
@@ -426,9 +433,16 @@ public class PlanExecutor
             return this;
         }
 
+        @Deprecated
         public Builder withGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
         {
-            this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+            this.graphFetchExecutionConfiguration = new GraphFetchExecutionConfiguration(graphFetchBatchMemoryLimit);
+            return this;
+        }
+
+        public Builder withGraphFetchExecutionConfiguration(GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+        {
+            this.graphFetchExecutionConfiguration = graphFetchExecutionConfiguration;
             return this;
         }
 
@@ -458,7 +472,7 @@ public class PlanExecutor
 
         public PlanExecutor build()
         {
-            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.graphFetchBatchMemoryLimit, this.credentialProviderProvider, this.logSQLWithParamValues);
+            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.credentialProviderProvider, this.graphFetchExecutionConfiguration, this.logSQLWithParamValues);
         }
     }
 
@@ -505,6 +519,14 @@ public class PlanExecutor
                 .build();
     }
 
+    public static PlanExecutor newPlanExecutor(GraphFetchExecutionConfiguration graphFetchExecutionConfiguration, StoreExecutor... storeExecutors)
+    {
+        return newPlanExecutorBuilder()
+                .withStoreExecutors(storeExecutors)
+                .withGraphFetchExecutionConfiguration(graphFetchExecutionConfiguration)
+                .build();
+    }
+
     @Deprecated
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor storeExecutor)
     {
@@ -528,6 +550,16 @@ public class PlanExecutor
         return newPlanExecutorBuilder()
                 .isJavaCompilationAllowed(isJavaCompilationAllowed)
                 .withGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit)
+                .withAvailableStoreExecutors()
+                .build();
+    }
+
+    @Deprecated
+    public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
+    {
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withGraphFetchExecutionConfiguration(graphFetchExecutionConfiguration)
                 .withAvailableStoreExecutors()
                 .build();
     }
