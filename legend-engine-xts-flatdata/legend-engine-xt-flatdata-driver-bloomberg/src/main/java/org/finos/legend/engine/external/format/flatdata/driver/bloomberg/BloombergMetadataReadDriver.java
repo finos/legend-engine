@@ -40,12 +40,14 @@ public class BloombergMetadataReadDriver<T> implements FlatDataReadDriver<T>
     private final ObjectVariable<BloombergKeyValues> metadata;
     private final FlatDataProcessingContext context;
     private final CommonDataHandler commonDataHandler;
-    private final FlatDataRecordType recordType;
+    private ParsedFlatDataToObject<? extends T> objectFactory;
+    private List<FieldHandler> fieldHandlers;
+    private HeadedFlatDataFactory<T> dataFactory;
+    private BloombergKeyValues lastMetadata;
     private boolean finished = false;
 
     BloombergMetadataReadDriver(FlatDataSection section, FlatDataProcessingContext context)
     {
-        this.recordType = Objects.requireNonNull(section.recordType);
         this.section = section;
         this.metadata = ObjectVariable.reference(context, BloombergKeyValues.VARIABLE_LAST_METADATA);
         this.context = context;
@@ -55,7 +57,10 @@ public class BloombergMetadataReadDriver<T> implements FlatDataReadDriver<T>
     @Override
     public void start()
     {
-        // No op
+        this.lastMetadata = Objects.requireNonNull(metadata.get(), "No data section since last metadata");
+        this.dataFactory = new HeadedFlatDataFactory<T>(lastMetadata.keys(), context.getDefiningPath(), Collections.singletonList(AbstractBloombergReadDriver.NULL_STRING));
+        this.fieldHandlers = this.commonDataHandler.computeFieldHandlers(this.dataFactory::getRawDataAccessor);
+        this.objectFactory = (ParsedFlatDataToObject<T>) this.context.createToObjectFactory(new FieldHandlerRecordType(this.section.recordType, this.fieldHandlers));
     }
 
     @Override
@@ -67,22 +72,18 @@ public class BloombergMetadataReadDriver<T> implements FlatDataReadDriver<T>
     @Override
     public Collection<IChecked<T>> readCheckedObjects()
     {
-        BloombergKeyValues lastMetadata = Objects.requireNonNull(metadata.get(), "No data section since last metadata");
-        HeadedFlatDataFactory<T> dataFactory = new HeadedFlatDataFactory<T>(lastMetadata.keys(), context.getDefiningPath(), Collections.singletonList(AbstractBloombergReadDriver.NULL_STRING));
-        List<FieldHandler> fieldHandlers = commonDataHandler.computeFieldHandlers(dataFactory::getRawDataAccessor);
-        ParsedFlatDataToObject<T> objectFactory = (ParsedFlatDataToObject<T>) context.createToObjectFactory(new FieldHandlerRecordType(section.recordType, fieldHandlers));
-        RawFlatData raw = dataFactory.createRawFlatData(1, lastMetadata.line(), lastMetadata.values());
+        RawFlatData raw = this.dataFactory.createRawFlatData(1, lastMetadata.line(), lastMetadata.values());
         IChecked<RawFlatData> checkedRaw = BasicChecked.newChecked(raw, null, lastMetadata.getDefects());
-        Optional<IChecked<T>> parsed = dataFactory.createParsed(checkedRaw, fieldHandlers, objectFactory);
-        finished = true;
-        metadata.set(null);
+        Optional<IChecked<T>> parsed = this.dataFactory.createParsed(checkedRaw, this.fieldHandlers, this.objectFactory);
+        this.finished = true;
         return parsed.map(Collections::singletonList).orElseGet(Collections::emptyList);
     }
 
     @Override
     public void stop()
     {
-        // No op
+        this.metadata.set(null);
+        this.objectFactory.finished();
     }
 
     @Override
