@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.common;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public enum FilterType
 {
     GREATER_THAN("GT"),
@@ -32,5 +36,14 @@ public enum FilterType
     public String getType()
     {
         return type;
+    }
+
+    private static final Map<String, FilterType> BY_NAME = Arrays
+            .stream(FilterType.values())
+            .collect(Collectors.toMap(FilterType::getType, java.util.function.Function.identity()));
+
+    public static FilterType fromName(String name)
+    {
+        return BY_NAME.get(name);
     }
 }

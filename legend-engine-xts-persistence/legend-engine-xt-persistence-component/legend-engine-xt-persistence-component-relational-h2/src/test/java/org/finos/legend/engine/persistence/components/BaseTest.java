@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -47,6 +48,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 
 public class BaseTest
@@ -131,10 +134,31 @@ public class BaseTest
 
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), userCapabilitySet);
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), userCapabilitySet, false);
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
+    private void verifyLatestStagingFilters(RelationalIngestor ingestor, Datasets datasets) throws Exception
+    {
+        List<DatasetFilter> filters = ingestor.getLatestStagingFilters(JdbcConnection.of(h2Sink.connection()), datasets);
+        DerivedDataset derivedDataset = (DerivedDataset) datasets.stagingDataset();
+        List<DatasetFilter> expectedFilters = new ArrayList<>(derivedDataset.datasetFilters());
+        Assertions.assertEquals(filters.size(), expectedFilters.size());
+
+        Comparator comparator = Comparator.comparing(DatasetFilter::fieldName).thenComparing(DatasetFilter::filterType);
+        Collections.sort(filters, comparator);
+        Collections.sort(expectedFilters, comparator);
+        for (int i = 0; i < filters.size(); i++)
+        {
+            Assertions.assertEquals(expectedFilters.get(i).fieldName(), expectedFilters.get(i).fieldName());
+            Assertions.assertEquals(expectedFilters.get(i).filterType(), expectedFilters.get(i).filterType());
+            Assertions.assertEquals(expectedFilters.get(i).value(), expectedFilters.get(i).value());
+        }
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets,
+                                                          String[] schema, String expectedDataPath, Map<String, Object> expectedStats,
+                                                          Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet,
+                                                          boolean verifyStagingFilters) throws Exception
     {
         // Execute physical plans
         RelationalIngestor ingestor = RelationalIngestor.builder()
@@ -161,13 +185,24 @@ public class BaseTest
             Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
         }
 
+        // Verify StagingFilters
+        if (verifyStagingFilters)
+        {
+            verifyLatestStagingFilters(ingestor, datasets);
+        }
+
         // Return result (including updated datasets)
         return result;
     }
 
+    protected IngestorResult executePlansAndVerifyResultsWithStagingFilters(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), true);
+    }
+
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet());
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), false);
     }
 
     protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception

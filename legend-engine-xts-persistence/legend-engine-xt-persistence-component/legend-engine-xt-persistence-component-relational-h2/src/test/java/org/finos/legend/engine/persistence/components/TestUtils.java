@@ -385,6 +385,7 @@ public class TestUtils
             .schema(getStagingSchema())
             .alias(stagingTableName)
             .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3L))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.LESS_THAN_EQUAL, 5L))
             .build();
     }
 
