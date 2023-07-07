@@ -104,6 +104,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+    dynaFnToSql('in',                     $allStates,            ^ToSql(format='(%s in %s)', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
