@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - Core - Language - Pure</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-language-pure-compiler</module>
         <module>legend-engine-language-pure-compiler-api</module>
@@ -33,5 +37,9 @@
         <module>legend-engine-language-pure-grammar-api</module>
         <module>legend-engine-language-pure-modelManager</module>
         <module>legend-engine-language-pure-modelManager-sdlc</module>
+        <module>legend-engine-protocol</module>
+        <module>legend-engine-protocol-api</module>
+        <module>legend-engine-protocol-generation</module>
+        <module>legend-engine-protocol-pure</module>
     </modules>
 </project>

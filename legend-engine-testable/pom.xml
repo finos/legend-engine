@@ -25,6 +25,10 @@
     <artifactId>legend-engine-testable</artifactId>
     <name>Legend Engine - Testable</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- PURE -->
         <dependency>

@@ -25,6 +25,10 @@
     <artifactId>legend-engine-services-model-api</artifactId>
     <name>Legend Engine - Services - model - API</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- ENGINE -->
         <dependency>

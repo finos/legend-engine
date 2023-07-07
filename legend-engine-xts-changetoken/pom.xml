@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - ChangeToken</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-changetoken-compiler</module>
         <module>legend-engine-xt-changetoken-pure</module>

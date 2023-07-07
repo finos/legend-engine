@@ -5,6 +5,6 @@
     "platform",
     "platform_functions",
     "platform_dsl_diagram",
-    "core"
+    "core_functions"
   ]
 }

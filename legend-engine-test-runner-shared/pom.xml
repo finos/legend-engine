@@ -25,6 +25,10 @@
     <artifactId>legend-engine-test-runner-shared</artifactId>
     <name>Legend Engine - Test Runner - Shared</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <!-- JACKSON -->
         <dependency>

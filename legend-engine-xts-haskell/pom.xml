@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Haskell</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-haskell-grammar</module>
         <module>legend-engine-xt-haskell-protocol</module>

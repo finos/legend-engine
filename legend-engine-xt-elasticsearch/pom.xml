@@ -38,6 +38,7 @@
 
     <properties>
         <skipGeneratePureSpec>true</skipGeneratePureSpec>
+        <top.project>${project.basedir}/../</top.project>
     </properties>
 
     <build>
@@ -50,9 +51,6 @@
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
-                    <reportsDirectory>
-                        ../../legend-engine-test-reports/surefire-reports-aggregate
-                    </reportsDirectory>
                 </configuration>
             </plugin>
         </plugins>

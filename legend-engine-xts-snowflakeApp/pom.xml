@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Snowflake App</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-snowflakeApp-api</module>
         <module>legend-engine-xt-snowflakeApp-compiler</module>

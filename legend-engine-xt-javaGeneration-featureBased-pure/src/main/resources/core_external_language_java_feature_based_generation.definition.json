@@ -1,12 +1,13 @@
 {
-    "name" : "core_external_language_java_feature_based_generation",
-    "pattern": "(meta::external::language::java::generation::featureBased)(::.*)?",
-    "dependencies": [
-        "platform",
-        "platform_functions",
-        "platform_dsl_diagram",
-        "platform_dsl_mapping",
-        "core",
-        "core_external_language_java"
-    ]
+  "name": "core_external_language_java_feature_based_generation",
+  "pattern": "(meta::external::language::java::generation::featureBased)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_diagram",
+    "platform_dsl_mapping",
+    "core",
+    "core_generation",
+    "core_external_language_java"
+  ]
 }

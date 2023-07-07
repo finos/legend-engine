@@ -224,6 +224,10 @@
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
             <scope>runtime</scope>

@@ -5,6 +5,7 @@
     "platform",
     "platform_functions",
     "platform_dsl_mapping",
+    "core_functions",
     "core",
     "core_authentication"
   ]

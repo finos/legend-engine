@@ -26,6 +26,10 @@
     <artifactId>legend-engine-external-shared-format-runtime</artifactId>
     <name>Legend Engine - External - Shared - Format - Runtime</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

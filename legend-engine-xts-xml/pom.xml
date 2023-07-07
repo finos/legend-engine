@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - XML</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-xml-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-xml-model</module>

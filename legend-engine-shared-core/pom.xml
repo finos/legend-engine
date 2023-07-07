@@ -25,6 +25,10 @@
     <artifactId>legend-engine-shared-core</artifactId>
     <name>Legend Engine - Shared - Core</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

@@ -26,6 +26,10 @@
     <artifactId>legend-engine-service-post-validation-runner</artifactId>
     <name>Legend Engine - Service Post Validation Runner</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

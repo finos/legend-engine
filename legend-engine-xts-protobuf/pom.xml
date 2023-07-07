@@ -26,6 +26,10 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Protobuf</name>
 
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-protobuf</module>
         <module>legend-engine-xt-protobuf-grammar</module>
