@@ -28,6 +28,15 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Text with keyword field property mapping using variables'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::fields::testEqualFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let value = 'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home';
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword') == $value));
+}
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test NOT filter on Elasticsearch Text with keyword field property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::fields::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
 {
@@ -35,7 +44,7 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text
 }
 
 function 
-  <<paramTest.Test, paramTest.Ignore>>
+  <<paramTest.Test>>
   {doc.doc = 'Test contains filter on Elasticsearch Text property mapping.  This uses match_phrase_prefix, hence no matching on the left side of the string'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::testContainsFilter(config:TestConfig[1]):Boolean[1]
 {
@@ -43,5 +52,14 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his i')));
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity')));
   $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description')->contains('his identity a')));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test contains filter on Elasticsearch Text property mapping using variables.  This uses match_phrase_prefix, hence no matching on the left side of the string'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::text::testContainsFilter_PureOneVariable(config:TestConfig[1]):Boolean[1]
+{
+  let value = 'the';
+  $config->testTdsExpression(x | $x->filter(x | $x.getNullableString('Description.asKeyword')->contains($value)));
 }
 

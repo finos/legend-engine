@@ -127,7 +127,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
         boolean isAggregation = !val.body.aggregations.isEmpty();
 
-        HttpUriRequest request = val.accept(new ElasticsearchV7RequestToHttpRequestVisitor(this.url));
+        HttpUriRequest request = val.accept(new ElasticsearchV7RequestToHttpRequestVisitor(this.url, this.executionState));
         String query = ((HttpEntityEnclosingRequest) request).getEntity().toString();
 
         Span span = GlobalTracer.get().buildSpan("Elasticsearch Request").start();

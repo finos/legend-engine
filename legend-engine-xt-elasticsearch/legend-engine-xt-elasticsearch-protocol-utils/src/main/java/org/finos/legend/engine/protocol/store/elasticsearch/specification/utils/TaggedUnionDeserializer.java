@@ -101,9 +101,9 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isIntegralNumber));
             }
-            else if (rawClass.equals(Double.class))
+            else if (Number.class.isAssignableFrom(rawClass))
             {
-                nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isDouble));
+                nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isFloatingPointNumber));
             }
             else if (rawClass.equals(Boolean.class))
             {

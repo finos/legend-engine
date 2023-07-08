@@ -52,11 +52,6 @@ public final class LiteralOrExpressionCompiler
         return this.compile(val);
     }
 
-    public Root_meta_external_store_elasticsearch_v7_metamodel_specification_LiteralOrExpression<Double> compileDouble(LiteralOrExpression<Double> val)
-    {
-        return this.compile(val);
-    }
-
     public Root_meta_external_store_elasticsearch_v7_metamodel_specification_LiteralOrExpression<? extends Number> compileNumber(LiteralOrExpression<Number> val)
     {
         return this.compile(val);

@@ -171,7 +171,7 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::singleKeyMapConstraint(p: meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[0..1] // todo
+meta::external::store::elasticsearch::specification::metamodel::singleKeyMapConstraint(p: meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[0..1]
 {
   let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'this');
 
@@ -244,8 +244,8 @@ meta::external::store::elasticsearch::specification::metamodel::getBuiltInTypes(
     pair(^TypeName(namespace = '_builtins', name = 'number'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Number>'),
     pair(^TypeName(namespace = '_types', name = 'integer'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>'),
     pair(^TypeName(namespace = '_types', name = 'long'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Integer>'),
-    pair(^TypeName(namespace = '_types', name = 'double'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>'),
-    pair(^TypeName(namespace = '_types', name = 'float'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Float>'),
+    pair(^TypeName(namespace = '_types', name = 'double'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Number>'),
+    pair(^TypeName(namespace = '_types', name = 'float'), 'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Number>'),
     pair(^TypeName(namespace = '_types', name = 'DictionaryResponseBase'), 'Map'),
     pair(^TypeName(namespace = '_spec_utils', name = 'Void'), 'Nil')
   ];
@@ -271,6 +271,13 @@ function
 meta::external::store::elasticsearch::specification::metamodel::stringType(): String[1]
 {
     'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<String>';
+}
+
+function
+<<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::anyType(): String[1]
+{
+    'meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression<Any>';
 }
 
 function
@@ -524,7 +531,7 @@ meta::external::store::elasticsearch::specification::metamodel::propertyTypeToPu
     },
     instanceT: InstanceOf[1] | $instanceT->instanceOfTypeToPureType($state),
     unionT: UnionOf[1] | $unionT->unionOfTypeToPureType($state),
-    userDefT: UserDefinedValue[1] | 'Any'
+    userDefT: UserDefinedValue[1] | anyType()
   ]);
 }
 
@@ -548,7 +555,7 @@ meta::external::store::elasticsearch::specification::metamodel::unionOfTypeToPur
         |
           if($distinct->contains(stringType()),
             |stringType(),
-            |'Any'
+            |anyType()
           )
       );
     }

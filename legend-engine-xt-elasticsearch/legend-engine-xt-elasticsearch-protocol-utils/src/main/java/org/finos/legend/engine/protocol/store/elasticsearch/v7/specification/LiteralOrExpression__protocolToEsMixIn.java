@@ -14,12 +14,11 @@
 
 package org.finos.legend.engine.protocol.store.elasticsearch.v7.specification;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.LiteralOrExpressionSerializer;
 
 @JsonSerialize(using = LiteralOrExpressionSerializer.class)
-public abstract class LiteralOrExpression__protocolToEsMixIn<T>
+public abstract class LiteralOrExpression__protocolToEsMixIn
 {
 
 }

@@ -138,7 +138,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
     {
         this.setPropertyBase("keyword", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_KeywordProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::KeywordProperty"))
                 .__pure_protocol_type("keywordProperty")
-                ._boost(literalOrExpressionCompiler.compileDouble(val.boost))
+                ._boost(literalOrExpressionCompiler.compileNumber(val.boost))
                 ._eager_global_ordinals(literalOrExpressionCompiler.compileBoolean(val.eager_global_ordinals))
                 ._index(literalOrExpressionCompiler.compileBoolean(val.index))
                 ._normalizer(literalOrExpressionCompiler.compileString(val.normalizer))
@@ -157,7 +157,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
         setPropertyBase("_boolean",
                 new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_BooleanProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::BooleanProperty"))
                         .__pure_protocol_type("booleanProperty")
-                        ._boost(literalOrExpressionCompiler.compileDouble(val.boost))
+                        ._boost(literalOrExpressionCompiler.compileNumber(val.boost))
                         ._index(literalOrExpressionCompiler.compileBoolean(val.index))
                         ._null_value(literalOrExpressionCompiler.compileBoolean(val.null_value))
                 // ._fielddata(val.fielddata)
@@ -172,7 +172,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
         setPropertyBase("date", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_DateProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DateProperty"))
                         .__pure_protocol_type("dateProperty")
                         ._null_value(literalOrExpressionCompiler.compileString(val.null_value))
-                        ._boost(literalOrExpressionCompiler.compileDouble(val.boost))
+                        ._boost(literalOrExpressionCompiler.compileNumber(val.boost))
                         ._format(literalOrExpressionCompiler.compileString(val.format))
                         ._ignore_malformed(literalOrExpressionCompiler.compileBoolean(val.ignore_malformed))
                         ._index(literalOrExpressionCompiler.compileBoolean(val.index))
@@ -199,7 +199,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
     {
         setPropertyBase("_float", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_FloatNumberProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::FloatNumberProperty"))
                 .__pure_protocol_type("floatNumberProperty")
-                ._null_value(literalOrExpressionCompiler.compileDouble(val.null_value)));
+                ._null_value(literalOrExpressionCompiler.compileNumber(val.null_value)));
 
         return this.visit((StandardNumberProperty) val);
     }
@@ -209,7 +209,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
     {
         setPropertyBase("half_float", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_HalfFloatNumberProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::HalfFloatNumberProperty"))
                 .__pure_protocol_type("halfFloatNumberProperty")
-                ._null_value(literalOrExpressionCompiler.compileDouble(val.null_value)));
+                ._null_value(literalOrExpressionCompiler.compileNumber(val.null_value)));
 
         return this.visit((StandardNumberProperty) val);
     }
@@ -249,7 +249,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
     {
         setPropertyBase("_double", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_DoubleNumberProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DoubleNumberProperty"))
                 .__pure_protocol_type("doubleNumberProperty")
-                ._null_value(literalOrExpressionCompiler.compileDouble(val.null_value)));
+                ._null_value(literalOrExpressionCompiler.compileNumber(val.null_value)));
 
         return this.visit((StandardNumberProperty) val);
     }
@@ -260,7 +260,7 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
         setPropertyBase("text", new Root_meta_external_store_elasticsearch_v7_metamodel_specification_types_mapping_TextProperty_Impl("", null, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::TextProperty"))
                         .__pure_protocol_type("textProperty")
                         ._analyzer(literalOrExpressionCompiler.compileString(val.analyzer))
-                        ._boost(literalOrExpressionCompiler.compileDouble(val.boost))
+                        ._boost(literalOrExpressionCompiler.compileNumber(val.boost))
                         ._eager_global_ordinals(literalOrExpressionCompiler.compileBoolean(val.eager_global_ordinals))
 //                        ._fielddata_frequency_filter(val.fielddata_frequency_filter)
                         ._index(literalOrExpressionCompiler.compileBoolean(val.index))

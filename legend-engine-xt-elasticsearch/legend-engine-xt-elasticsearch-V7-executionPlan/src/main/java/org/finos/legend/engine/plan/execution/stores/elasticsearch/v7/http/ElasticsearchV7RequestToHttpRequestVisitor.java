@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +34,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.BulkRequest;
@@ -60,10 +63,17 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
 {
     private static final ObjectMapper PROTOCOL_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
     private final URI url;
+    private final ExecutionState executionState;
 
     public ElasticsearchV7RequestToHttpRequestVisitor(URI url)
     {
+        this(url, null);
+    }
+
+    public ElasticsearchV7RequestToHttpRequestVisitor(URI url, ExecutionState executionState)
+    {
         this.url = url;
+        this.executionState = executionState;
     }
 
     @Override
@@ -85,7 +95,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
             {
                 if (parseAsProtocol)
                 {
-                    operation = PROTOCOL_MAPPER.convertValue(operation, OperationBase.class).accept(new OperationBaseVisitor<Object>()
+                    operation = PROTOCOL_MAPPER.convertValue(((LiteralOrExpression) operation).getLiteral(), OperationBase.class).accept(new OperationBaseVisitor<Object>()
                     {
                         @Override
                         public Object visit(CreateOperation val)
@@ -235,8 +245,13 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     {
         try
         {
-            byte[] content = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writeValueAsBytes(body);
-            request.setEntity(new EntityWithToString(content, ContentType.APPLICATION_JSON));
+            String template = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(body);
+            String content = template;
+            if (this.executionState != null)
+            {
+                content = FreeMarkerExecutor.process(template, this.executionState);
+            }
+            request.setEntity(new EntityWithToString(content.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON));
             return request;
         }
         catch (IOException e)

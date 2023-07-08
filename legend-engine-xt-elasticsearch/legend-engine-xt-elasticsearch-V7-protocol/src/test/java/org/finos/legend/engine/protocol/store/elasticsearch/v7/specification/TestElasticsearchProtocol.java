@@ -203,8 +203,8 @@ public class TestElasticsearchProtocol
     {
         IndexSettings indexSettings = new IndexSettings();
         indexSettings.analyze_max_token_count = LiteralOrExpression.literal(5L);
-        indexSettings.__additionalProperties.put("prop1", "value1");
-        indexSettings.__additionalProperties.put("prop2", 1234);
+        indexSettings.__additionalProperties.put("prop1", LiteralOrExpression.literal("value1"));
+        indexSettings.__additionalProperties.put("prop2", LiteralOrExpression.literal(1234));
 
         String expectedJson =
                 "{\n" +
@@ -232,7 +232,7 @@ public class TestElasticsearchProtocol
         fieldValue4.string = LiteralOrExpression.literal("hello");
 
         FieldValue fieldValue5 = new FieldValue();
-        fieldValue5.any = Collections.singletonMap("hello", "world");
+        fieldValue5.any = LiteralOrExpression.literal(Collections.singletonMap("hello", "world"));
 
         List<FieldValue> fieldValues = Arrays.asList(
                 fieldValue1,
@@ -337,7 +337,7 @@ public class TestElasticsearchProtocol
 
         DecayFunction decayFunction2 = new DecayFunction();
         decayFunction2.numeric = new NumericDecayFunction();
-        DecayPlacement<LiteralOrExpression<Double>, LiteralOrExpression<Double>> decayPlacement2 = new DecayPlacement<>();
+        DecayPlacement<LiteralOrExpression<Number>, LiteralOrExpression<Number>> decayPlacement2 = new DecayPlacement<>();
         decayPlacement2.origin = LiteralOrExpression.literal(1.2);
         decayPlacement2.scale = LiteralOrExpression.literal(1.3);
         decayFunction2.numeric.__additionalProperty.put("field2", decayPlacement2);

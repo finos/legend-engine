@@ -60,15 +60,22 @@ public class LiteralOrExpressionDeserializer extends JsonDeserializer<LiteralOrE
                 p.nextToken();
                 Object value = ctxt.readValue(p, this.type.containedType(0));
                 literalOrExpression = LiteralOrExpression.literal(value);
+                // go to end of object as field has been processed
+                p.nextToken();
             }
-            else
+            else if ("expression".equals(fieldName))
             {
                 // move to value and get it as Text - ie expression
                 String value = p.nextTextValue();
                 literalOrExpression = LiteralOrExpression.expression(value);
+                // go to end of object as field has been processed
+                p.nextToken();
             }
-            // go to end of object as field has been processed
-            p.nextToken();
+            else
+            {
+                Object value = ctxt.readValue(p, this.type.containedType(0));
+                literalOrExpression = LiteralOrExpression.literal(value);
+            }
         }
         // is just a scalar?
         else

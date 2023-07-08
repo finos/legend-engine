@@ -92,7 +92,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   );
 
   let indexData = ^BulkRequest<Any, Any>(
-      operations = $records->map(r | [^IndexOperation(_id = $r->_id()->literal()), $r])->toOneMany(),
+      operations = $records->map(r | [^IndexOperation(_id = $r->_id()->literal()), $r])->map(x | $x->literal())->toOneMany(),
       index = $name->literal(),
       refresh = Refresh._true
   );
