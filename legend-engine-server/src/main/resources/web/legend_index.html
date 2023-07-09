@@ -24,40 +24,11 @@
 
         <script>
             function setVersion() {
-                exec("api/server/v1/info", (info, infoText) => {
-                    document.getElementById("startedTime").insertAdjacentHTML('afterbegin', info.info.server.startTime + ", Timezone: " + info.info.server.timeZone);
-                    document.getElementById("purePlatformVersion").insertAdjacentHTML('afterbegin', "<a href='http://conductor2.site.gs.com:44901/#/productVersion/" + info.pure.platform + "/guid/14013/summary'>" + info.pure.platform + "</a>");
-                    document.getElementById("zipkin").insertAdjacentHTML('afterbegin', "<a href='http://" + info.zipkin.url + "'>ZipKin</a>");
-                }
-                );
-                exec("api/server/v1/currentUser", (info, infoText) => {
-                    document.getElementById("user").insertAdjacentHTML('afterbegin', info);
-                });
-                exec("api/server/v1/memory/info", (info, infoText) => {
-                    document.getElementById("memory").insertAdjacentHTML('afterbegin', 'used:' + Math.round((info.total - info.free) / (1024 * 1024)) + "Mb / max:" + Math.round(info.max / (1024 * 1024)) + 'Mb  ' + Math.round((info.total - info.free) * 100 / info.max) + "%");
-                });
-            }
-            function exec(path, callback) {
-                var infoHttp = new XMLHttpRequest();
-                infoHttp.onreadystatechange = function () {
-                    if (infoHttp.readyState == 4 && infoHttp.status == 200) {
-                        if (infoHttp.responseURL.endsWith("login.html")) {
-                            window.location.href = infoHttp.responseURL;
-                        }
-                        var info = JSON.parse(infoHttp.responseText);
-                        callback(info, infoHttp.responseText);
-                    }
-                }
-                infoHttp.withCredentials = true;
-                infoHttp.open("GET", path, true);
-                infoHttp.send(null);
-            }
-            function gc() {
-                exec("api/server/v1/memory/gc", (info, infoText) => {
-                    window.location.reload(true);
-                });
-            }
-        </script>
+            exec("api/server/v1/info", (info, infoText) => {
+            document.getElementById("startedTime").insertAdjacentHTML('afterbegin',
+            info.info.org.finos.legend.engine.server.support.server.startTime + ", Timezone: " +
+            info.info.org.finos.legend.engine.server.support.server.timeZone);
+            document.getElementById("purePlatformVersion").insertAdjacentHTML('afterbegin', "</script>
     </head>
 
     <body onload="setVersion()">

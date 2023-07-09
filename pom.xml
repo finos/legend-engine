@@ -145,6 +145,7 @@
 
 
         <module>legend-engine-server</module>
+        <module>legend-engine-server-support</module>
         <module>legend-engine-test-server-shared</module>
         <module>legend-engine-server-integration-tests</module>
 
@@ -1517,6 +1518,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-server-integration-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-server-support-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

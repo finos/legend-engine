@@ -28,7 +28,7 @@
                 <groupId>com.github.ferstl</groupId>
                 <artifactId>depgraph-maven-plugin</artifactId>
                 <configuration>
-                    <includes>*:legend-engine-xt-data*,*:legend-engine-xt-store*</includes>
+                    <includes>*:legend-engine-xt-data*,*:legend-engine-xt-store*,*:legend-engine-server-support*</includes>
                     <excludes>*:*:test</excludes>
                 </configuration>
             </plugin>
