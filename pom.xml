@@ -149,6 +149,10 @@
         <module>legend-engine-test-server-shared</module>
         <module>legend-engine-server-integration-tests</module>
 
+        <!-- Store Support -->
+        <module>legend-engine-store-support</module>
+        <!-- Store Support -->
+
         <!-- Data Push -->
         <module>legend-engine-xts-data-push</module>
         <!-- Data Push -->
