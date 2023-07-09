@@ -56,5 +56,4 @@ public class PostgresTestContainerWrapper
     {
         return this.postgreSQLContainer.getJdbcUrl();
     }
-
 }

@@ -18,11 +18,12 @@ import org.finos.legend.authentication.intermediationrule.IntermediationRuleProv
 
 import java.util.Optional;
 
+// TODO - Should "test" interfaces be merged into "core" interfaces ?
 public interface LegendStoreTestConnectionProvider<T>
 {
-    void initialize() throws Exception;
+    void initializeForTest() throws Exception;
 
-    void shutdown() throws Exception;
+    void shutdownForTest() throws Exception;
 
     T getConnection() throws Exception;
 

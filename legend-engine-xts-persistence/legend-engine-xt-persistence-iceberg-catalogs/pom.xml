@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2021 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xts-persistence</artifactId>
+        <version>4.17.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xt-persistence-iceberg-catalogs</artifactId>
+    <name>Legend Engine - XT - Persistence - Iceberg - Catalogs</name>
+
+    <properties>
+        <aws.sdk.version>2.20.101</aws.sdk.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+<!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>${maven.enforcer.requireJavaVersion}</version>
+                                </requireJavaVersion>
+                                <dependencyConvergence />
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <excludes>
+                                        <exclude>commons-logging</exclude>
+                                        <exclude>javax.mail</exclude>
+                                        <exclude>log4j:*:*:*:compile</exclude>
+                                        <exclude>org.slf4j:*:*:*:compile</exclude>
+                                    </excludes>
+                                    <includes>
+                                        &lt;!&ndash;only the specific included logging jars are allowed &ndash;&gt;
+                                        <include>org.slf4j:jul-to-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-api:${slf4j.version}</include>
+                                        <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
+                                        <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
+                                    </includes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+            <plugin>
+                <groupId>com.github.ferstl</groupId>
+                <artifactId>depgraph-maven-plugin</artifactId>
+                <configuration>
+                    <includes>*:legend-engine-xt-persistence-iceberg-jdbc-catalog,*:legend-engine-store-core*,*:legend-engine-xt-relationalStore-postgres*,*:legend-engine-xt-authentication-*</includes>
+                    <excludes>*:*:test</excludes>
+                    <graphFormat>text</graphFormat>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <!-- Legend -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-store-core-interfaces</artifactId>
+        </dependency>
+        <!-- Legend -->
+
+        <!-- Hadoop -->
+        <!-- Required for the JdbcCatalog -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>3.3.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-auth</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.reload4j</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>stax2-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- force dependency -->
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
+            <version>4.2.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Iceberg -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents.client5</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-common</artifactId>
+            <version>${iceberg.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-hive-metastore</artifactId>
+            <version>${iceberg.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-metastore</artifactId>
+            <version>3.1.3</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Iceberg -->
+
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- LOG -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- LOG -->
+
+        <!-- Legend -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-store-core-interfaces-test</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>legend-engine-shared-core</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <!-- Legend -->
+
+        <!-- Iceberg -->
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-aws</artifactId>
+            <version>${iceberg.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Iceberg -->
+
+        <!-- TestContainers -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TestContainers -->
+
+        <!-- Postgres -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Postgres -->
+
+        <!-- S3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>regions</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>${aws.sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <!-- Test -->
+
+    </dependencies>
+</project>

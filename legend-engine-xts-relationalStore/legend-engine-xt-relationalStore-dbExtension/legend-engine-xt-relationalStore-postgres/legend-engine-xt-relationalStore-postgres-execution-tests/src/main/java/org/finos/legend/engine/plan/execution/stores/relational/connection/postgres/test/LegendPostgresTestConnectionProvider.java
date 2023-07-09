@@ -31,7 +31,7 @@ public class LegendPostgresTestConnectionProvider implements LegendStoreTestConn
     private PostgresTestContainerWrapper wrapper;
 
     @Override
-    public void initialize() throws Exception
+    public void initializeForTest() throws Exception
     {
         this.loadDriver();
 
@@ -45,7 +45,7 @@ public class LegendPostgresTestConnectionProvider implements LegendStoreTestConn
     }
 
     @Override
-    public void shutdown() throws Exception
+    public void shutdownForTest() throws Exception
     {
         if (this.wrapper == null)
         {

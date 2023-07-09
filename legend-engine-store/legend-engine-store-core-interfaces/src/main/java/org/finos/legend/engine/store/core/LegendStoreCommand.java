@@ -14,6 +14,13 @@
 
 package org.finos.legend.engine.store.core;
 
-public interface LegendStoreConnection extends AutoCloseable
+/*
+    A command represents a piece of code that acquires and uses a connection.
+ */
+
+public interface LegendStoreCommand<T, O extends Object>
 {
+    void initialize(LegendStoreConnectionProvider<T> connectionProvider) throws Exception;
+
+    O run() throws Exception;
 }

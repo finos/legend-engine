@@ -43,6 +43,6 @@
         <module>legend-engine-xt-persistence-target-relational-protocol</module>
         <module>legend-engine-xt-persistence-target-relational-pure</module>
         <module>legend-engine-xt-persistence-test-runner</module>
-        <module>legend-engine-xt-persistence-iceberg-jdbc-catalog</module>
+        <module>legend-engine-xt-persistence-iceberg-catalogs</module>
     </modules>
 </project>

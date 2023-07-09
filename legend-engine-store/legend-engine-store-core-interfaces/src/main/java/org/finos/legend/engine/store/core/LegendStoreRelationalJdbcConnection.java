@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.store.core;
 
-public interface LegendStoreConnection extends AutoCloseable
+import java.sql.Connection;
+
+public interface LegendStoreRelationalJdbcConnection extends LegendStoreConnection, Connection
 {
 }

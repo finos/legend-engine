@@ -12,8 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.store.core;
+package org.finos.legend.engine.datapush.server.config;
 
-public interface LegendStoreConnection extends AutoCloseable
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class ErrorHandlingConfiguration
 {
+    @JsonProperty("includeStackTrace")
+    private Boolean includeStackTrace;
+
+    public Boolean getIncludeStackTrace()
+    {
+        return this.includeStackTrace;
+    }
 }

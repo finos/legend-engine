@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.store.core;
+package org.finos.legend.engine.datapush.server.config;
 
-public interface LegendStoreConnection extends AutoCloseable
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+
+public class CORSConfiguration
 {
+    @JsonProperty("allowedHeaders")
+    private List<String> allowedHeaders;
+
+    public List<String> getAllowedHeaders()
+    {
+        return this.allowedHeaders;
+    }
 }

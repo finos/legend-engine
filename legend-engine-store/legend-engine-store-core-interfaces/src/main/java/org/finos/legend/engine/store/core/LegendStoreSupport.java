@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.store.core;
 
-public interface LegendStoreSupport
+// TODO - Link store support to store type
+public interface LegendStoreSupport<T>
 {
+    LegendStoreConnectionProvider<T> getConnectionProvider();
 
+    // TODO - Add methods for commands ?
 }

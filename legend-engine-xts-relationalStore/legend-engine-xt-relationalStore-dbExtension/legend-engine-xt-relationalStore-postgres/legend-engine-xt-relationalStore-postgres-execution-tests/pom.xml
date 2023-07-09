@@ -34,6 +34,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-store-core-interfaces</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-store-core-interfaces-test</artifactId>
         </dependency>
         <dependency>

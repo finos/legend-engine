@@ -20,8 +20,35 @@ import java.util.Optional;
 
 public interface LegendStoreConnectionProvider<T>
 {
+    /*
+        Lifecycle method to be called when the provider is first initialized.
+        Intended for initialization actions like setting up connection pools etc.
+     */
+    default void initialize() throws Exception
+    {
+
+    }
+
+    /*
+         Lifecycle method to be called when the provider is to be destroyed.
+         Intended for tear down actions like shutting down connection pools etc.
+         Note : This is deliberately not a Java AutoCloseable
+    */
+    default void shutdown() throws Exception
+    {
+
+    }
+
+    /*
+        Lifecycle method to acquire a connection.
+        This method has to be thread safe.
+     */
     T getConnection() throws Exception;
 
+    /*
+        Lifecycle method to configure a connection. E.g. configure a HttpClient as a "connection"
+        This method has to be thread safe.
+     */
     void configureConnection(T connection) throws Exception;
 
     Optional<IntermediationRuleProvider> getIntermediationRuleProvider() throws Exception;

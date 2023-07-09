@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.store.core;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.postgres.test;
 
-public interface LegendStoreConnection extends AutoCloseable
+import org.finos.legend.engine.store.core.LegendStoreConnectionProvider;
+import org.finos.legend.engine.store.core.LegendStoreSupport;
+
+import java.sql.Connection;
+
+public class LegendPostgresSupport implements LegendStoreSupport<Connection>
 {
+    @Override
+    public LegendStoreConnectionProvider<Connection> getConnectionProvider()
+    {
+        // TODO - implement when this moved to a non-test module
+        return null;
+    }
 }
