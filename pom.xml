@@ -614,13 +614,13 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-store-core-interfaces</artifactId>
+                <artifactId>legend-engine-store-support-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-store-core-interfaces-test</artifactId>
+                <artifactId>legend-engine-store-support-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -16,8 +16,12 @@ package org.finos.legend.engine.datapush.server.resources;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.finos.legend.engine.datapush.server.exception.DataPushServerException;
 import org.finos.legend.engine.datapush.specification.model.DummyDataPushSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.postgres.test.LegendPostgresCurrentUserCommand;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.postgres.test.LegendPostgresSupport;
+import org.finos.legend.engine.server.support.server.exception.ServerException;
+import org.finos.legend.engine.server.support.server.resources.BaseResource;
+import org.finos.legend.engine.store.core.LegendStoreConnectionProvider;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -25,6 +29,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.Connection;
 
 @Path("/data/push")
 @Api("Data Push")
@@ -37,11 +42,12 @@ public class DataPushResource extends BaseResource
 
     }
 
+    @Path("/register")
     @POST
     @ApiOperation("Create a new specification")
     public Response createSpecification(DummyDataPushSpecification specification)
     {
-        DataPushServerException.validateNonNull(specification, "Input required to create project");
+        ServerException.validateNonNull(specification, "Input required to create spec");
 
         return executeWithLogging(
                 "creating specification \"",
@@ -49,4 +55,37 @@ public class DataPushResource extends BaseResource
         );
     }
 
+    @Path("/push")
+    @POST
+    @ApiOperation("Push data")
+    public Response push(Object object)
+    {
+        ServerException.validateNonNull(object, "Input required to push");
+
+        return executeWithLogging(
+                "creating specification \"",
+                () -> Response.ok().entity(this.pushData()).build()
+        );
+    }
+
+    // TODO - refactor to use a command that actually pushes data
+    private String pushData()
+    {
+        try
+        {
+            // TODO - inject authn/credential support via Dropwizard environment ??
+            // TODO - inject store support via Dropwizard environment ??
+            LegendPostgresSupport postgresSupport = new LegendPostgresSupport();
+            LegendStoreConnectionProvider<Connection> connectionProvider = postgresSupport.getConnectionProvider();
+            LegendPostgresCurrentUserCommand command = new LegendPostgresCurrentUserCommand();
+            command.initialize(connectionProvider);
+
+            String result = command.run();
+            return result;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("TODO - Add proper message and hook up to exception mapper");
+        }
+    }
 }

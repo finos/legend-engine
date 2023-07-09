@@ -16,6 +16,7 @@ package org.finos.legend.engine.datapush.server.resources;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.finos.legend.engine.server.support.server.resources.BaseResource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

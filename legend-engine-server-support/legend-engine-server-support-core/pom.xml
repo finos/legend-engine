@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-server-support-core</artifactId>
-    <name>Legend Engine - Server Support - Core</name>
+    <name>Legend Engine - Server - Support - Core</name>
     <packaging>jar</packaging>
 
     <properties>

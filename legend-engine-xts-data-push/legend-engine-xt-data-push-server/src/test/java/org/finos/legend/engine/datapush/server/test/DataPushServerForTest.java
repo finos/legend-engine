@@ -18,8 +18,9 @@ import io.dropwizard.setup.Environment;
 import org.finos.legend.engine.datapush.server.BaseDataPushServer;
 import org.finos.legend.engine.datapush.server.config.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.resources.DataPushTestResource;
+import org.finos.legend.engine.server.support.server.BaseServer;
 
-public class DataPushServerForTest extends BaseDataPushServer<DataPushServerConfiguration>
+public class DataPushServerForTest extends BaseDataPushServer
 {
     public DataPushServerForTest()
     {
@@ -32,7 +33,7 @@ public class DataPushServerForTest extends BaseDataPushServer<DataPushServerConf
     }
 
     @Override
-    protected ServerPlatformInfo newServerPlatformInfo()
+    protected BaseServer.ServerPlatformInfo newServerPlatformInfo()
     {
         return new ServerPlatformInfo(null, null, null);
     }

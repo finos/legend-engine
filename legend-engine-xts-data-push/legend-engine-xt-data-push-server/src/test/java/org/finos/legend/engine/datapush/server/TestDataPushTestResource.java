@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestTestResource extends AbstractDataPushServerResourceTest
+public class TestDataPushTestResource extends AbstractDataPushServerResourceTest
 {
     @Test
     public void testGet() throws HttpResponseException

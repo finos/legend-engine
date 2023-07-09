@@ -49,17 +49,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.finos.legend.shared</groupId>
-                    <artifactId>legend-shared-pac4j-gitlab</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- Shared Drop Wizard Bundles -->
+
+        <!-- Store support -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-store-support-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
+        </dependency>
+        <!-- Store support -->
 
         <!-- Data Push -->
         <dependency>
@@ -96,37 +98,12 @@
         </dependency>
         <!-- APACHE HTTP CLIENT -->
 
-        <!-- ECLIPSE COLLECTIONS -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
-        <!-- ECLIPSE COLLECTIONS -->
-
         <!-- DropWizard -->
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-healthchecks</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-jetty</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-jersey</artifactId>
@@ -137,58 +114,16 @@
             <artifactId>guava</artifactId>
             <scope>runtime</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-configuration</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-        </dependency>
         <!-- DropWizard -->
 
         <!-- Swagger -->
+        <!--
         <dependency>
             <groupId>com.smoketurner</groupId>
             <artifactId>dropwizard-swagger</artifactId>
         </dependency>
-        <!-- Swagger -->
-
-        <!-- Servlet -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        <!-- Servlet -->
-
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j</artifactId>
-        </dependency>
-        <!--
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
         -->
-        <!-- Authentication -->
-
-        <!-- PROMETHEUS -->
-        <dependency>
-            <groupId>io.prometheus</groupId>
-            <artifactId>simpleclient</artifactId>
-        </dependency>
-        <!-- PROMETHEUS -->
+        <!-- Swagger -->
 
         <!-- OPEN TRACING -->
         <!--
@@ -205,6 +140,7 @@
         <!-- OPEN TRACING -->
 
         <!-- LOG -->
+        <!--
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -224,6 +160,7 @@
             <artifactId>log4j</artifactId>
             <scope>runtime</scope>
         </dependency>
+        -->
         <!-- LOG -->
 
         <!-- ANNOTATIONS -->

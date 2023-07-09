@@ -103,7 +103,7 @@
         <!-- Legend -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-store-core-interfaces</artifactId>
+            <artifactId>legend-engine-store-support-core</artifactId>
         </dependency>
         <!-- Legend -->
 
@@ -241,7 +241,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-store-core-interfaces-test</artifactId>
+            <artifactId>legend-engine-store-support-test</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

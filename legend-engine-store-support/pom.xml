@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-store</artifactId>
-    <name>Legend Engine - Store</name>
+    <artifactId>legend-engine-store-support</artifactId>
+    <name>Legend Engine - Store - Support</name>
     <packaging>pom</packaging>
 
     <properties>
@@ -18,8 +18,8 @@
     </properties>
 
     <modules>
-        <module>legend-engine-store-core-interfaces</module>
-        <module>legend-engine-store-core-interfaces-test</module>
+        <module>legend-engine-store-support-core</module>
+        <module>legend-engine-store-support-test</module>
     </modules>
 
 </project>
