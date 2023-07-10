@@ -24,9 +24,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-json-test</artifactId>
+    <artifactId>legend-engine-xt-json-javaPlatformBinding-test</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Json - Test</name>
+    <name>Legend Engine - XT - Json - Java Platform Binding - Test</name>
 
     <build>
         <plugins>
@@ -43,11 +43,11 @@
                         <repository>core_external_language_java</repository>
                         <repository>core_java_platform_binding</repository>
                         <repository>core_external_format_json_java_platform_binding</repository>
-                        <repository>core_external_format_json_test</repository>
+                        <repository>core_external_format_json_java_platform_binding_test</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>
-                            ${project.basedir}/src/main/resources/core_external_format_json_test.definition.json
+                            ${project.basedir}/src/main/resources/core_external_format_json_java_platform_binding_test.definition.json
                         </extraRepository>
                     </extraRepositories>
                 </configuration>
@@ -118,7 +118,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_external_format_json_test</repository>
+                                <repository>core_external_format_json_java_platform_binding_test</repository>
                             </repositories>
                         </configuration>
                     </execution>

@@ -18,12 +18,12 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalFormatJsonTestCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreExternalFormatJsonJavaPlatformBindingTestCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_format_json_test.definition.json");
+        return GenericCodeRepository.build("core_external_format_json_java_platform_binding_test.definition.json");
     }
 }
 

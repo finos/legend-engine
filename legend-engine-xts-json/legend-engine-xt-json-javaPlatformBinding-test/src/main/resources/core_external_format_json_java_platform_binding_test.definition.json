@@ -1,6 +1,6 @@
 {
-  "name": "core_external_format_json_test",
-  "pattern": "(meta::external::format::json::test)(::.*)?",
+  "name": "core_external_format_json_java_platform_binding_test",
+  "pattern": "(meta::external::format::json::test::platformBinding::legendJava)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

@@ -35,6 +35,6 @@
         <module>legend-engine-xt-json-model</module>
         <module>legend-engine-xt-json-pure</module>
         <module>legend-engine-xt-json-runtime</module>
-        <module>legend-engine-xt-json-test</module>
+        <module>legend-engine-xt-json-javaPlatformBinding-test</module>
     </modules>
 </project>
