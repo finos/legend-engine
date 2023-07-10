@@ -21,7 +21,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::*;
 
-function <<LocalPlatformBinding.TestPlanBinder>> meta::external::format::flatdata::test::bindFlatdataTestPlanToPlatform(): LocalPlatformBinder[1]
+function <<LocalPlatformBinding.TestPlanBinder>> meta::external::format::flatdata::test::platformBinding::legendJava::bindFlatdataTestPlanToPlatform(): LocalPlatformBinder[1]
 {
    ^LocalPlatformBinder
    (

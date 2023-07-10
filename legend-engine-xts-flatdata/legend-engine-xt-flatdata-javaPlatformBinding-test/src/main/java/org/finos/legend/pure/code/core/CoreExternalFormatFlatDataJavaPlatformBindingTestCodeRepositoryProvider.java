@@ -18,11 +18,11 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreExternalFormatFlatdataTestCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreExternalFormatFlatDataJavaPlatformBindingTestCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_external_format_flatdata_test.definition.json");
+        return GenericCodeRepository.build("core_external_format_flatdata_java_platform_binding_test.definition.json");
     }
 }

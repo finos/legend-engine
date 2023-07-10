@@ -1,6 +1,6 @@
 {
-  "name": "core_external_format_flatdata_test",
-  "pattern": "(meta::external::format::flatdata::test)(::.*)?",
+  "name": "core_external_format_flatdata_java_platform_binding_test",
+  "pattern": "(meta::external::format::flatdata::test::platformBinding::legendJava)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",
