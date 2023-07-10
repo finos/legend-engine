@@ -39,7 +39,6 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
@@ -108,7 +107,6 @@ public class TestIcebergJdbcCatalog
 
         AwsCredentials credentials = AwsBasicCredentials.create(minIOTestContainerWrapper.getAccessKeyId(), minIOTestContainerWrapper.getSecretAccessKey());
         s3Client = S3Client.builder()
-                .region(Region.US_WEST_2)
                 .endpointOverride(URI.create(minIOTestContainerWrapper.getUrl()))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .httpClient(UrlConnectionHttpClient.builder().build())

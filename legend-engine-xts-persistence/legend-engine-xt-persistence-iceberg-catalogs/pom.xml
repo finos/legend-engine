@@ -90,7 +90,7 @@
                 <groupId>com.github.ferstl</groupId>
                 <artifactId>depgraph-maven-plugin</artifactId>
                 <configuration>
-                    <includes>*:legend-engine-xt-persistence-iceberg-jdbc-catalog,*:legend-engine-store-core*,*:legend-engine-xt-relationalStore-postgres*,*:legend-engine-xt-authentication-*</includes>
+                    <includes>*:legend-engine-xt-persistence-iceberg*,*:legend-engine-store-core*,*:legend-engine-xt-relationalStore-postgres*,*:legend-engine-xt-authentication-*</includes>
                     <excludes>*:*:test</excludes>
                     <graphFormat>text</graphFormat>
                 </configuration>
