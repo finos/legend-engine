@@ -149,9 +149,9 @@ public class BaseTest
         Collections.sort(expectedFilters, comparator);
         for (int i = 0; i < filters.size(); i++)
         {
-            Assertions.assertEquals(expectedFilters.get(i).fieldName(), expectedFilters.get(i).fieldName());
-            Assertions.assertEquals(expectedFilters.get(i).filterType(), expectedFilters.get(i).filterType());
-            Assertions.assertEquals(expectedFilters.get(i).value(), expectedFilters.get(i).value());
+            Assertions.assertEquals(expectedFilters.get(i).fieldName(), filters.get(i).fieldName());
+            Assertions.assertEquals(expectedFilters.get(i).filterType(), filters.get(i).filterType());
+            Assertions.assertEquals(expectedFilters.get(i).value(), filters.get(i).value());
         }
     }
 
