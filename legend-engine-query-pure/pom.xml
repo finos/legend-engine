@@ -86,11 +86,19 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-testable</artifactId>
-        </dependency>
+
         <!-- ENGINE -->
+
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <!-- JACKSON -->
 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -147,12 +155,8 @@
             <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version>
-            <scope>test</scope>
-		</dependency>
+
+
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>

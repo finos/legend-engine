@@ -1,0 +1,135 @@
+{
+  "function": {
+    "_type": "lambda",
+    "body": [
+      {
+        "_type": "func",
+        "function": "take",
+        "parameters": [
+          {
+            "_type": "func",
+            "function": "project",
+            "parameters": [
+              {
+                "_type": "func",
+                "function": "filter",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "getAll",
+                    "parameters": [
+                      {
+                        "_type": "packageableElementPtr",
+                        "fullPath": "domain::Example::Example"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "func",
+                        "function": "equal",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x"
+                              }
+                            ],
+                            "property": "cases"
+                          },
+                          {
+                            "_type": "float",
+                            "value": 10
+                          }
+                        ]
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "_type": "collection",
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "values": [
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "cases"
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "_type": "collection",
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                },
+                "values": [
+                  {
+                    "_type": "string",
+                    "value": "Cases"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "_type": "integer",
+            "value": 1000
+          }
+        ]
+      }
+    ],
+    "parameters": []
+  },
+  "mapping": "mapping::ExampleMapping",
+  "model": {
+    "_type": "pointer",
+    "sdlcInfo": {
+      "_type": "alloy",
+      "baseVersion": "latest",
+      "version": "4.3.0",
+      "groupId": "com.alloy.servicestest",
+      "artifactId": "test",
+      "packageableElementPointers": []
+    }
+  },
+  "runtime": {
+    "_type": "runtimePointer",
+    "runtime": "runtime::ExampleRuntime"
+  },
+  "context": {
+    "_type": "BaseExecutionContext",
+    "queryTimeOutInSeconds": null,
+    "enableConstraints": true
+  }
+}
