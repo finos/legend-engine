@@ -397,9 +397,9 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (2, \'Wright\', 1, 1);', $connection);
 
    executeInDb('Drop table if exists PersonSet3;', $connection);
-   executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT);', $connection);
-   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID) values (1, \'Taylor\', 1);', $connection);
-   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID) values (2, \'Wright\', 1);', $connection);
+   executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);
+   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (1, \'Taylor\', 1, 1);', $connection);
+   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (2, \'Wright\', 1, 2);', $connection);
    
    executeInDb2('Drop table if exists FirmSet1;', $connection);
    executeInDb2('Create Table FirmSet1(id INT, name VARCHAR(200),NICKNAME VARCHAR(200));', $connection);
@@ -594,11 +594,12 @@ Database meta::relational::tests::mapping::union::myDB
         FirmID INT
     )
 
-     Table PersonSet3
+    Table PersonSet3
     (
         Set3ID INT PRIMARY KEY,
         lastName_s3 VARCHAR(200),
-        FirmID INT
+        FirmID INT,
+        ADDRESSID INT
     )
    
     Table PersonSet4
@@ -628,6 +629,12 @@ Database meta::relational::tests::mapping::union::myDB
         ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
+
+    Table FirmSet3
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
    
     Table AddressSet1
     (
@@ -636,6 +643,12 @@ Database meta::relational::tests::mapping::union::myDB
     )
 
     Table AddressSet2
+    (
+        ID INT PRIMARY KEY,
+        name VARCHAR(200)
+    )
+
+    Table AddressSet3
     (
         ID INT PRIMARY KEY,
         name VARCHAR(200)
@@ -734,8 +747,18 @@ Database meta::relational::tests::mapping::union::myDB
     )
    
    Join firm1_person1_join(FirmSet1.ID=PersonSet1.FirmID)
+   Join firm1_person2_join(FirmSet1.ID=PersonSet2.FirmID)
+   Join firm1_person3_join(FirmSet1.ID=PersonSet3.FirmID)
+   Join firm2_person1_join(FirmSet2.ID=PersonSet1.FirmID)
    Join firm2_person2_join(FirmSet2.ID=PersonSet2.FirmID)
-   
+   Join firm2_person3_join(FirmSet2.ID=PersonSet3.FirmID)
+   Join firm3_person1_join(FirmSet3.ID=PersonSet1.FirmID)
+   Join firm3_person2_join(FirmSet3.ID=PersonSet2.FirmID)
+   Join firm3_person3_join(FirmSet3.ID=PersonSet3.FirmID)
+
+   Join firmPersonSet1(Firm.ID = PersonSet1.FirmID)
+   Join firmPersonSet2(Firm.ID = PersonSet2.FirmID)
+
    Join person_person_join(PersonSet1.lastName_s1={target}.lastName_s1)
    Join person_person2_join(PersonSet1.lastName_s1=PersonSet2.lastName_s2)
    Join person2_person_join(PersonSet2.lastName_s2=PersonSet1.lastName_s1)
@@ -788,6 +811,13 @@ Database meta::relational::tests::mapping::union::myDB
 
    Join PersonSet1AddressSet1_ADDRESSID(PersonSet1.ADDRESSID = AddressSet1.ID)
    Join PersonSet1AddressSet2_ADDRESSID(PersonSet1.ADDRESSID = AddressSet2.ID)
+   Join PersonSet1AddressSet3_ADDRESSID(PersonSet1.ADDRESSID = AddressSet3.ID)
+   Join PersonSet2AddressSet1_ADDRESSID(PersonSet2.ADDRESSID = AddressSet1.ID)
+   Join PersonSet2AddressSet2_ADDRESSID(PersonSet2.ADDRESSID = AddressSet2.ID)
+   Join PersonSet2AddressSet3_ADDRESSID(PersonSet2.ADDRESSID = AddressSet3.ID)
+   Join PersonSet3AddressSet1_ADDRESSID(PersonSet3.ADDRESSID = AddressSet1.ID)
+   Join PersonSet3AddressSet2_ADDRESSID(PersonSet3.ADDRESSID = AddressSet2.ID)
+   Join PersonSet3AddressSet3_ADDRESSID(PersonSet3.ADDRESSID = AddressSet3.ID)
 )
 
 ###Mapping
