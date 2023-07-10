@@ -30,7 +30,7 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
+        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure-ide/legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
     }
 
     @Override
@@ -71,8 +71,8 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-morphir/legend-engine-xt-morphir-pure", "external-language-morphir"))
                 .with(this.buildCore("legend-engine-xts-haskell/legend-engine-xt-haskell-pure", "external-language-haskell"))
                 .with(this.buildCore("legend-engine-xts-daml/legend-engine-xt-daml-pure", "external-language-daml"))
-                .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
-                .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
+                .with(this.buildCore("legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
+                .with(this.buildCore("legend-engine-pure-code/legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-xts-changetoken/legend-engine-xt-changetoken-pure", "pure-changetoken"))
                 .with(this.buildCore("legend-engine-xts-analytics/legend-engine-xts-analytics-mapping/legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
                 .with(this.buildCore("legend-engine-xts-analytics/legend-engine-xts-analytics-lineage/legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
@@ -80,7 +80,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-javaGeneration-pure", "external-language-java"))
                 .with(this.buildCore("legend-engine-xt-javaGeneration-featureBased-pure", "external-language-java-feature-based-generation"))
                 .with(this.buildCore("legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
-                .with(this.buildCore("legend-engine-pure-code-compiled-core-configuration", "configuration"))
+                .with(this.buildCore("legend-engine-xts-configuration/legend-engine-pure-code-compiled-core-configuration", "configuration"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure-metamodel", "external-query-sql-metamodel"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xts-authentication/legend-engine-xt-authentication-pure", "authentication"))
