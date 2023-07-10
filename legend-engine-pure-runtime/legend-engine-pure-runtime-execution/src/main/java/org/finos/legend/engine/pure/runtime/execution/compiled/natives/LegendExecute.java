@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.pure.runtime.execution.compiled.natives;
 
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Optional;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
@@ -23,16 +28,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
-
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Optional;
 
 public class LegendExecute extends AbstractNative
 {
@@ -79,13 +77,9 @@ public class LegendExecute extends AbstractNative
 
     private static Object pureToPlanValue(Object pureValue)
     {
-        if (pureValue instanceof StrictDate)
+        if (pureValue instanceof PureDate)
         {
-            return ((StrictDate) pureValue).format("yyyy-MM-dd");
-        }
-        else if (pureValue instanceof DateTime)
-        {
-            return ((DateTime) pureValue).format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ");
+            return ((PureDate) pureValue).toString();
         }
         else if (pureValue instanceof Boolean
                 || pureValue instanceof Double // Pure Float

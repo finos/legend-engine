@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import net.javacrumbs.jsonunit.JsonMatchers;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.ResponseBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequestBody;
@@ -90,7 +91,7 @@ public class TestElasticsearchProtocol
     {
         AggregationContainer value = new AggregationContainer();
         value.max = new MaxAggregation();
-        value.max.field = "price";
+        value.max.field = LiteralOrExpression.literal("price");
 
         SearchRequestBody searchRequestBody = new SearchRequestBody();
         searchRequestBody.aggregations = Collections.singletonMap("max_price", value);
@@ -111,10 +112,12 @@ public class TestElasticsearchProtocol
         // externally tagged variants are ones with 'type#name' in keys, like aggregation results
         Aggregate value = new Aggregate();
         value.max = new MaxAggregate();
-        value.max.value = 200.0;
+        value.max.value = LiteralOrExpression.literal(200.0);
 
         ResponseBody<Object> responseBody = new ResponseBody<>();
         responseBody.aggregations = Collections.singletonMap("max_price", value);
+        responseBody.took = LiteralOrExpression.literal(0L);
+        responseBody.timed_out = LiteralOrExpression.literal(false);
 
         String expectedJson =
                 "{\n" +
@@ -179,7 +182,7 @@ public class TestElasticsearchProtocol
         postDateSort.options = new SortOptions();
         FieldSort fieldSort = new FieldSort();
         fieldSort.order = SortOrder.asc;
-        fieldSort.format = "strict_date_optional_time_nanos";
+        fieldSort.format = LiteralOrExpression.literal("strict_date_optional_time_nanos");
         postDateSort.options.__additionalProperty.put("post_date", fieldSort);
 
         SearchRequestBody searchRequestBody = new SearchRequestBody();
@@ -199,9 +202,9 @@ public class TestElasticsearchProtocol
     public void testAdditionalProperties() throws JsonProcessingException
     {
         IndexSettings indexSettings = new IndexSettings();
-        indexSettings.analyze_max_token_count = 5L;
-        indexSettings.__additionalProperties.put("prop1", "value1");
-        indexSettings.__additionalProperties.put("prop2", 1234);
+        indexSettings.analyze_max_token_count = LiteralOrExpression.literal(5L);
+        indexSettings.__additionalProperties.put("prop1", LiteralOrExpression.literal("value1"));
+        indexSettings.__additionalProperties.put("prop2", LiteralOrExpression.literal(1234));
 
         String expectedJson =
                 "{\n" +
@@ -217,19 +220,19 @@ public class TestElasticsearchProtocol
     public void testTaggedUnionAllPrimitives() throws JsonProcessingException
     {
         FieldValue fieldValue1 = new FieldValue();
-        fieldValue1._boolean = true;
+        fieldValue1._boolean = LiteralOrExpression.literal(true);
 
         FieldValue fieldValue2 = new FieldValue();
-        fieldValue2._double = 1.2;
+        fieldValue2._double = LiteralOrExpression.literal(1.2);
 
         FieldValue fieldValue3 = new FieldValue();
-        fieldValue3._long = 123L;
+        fieldValue3._long = LiteralOrExpression.literal(123L);
 
         FieldValue fieldValue4 = new FieldValue();
-        fieldValue4.string = "hello";
+        fieldValue4.string = LiteralOrExpression.literal("hello");
 
         FieldValue fieldValue5 = new FieldValue();
-        fieldValue5.any = Collections.singletonMap("hello", "world");
+        fieldValue5.any = LiteralOrExpression.literal(Collections.singletonMap("hello", "world"));
 
         List<FieldValue> fieldValues = Arrays.asList(
                 fieldValue1,
@@ -251,31 +254,31 @@ public class TestElasticsearchProtocol
     {
         GeoBounds geoBounds1 = new GeoBounds();
         geoBounds1.coords = new CoordsGeoBounds();
-        geoBounds1.coords.top = 1.0;
-        geoBounds1.coords.bottom = -1.0;
-        geoBounds1.coords.left = -1.1;
-        geoBounds1.coords.right = 1.1;
+        geoBounds1.coords.top = LiteralOrExpression.literal(1.0);
+        geoBounds1.coords.bottom = LiteralOrExpression.literal(-1.0);
+        geoBounds1.coords.left = LiteralOrExpression.literal(-1.1);
+        geoBounds1.coords.right = LiteralOrExpression.literal(1.1);
 
         GeoBounds geoBounds2 = new GeoBounds();
         geoBounds2.tlbr = new TopLeftBottomRightGeoBounds();
         geoBounds2.tlbr.top_left = new GeoLocation();
-        geoBounds2.tlbr.top_left.coords = Arrays.asList(1.0, -1.0, 2.0, -2.0);
+        geoBounds2.tlbr.top_left.coords = Lists.mutable.of(1.0, -1.0, 2.0, -2.0).collect(value -> LiteralOrExpression.literal(value));
         geoBounds2.tlbr.bottom_right = new GeoLocation();
-        geoBounds2.tlbr.bottom_right.text = "geo-loc";
+        geoBounds2.tlbr.bottom_right.text = LiteralOrExpression.literal("geo-loc");
 
         GeoBounds geoBounds3 = new GeoBounds();
         geoBounds3.trbl = new TopRightBottomLeftGeoBounds();
         geoBounds3.trbl.top_right = new GeoLocation();
         geoBounds3.trbl.top_right.geohash = new GeoHashLocation();
-        geoBounds3.trbl.top_right.geohash.geohash = "hash123";
+        geoBounds3.trbl.top_right.geohash.geohash = LiteralOrExpression.literal("hash123");
         geoBounds3.trbl.bottom_left = new GeoLocation();
         geoBounds3.trbl.bottom_left.latlon = new LatLonGeoLocation();
-        geoBounds3.trbl.bottom_left.latlon.lat = 1.2;
-        geoBounds3.trbl.bottom_left.latlon.lon = 13;
+        geoBounds3.trbl.bottom_left.latlon.lat = LiteralOrExpression.literal(1.2);
+        geoBounds3.trbl.bottom_left.latlon.lon = LiteralOrExpression.literal(13.0);
 
         GeoBounds geoBounds4 = new GeoBounds();
         geoBounds4.wkt = new WktGeoBounds();
-        geoBounds4.wkt.wkt = "wkt";
+        geoBounds4.wkt.wkt = LiteralOrExpression.literal("wkt");
 
         List<GeoBounds> geoBounds = Arrays.asList(
                 geoBounds1,
@@ -326,25 +329,25 @@ public class TestElasticsearchProtocol
     {
         DecayFunction decayFunction1 = new DecayFunction();
         decayFunction1.date = new DateDecayFunction();
-        DecayPlacement<String, Time> decayPlacement1 = new DecayPlacement<>();
-        decayPlacement1.origin = "0";
+        DecayPlacement<LiteralOrExpression<String>, Time> decayPlacement1 = new DecayPlacement<>();
+        decayPlacement1.origin = LiteralOrExpression.literal("0");
         decayPlacement1.scale = new Time();
-        decayPlacement1.scale.offset = 1234L;
+        decayPlacement1.scale.offset = LiteralOrExpression.literal(1234L);
         decayFunction1.date.__additionalProperty.put("field", decayPlacement1);
 
         DecayFunction decayFunction2 = new DecayFunction();
         decayFunction2.numeric = new NumericDecayFunction();
-        DecayPlacement<Double, Double> decayPlacement2 = new DecayPlacement<>();
-        decayPlacement2.origin = 1.2;
-        decayPlacement2.scale = 1.3;
+        DecayPlacement<LiteralOrExpression<Number>, LiteralOrExpression<Number>> decayPlacement2 = new DecayPlacement<>();
+        decayPlacement2.origin = LiteralOrExpression.literal(1.2);
+        decayPlacement2.scale = LiteralOrExpression.literal(1.3);
         decayFunction2.numeric.__additionalProperty.put("field2", decayPlacement2);
 
         DecayFunction decayFunction3 = new DecayFunction();
         decayFunction3.geo = new GeoDecayFunction();
-        DecayPlacement<GeoLocation, String> decayPlacement3 = new DecayPlacement<>();
+        DecayPlacement<GeoLocation, LiteralOrExpression<String>> decayPlacement3 = new DecayPlacement<>();
         decayPlacement3.origin = new GeoLocation();
-        decayPlacement3.origin.text = "geo-location";
-        decayPlacement3.scale = "scale";
+        decayPlacement3.origin.text = LiteralOrExpression.literal("geo-location");
+        decayPlacement3.scale = LiteralOrExpression.literal("scale");
         decayFunction3.geo.__additionalProperty.put("field3", decayPlacement3);
 
         List<DecayFunction> decayFunctions = Arrays.asList(
@@ -383,19 +386,19 @@ public class TestElasticsearchProtocol
     public void testAdditionalPropertiesWithExternallyTaggedType() throws JsonProcessingException
     {
         ResponseBody<Object> responseBody = new ResponseBody<>();
-        responseBody.took = 0L;
-        responseBody.timed_out = false;
+        responseBody.took = LiteralOrExpression.literal(0L);
+        responseBody.timed_out = LiteralOrExpression.literal(false);
 
         Aggregate aggregate = new Aggregate();
         aggregate.sampler = new SamplerAggregate();
-        aggregate.sampler.doc_count = 200;
+        aggregate.sampler.doc_count = LiteralOrExpression.literal(200L);
 
         responseBody.aggregations.put("sample", aggregate);
 
         Aggregate innerAggregate = new Aggregate();
         innerAggregate.sigsterms = new SignificantStringTermsAggregate();
-        innerAggregate.sigsterms.doc_count = 200L;
-        innerAggregate.sigsterms.bg_count = 650L;
+        innerAggregate.sigsterms.doc_count = LiteralOrExpression.literal(200L);
+        innerAggregate.sigsterms.bg_count = LiteralOrExpression.literal(650L);
 
         aggregate.sampler.__additionalProperties.put("keywords", innerAggregate);
 
@@ -421,8 +424,8 @@ public class TestElasticsearchProtocol
     public void testCompositeArrayBucketsAggregate() throws JsonProcessingException
     {
         ResponseBody<Object> responseBody = new ResponseBody<>();
-        responseBody.took = 0L;
-        responseBody.timed_out = false;
+        responseBody.took = LiteralOrExpression.literal(0L);
+        responseBody.timed_out = LiteralOrExpression.literal(false);
 
         Aggregate aggregate = new Aggregate();
         responseBody.aggregations.put("agg", aggregate);
@@ -432,16 +435,17 @@ public class TestElasticsearchProtocol
         aggregate.composite.buckets.array = new ArrayList<>();
 
         CompositeBucket compositeBucket = new CompositeBucket();
+        compositeBucket.doc_count = LiteralOrExpression.literal(0L);
         aggregate.composite.buckets.array.add(compositeBucket);
 
         FieldValue keyValue = new FieldValue();
         compositeBucket.key.put("field", keyValue);
-        keyValue.string = "value";
+        keyValue.string = LiteralOrExpression.literal("value");
 
         Aggregate otherAgg = new Aggregate();
         compositeBucket.__additionalProperties.put("otherAgg", otherAgg);
         otherAgg.sum = new SumAggregate();
-        otherAgg.sum.value = 1234.0;
+        otherAgg.sum.value = LiteralOrExpression.literal(1234.0);
 
         String expectedJson =
                 "{\n" +
@@ -471,8 +475,8 @@ public class TestElasticsearchProtocol
     public void testCompositeKeyedBucketsAggregate() throws JsonProcessingException
     {
         ResponseBody<Object> responseBody = new ResponseBody<>();
-        responseBody.took = 0L;
-        responseBody.timed_out = false;
+        responseBody.took = LiteralOrExpression.literal(0L);
+        responseBody.timed_out = LiteralOrExpression.literal(false);
 
         Aggregate aggregate = new Aggregate();
         responseBody.aggregations.put("agg", aggregate);
@@ -481,16 +485,17 @@ public class TestElasticsearchProtocol
         aggregate.composite.buckets = new Buckets<>();
 
         CompositeBucket compositeBucket = new CompositeBucket();
+        compositeBucket.doc_count = LiteralOrExpression.literal(0L);
         aggregate.composite.buckets.keyed.put("keyedBucket", compositeBucket);
 
         FieldValue keyValue = new FieldValue();
         compositeBucket.key.put("field", keyValue);
-        keyValue.string = "value";
+        keyValue.string = LiteralOrExpression.literal("value");
 
         Aggregate otherAgg = new Aggregate();
         compositeBucket.__additionalProperties.put("otherAgg", otherAgg);
         otherAgg.sum = new SumAggregate();
-        otherAgg.sum.value = 1234.0;
+        otherAgg.sum.value = LiteralOrExpression.literal(1234.0);
 
         String expectedJson =
                 "{\n" +

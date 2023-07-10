@@ -21,8 +21,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
@@ -31,7 +34,10 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.BulkRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.CreateOperation;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.DeleteOperation;
@@ -57,10 +63,17 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
 {
     private static final ObjectMapper PROTOCOL_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
     private final URI url;
+    private final ExecutionState executionState;
 
     public ElasticsearchV7RequestToHttpRequestVisitor(URI url)
     {
+        this(url, null);
+    }
+
+    public ElasticsearchV7RequestToHttpRequestVisitor(URI url, ExecutionState executionState)
+    {
         this.url = url;
+        this.executionState = executionState;
     }
 
     @Override
@@ -82,7 +95,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
             {
                 if (parseAsProtocol)
                 {
-                    operation = PROTOCOL_MAPPER.convertValue(operation, OperationBase.class).accept(new OperationBaseVisitor<Object>()
+                    operation = PROTOCOL_MAPPER.convertValue(((LiteralOrExpression) operation).getLiteral(), OperationBase.class).accept(new OperationBaseVisitor<Object>()
                     {
                         @Override
                         public Object visit(CreateOperation val)
@@ -152,7 +165,12 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     @Override
     public HttpUriRequest visit(OpenPointInTimeRequest val)
     {
-        return new HttpPost(this.url + "/" + String.join(",", val.index) + "/_pit?keep_alive=" + val.keep_alive.unionValue());
+        return new HttpPost(this.url + "/" + indexName(val.index) + "/_pit?keep_alive=" + val.keep_alive.unionValue());
+    }
+
+    private static String indexName(List<LiteralOrExpression<String>> index)
+    {
+        return index.stream().map(LiteralOrExpression::getLiteral).collect(Collectors.joining(","));
     }
 
     @Override
@@ -173,21 +191,21 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     @Override
     public HttpUriRequest visit(CountRequest val)
     {
-        HttpPost httpPost = new HttpPost(this.url + "/" + String.join(",", val.index) + "/_count");
+        HttpPost httpPost = new HttpPost(this.url + "/" + indexName(val.index) + "/_count");
         return setEntity(httpPost, val.body);
     }
 
     @Override
     public HttpUriRequest visit(CreateRequest val)
     {
-        HttpPut request = new HttpPut(url + "/" + val.index);
+        HttpPut request = new HttpPut(url + "/" + val.index.getLiteral());
         return setEntity(request, val.body);
     }
 
     @Override
     public HttpUriRequest visit(DeleteRequest val)
     {
-        String uri = this.url + "/" + String.join(",", val.index);
+        String uri = this.url + "/" + indexName(val.index);
         if (val.ignore_unavailable != null)
         {
             uri += "?ignore_unavailable=" + val.ignore_unavailable;
@@ -198,7 +216,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     @Override
     public HttpUriRequest visit(GetRequest val)
     {
-        return new HttpGet(this.url + "/" + String.join(",", val.index));
+        return new HttpGet(this.url + "/" + indexName(val.index));
     }
 
     @Override
@@ -219,7 +237,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     @Override
     public HttpUriRequest visit(SearchRequest val)
     {
-        HttpPost httpPost = new HttpPost(this.url + "/" + String.join(",", val.index) + "/_search?typed_keys=true");
+        HttpPost httpPost = new HttpPost(this.url + "/" + indexName(val.index) + "/_search?typed_keys=true");
         return setEntity(httpPost, val.body);
     }
 
@@ -227,8 +245,13 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     {
         try
         {
-            byte[] content = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writeValueAsBytes(body);
-            request.setEntity(new EntityWithToString(content, ContentType.APPLICATION_JSON));
+            String template = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(body);
+            String content = template;
+            if (this.executionState != null)
+            {
+                content = FreeMarkerExecutor.process(template, this.executionState);
+            }
+            request.setEntity(new EntityWithToString(content.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON));
             return request;
         }
         catch (IOException e)

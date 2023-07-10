@@ -19,6 +19,11 @@ import meta::external::store::elasticsearch::v7::metamodel::specification::types
 import meta::external::store::elasticsearch::v7::metamodel::mappping::*;
 import meta::external::store::elasticsearch::v7::metamodel::store::*;
 
+function meta::external::store::elasticsearch::v7::specification::utils::literal<T|m>(v: T[m]): LiteralOrExpression<T>[m]
+{
+  $v->map(x | ^LiteralOrExpression<T>(value = $x));
+}
+
 function meta::external::store::elasticsearch::v7::specification::utils::taggedUnionValue(union: Any[1]): Any[1]
 {
   $union->type()->hasStereotype('TaggedUnion', ESProfile)->assert(|'Does not have TaggedUnion stereotype');

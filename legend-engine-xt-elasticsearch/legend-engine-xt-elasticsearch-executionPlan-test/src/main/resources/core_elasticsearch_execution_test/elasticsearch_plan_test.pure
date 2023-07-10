@@ -189,33 +189,61 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::tes
 
 function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpression(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1], testCase: String[1]): Boolean[1]
 {
-  let tds = runTdsExpression($config, $testCase);
+  let variables = $toTest->extractVariables();
+  let tds = runTdsExpression($config, $testCase, $variables);
   let expected = $toTest->eval([omdbCommonIndexRecordsTds()]);
   assert($tds.rows->size() != 0, |$testCase + ' should return at least a row, got zero');
   assertTdsEquivalent($testCase, $expected, $tds);
 }
 
-function meta::external::store::elasticsearch::executionTest::testCase::tds::runTdsExpression(config:TestConfig[1], toTest: String[1]): TabularDataSet[1]
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpressionReturnsEmpty(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Boolean[1]
 {
+  let testCaseLambda = $toTest->printFunctionDefinitionExpressions('')->toOne();
+  let testCase = $testCaseLambda->substring($testCaseLambda->indexOf('->', 0) + 2);
+  testTdsExpressionReturnsEmpty($config, $toTest, $testCase);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::testTdsExpressionReturnsEmpty(config:TestConfig[1], toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1], testCase: String[1]): Boolean[1]
+{
+  let variables = $toTest->extractVariables();
+  let tds = runTdsExpression($config, $testCase, $variables);
+  let expected = $toTest->eval([omdbCommonIndexRecordsTds()]);
+  assert($tds.rows->size() == 0, |$testCase + ' should not return any row, got ' + $tds.rows->size()->toString());
+  assertTdsEquivalent($testCase, $expected, $tds);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::testCase::tds::extractVariables(toTest: LambdaFunction<{TabularDataSet[1]->TabularDataSet[1]}>[1]): Pair<String, Pair<VariableExpression, List<Any>>>[*]
+{
+  let toTestExpression = $toTest->evaluateAndDeactivate().expressionSequence->toOne();
+  let varExpressions = $toTestExpression->findVariableExpressionsInValueSpecification()->map(x | pair($x.name, $x))->newMap();
+  let variableValues = $toTest->openVariableValues()->keyValues();
+  $variableValues->map(x | pair($x.first, pair($varExpressions->get($x.first)->toOne('no VariableExpression for ' + $x.first), $x.second)));
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::tds::runTdsExpression(config:TestConfig[1], toTest: String[1], variables: Pair<String, Pair<VariableExpression, List<Any>>>[*]): TabularDataSet[1]
+{
+  let varDefinitions = $variables->map(x | $x.first + ': ' + $x.second.first.genericType->printGenericType() + '[' + $x.second.first.multiplicity->printMultiplicity() + ']')->joinStrings(', ');
+  let vars = $variables->filter(x | $x.second.second.values->isNotEmpty())->map(x | pair($x.first, $x.second.second->map(l | if($l.values->size() == 1, |$l.values, |$l)->toOne())));
+
   let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
   
   let toCompile = $config.model->replace('%_url_%', 'http://%s:%d'->format([$url.host, $url.port])) + '\n\n' +
     '###Pure \n\n ' +
-    'function test::test(): TabularDataSet[1] {\n' +
+    'function test::test(' +  $varDefinitions + '): TabularDataSet[1] {\n' +
     '  indexToTDS(test::Store, \'omdb-common\')->from(test::EmptyMapping, test::Runtime)->' + $toTest + ';' +
     '}';
 
   // $toCompile->println();
 
-  let testCase = meta::legend::compile($toCompile)->filter(x | $x->elementToPath() == 'test::test__TabularDataSet_1_')->toOne()->cast(@FunctionDefinition<Any>);
-  let tds = execute($config, $testCase);
+  let testCase = meta::legend::compile($toCompile)->filter(x | $x->elementToPath()->startsWith('test::test_'))->toOne()->cast(@FunctionDefinition<Any>);
+  let tds = execute($config, $testCase, $vars);
 }
 
-function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1]): TabularDataSet[1]
+function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): TabularDataSet[1]
 {
   let resultJson = meta::legend::execute(
       $f,
-      [],
+      $vars,
       ^ExecutionContext(),
       $config.extension
   );
@@ -244,7 +272,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::execute(
 function meta::external::store::elasticsearch::executionTest::testCase::assertTdsEquivalent(description: String[1], expected: TabularDataSet[1], actual: TabularDataSet[1]): Boolean[1]
 {
   assertEquals($expected.columns.name,  $actual.columns.name, 
-      $description + ': columns are different.  Expected  %s, got %s', 
+      'Columns are different.  Expected  %s, got %s', 
       [ $expected.columns.name->joinStrings('[', ', ', ']'), $actual.columns.name->joinStrings('[', ', ', ']') ]
   );
 
@@ -252,7 +280,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
   // println($actual.rows.values);
 
   assertEquals($expected.rows->size(), $actual.rows->size(),       
-      $description + ': number of rows are different.  Expected  %d, got %d', 
+      'Number of rows are different.  Expected  %d, got %d', 
       [ $expected.rows->size(), $actual.rows->size() ]
   );
 
@@ -270,4 +298,14 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
 {
    $firstInstance->match([ n: Number[1] | assertEqWithinTolerance($n, $secondInstance->cast(@Number), 0.0001),
                            a: Any[1]    | assertEquals($a, $secondInstance)]);
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::asZeroOne<T>(var: T[0..1]): T[0..1]
+{
+   $var;
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::asZeroMany<T>(var: T[*]): T[*]
+{
+   $var;
 }
