@@ -14,17 +14,20 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.compiler.test;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRecordDefinition;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_IdentityResolution;
-import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_ResolutionQuery;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -116,6 +119,40 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "        }\n" +
             "      ]\n" +
             "  }\n" +
+            "  precedenceRules: [\n" +
+            "    DeleteRule: {\n" +
+            "      path: org::dataeng::Widget.identifiers;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope { widget-file-single-partition-14}\n" +
+            "      ];\n" +
+            "    },\n" +
+            "    CreateRule: {\n" +
+            "      path: org::dataeng::Widget{$.widgetId == 1234}.identifiers.identifierType;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope { widget-file-multiple-partition},\n" +
+            "        DataProviderTypeScope { Aggregator}\n" +
+            "      ];\n" +
+            "    },\n" +
+            "    ConditionalRule: {\n" +
+            "      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.widgetId == $current.widgetId};\n" +
+            "      path: org::dataeng::Widget.identifiers.identifierType;\n" +
+            "    },\n" +
+            "    SourcePrecedenceRule: {\n" +
+            "      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON'};\n" +
+            "      action: Overwrite;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope { widget-file-single-partition-14, precedence: 1},\n" +
+            "        DataProviderTypeScope { Aggregator, precedence: 2}\n" +
+            "      ];\n" +
+            "    },\n" +
+            "    SourcePrecedenceRule: {\n" +
+            "      path: org::dataeng::Widget.identifiers;\n" +
+            "      action: Overwrite;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope { widget-file-multiple-partition, precedence: 2}\n" +
+            "      ];\n" +
+            "    }\n" +
+            "  ]\n" +
             "  recordSources:\n" +
             "  [\n" +
             "    widget-file-single-partition-14: {\n" +
@@ -280,12 +317,196 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         Object[] queriesArray = idRes._resolutionQueries().toArray();
         assertEquals(1, ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._precedence());
         assertEquals("GeneratedPrimaryKey", ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._keyType()._name());
-        assertPureLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
+        assertResolutionQueryLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
 
         assertEquals(2, ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[1])._precedence());
         assertEquals("AlternateKey", ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[1])._keyType()._name());
-        assertPureLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
+        assertResolutionQueryLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
 
+        //PrecedenceRule
+        RichIterable<? extends Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule> precedenceRules = masterRecordDefinition._precedenceRules();
+        assertEquals(6, precedenceRules.size());
+        ListIterate.forEachWithIndex(precedenceRules.toList(), (source, i) ->
+        {
+            if (i == 0)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_DeleteRule);
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(1, paths.size());
+
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath propertyPath = paths.get(0);
+                //path property
+                assertEquals("identifiers", propertyPath._property()._name());
+                assertEquals("Widget", propertyPath._property()._owner()._name());
+                //path filter
+                assertEquals("true", getSimpleLambdaValue(propertyPath._filter()));
+
+                //masterRecordFilter
+                assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
+
+                //scope
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
+                assertEquals(1, scopes.size());
+                assertEquals("widget-file-single-partition-14", getRecordSourceIdAtIndex(scopes, 0));
+            }
+            else if (i == 1)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_CreateRule);
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(2, paths.size());
+
+
+                //path property
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath firstPropertyPath = paths.get(0);
+                assertEquals("identifiers", firstPropertyPath._property()._name());
+                assertEquals("Widget", firstPropertyPath._property()._owner()._name());
+                assertEquals("true", getSimpleLambdaValue(firstPropertyPath._filter()));
+
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath secondPropertyPath = paths.get(1);
+                assertEquals("identifierType", secondPropertyPath._property()._name());
+                assertEquals("MilestonedIdentifier", secondPropertyPath._property()._owner()._name());
+                assertEquals("true", getSimpleLambdaValue(secondPropertyPath._filter()));
+
+                //masterRecordFilter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl complexLambda = getComplexLambda(source._masterRecordFilter());
+                List<? extends ValueSpecification> lambdaParameters = complexLambda._parametersValues().toList();
+
+                assertEquals("Widget", getFunctionProperty(lambdaParameters.get(0))._owner()._name());
+                assertEquals("widgetId", getFunctionProperty(lambdaParameters.get(0))._name());
+
+                assertEquals("equal", complexLambda._functionName());
+
+                assertEquals("1234", getInstanceValue(lambdaParameters.get(1)));
+
+                //scope
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
+                assertEquals(2, scopes.size());
+                assertEquals("widget-file-multiple-partition", getRecordSourceIdAtIndex(scopes, 0));
+                assertEquals("Aggregator", getDataProviderTypeAtIndex(scopes, 1));
+            }
+            else if (i == 2)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_ConditionalRule);
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(2, paths.size());
+
+
+                //path property
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath firstPropertyPath = paths.get(0);
+                assertEquals("identifiers", firstPropertyPath._property()._name());
+                assertEquals("Widget", firstPropertyPath._property()._owner()._name());
+                assertEquals("true", getSimpleLambdaValue(firstPropertyPath._filter()));
+
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath secondPropertyPath = paths.get(1);
+                assertEquals("identifierType", secondPropertyPath._property()._name());
+                assertEquals("MilestonedIdentifier", secondPropertyPath._property()._owner()._name());
+                assertEquals("true", getSimpleLambdaValue(secondPropertyPath._filter()));
+
+                //masterRecordFilter
+                assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
+
+                //predicate
+                LambdaFunction<?> lambda = ((Root_meta_pure_mastery_metamodel_precedence_ConditionalRule) source)._predicate();
+                assertTrue(lambda instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl);
+            }
+            else if (i == 3)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
+
+                //precedence
+                assertEquals(1, ((Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule) source)._precedence());
+
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(1, paths.size());
+
+                //path property
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath firstPropertyPath = paths.get(0);
+                assertEquals("identifiers", firstPropertyPath._property()._name());
+                assertEquals("Widget", firstPropertyPath._property()._owner()._name());
+
+                //path filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl complexLambda = getComplexLambda(firstPropertyPath._filter());
+                List<? extends ValueSpecification> lambdaParameters = complexLambda._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(lambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(lambdaParameters.get(0))._name());
+                assertEquals("equal", complexLambda._functionName());
+                assertEquals("XLON", getInstanceValue(lambdaParameters.get(1)));
+
+                //masterRecordFilter
+                assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
+
+                //scope
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
+                assertEquals(1, scopes.size());
+                assertEquals("widget-file-single-partition-14", getRecordSourceIdAtIndex(scopes, 0));
+            }
+            else if (i == 4)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
+                //precedence
+                assertEquals(2, ((Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule) source)._precedence());
+
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(1, paths.size());
+
+                //path property
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath firstPropertyPath = paths.get(0);
+                assertEquals("identifiers", firstPropertyPath._property()._name());
+                assertEquals("Widget", firstPropertyPath._property()._owner()._name());
+
+                //path filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl complexLambda = getComplexLambda(firstPropertyPath._filter());
+                List<? extends ValueSpecification> lambdaParameters = complexLambda._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(lambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(lambdaParameters.get(0))._name());
+                assertEquals("equal", complexLambda._functionName());
+                assertEquals("XLON", getInstanceValue(lambdaParameters.get(1)));
+
+                //masterRecordFilter
+                assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
+
+                //scope
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
+                assertEquals(1, scopes.size());
+                assertEquals("Aggregator", getDataProviderTypeAtIndex(scopes, 0));
+
+            }
+            else if (i == 5)
+            {
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
+
+                assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
+                //precedence
+                assertEquals(2, ((Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule) source)._precedence());
+
+                //path
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_PropertyPath> paths =  source._paths().toList();
+                assertEquals(1, paths.size());
+
+                Root_meta_pure_mastery_metamodel_precedence_PropertyPath propertyPath = paths.get(0);
+                //path property
+                assertEquals("identifiers", propertyPath._property()._name());
+                assertEquals("Widget", propertyPath._property()._owner()._name());
+
+                //path filter
+                assertEquals("true", getSimpleLambdaValue(propertyPath._filter()));
+
+                //masterRecordFilter
+                assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
+
+                //scope
+                List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
+                assertEquals(1, scopes.size());
+                assertEquals("widget-file-multiple-partition", getRecordSourceIdAtIndex(scopes, 0));
+            }
+        });
 
         //RecordSources
         ListIterate.forEachWithIndex(masterRecordDefinition._sources().toList(), (source, i) ->
@@ -358,7 +579,37 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         assertEquals("Widget", masterRecordDefinition._modelClass()._name());
     }
 
-    private void assertPureLambdas(Iterable<?> list)
+    private String getSimpleLambdaValue(LambdaFunction<?> lambdaFunction)
+    {
+        return getInstanceValue(lambdaFunction._expressionSequence().toList().get(0));
+    }
+
+    private String getInstanceValue(CoreInstance coreInstance)
+    {
+        return ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) coreInstance)._values().toList().get(0).toString();
+    }
+
+    private Root_meta_pure_metamodel_function_property_Property_Impl getFunctionProperty(CoreInstance coreInstance)
+    {
+        return (Root_meta_pure_metamodel_function_property_Property_Impl) ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) coreInstance)._func();
+    }
+
+    private Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl getComplexLambda(LambdaFunction<?> lambdaFunction)
+    {
+        return ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) lambdaFunction._expressionSequence().toList().get(0));
+    }
+
+    private String getRecordSourceIdAtIndex(List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes, int index)
+    {
+        return ((Root_meta_pure_mastery_metamodel_precedence_RecordSourceScope) scopes.get(index))._recordSourceId();
+    }
+
+    private String getDataProviderTypeAtIndex(List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes, int index)
+    {
+        return ((Root_meta_pure_mastery_metamodel_precedence_DataProviderTypeScope) scopes.get(index))._dataProviderType().getName();
+    }
+
+    private void assertResolutionQueryLambdas(Iterable<?> list)
     {
         list.forEach(resQuery -> assertTrue(resQuery instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl));
     }
