@@ -504,6 +504,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
                 rowCount.addAndGet(batch.getRowCount());
 
+                if (this.executionState.adaptiveGraphBatchStats != null)
+                {
+                    this.executionState.adaptiveGraphBatchStats.previousBatchMemoryUtilization = batch.getTotalObjectMemoryUtilization();
+                }
+
                 if (nonEmptyObjectList)
                 {
                     long currentObjectCount = objectCount.addAndGet(parentObjects.size());

@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
@@ -164,7 +165,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
 
         try
         {
-            PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().withGraphFetchBatchMemoryLimit(1).withAvailableStoreExecutors().build();
+            PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().withGraphFetchExecutionConfiguration(new GraphFetchExecutionConfiguration(1)).withAvailableStoreExecutors().build();
             StreamingResult streamingResult = (StreamingResult) executor.executeWithArgs(executeArgs);
             String res = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.DEFAULT));
             Assert.fail("Exception expected");

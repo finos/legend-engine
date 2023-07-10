@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.crossStore;
+
+package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -41,9 +42,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
-import static org.junit.Assert.assertThrows;
 
-public class TestConnectionPoolHygiene extends AlloyTestServer
+public class TestPlanExecutionWithAdaptiveBatching extends AlloyTestServer
 {
 
     private static final String LOGICAL_MODEL = "###Pure\n" +
@@ -186,10 +186,11 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
             "  ];\n" +
             "}\n";
 
+    // Tests the result with and without adaptive batching
     @Test
-    public void testGraphFetchCrossStoreExecutionWithMemoryLimits() throws JavaCompileException
+    public void testAdaptiveBatchingResult() throws JavaCompileException
     {
-        String fetchFunctionWithBatchSize = "###Pure\n" +
+        String fetchFunction = "###Pure\n" +
                 "function test::fetch(): String[1]\n" +
                 "{\n" +
                 "  test::Person.all()\n" +
@@ -197,28 +198,12 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
                 "      test::Person {\n" +
                 "        fullName,\n" +
                 "        firm {\n" +
-                "          name\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }#, 10)\n" +
-                "    ->serialize(#{\n" +
-                "      test::Person {\n" +
-                "        fullName,\n" +
-                "        firm {\n" +
-                "          name\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }#)\n" +
-                "}";
-
-        String fetchFunctionWithoutBatchSize = "###Pure\n" +
-                "function test::fetch(): String[1]\n" +
-                "{\n" +
-                "  test::Person.all()\n" +
-                "    ->graphFetch(#{\n" +
-                "      test::Person {\n" +
-                "        fullName,\n" +
-                "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        },\n" +
+                "        address {\n" +
                 "          name\n" +
                 "        }\n" +
                 "      }\n" +
@@ -227,36 +212,31 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
                 "      test::Person {\n" +
                 "        fullName,\n" +
                 "        firm {\n" +
+                "          name,\n" +
+                "          address {\n" +
+                "            name\n" +
+                "          }\n" +
+                "        },\n" +
+                "        address {\n" +
                 "          name\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }#)\n" +
                 "}";
 
-        String expectedRes = "[" +
-                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
-                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
-                "{\"fullName\":\"P3\",\"firm\":null}," +
-                "{\"fullName\":\"P4\",\"firm\":null}," +
-                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
-                "]";
-        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunctionWithBatchSize);
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         PlanExecutionContext context = new PlanExecutionContext(plan);
 
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}},\"address\":{\"name\":\"A2\"}}," +
+                "{\"fullName\":\"P3\",\"firm\":null,\"address\":null}," +
+                "{\"fullName\":\"P4\",\"firm\":null,\"address\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}},\"address\":{\"name\":\"A1\"}}" +
+                "]";
 
-        SingleExecutionPlan planWithoutBatchSize = buildPlanForFetchFunction(fetchFunctionWithoutBatchSize);
-        PlanExecutionContext contextWithoutBatchSize = new PlanExecutionContext(planWithoutBatchSize);
-        for (int i = 0; i < 10; i++)
-        {
-
-            Exception e = assertThrows(RuntimeException.class, () ->
-            {
-                Assert.assertEquals(expectedRes, executePlan(plan, context, new GraphFetchExecutionConfiguration(900)));
-            });
-            Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e.getMessage());
-
-            Assert.assertEquals(expectedRes, executePlan(planWithoutBatchSize, contextWithoutBatchSize, new GraphFetchExecutionConfiguration(10000)));
-        }
+        GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = new GraphFetchExecutionConfiguration(GraphFetchExecutionConfiguration.DEFAULT_BATCH_MEMORY_LIMIT,GraphFetchExecutionConfiguration.DEFAULT_SOFT_MEMORY_LIMIT_PERCENTAGE, true, GraphFetchExecutionConfiguration.DEFAULT_BATCH_SIZE);
+        Assert.assertEquals(expectedRes, executePlan(plan, context, graphFetchExecutionConfiguration));
     }
 
     private String executePlan(SingleExecutionPlan plan, PlanExecutionContext context, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
