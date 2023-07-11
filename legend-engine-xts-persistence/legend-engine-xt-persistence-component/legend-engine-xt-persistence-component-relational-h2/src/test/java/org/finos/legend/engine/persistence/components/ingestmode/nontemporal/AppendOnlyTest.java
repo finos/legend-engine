@@ -27,6 +27,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
+import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -357,5 +360,40 @@ class AppendOnlyTest extends BaseTest
         expectedStatsList.add(expectedStats2);
 
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges, incrementalClock);
+    }
+
+    @Test
+    void testAppendOnlyDoNotCreateTables() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+                .digestField(digestName)
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .auditing(NoAuditing.builder().build())
+                .build();
+
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get())
+                .createTables(false)
+                .build();
+        try
+        {
+            ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
+            Assertions.fail("Should not be successful");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertTrue(e.getMessage().contains("Table \"main\" not found"));
+        }
     }
 }
