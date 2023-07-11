@@ -72,10 +72,13 @@ public class TestIcebergJdbcCatalog
             assumeTrue("Skipping test. Docker not available", false);
         }
 
+        System.setProperty("aws.region", "US_WEST_1");
+
         startPostgres();
         startMiniIO();
         initializeIcebergCatalog();
     }
+
 
     private static void initializeIcebergCatalog()
     {
@@ -125,6 +128,8 @@ public class TestIcebergJdbcCatalog
     @AfterClass
     public static void shutdown() throws Exception
     {
+        System.clearProperty("aws.region");
+
         if (connectionProvider == null)
         {
             return;
