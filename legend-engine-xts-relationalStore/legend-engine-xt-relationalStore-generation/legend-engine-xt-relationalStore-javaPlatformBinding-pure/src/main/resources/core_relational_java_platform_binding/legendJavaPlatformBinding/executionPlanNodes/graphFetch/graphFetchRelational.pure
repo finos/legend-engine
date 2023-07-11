@@ -77,6 +77,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::graphFetc
                            ->map(s | $s->addSpecificsGeneralMethods($node, $path, $context, $debug))
                            ->map(s | $s->addSpecificsCachingMethods($node, $path, $context, $debug));
 
+
    let executeClass   = initializeExecuteClass($node, $specificsClass, $path, $context, $debug)
                            ->map(e | $e->addExecuteGeneralMethods($node, $path, $context, $debug))
                            ->map(e | $e->addExecuteCachingMethods($node, $path, $context, $debug));
@@ -371,7 +372,6 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                         let resultClass = $node->typeFromStoreLocalNode()->cast(@meta::pure::metamodel::type::Class<Any>);
                         let sets = $partialClassResultType.setImplementations->cast(@RelationalInstanceSetImplementation);
                         let nonExplodingSimplePrimitiveProperties = $typeInfos->allProperties($typeInfos->forClass($resultClass))->filter(x | $x->isPrimitiveValueProperty() && (!$x->hasGeneratedMilestoningPropertyStereotype()) && $x->functionReturnMultiplicity()->hasToOneUpperBound())->filter(x | $x->in($partialClassResultType.propertiesWithParameters.property));
-
                         [
                            $propertyIndicesField->j_assign(j_new(javaArrayList(javaList(javaInt())), []))
                         ]->concatenate(
@@ -380,8 +380,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                               let currentSetPks = if (!$currentSet->instanceOf(RootRelationalInstanceSetImplementation) || ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false)),
                                                       | $currentSet->resolvePrimaryKey(),
                                                       | []);
-                              let addMilestoningProps = getTemporalMilestoningStrategy($currentSet.class)->isNotEmpty() &&
-                                                        getTemporalMilestoningStrategy($currentSet.class)->toOne()->expandToSingleTemporalStrategies()->forAll(s| $s->relationalElementCanSupportStrategy($currentSet->resolveMainTable()));
+                              let addMilestoningProps =  meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties($currentSet,$node);
 
                               let index_s = j_variable(javaList(javaInt()), 'index_' + $s->toString());
                               [
@@ -394,8 +393,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                                  | let milestonedPropertyAliases = getTemporalMilestoningStrategy($currentSet.class)->toOne()->expandToSingleTemporalStrategies()->map(x | $x->temporalColumnAliasProperties()).second->sort();
                                    $milestonedPropertyAliases->map({x | $index_s->j_invoke('add', [$columnNamesVar->j_invoke('indexOf', [j_string($x->toUpper())], javaInt())->j_plus(j_int(1))], javaVoid())});,
                                  | [])
-                              )
-                              ->concatenate(
+                              )->concatenate(
                                  $currentSetPks->size()->range()
                                     ->map({pkIdx | $index_s->j_invoke('add', [$columnNamesVar->j_invoke('indexOf', [j_string('PK_' + $pkIdx->toString() + if($sets->size() == 1, | '', | '_' + $s->toString()))], javaInt())->j_plus(j_int(1))], javaVoid())})
                               )
@@ -418,8 +416,10 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                               let currentSetPks = if (!$currentSet->instanceOf(RootRelationalInstanceSetImplementation) || ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false)),
                                                       | $currentSet->resolvePrimaryKey(),
                                                       | []);
-                              let addMilestoningProps = getTemporalMilestoningStrategy($currentSet.class)->isNotEmpty() &&
-                                                        getTemporalMilestoningStrategy($currentSet.class)->toOne()->expandToSingleTemporalStrategies()->forAll(s| $s->relationalElementCanSupportStrategy($currentSet->resolveMainTable()));
+
+                                let addMilestoningProps =  meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties($currentSet,$node);
+
+                             
                               let allProperties = $nonExplodingSimplePrimitiveProperties->concatenate($addMilestoningProps->if(|$sets->at($s).class.properties->filter(p| $p->isPrimitiveValueProperty() && $p->hasGeneratedMilestoningPropertyStereotype()), |[])->sortBy(x | $x.name->toOne()));
                               let propertyGetter_s = j_variable(javaList(javaSupplier(javaObject())), 'propertyGetter_' + $s->toString());
 
@@ -566,9 +566,8 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 
                      if ($sets->size() == 1,
                         {|
-                           let addMilestoningProps = getTemporalMilestoningStrategy($sets->at(0).class)->isNotEmpty() &&
-                                                     getTemporalMilestoningStrategy($sets->at(0).class)->toOne()->expandToSingleTemporalStrategies()->forAll(s| $s->relationalElementCanSupportStrategy($sets->at(0)->resolveMainTable()));
-                           $specificsClass->objectCreationCodes($implClass, $sets->at(0), $sets, $simplePrimitiveProperties->concatenate($addMilestoningProps->if(| $sets->at(0).class.properties->filter(x | $x->isPrimitiveValueProperty() && $x->hasGeneratedMilestoningPropertyStereotype())->sortBy(x | $x.name->toOne()) , | [])), 0, $context)
+                       let addMilestoningProps =  meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties($sets->at(0),$node);
+                         $specificsClass->objectCreationCodes($implClass, $sets->at(0), $sets, $simplePrimitiveProperties->concatenate($addMilestoningProps->if(| $sets->at(0).class.properties->filter(x | $x->isPrimitiveValueProperty() && $x->hasGeneratedMilestoningPropertyStereotype())->sortBy(x | $x.name->toOne()) , | [])), 0, $context)
                               ->concatenate(
                                  [
                                     j_return(j_newAnon(graphInstanceOf($implClass, $conventions), [],
@@ -582,8 +581,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                         },
                         {|
                            $sets->size()->range()->map({s |
-                              let addMilestoningProps = getTemporalMilestoningStrategy($sets->at($s).class)->isNotEmpty() &&
-                                                        getTemporalMilestoningStrategy($sets->at($s).class)->toOne()->expandToSingleTemporalStrategies()->forAll(k| $k->relationalElementCanSupportStrategy($sets->at($s)->resolveMainTable()));
+                              let addMilestoningProps =  meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties($sets->at($s),$node);
 
                               let objectCreationCodes = $specificsClass->objectCreationCodes($implClass, $sets->at($s), $sets, $simplePrimitiveProperties->concatenate($addMilestoningProps->if(| $sets->at($s).class.properties->filter(x | $x->isPrimitiveValueProperty() && $x->hasGeneratedMilestoningPropertyStereotype())->sortBy(x | $x.name->toOne()) , | [])), $s, $context);
 
@@ -859,6 +857,12 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
             {| $spe }
          )
       });
+}
+function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addMileStoneProperties(set: RelationalInstanceSetImplementation[1], node: RelationalGraphFetchExecutionNode[1]):Boolean[1]
+{
+    getTemporalMilestoningStrategy($set.class)->isNotEmpty() &&   ( $node.graphFetchTree->instanceOf(RoutedPropertyGraphFetchTree)  && !$node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree).property->isEdgePointProperty() || !$node.graphFetchTree->instanceOf(RoutedPropertyGraphFetchTree)  )                       
+    && getTemporalMilestoningStrategy($set.class)->toOne()->expandToSingleTemporalStrategies()->forAll(s| $s->relationalElementCanSupportStrategy($set->resolveMainTable()));
+
 }
 
 function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::addSpecificsCachingMethods(specificsClass: meta::external::language::java::metamodel::Class[1], node: RelationalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
