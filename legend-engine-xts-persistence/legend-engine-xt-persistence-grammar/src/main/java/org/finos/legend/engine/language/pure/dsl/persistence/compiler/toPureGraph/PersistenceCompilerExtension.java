@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
@@ -94,6 +95,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             if (persistence.persister != null)
                             {
                                 purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
+                                context.pureModel.addWarnings(Collections.singletonList(new Warning(persistence.sourceInformation, "Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar.")));
                             }
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
                             purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, purePersistence, context));
