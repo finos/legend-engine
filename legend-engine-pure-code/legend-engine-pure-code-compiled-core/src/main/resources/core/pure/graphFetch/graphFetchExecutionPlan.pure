@@ -276,7 +276,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
                   let propertyMapping     = $routedTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
                   let crossExpr           = $propertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne();
                   let sourceCls           = $m->classMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
-                  let crossExprTree       = $crossExpr->fetchTreeInExpression($sourceCls)->toOne()->cast(@RootGraphFetchTree<Any>);
+                  let crossExprTree       = $crossExpr->fetchTreeInExpression($sourceCls);
                   let routedDependencyTree = getRoutedDependencyTree($ch.second.values->toOne(), $crossExprTree);
 
                   let newCrossNode        = ^StoreMappingGlobalGraphFetchExecutionNode
