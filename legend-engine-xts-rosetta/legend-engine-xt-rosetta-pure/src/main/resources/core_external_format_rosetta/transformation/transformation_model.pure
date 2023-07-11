@@ -29,7 +29,7 @@ function meta::external::format::rosetta::generation::processEnumValues(values: 
 
 function meta::external::format::rosetta::generation::classToRosettaString(class: Class<Any>[1]):String[1]
 {   
-    if($class->isAbstract(),| 'abstract ',|'') 
+    if($class->meta::external::format::rosetta::generation::isAbstract(),| 'abstract ',|'')
    +'type '+ $class.name->toOne() 
    + $class.generalizations->processGeneralizations() 
    + $class.taggedValues->processTaggedValues() 
