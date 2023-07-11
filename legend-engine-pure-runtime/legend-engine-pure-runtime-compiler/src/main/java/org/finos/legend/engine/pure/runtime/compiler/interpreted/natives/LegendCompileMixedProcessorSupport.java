@@ -26,7 +26,6 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
@@ -72,7 +71,7 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
 
         if (classifier == null && instance instanceof GenericType)
         {
-            return this.newGenericType(null, null, false);
+            return _Package.getByUserPath(M3Paths.GenericType, this.originalProcessorSupport);
         }
         return classifier;
     }
@@ -125,19 +124,28 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
     {
         if (owner instanceof AbstractCompiledCoreInstance)
         {
-            CoreInstance prop = this.findProperty(owner, property);
-            CoreInstance type = Instance.getValueForMetaPropertyToOneResolved(prop, M3Properties.genericType, M3Properties.rawType, this);
-            CoreInstance mapType = _Package.getByUserPath(M3Paths.Map, this);
-            if (this.type_subTypeOf(type, mapType))
+            CoreInstance classifier = this.getClassifier(owner);
+            CoreInstance prop = this.class_findPropertyUsingGeneralization(classifier, property);
+
+            if (prop != null)
             {
-                try
+                CoreInstance genericType = Instance.getValueForMetaPropertyToOneResolved(prop, M3Properties.genericType, this);
+                CoreInstance type = Instance.getValueForMetaPropertyToOneResolved(genericType, M3Properties.rawType, this);
+                CoreInstance mapType = _Package.getByUserPath(M3Paths.Map, this);
+
+                if (this.type_subTypeOf(type, mapType))
                 {
-                    PureMap map = (PureMap) owner.getClass().getMethod("_" + property).invoke(owner);
-                    return convertCompileToInterpretedCoreInstance(map);
-                }
-                catch (ReflectiveOperationException e)
-                {
-                    throw new RuntimeException(e);
+                    try
+                    {
+                        PureMap map = (PureMap) owner.getClass().getMethod("_" + property).invoke(owner);
+                        CoreInstance mapCoreInstance = convertCompileToInterpretedCoreInstance(map);
+                        Instance.addValueToProperty(mapCoreInstance, M3Properties.classifierGenericType, genericType, this);
+                        return mapCoreInstance;
+                    }
+                    catch (ReflectiveOperationException e)
+                    {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }
@@ -155,16 +163,5 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
     public ListIterable<? extends CoreInstance> instance_getValueForMetaPropertyToMany(CoreInstance owner, CoreInstance property)
     {
         return super.instance_getValueForMetaPropertyToMany(owner, property).collect(this::convertCompileToInterpretedCoreInstance);
-    }
-
-    private CoreInstance findProperty(CoreInstance owner, String propertyName)
-    {
-        CoreInstance classifier = this.getClassifier(owner);
-        CoreInstance property = this.class_findPropertyUsingGeneralization(classifier, propertyName);
-        if (property == null)
-        {
-            throw new RuntimeException("Cannot find property '" + propertyName + "' on " + PackageableElement.getUserPathForPackageableElement(classifier));
-        }
-        return property;
     }
 }

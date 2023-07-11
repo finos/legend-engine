@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::hash::*;
+import meta::pure::platform::executionPlan::generation::*;
 import meta::pure::executionPlan::*;
 import meta::external::store::elasticsearch::v7::specification::utils::*;
 import meta::external::store::elasticsearch::v7::metamodel::specification::types::aggregations::*;
@@ -46,8 +48,11 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
   inProject: Boolean[1];
   aggregationQuery: Boolean[1];
   sq: StoreQuery[1];
+  exeCtx: Elasticsearch7ExecutionContext[1];
+  extensions: Extension[*];
   ext: RoutedValueSpecification[0..1];
   lazyIndex: Elasticsearch7StoreIndex[0..1];
+  extraNodes: AllocationExecutionNode[*];
   index()
   {
     $this.lazyIndex->toOne('index have not been found yet');
@@ -62,7 +67,7 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
 
   supportedRoutingFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[*];
   supportedFilterFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[*];
-  supportedSimpleValueFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->Any[*]}>>[*];
+  supportedSimpleValueFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->Pair<List<Any>, State>[1]}>>[*];
   supportedAggregationFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  String[1]->AggregationContainer[1]}>>[*];
 }
 
@@ -145,7 +150,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
 {
   let expr = $vs.func->cast(@FunctionDefinition<Any>).expressionSequence->toOne('tds column projection only supports simple expressions');
   let name = $vs.name;
-  let tdsDetail = $expr->extractSimpleValue($initReq)->cast(@TDSESDetail)->toOne();
+  let tdsDetail = $expr->extractSimpleValue($initReq).first.values->cast(@TDSESDetail)->toOne();
   ^$tdsDetail(name = $name, type = $vs.func->functionReturnType().rawType->toOne()->cast(@DataType));
 }
 
@@ -220,10 +225,15 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
   assert($currReq.search.size->isEmpty(), |'->limit(...) not supported with ->groupBy(...) at the moment');
   assert($currReq.search.from->isEmpty(), |'->drop(...) not supported with ->groupBy(...) at the moment');
 
-  let groupedReq = ^$currReq(aggregationQuery = true);
+  let groupedReqInit = ^$currReq(aggregationQuery = true);
 
-  let groupByCols = $vs.parametersValues->at(1)->extractSimpleValue($groupedReq)->cast(@String);
-  let aggregateValues = $vs.parametersValues->at(2)->extractSimpleValue($groupedReq)->cast(@meta::pure::tds::AggregateValue<Any, Any>);
+  let groupByColsPair = $vs.parametersValues->at(1)->extractSimpleValue($groupedReqInit);
+  let groupByCols = $groupByColsPair.first.values->cast(@String);
+
+  let aggregateValuesPair = $vs.parametersValues->at(2)->extractSimpleValue($groupByColsPair.second);
+  let aggregateValues = $aggregateValuesPair.first.values->cast(@meta::pure::tds::AggregateValue<Any, Any>);
+
+  let groupedReq = $aggregateValuesPair.second;
 
   let groupByTdsESDetails = $groupByCols->map(g | $groupedReq.tdsESDetails->filter(x | $x.name == $g));
   assert($groupByCols->size() == $groupByTdsESDetails->size(), | 'grouping by unknown columns: ' + $groupByCols->removeAll($groupByTdsESDetails.name)->joinStrings('[', ', ', ']'));
@@ -237,7 +247,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
         $groupedReq.supportedAggregationFunctions->findAndEvalSupportedFunction($aggFunc->cast(@FunctionExpression), $rawToAggregate.path())
       ,
       | 
-        fail('Unsuported aggregation functions: ' + $aggFunc->printValueSpecification('')); 
+        fail('Unsupported aggregation functions: ' + $aggFunc->printValueSpecification(''));
         ^AggregationContainer();
     );
 
@@ -310,21 +320,27 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda
 
 function meta::external::store::elasticsearch::v7::pureToEs::processDefaultSort(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  let toSort = $vs.parametersValues->at(1)->extractSimpleValue($initReq)->cast(@String)->toOneMany();
-  $vs->processSort($toSort->map( x | ^SortInformation(column = $x, direction = SortDirection.ASC)), $initReq);       
+  let toSortPair = $vs.parametersValues->at(1)->extractSimpleValue($initReq);
+  let toSort = $toSortPair.first.values->cast(@String)->toOneMany();
+  $vs->processSort($toSort->map( x | ^SortInformation(column = $x, direction = SortDirection.ASC)), $toSortPair.second);       
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processSortWithInformation(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  let toSort = $vs.parametersValues->at(1)->extractSimpleValue($initReq)->cast(@SortInformation)->toOneMany();
-  $vs->processSort($toSort, $initReq);  
+  let toSortPair = $vs.parametersValues->at(1)->extractSimpleValue($initReq);
+  let toSort = $toSortPair.first.values->cast(@SortInformation)->toOneMany();
+  $vs->processSort($toSort, $toSortPair.second);  
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processSortWithDirection(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  let toSort = $vs.parametersValues->at(1)->extractSimpleValue($initReq)->cast(@String)->toOne();
-  let direction = $vs.parametersValues->at(2)->extractSimpleValue($initReq)->cast(@SortDirection)->toOne();
-  $vs->processSort(^SortInformation(column = $toSort, direction = $direction), $initReq);
+  let toSortPair = $vs.parametersValues->at(1)->extractSimpleValue($initReq);
+  let toSort = $toSortPair.first.values->cast(@String)->toOne();
+
+  let directionPair = $vs.parametersValues->at(2)->extractSimpleValue($toSortPair.second);
+  let direction = $directionPair.first.values->cast(@SortDirection)->toOne();
+
+  $vs->processSort(^SortInformation(column = $toSort, direction = $direction), $directionPair.second);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processSort(vs : FunctionExpression[1], sorts: SortInformation[*], initReq: State[1]): State[1]
@@ -464,7 +480,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueS
 
 function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction<P, T | n, m>(funcs: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1], P[n]->T[m]}>>[*], fe : FunctionExpression[1], req: P[n]): T[m] 
 {
-  eval($funcs->filter(x|$x.first->eval($fe.func))->toOne('function not supported yet: ' + $fe.func->elementToPath()).second, $fe, $req);
+  eval($funcs->filter(x|$x.first->eval($fe.func))->at(0)->toOne('function not supported yet: ' + $fe.func->elementToPath()).second, $fe, $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::defaultSize(): Integer[1] 
@@ -481,6 +497,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQue
     inProject = false,
     aggregationQuery = false,
     sq = $sq,
+    exeCtx = $exeCtx,
+    extensions = $extensions,
     ext = $ext,
     debug = $debug,
     supportedFilterFunctions = supportedFilterFunctions(),
@@ -516,11 +534,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFun
   ];
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'equal only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req);
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req);
+  assert($initReq.inFilter, 'equal only supporter on filter context');
+
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values;
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values;
+
+  let req = $rightSidePair.second;
 
   let eqInputs = if($leftSide->size() == 1 && $leftSide->toOne()->instanceOf(TDSESDetail),
     |pair($leftSide->toOne()->cast(@TDSESDetail), list($rightSide)),
@@ -600,11 +624,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $queryWithZeroMultHandling))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'in only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req);
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req);
+  assert($initReq.inFilter, 'in only supporter on filter context');
+  
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values;
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values;
+
+  let req = $rightSidePair.second;
 
   let inInputs = if($leftSide->size() == 1 && $leftSide->toOne()->instanceOf(TDSESDetail),
     |pair($leftSide->toOne()->cast(@TDSESDetail), list($rightSide)),
@@ -689,11 +719,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqua
   ], $req);      
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(vs : FunctionExpression[1], options: Pair<Function<{LiteralOrExpression<Number>[1]->NumberRangeQuery[1]}>, Function<{LiteralOrExpression<String>[1]->DateRangeQuery[1]}>>[2], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(vs : FunctionExpression[1], options: Pair<Function<{LiteralOrExpression<Number>[1]->NumberRangeQuery[1]}>, Function<{LiteralOrExpression<String>[1]->DateRangeQuery[1]}>>[2], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'range only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne();
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  assert($initReq.inFilter, 'range only supporter on filter context');
+
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values->toOne();
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values->toOne();
+
+  let req = $rightSidePair.second;
 
   let inputs = if($leftSide->instanceOf(TDSESDetail),
     |pair($leftSide->cast(@TDSESDetail), pair($options->at(0), $rightSide)),
@@ -724,49 +760,75 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(v
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'TdsRow.isNotNull only supporter on filter context');
-  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
+  assert($initReq.inFilter, 'TdsRow.isNotNull only supporter on filter context');
+  
+  let columnForNullCheckPair = $vs->extractSimpleValue($initReq);
+  let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
+
+  let req = $columnForNullCheckPair.second;
+
   let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let search = $req.search;
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, '->isNotEmpty only supporter on filter context');
-  let columnForNullCheck = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne()->cast(@TDSESDetail);
+  assert($initReq.inFilter, '->isNotEmpty only supporter on filter context');
+
+  let columnForNullCheckPair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let columnForNullCheck = $columnForNullCheckPair.first.values->toOne()->cast(@TDSESDetail);
+
+  let req = $columnForNullCheckPair.second;
+
   let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let search = $req.search;
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'TdsRow.isNull only supporter on filter context');
-  let columnForNullCheck = $vs->extractSimpleValue($req)->cast(@TDSESDetail)->toOne();
+  assert($initReq.inFilter, 'TdsRow.isNull only supporter on filter context');
+  
+  let columnForNullCheckPair = $vs->extractSimpleValue($initReq);
+  let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
+
+  let req = $columnForNullCheckPair.second;
+
   let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let query = ^QueryContainer(bool = ^BoolQuery(filter = ^QueryContainer(bool = ^BoolQuery(must_not = $exists))));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processIsEmpty(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processIsEmpty(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, '->isEmpty only supporter on filter context');
-  let columnForNullCheck = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne()->cast(@TDSESDetail);
+  assert($initReq.inFilter, 'TdsRow.isNull only supporter on filter context');
+  
+  let columnForNullCheckPair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
+
+  let req = $columnForNullCheckPair.second;
+
   let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()->literal()));
   let query = ^QueryContainer(bool = ^BoolQuery(filter = ^QueryContainer(bool = ^BoolQuery(must_not = $exists))));
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processStartsWith(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processStartsWith(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'startsWith only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne('missing startsWith source value?');
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  assert($initReq.inFilter, 'startsWith only supporter on filter context');
+
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values->toOne('missing startsWith source value?');
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values->toOne();
+
+  let req = $rightSidePair.second;
 
   assert($leftSide->instanceOf(TDSESDetail), 'at the moment, startsWith only works when source value comes from index property');
 
@@ -782,11 +844,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::processStartsWith(v
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'endsWithh only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne('missing endsWith source value?');
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  assert($initReq.inFilter, 'endsWithh only supporter on filter context');
+
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values->toOne('missing endsWith source value?');
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values->toOne();
+
+  let req = $rightSidePair.second;  
 
   assert($leftSide->instanceOf(TDSESDetail), 'at the moment, endsWith only works when source value comes from index property');
 
@@ -806,11 +874,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs 
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'contains only supporter on filter context');
-  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne('missing contains source value?');
-  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  assert($initReq.inFilter, 'contains only supporter on filter context');
+
+  let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
+  let leftSide = $leftSidePair.first.values->toOne('missing contains source value?');
+
+  let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
+  let rightSide = $rightSidePair.first.values->toOne();
+
+  let req = $rightSidePair.second;    
 
   assert($leftSide->instanceOf(TDSESDetail), 'at the moment, contains only works when source value comes from index property');
 
@@ -839,12 +913,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs 
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processNot(vs : FunctionExpression[1], req: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processNot(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
-  assert($req.inFilter, 'or only supporter on filter context');
-  let toNot = $vs.parametersValues->at(0)->processFilterLambda($req);
+  assert($initReq.inFilter, 'or only supporter on filter context');
+  let req = $vs.parametersValues->at(0)->processFilterLambda($initReq);
 
-  let bool = ^BoolQuery(filter = ^QueryContainer(bool = ^BoolQuery(must_not = $toNot.search.query->toOne())));
+  let bool = ^BoolQuery(filter = ^QueryContainer(bool = ^BoolQuery(must_not = $req.search.query->toOne())));
   let query = ^QueryContainer( bool = $bool );
 
   let search = $req.search;
@@ -861,7 +935,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processOr(vs : Func
   let query = ^QueryContainer(bool = ^BoolQuery(filter = ^QueryContainer(bool = $bool)));
 
   let search = $req.search;
-  ^$req(search = ^$search(query = $query));
+  ^$req(search = ^$search(query = $query), extraNodes = $req.extraNodes->concatenate($leftSide.extraNodes)->concatenate($rightSide.extraNodes));
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : FunctionExpression[1], req: State[1]): State[1]
@@ -874,23 +948,28 @@ function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : Fun
   let query = ^QueryContainer(bool = ^BoolQuery(filter = ^QueryContainer(bool = $bool)));
 
   let search = $req.search;
-  ^$req(search = ^$search(query = $query));
+  ^$req(search = ^$search(query = $query), extraNodes = $req.extraNodes->concatenate($leftSide.extraNodes)->concatenate($rightSide.extraNodes));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : Any[1], req: State[1]): Any[*]
+function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : Any[1], req: State[1]): Pair<List<Any>, State>[1]
 {
   $req.debug(|'-- processing simple value ' + $vs->type()->toString());
   $vs->match([
     rfe: FunctionExpression[1] |
       let fe = $rfe->deepByPassRouterInfo()->cast(@FunctionExpression);
       if($fe.func->instanceOf(QualifiedProperty),
-        | $fe.func->cast(@QualifiedProperty<Any>)->qualifiedPropertyToTDSESDetail($fe.parametersValues, $req),
+        | pair($fe.func->cast(@QualifiedProperty<Any>)->qualifiedPropertyToTDSESDetail($fe.parametersValues, $req)->list(), $req),
         | if(toOne_T_MANY__T_1_ == $fe.func,
             | $fe.parametersValues->at(0)->extractSimpleValue($req),
             | $req.supportedSimpleValueFunctions->findAndEvalSupportedFunction($fe, $req)
       ));,
-    iv: InstanceValue[1] | $iv.values->map(x | $x->extractSimpleValue($req)),
-    any: Any[*] | $any
+    iv: InstanceValue[1] | $iv.values->fold({x, currState | 
+            let r = $x->extractSimpleValue($currState.second);
+            pair($currState.first.values->concatenate($r.first.values)->list(), $r.second);
+          }, 
+        pair(list([]), $req)
+      ),
+    any: Any[*] | pair($any->list(), $req)
   ]);
 }
 
@@ -945,19 +1024,51 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedFilterFunc
   ];
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::supportedSimpleValueFunctions(): Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->Any[*]}>>[*]
+function meta::external::store::elasticsearch::v7::pureToEs::supportedSimpleValueFunctions(): Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->Pair<List<Any>, State>[1]}>>[*]
 {
   let supported = [
-     pair(x: Function<Any>[1] | $x == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_, meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Any_MANY_)
-    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::asc_String_1__SortInformation_1_,                           meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Any_MANY_)
-    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::desc_String_1__SortInformation_1_,                          meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Any_MANY_)
-    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,                          meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Any_MANY_)
+     pair(x: Function<Any>[1] | $x == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_, meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Pair_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::asc_String_1__SortInformation_1_,                           meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Pair_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::desc_String_1__SortInformation_1_,                          meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Pair_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,                          meta::external::store::elasticsearch::v7::pureToEs::reactivateFE_FunctionExpression_1__State_1__Pair_1_)
+    // catch all - delegate to platform evaluation of expression, and assign to variable.  ES will then use the variable on the plan
+    ,pair(x: Function<Any>[1] | true, meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpressionNode_FunctionExpression_1__State_1__Pair_1_)
   ];
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: FunctionExpression[1], req: State[1]): Any[*] 
+function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1] 
 {
-  $fe->cast(@FunctionExpression)->reactivate($req.sq.inScopeVars);
+  pair($fe->cast(@FunctionExpression)->reactivate($req.sq.inScopeVars)->list(), $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpressionNode(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1] 
+{
+  let type = $fe.func->functionReturnType();
+  let multiplicity = $fe.func->functionReturnMultiplicity();
+
+  // todo any validation to prevent compilation errors??
+  // let variables = $fe->findVariableExpressionsInValueSpecification();
+
+  let expression = $fe->printFunctionExpression('');
+  let codeHash    = $expression->hash(HashType.SHA256);
+  let charToIntMap = newMap([
+      pair('0', 0), pair('1', 1), pair('2', 2), pair('3', 3),
+      pair('4', 4), pair('5', 5), pair('6', 6), pair('7', 7),
+      pair('8', 8), pair('9', 9), pair('a', 10), pair('b', 11),
+      pair('c', 12), pair('d', 13), pair('e', 14), pair('f', 15)
+  ]);
+  let prime    = floor(pow(2, 31) - 1);
+  let varName = '@' + $codeHash->toLower()->chunk(1)->fold({c, h | (31 * $h) + $charToIntMap->get($c)->toOne() + 47}, 0)->mod($prime)->toString();  
+
+  let platformNode = processValueSpecification($fe, ^PlatformPlanGenerationState(inScopeVars = $req.sq.inScopeVars, exeCtx = $req.exeCtx), $req.extensions, $req.debug)
+      ->toOne('Expression currently not supported: ' + $expression);
+
+  let allocNode = ^AllocationExecutionNode(resultType = $platformNode.resultType, varName = $varName, executionNodes = $platformNode);
+
+  pair(
+      list(^PlanVarPlaceHolder(type =  $platformNode.resultType.type, name = $varName, multiplicity = $fe.func->functionReturnMultiplicity())),
+      ^$req(extraNodes = $req.extraNodes->concatenate($allocNode))
+  );
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::supportedAggregationFunctions(): Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  String[1]->AggregationContainer[1]}>>[*]

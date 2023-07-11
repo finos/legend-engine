@@ -472,7 +472,7 @@ public class Handlers
         register(h("meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
                 h("meta::pure::functions::collection::take_T_MANY__Integer_1__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
 
-        register("meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel), MostCommonMultiplicity.mostCommon(Lists.fixedSize.of(funcReturnMul(ps.get(1)), funcReturnMul(ps.get(2))), this.pureModel)));
+        register(h("meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel), MostCommonMultiplicity.mostCommon(Lists.fixedSize.of(funcReturnMul(ps.get(1)), funcReturnMul(ps.get(2))), this.pureModel)), ps -> Lists.immutable.of(MostCommonType.mostCommon(Lists.fixedSize.of(funcReturnType(ps.get(1)), funcReturnType(ps.get(2))), this.pureModel)), ps -> true));
 
         register(m(m(h("meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));

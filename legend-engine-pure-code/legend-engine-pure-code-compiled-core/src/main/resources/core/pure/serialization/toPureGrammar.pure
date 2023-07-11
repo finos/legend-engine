@@ -130,7 +130,10 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                   |$functionExpression.parametersValues->cast(@InstanceValue).values,
                   |$functionExpression.parametersValues
               );
-              $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space);
+              if ($name == 'minus' && $vals->size() == 1,
+                  | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
+                  | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')'
+              );
          );
     );
 }
