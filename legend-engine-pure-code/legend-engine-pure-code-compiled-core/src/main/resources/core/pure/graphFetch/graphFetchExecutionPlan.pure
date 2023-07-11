@@ -334,7 +334,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
    );
 }
 
-function meta::pure::graphFetch::executionPlan::getRoutedDependencyTree(routedParentTree :GraphFetchTree[1], UnRoutedParentTree :GraphFetchTree[1]):GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::executionPlan::getRoutedDependencyTree(routedParentTree :GraphFetchTree[1], UnRoutedParentTree :GraphFetchTree[1]):GraphFetchTree[1]
 {
   ^$routedParentTree(subTrees = $routedParentTree.subTrees->map(s | let routedChildTree = if($s->instanceOf(ClusteredGraphFetchTree),| $s->cast(@ClusteredGraphFetchTree).tree, | $s);
                                                             let unRoutedChildTree = $UnRoutedParentTree.subTrees->filter(x | $x->cast(@PropertyGraphFetchTree).property.name == $routedChildTree->cast(@PropertyGraphFetchTree).property.name);
