@@ -236,8 +236,22 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
                                                                        ])
                      );
 
-   $routedTree->ensureXStoreRequirementsAtCurrentLevel($rootGetAllExpression, [], [], $mapping, $extensions)->cast(@RoutedRootGraphFetchTree<Any>);
+   $routedTree->ensureXStoreRequirementsAtCurrentLevel($rootGetAllExpression, [], [], $mapping, $extensions)->splitPropertyTrees($mapping, $extensions)->cast(@RoutedRootGraphFetchTree<Any>);
 }
+
+function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):RoutedGraphFetchTree[1]
+{
+  let updatedSubTrees = $tree.subTrees->map(st | if(($st->cast(@RoutedGraphFetchTree).sets->size() > 1) && $st->cast(@RoutedGraphFetchTree).sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion->toOne()) && ($st->cast(@RoutedPropertyGraphFetchTree).propertyMapping->isNotEmpty()) ,
+                                              | 
+                                                let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
+                                                let requiredPropertyMappings = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($requiredPropertyMappings))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));,
+                                              | $st)
+                                        );
+  ^$tree(subTrees = $updatedSubTrees->map(s | $s->cast(@RoutedGraphFetchTree)->splitPropertyTrees($mapping, $extensions)));     
+}
+
+
 
 function <<access.private>> meta::pure::graphFetch::routing::ensureXStoreRequirementsAtCurrentLevel(currentTree: RoutedGraphFetchTree[1], currentExpression: ValueSpecification[1], processedXStoreMappings: XStorePropertyMapping[*], processedQualifiers: QualifiedProperty<Any>[*], mapping: Mapping[1], extensions: Extension[*]): RoutedGraphFetchTree[1]
 {

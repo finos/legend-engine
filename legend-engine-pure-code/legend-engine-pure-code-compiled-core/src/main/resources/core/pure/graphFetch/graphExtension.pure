@@ -242,13 +242,13 @@ function <<access.private>> meta::pure::graphFetch::getPathTo(path:String[1], tr
 }
 
 function meta::pure::graphFetch::nodePathName(tree:GraphFetchTree[1]): String[1]
-{      
+{ 
    $tree->match([
       r:RootGraphFetchTree<Any>[1] | 'root',
-      p:PropertyGraphFetchTree[1]  | if($p.alias->isEmpty(), |$p.property.name->toOne() + if($p.property->instanceOf(QualifiedProperty), | $p.parameters->evaluateAndDeactivate()->map(x | $x->meta::pure::router::printer::asString())->joinStrings('(', ', ', ')'), | ''), |$p.alias)->toOne();
-   ])
+      p:PropertyGraphFetchTree[1]  | if($p.alias->isEmpty(), |$p.property.name->toOne() + if($p.property->instanceOf(QualifiedProperty), | $p.parameters->evaluateAndDeactivate()->map(x | $x->meta::pure::router::printer::asString())->joinStrings('(', ', ', ')'), | ''), |$p.alias)->toOne() +
+                                     if($p->instanceOf(RoutedPropertyGraphFetchTree) && $p->cast(@RoutedPropertyGraphFetchTree).sets->isNotEmpty(), | $p->cast(@RoutedPropertyGraphFetchTree).sets->map(s | $s.id)->joinStrings('@', '+', ''), | '')
+    ]);
 }
-
 
 function meta::pure::graphFetch::typeFromGraphFetchTree(g: GraphFetchTree[1]):Type[1]
 {

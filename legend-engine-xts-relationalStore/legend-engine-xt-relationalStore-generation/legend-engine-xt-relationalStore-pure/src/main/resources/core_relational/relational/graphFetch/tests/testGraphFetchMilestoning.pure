@@ -411,3 +411,27 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
       $result
    );
 }
+
+function  <<test.ToFix>> meta::relational::graphFetch::tests::milestoning::testMilestoningWithUnionMapping(): Boolean[1]
+{
+  let tree = #{
+      Order {
+         id,
+         product(%2015-10-16) {
+            name,
+            classificationTypeStr
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::partiallyMilestoningUnionMap;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":1,"product(2015-10-16)":[]},'+
+      '{"id":2,"product(2015-10-16)":[{"name":"ProductName2","classificationTypeStr()":"STOCK","type":"STOCK"}]}]',
+      $result
+   );
+}

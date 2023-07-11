@@ -29,9 +29,13 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::se
    let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
    executeInDb('Drop table if exists addressTable;', $connection);
    executeInDb('Drop table if exists landmarkTable;', $connection);
+   executeInDb('Drop table if exists landmarkTable1;', $connection);
+   executeInDb('Drop table if exists landmarkTable2;', $connection);
    executeInDb('Drop table if exists streetTable;', $connection);
    executeInDb('Drop table if exists cityTable;', $connection);
    executeInDb('Drop table if exists coordinateTable;', $connection);
+   executeInDb('Drop table if exists coordinateTable1;', $connection);
+   executeInDb('Drop table if exists coordinateTable2;', $connection);
    executeInDb('Create Table addressTable(Id INT PRIMARY KEY, type VARCHAR(200));', $connection);
    executeInDb('insert into addressTable(Id, type) values (1, \'street\');', $connection);
    executeInDb('insert into addressTable(Id, type) values (2, \'street\');', $connection);
@@ -52,10 +56,24 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::se
    executeInDb('insert into landmarkTable(addId, lmName) values(5, \'lm5\');', $connection);
    executeInDb('insert into landmarkTable(addId, lmName) values(6, \'lm6\');', $connection);
    executeInDb('insert into landmarkTable(addId, lmName) values(7, \'lm7\');', $connection);
+   executeInDb('Create Table landmarkTable1(addId INT PRIMARY KEY, lmName VARCHAR(200));', $connection);
+   executeInDb('insert into landmarkTable1(addId, lmName) values(1, \'lm1\');', $connection);
+   executeInDb('insert into landmarkTable1(addId, lmName) values(2, \'lm2\');', $connection);
+   executeInDb('insert into landmarkTable1(addId, lmName) values(3, \'lm3\');', $connection);
+   executeInDb('Create Table landmarkTable2(addId INT PRIMARY KEY, lmName VARCHAR(200));', $connection);
+   executeInDb('insert into landmarkTable2(addId, lmName) values(4, \'lm4\');', $connection);
+   executeInDb('insert into landmarkTable2(addId, lmName) values(5, \'lm5\');', $connection);
+   executeInDb('insert into landmarkTable2(addId, lmName) values(6, \'lm6\');', $connection);
+   executeInDb('insert into landmarkTable2(addId, lmName) values(7, \'lm7\');', $connection);
    executeInDb('Create Table coordinateTable(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200));', $connection);
    executeInDb('insert into coordinateTable(streetId, latitude, longitude) values(1, \'38.8951\', \' -77.0364\');', $connection);
    executeInDb('insert into coordinateTable(streetId, latitude, longitude) values(2, \'32.8951\', \' -75.0364\')', $connection);
    executeInDb('insert into coordinateTable(streetId, latitude, longitude) values(3, \'37.8951\', \' -72.0364\')', $connection);
+   executeInDb('Create Table coordinateTable1(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200));', $connection);
+   executeInDb('insert into coordinateTable1(streetId, latitude, longitude) values(1, \'31.8951\', \' -77.0364\');', $connection);
+   executeInDb('insert into coordinateTable1(streetId, latitude, longitude) values(2, \'33.8951\', \' -75.0364\')', $connection);
+   executeInDb('Create Table coordinateTable2(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200));', $connection);
+   executeInDb('insert into coordinateTable2(streetId, latitude, longitude) values(3, \'34.8951\', \' -72.0364\')', $connection);
    executeInDb('Create Table cityTable(Id INT PRIMARY KEY, name VARCHAR(200));', $connection);
    executeInDb('insert into cityTable(Id, name) values(4, \'City1\');', $connection);
    executeInDb('insert into cityTable(Id, name) values(5, \'City2\');', $connection);
@@ -423,6 +441,114 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                          $result);
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithRootPropertyUnion(): Boolean[1]
+{
+  let treeString =  '#{\n'+
+                    '  meta::relational::graphFetch::tests::subType::Address{\n'+
+                    '    Id,\n'+
+                    '    landmark{\n' +
+                    '      lmName\n' +
+                    '    },\n'+
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
+                    '      street,\n' +
+                    '      coordinate{\n' +
+                    '        latitude,\n' +
+                    '        longitude\n' +
+                    '      }\n'+  
+                    '    },\n'+                
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
+                    '      name\n' +
+                    '    }\n'+          
+                    '  }\n'+
+                    '}#';
+  let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
+  let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithRootPropertyUnionMapping;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
+  let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  
+  assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
+                         '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
+                         '{"coordinate":null,"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
+                         '{"name":"City1","Id":4,"landmark":{"lmName":"lm4"}},' +
+                         '{"name":"City2","Id":5,"landmark":{"lmName":"lm5"}},' +
+                         '{"name":"City3","Id":6,"landmark":{"lmName":"lm6"}}]',
+                         $result1);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping(): Boolean[1]
+{
+  let treeString =  '#{\n'+
+                    '  meta::relational::graphFetch::tests::subType::Address{\n'+
+                    '    Id,\n'+
+                    '    landmark{\n' +
+                    '      lmName\n' +
+                    '    },\n'+
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
+                    '      street,\n' +
+                    '      coordinate{\n' +
+                    '        latitude,\n' +
+                    '        longitude\n' +
+                    '      }\n'+  
+                    '    },\n'+                
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
+                    '      name\n' +
+                    '    }\n'+          
+                    '  }\n'+
+                    '}#';
+  let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
+  let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
+  let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+  assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
+                         '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
+                         '{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
+                         '{"name":"City1","Id":4,"landmark":null},' +
+                         '{"name":"City2","Id":5,"landmark":null},' +
+                         '{"name":"City3","Id":6,"landmark":null}]',
+                         $result1);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping(): Boolean[1]
+{
+  let treeString =  '#{\n'+
+                    '  meta::relational::graphFetch::tests::subType::Address{\n'+
+                    '    Id,\n'+
+                    '    landmark{\n' +
+                    '      lmName\n' +
+                    '    },\n'+
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
+                    '      street,\n' +
+                    '      coordinate{\n' +
+                    '        latitude,\n' +
+                    '        longitude\n' +
+                    '      }\n'+  
+                    '    },\n'+                
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
+                    '      name\n' +
+                    '    }\n'+          
+                    '  }\n'+
+                    '}#';
+  let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
+  let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
+  let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  
+  assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
+                         '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
+                         '{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
+                         '{"name":"City1","Id":4,"landmark":{"lmName":"lm4"}},' +
+                         '{"name":"City2","Id":5,"landmark":{"lmName":"lm5"}},' +
+                         '{"name":"City3","Id":6,"landmark":{"lmName":"lm6"}}]',
+                         $result1);
+}
+
 ###Pure
 Class meta::relational::graphFetch::tests::subType::Address
 {
@@ -527,6 +653,165 @@ Mapping meta::relational::graphFetch::tests::subType::InheritanceMapping
   }
 )
 
+Mapping meta::relational::graphFetch::tests::subType::RootSubTypeWithRootPropertyUnionMapping
+(
+  *meta::relational::graphFetch::tests::subType::Address: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(street, city)
+  }
+  *meta::relational::graphFetch::tests::subType::LandMark: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(landMarkSet1, landMarkSet2)
+  }
+  meta::relational::graphFetch::tests::subType::Address[a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]address_filter
+    Id : [meta::relational::graphFetch::tests::subType::db]addressTable.Id,
+    landmark[landMarkSet1] : [meta::relational::graphFetch::tests::subType::db]@ad_l1,
+    landmark[landMarkSet2] : [meta::relational::graphFetch::tests::subType::db]@ad_l2,
+    type : 'Address'
+  }
+  meta::relational::graphFetch::tests::subType::Street[street] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]street_filter
+    street : [meta::relational::graphFetch::tests::subType::db]@ad_st | streetTable.street,
+    coordinate : [meta::relational::graphFetch::tests::subType::db]@ad_co1,
+    type : 'Street'
+  }
+  meta::relational::graphFetch::tests::subType::City[city] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]city_filter
+    name : [meta::relational::graphFetch::tests::subType::db]@ad_city | cityTable.name,
+    type : 'City'
+  }
+  meta::relational::graphFetch::tests::subType::Coordinate : Relational
+  {
+    streetId : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.streetId,
+    latitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.latitude,
+    longitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.longitude
+  }
+  meta::relational::graphFetch::tests::subType::LandMark[landMarkSet1] :Relational
+  {
+    addId : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.addId,
+    lmName : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.lmName
+  }
+  meta::relational::graphFetch::tests::subType::LandMark[landMarkSet2] :Relational
+  {
+    addId : [meta::relational::graphFetch::tests::subType::db]landmarkTable2.addId,
+    lmName : [meta::relational::graphFetch::tests::subType::db]landmarkTable2.lmName
+  }
+)
+
+Mapping meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping
+(
+  *meta::relational::graphFetch::tests::subType::Address: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(street, city)
+  }
+  *meta::relational::graphFetch::tests::subType::Coordinate: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(CoordinateSet1, CoordinateSet2)
+  }
+  meta::relational::graphFetch::tests::subType::Address[a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]address_filter
+    Id : [meta::relational::graphFetch::tests::subType::db]addressTable.Id,
+    landmark : [meta::relational::graphFetch::tests::subType::db]@ad_l1,
+    type : 'Address'
+  }
+  meta::relational::graphFetch::tests::subType::Street[street] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]street_filter
+    street : [meta::relational::graphFetch::tests::subType::db]@ad_st | streetTable.street,
+    coordinate[CoordinateSet1] : [meta::relational::graphFetch::tests::subType::db]@ad_co1,
+    coordinate[CoordinateSet2] : [meta::relational::graphFetch::tests::subType::db]@ad_co2,
+    type : 'Street'
+  }
+  meta::relational::graphFetch::tests::subType::City[city] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]city_filter
+    name : [meta::relational::graphFetch::tests::subType::db]@ad_city | cityTable.name,
+    type : 'City'
+  }
+  meta::relational::graphFetch::tests::subType::Coordinate[CoordinateSet1] : Relational
+  {
+    streetId : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.streetId,
+    latitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.latitude,
+    longitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.longitude
+  }
+  meta::relational::graphFetch::tests::subType::Coordinate[CoordinateSet2] : Relational
+  {
+    streetId : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.streetId,
+    latitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.latitude,
+    longitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.longitude
+  }
+  meta::relational::graphFetch::tests::subType::LandMark :Relational
+  {
+    addId : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.addId,
+    lmName : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.lmName
+  }
+)
+
+Mapping meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping
+(
+  *meta::relational::graphFetch::tests::subType::Address: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(street, city)
+  }
+  *meta::relational::graphFetch::tests::subType::LandMark: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(landMarkSet1, landMarkSet2)
+  }
+  *meta::relational::graphFetch::tests::subType::Coordinate: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(CoordinateSet1, CoordinateSet2)
+  }
+  meta::relational::graphFetch::tests::subType::Address[a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]address_filter
+    Id : [meta::relational::graphFetch::tests::subType::db]addressTable.Id,
+    landmark[landMarkSet1] : [meta::relational::graphFetch::tests::subType::db]@ad_l1,
+    landmark[landMarkSet2] : [meta::relational::graphFetch::tests::subType::db]@ad_l2,
+    type : 'Address'
+  }
+  meta::relational::graphFetch::tests::subType::Street[street] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]street_filter
+    street : [meta::relational::graphFetch::tests::subType::db]@ad_st | streetTable.street,
+    coordinate[CoordinateSet1] : [meta::relational::graphFetch::tests::subType::db]@ad_co1,
+    coordinate[CoordinateSet2] : [meta::relational::graphFetch::tests::subType::db]@ad_co2,
+    type : 'Street'
+  }
+  meta::relational::graphFetch::tests::subType::City[city] extends [a]: Relational
+  {
+    ~filter [meta::relational::graphFetch::tests::subType::db]city_filter
+    name : [meta::relational::graphFetch::tests::subType::db]@ad_city | cityTable.name,
+    type : 'City'
+  }
+  meta::relational::graphFetch::tests::subType::Coordinate[CoordinateSet1] : Relational
+  {
+    streetId : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.streetId,
+    latitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.latitude,
+    longitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable1.longitude
+  }
+  meta::relational::graphFetch::tests::subType::Coordinate[CoordinateSet2] : Relational
+  {
+    streetId : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.streetId,
+    latitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.latitude,
+    longitude : [meta::relational::graphFetch::tests::subType::db]coordinateTable2.longitude
+  }
+  meta::relational::graphFetch::tests::subType::LandMark[landMarkSet1] :Relational
+  {
+    addId : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.addId,
+    lmName : [meta::relational::graphFetch::tests::subType::db]landmarkTable1.lmName
+  }
+  meta::relational::graphFetch::tests::subType::LandMark[landMarkSet2] :Relational
+  {
+    addId : [meta::relational::graphFetch::tests::subType::db]landmarkTable2.addId,
+    lmName : [meta::relational::graphFetch::tests::subType::db]landmarkTable2.lmName
+  }
+)
+
 ###Relational
 Database meta::relational::graphFetch::tests::subType::db
 (
@@ -534,14 +819,22 @@ Database meta::relational::graphFetch::tests::subType::db
   Table streetTable(Id INT PRIMARY KEY, street VARCHAR(200))
   Table cityTable(Id INT PRIMARY KEY, name VARCHAR(200))
   Table landmarkTable(addId INT PRIMARY KEY, lmName VARCHAR(200))
+  Table landmarkTable1(addId INT PRIMARY KEY, lmName VARCHAR(200))
+  Table landmarkTable2(addId INT PRIMARY KEY, lmName VARCHAR(200)) 
   Table coordinateTable(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
+  Table coordinateTable1(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
+  Table coordinateTable2(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
   Join st_l(streetTable.Id = landmarkTable.addId)
   Join st_co(streetTable.Id = coordinateTable.streetId)
   Join c_l(cityTable.Id = landmarkTable.addId)
   Join ad_l(addressTable.Id = landmarkTable.addId)
+  Join ad_l1(addressTable.Id = landmarkTable1.addId)
+  Join ad_l2(addressTable.Id = landmarkTable2.addId)
   Join ad_st(addressTable.Id = streetTable.Id)
   Join ad_city(addressTable.Id = cityTable.Id)
   Join ad_co(addressTable.Id = coordinateTable.streetId)
+  Join ad_co1(addressTable.Id = coordinateTable1.streetId)
+  Join ad_co2(addressTable.Id = coordinateTable2.streetId)
   Filter street_filter(addressTable.type = 'street')
   Filter address_filter(addressTable.type = 'address')
   Filter city_filter(addressTable.type = 'city')

@@ -140,8 +140,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      localGetterOverrideMapped = meta::relational::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
      instance_equals = {a:Any[1], b:Any[1] |
                           $a->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk;
-                       }
-
+                       },
+     splitGraphFetchTreeForPropertyUnion = true
    )
 }
 
