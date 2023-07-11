@@ -33,11 +33,16 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
 
   let tdsDetailsIndexed = $processOutput.tdsESDetails->toIndexed()->toOneMany('TDS operations should have at least one output column');
 
-  ^Elasticsearch7RequestExecutionNode(    
+  let esNode = ^Elasticsearch7RequestExecutionNode(    
     resultSizeRange = ZeroMany,
     request = $request,
     connection = $runtime->toOne('missing required runtime for ES plan execution').connectionByElement($sq.store)->cast(@Elasticsearch7StoreConnection),
     resultType = ^meta::pure::executionPlan::TDSResultType(type = TabularDataSet, tdsColumns = $tdsDetailsIndexed->map(p | ^TDSColumn(name = $p.second.name, offset = $p.first, type = $p.second.type))),
     metadata = ^TDSMetadata(columnResultPaths = $tdsDetailsIndexed->map(ci | ^TDSColumnResultPath(index = $ci.first, resultPath = $ci.second.resultPath)))
+  );
+
+  if ($processOutput.extraNodes->isEmpty(),
+    |$esNode, 
+    |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicates({x, y | $x.varName == $y.varName})->concatenate($esNode))
   );
 }
