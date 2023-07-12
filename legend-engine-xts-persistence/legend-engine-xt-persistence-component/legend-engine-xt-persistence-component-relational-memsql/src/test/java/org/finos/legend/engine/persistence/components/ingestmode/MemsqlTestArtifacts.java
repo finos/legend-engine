@@ -23,6 +23,13 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "PRIMARY KEY (`id`, `name`))";
 
+    public static String expectedStagingTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`(" +
+            "`id` INTEGER NOT NULL," +
+            "`name` VARCHAR(256) NOT NULL," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "PRIMARY KEY (`id`, `name`))";
+
     public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER NOT NULL," +
             "`NAME` VARCHAR(256) NOT NULL," +
@@ -31,6 +38,14 @@ public class MemsqlTestArtifacts
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER NOT NULL," +
+            "`name` VARCHAR(256) NOT NULL," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "`digest` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`))";
+
+    public static String expectedStagingTableWithDigestCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
@@ -65,6 +80,13 @@ public class MemsqlTestArtifacts
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "`digest` VARCHAR(256))";
+
+    public static String expectedStagingTableCreateQueryWithNoPKs = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
@@ -191,6 +213,15 @@ public class MemsqlTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
+    public static String expectedBitemporalStagingTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`(" +
+            "`id` INTEGER NOT NULL," +
+            "`name` VARCHAR(256) NOT NULL," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME NOT NULL," +
+            "`validity_through_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
+
     public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
@@ -225,6 +256,13 @@ public class MemsqlTestArtifacts
             "`validity_from_target` DATETIME NOT NULL," +
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`" +
+            "(`id` INTEGER NOT NULL," +
+            "`name` VARCHAR(256) NOT NULL," +
+            "`amount` DOUBLE,`validity_from_reference` DATETIME NOT NULL," +
+            "`digest` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
 
     public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER NOT NULL," +

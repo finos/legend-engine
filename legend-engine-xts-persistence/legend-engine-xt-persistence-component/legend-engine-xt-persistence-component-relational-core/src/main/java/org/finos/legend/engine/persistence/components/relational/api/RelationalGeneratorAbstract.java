@@ -88,6 +88,12 @@ public abstract class RelationalGeneratorAbstract
         return Clock.systemUTC();
     }
 
+    @Default
+    public boolean createStagingDataset()
+    {
+        return false;
+    }
+
     public abstract Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet();
 
     public abstract Optional<String> batchStartTimestampPattern();
@@ -111,6 +117,7 @@ public abstract class RelationalGeneratorAbstract
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
+            .createStagingDataset(createStagingDataset())
             .build();
     }
 

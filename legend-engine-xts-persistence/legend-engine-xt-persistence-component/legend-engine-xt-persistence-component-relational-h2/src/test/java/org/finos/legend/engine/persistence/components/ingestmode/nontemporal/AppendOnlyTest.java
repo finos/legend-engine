@@ -384,7 +384,7 @@ class AppendOnlyTest extends BaseTest
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
                 .relationalSink(H2Sink.get())
-                .createTables(false)
+                .createDatasets(false)
                 .build();
         try
         {

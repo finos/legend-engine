@@ -290,6 +290,10 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         List<Operation> operations = new ArrayList<>();
 
         operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, stagingDataset()));
+        }
         operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
 
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)

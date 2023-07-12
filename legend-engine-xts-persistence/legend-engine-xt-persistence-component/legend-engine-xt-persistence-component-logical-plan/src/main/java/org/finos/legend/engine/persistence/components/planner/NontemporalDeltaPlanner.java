@@ -301,7 +301,13 @@ class NontemporalDeltaPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
     {
-        return LogicalPlan.builder().addOps(Create.of(true, mainDataset())).build();
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, stagingDataset()));
+        }
+        return LogicalPlan.of(operations);
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()

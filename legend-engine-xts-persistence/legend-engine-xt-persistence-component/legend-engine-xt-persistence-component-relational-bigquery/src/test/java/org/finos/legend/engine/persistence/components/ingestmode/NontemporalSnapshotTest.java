@@ -43,6 +43,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT * FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 

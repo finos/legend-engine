@@ -105,9 +105,15 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
-    public boolean createTables()
+    public boolean createDatasets()
     {
         return true;
+    }
+
+    @Default
+    public boolean createStagingDataset()
+    {
+        return false;
     }
 
     @Default
@@ -153,6 +159,7 @@ public abstract class RelationalIngestorAbstract
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
+            .createStagingDataset(createStagingDataset())
             .build();
     }
 
@@ -247,6 +254,7 @@ public abstract class RelationalIngestorAbstract
             .relationalSink(relationalSink())
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
+            .createStagingDataset(createStagingDataset())
             .enableSchemaEvolution(enableSchemaEvolution())
             .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
             .caseConversion(caseConversion())
@@ -258,8 +266,8 @@ public abstract class RelationalIngestorAbstract
         Planner planner = Planners.get(updatedDatasets, enrichedIngestMode, plannerOptions());
         GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
 
-        // Create tables
-        if (createTables())
+        // Create Datasets
+        if (createDatasets())
         {
             executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
         }
