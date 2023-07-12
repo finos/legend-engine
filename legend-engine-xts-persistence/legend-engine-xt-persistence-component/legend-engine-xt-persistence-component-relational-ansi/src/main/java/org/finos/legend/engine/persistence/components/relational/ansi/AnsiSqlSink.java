@@ -39,6 +39,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Join;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfExistsTableModifier;
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfNotExistsTableModifier;
@@ -133,6 +134,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SumBinaryValueOperatorVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableModifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
@@ -177,6 +179,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(DatasetDefinition.class, new DatasetDefinitionVisitor());
         logicalPlanVisitorByClass.put(DerivedDataset.class, new DerivedDatasetVisitor());
         logicalPlanVisitorByClass.put(JsonExternalDatasetReference.class, new DatasetReferenceVisitor());
+        logicalPlanVisitorByClass.put(DatasetAdditionalProperties.class, new DatasetAdditionalPropertiesVisitor());
 
         logicalPlanVisitorByClass.put(Not.class, new NotVisitor());
         logicalPlanVisitorByClass.put(And.class, new AndVisitor());

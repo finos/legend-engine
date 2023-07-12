@@ -15,10 +15,14 @@
 package org.finos.legend.engine.persistence.components.logicalplan.operations;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.tabletypes.IcebergTableType;
+import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.junit.jupiter.api.Assertions;
@@ -135,4 +139,93 @@ public class CreateTableTest
 
         Assertions.assertEquals(expected, list.get(0));
     }
+
+    @Test
+    public void testCreateIcebergTableExternalVolumeMissing()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableOrigin(TableOrigin.ICEBERG).build())
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        try
+        {
+            physicalPlan.getSqlList();
+            Assertions.fail("Should not reach here");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertTrue(e.getMessage().contains("External Volume is mandatory for Iceberg Table"));
+        }
+
+    }
+
+    @Test
+    public void testCreateIcebergTable()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder()
+                        .tableOrigin(TableOrigin.ICEBERG)
+                        .externalVolume("my_ext_vol")
+                        .build())
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE ICEBERG TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
+                " with EXTERNAL_VOLUME = 'my_ext_vol' " +
+                "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT," +
+                "\"col_tinyint\" TINYINT,\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR," +
+                "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
+                "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
+                "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
+                "\"col_varbinary\" BINARY(10))";
+
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+    @Test
+    public void testCreateTableWithTags()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder()
+                        .putTags("key1", "value1").putTags("key2", "value2")
+                        .build())
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
+                "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT," +
+                "\"col_tinyint\" TINYINT,\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR," +
+                "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
+                "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
+                "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
+                "\"col_varbinary\" BINARY(10)) WITH TAG (key1 = 'value1', key2 = 'value2')";
+
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+
 }

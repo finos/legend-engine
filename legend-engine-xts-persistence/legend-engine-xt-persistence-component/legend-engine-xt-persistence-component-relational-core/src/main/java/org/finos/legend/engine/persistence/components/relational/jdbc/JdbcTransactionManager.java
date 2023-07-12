@@ -89,7 +89,7 @@ public class JdbcTransactionManager
                     for (int i = 1; i <= columnCount; i++)
                     {
                         Object value = resultSet.getObject(i);
-                        if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON"))
+                        if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof byte[])
                         {
                             value = new String((byte[]) value, StandardCharsets.UTF_8);
                         }

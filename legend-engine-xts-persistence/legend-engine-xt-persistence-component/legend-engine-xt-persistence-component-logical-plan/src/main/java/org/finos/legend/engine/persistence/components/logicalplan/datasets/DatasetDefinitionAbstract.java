@@ -47,6 +47,8 @@ public interface DatasetDefinitionAbstract extends Dataset
 
     SchemaDefinition schema();
 
+    Optional<DatasetAdditionalProperties> datasetAdditionalProperties();
+
     @Derived
     default DatasetReference datasetReference()
     {
