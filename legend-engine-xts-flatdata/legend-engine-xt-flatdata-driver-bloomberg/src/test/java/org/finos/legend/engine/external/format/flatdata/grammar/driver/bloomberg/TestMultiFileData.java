@@ -63,7 +63,7 @@ public class TestMultiFileData extends AbstractDriverTest
                 BloombergFixtures.metadataGrammar("partlyPaidScheduleMeta"));
         List<IChecked<BloombergFixtures.BloombergRecord>> returned = deserializer.deserialize();
 
-        Assert.assertEquals(4, returned.size());
+        Assert.assertEquals(6, returned.size());
     }
 
     private void test(String... grammar)
@@ -71,12 +71,12 @@ public class TestMultiFileData extends AbstractDriverTest
         Deserializer<BloombergFixtures.BloombergRecord> deserializer = deserializer(grammar);
         List<IChecked<BloombergFixtures.BloombergRecord>> returned = deserializer.deserialize();
 
-        Assert.assertEquals(9, returned.size());
+        Assert.assertEquals(11, returned.size());
 
         List<IChecked<BloombergFixtures.FltCpnHist>> fltCpnHistRecords = deserializer.recordsCreatedBy("fltCpnHist");
-        Assert.assertEquals(3, fltCpnHistRecords.size());
+        Assert.assertEquals(5, fltCpnHistRecords.size());
         fltCpnHistRecords.forEach(this::assertNoDefects);
-        BloombergFixtures.FltCpnHist fltCpnHist = fltCpnHistRecords.get(0).getValue();
+        BloombergFixtures.FltCpnHist fltCpnHist = fltCpnHistRecords.get(2).getValue();
         Assert.assertEquals("EC5111111 Corp", fltCpnHist.security);
         Assert.assertEquals(LocalDate.parse("2001-02-20"), fltCpnHist.fltCpnHistDt);
         Assert.assertEquals("3.6", fltCpnHist.fltCpnHistRt.toPlainString());
