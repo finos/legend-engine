@@ -49,7 +49,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
   let allStates = allGenerationStates();
 
   [
-    //dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTrino()})),
@@ -92,7 +92,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
-    //dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(current_date as timestamp)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampTrino()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
