@@ -11,10 +11,15 @@
 
     <artifactId>legend-engine-server-support</artifactId>
     <name>Legend Engine - Server - Support</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
+
     <modules>
         <module>legend-engine-server-support-core</module>
     </modules>
-    <packaging>pom</packaging>
 
     <build>
         <plugins>
