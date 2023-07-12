@@ -39,8 +39,7 @@ function <<access.private>> meta::relational::transform::autogen::removeTrailing
 
 function <<access.private>> meta::relational::transform::autogen::columnToProperty(column:Column[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
 {
-   let nameWithoutSpecialChars = $column->sqlSafeColumnName()->replace('"','');
-   let propertyName = $nameWithoutSpecialChars->makeCamelCase(false);
+   let propertyName = $column->createSQLSafeColumnName()->createValidPropertyName();
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
    (
       name = $propertyName,
@@ -51,13 +50,25 @@ function <<access.private>> meta::relational::transform::autogen::columnToProper
 
 function <<access.private>> meta::relational::transform::autogen::createValidClassName(tableName:String[1]):String[1]
 {
-   let cn = $tableName->replace(' ','')->replace('/','')->makeCamelCase(true);
-   if ((!$cn->endsWith('s')) || $cn->endsWith('ss'), |$cn, |$cn->substring(0, $cn->length() - 1)); // Convert it back to singular form of the name
+   $tableName->replaceUnsupportedCharsWith('', [' ', '/'])->makeCamelCase(true);
 }
 
-function <<access.private>> meta::relational::transform::autogen::sqlSafeColumnName(column:Column[1]):String[1]
+function <<access.private>> meta::relational::transform::autogen::createSQLSafeColumnName(column:Column[1]):String[1]
 {
-   $column.name->replace(' ','')->replace('/','')->replace('@','At')->replace('~','Tilde')->replace('<','Lt')->replace('>','Gt')->replace('.','_');
+   $column.name->replaceUnsupportedCharsWith('_', [' ', '/', '@', '~', '<', '>', '.']);
+}
+
+function <<access.private>> meta::relational::transform::autogen::createValidPropertyName(columnName:String[1]):String[1]
+{
+   $columnName->replaceUnsupportedCharsWith('', ['"'])->makeCamelCase(false);
+}
+
+function <<access.private>> meta::relational::transform::autogen::replaceUnsupportedCharsWith(initialString:String[1], replacementChar:String[1], unsupportedChars:String[*]):String[1]
+{
+   $initialString->length()->range()->fold({index, acc|
+     let char = $initialString->substring($index, $index + 1);
+     $acc + if($unsupportedChars->contains($char), |$replacementChar, |$char);
+   }, '');
 }
 
 function meta::relational::transform::autogen::schemaToAssociationJoinPair(schema:Schema[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]
@@ -134,11 +145,11 @@ function meta::relational::transform::autogen::schemaToClassMapping(schema:Schem
       _type = 'mapping',
       name = $database.name->toOne() + 'Mapping',
       package = $mappingPackageStr->removeTrailingColonsFromPackageString(),
-      classMappings = $schema.tables->map(t | $t->tableToClassAndClassMapping($classPackageStr, $database, $columnFilterFunction))
+      classMappings = $schema.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction))
    )
 }
 
-function <<access.private>> meta::relational::transform::autogen::tableToClassAndClassMapping(table:Table[1], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
+function <<access.private>> meta::relational::transform::autogen::tableToClassMapping(table:Table[1], classPackageStr:String[1], database:Database[1], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping[1]
 {
    let tableName = $table.name;
    let schemaName = $table.schema.name;
@@ -146,12 +157,11 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassAn
    let tableAlias = ^TableAlias(name=$tableName, relationalElement=$table, database=$database, schema=$schemaName);
 
    let propertyMappings = $table.columns->cast(@Column)->filter(c|$columnFilterFunction->eval($c))
-                                                       ->map(c | let p = $c->columnToProperty();
-                                                                 let propertyNameWithoutSpecialChars = $c->sqlSafeColumnName();
-                                                                 let propertyName = $propertyNameWithoutSpecialChars->replace('"','')->makeCamelCase(false);
+                                                       ->map(c | let columnName = $c->createSQLSafeColumnName();
+                                                                 let propertyName = $columnName->createValidPropertyName();
                                                                  let propertyRawReturnType = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($c.type);
                                                              
-                                                                 let tableAliasColumn = ^TableAliasColumn(columnName=$propertyNameWithoutSpecialChars, alias=$tableAlias, column=$c);
+                                                                 let tableAliasColumn = ^TableAliasColumn(columnName=$columnName, alias=$tableAlias, column=$c);
                                                              
                                                                  let element = if($propertyRawReturnType == Boolean && $c.type->instanceOf(Bit), 
                                                                     {| 
@@ -209,7 +219,7 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassAn
          database = $database->elementToPath(),
          schema = $schemaName),
       distinct = false,
-      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c->sqlSafeColumnName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
+      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c->createSQLSafeColumnName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
       propertyMappings = $propertyMappings
    );
 }
