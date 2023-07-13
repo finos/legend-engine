@@ -21,14 +21,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatFromPureDescriptor;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ModelUnit;
-import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ModelUnit_Impl;
-import org.finos.legend.pure.generated.core_pure_generation_generations;
+import org.finos.legend.pure.generated.*;
 
 /**
  * Defines an extension to be implemented to define a pure model to external format schema generation.
@@ -55,7 +48,7 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
         }
-        return core_pure_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(), descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
+        return core_generation_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(), descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 
     /**

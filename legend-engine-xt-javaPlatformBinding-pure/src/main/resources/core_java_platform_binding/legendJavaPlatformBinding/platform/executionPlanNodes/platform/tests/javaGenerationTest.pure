@@ -177,7 +177,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_,
     meta::pure::functions::collection::tests::contains::testContainsWithFunction__Boolean_1_, // Unhandled value type: meta::pure::metamodel::function::ConcreteFunctionDefinition
 		meta::pure::functions::collection::tests::contains::testContainsAllNonPrimitive__Boolean_1_,
-		meta::pure::functions::collection::tests::contains::testContainsAnyNonPrimitive__Boolean_1_,
+		meta::pure::functions::collection::tests::containsAny::testContainsAnyNonPrimitive__Boolean_1_,
 		meta::pure::functions::collection::tests::filter::testFilterUsingVarForFunction__Boolean_1_,
 		meta::pure::functions::collection::tests::head::testHeadComplex__Boolean_1_, // scanProperties: functionType is not supported yet for this subtype of function Path
 		meta::pure::functions::collection::tests::in::testInNonPrimitive__Boolean_1_,

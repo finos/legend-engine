@@ -1,5 +1,12 @@
 {
-  "name" : "core_relational_athena",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::athena|meta::relational::tests::sqlQueryToString::athena|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core", "core_relational", "platform_functions", "platform_store_relational"]
+  "name": "core_relational_athena",
+  "pattern": "(meta::relational::functions::sqlQueryToString::athena|meta::relational::tests::sqlQueryToString::athena|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_store_relational",
+    "core_functions",
+    "core",
+    "core_relational"
+  ]
 }

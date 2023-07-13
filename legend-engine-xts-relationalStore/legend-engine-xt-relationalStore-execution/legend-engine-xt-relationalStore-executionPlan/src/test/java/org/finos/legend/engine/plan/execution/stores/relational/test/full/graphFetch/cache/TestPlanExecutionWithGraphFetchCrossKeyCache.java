@@ -502,7 +502,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
         EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, null);
-        GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys = GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null);
+        GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys = GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm@test_Firm>")).findFirst().orElse(null);
 
         try (JavaHelper.ThreadContextClassLoaderScope ignored = JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
         {
@@ -563,13 +563,13 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         Cache<GraphFetchCacheKey, List<Object>> firmGuavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
         GraphFetchCacheByTargetCrossKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 firmGuavaCache,
-                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null)
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm@test_Firm>")).findFirst().orElse(null)
         );
 
         Cache<GraphFetchCacheKey, List<Object>> addressGuavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
         GraphFetchCacheByTargetCrossKeys addressCache = ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 addressGuavaCache,
-                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address@test_Address>")).findFirst().orElse(null))
         );
 
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache, addressCache);
@@ -627,7 +627,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm>")).findFirst().orElse(null)
+                GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm@test_Firm>")).findFirst().orElse(null)
         );
     }
 
@@ -635,7 +635,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.persons>")).findFirst().orElse(null))
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.persons@test_Person>")).findFirst().orElse(null))
         );
     }
 
@@ -643,7 +643,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address@test_Address>")).findFirst().orElse(null))
         );
     }
 
@@ -653,11 +653,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         return Arrays.asList(
                 ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                         cache,
-                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm.address>")).findFirst().orElse(null))
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm@test_Firm.address@test_Address>")).findFirst().orElse(null))
                 ),
                 ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                         cache,
-                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
+                        Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address@test_Address>")).findFirst().orElse(null))
                 )
         );
     }
@@ -666,7 +666,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
                 CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
-                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firmAddress>")).findFirst().orElse(null))
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firmAddress@test_Address>")).findFirst().orElse(null))
         );
     }
 

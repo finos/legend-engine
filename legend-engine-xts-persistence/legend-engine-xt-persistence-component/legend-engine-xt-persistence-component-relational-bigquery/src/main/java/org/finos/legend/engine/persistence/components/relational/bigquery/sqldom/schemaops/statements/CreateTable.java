@@ -55,27 +55,6 @@ public class CreateTable implements DDLStatement
         this.partitionKeys = new ArrayList<>();
     }
 
-    public CreateTable(Table table, List<TableModifier> modifiers, List<Column> columns, List<TableConstraint> tableConstraints, List<TableType> types)
-    {
-        this.table = table;
-        this.modifiers = modifiers;
-        this.columns = columns;
-        this.tableConstraints = tableConstraints;
-        this.types = types;
-        this.clusterKeys = new ArrayList<>();
-        this.partitionKeys = new ArrayList<>();
-    }
-
-    public CreateTable(List<TableType> types)
-    {
-        this.modifiers = new ArrayList<>();
-        this.columns = new ArrayList<>();
-        this.tableConstraints = new ArrayList<>();
-        this.types = types;
-        this.clusterKeys = new ArrayList<>();
-        this.partitionKeys = new ArrayList<>();
-    }
-
     /*
      CREATE GENERIC PLAN:
      CREATE [TABLE TYPE] TABLE [IF NOT EXISTS] {FULLY_QUALIFIED_TABLE_NAME}( {COLUMNS}{CONSTRAINTS} )

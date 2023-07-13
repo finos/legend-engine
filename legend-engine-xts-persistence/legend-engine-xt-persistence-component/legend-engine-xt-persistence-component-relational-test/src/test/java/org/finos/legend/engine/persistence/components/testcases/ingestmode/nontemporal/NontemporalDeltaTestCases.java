@@ -43,6 +43,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
+            .createStagingDataset(true)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());

@@ -5,6 +5,7 @@
     "platform",
     "platform_functions_json",
     "platform_functions",
-    "core"
+    "core",
+    "core_generation"
   ]
 }

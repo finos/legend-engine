@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
@@ -250,17 +251,17 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
 
             Exception e = assertThrows(RuntimeException.class, () ->
             {
-                Assert.assertEquals(expectedRes, executePlan(plan, context, 900));
+                Assert.assertEquals(expectedRes, executePlan(plan, context, new GraphFetchExecutionConfiguration(900)));
             });
             Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e.getMessage());
 
-            Assert.assertEquals(expectedRes, executePlan(planWithoutBatchSize, contextWithoutBatchSize, 10000));
+            Assert.assertEquals(expectedRes, executePlan(planWithoutBatchSize, contextWithoutBatchSize, new GraphFetchExecutionConfiguration(10000)));
         }
     }
 
-    private String executePlan(SingleExecutionPlan plan, PlanExecutionContext context, long graphFetchBatchMemoryLimit)
+    private String executePlan(SingleExecutionPlan plan, PlanExecutionContext context, GraphFetchExecutionConfiguration graphFetchExecutionConfiguration)
     {
-        planExecutor.setGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit);
+        planExecutor.setGraphFetchExecutionConfiguration(graphFetchExecutionConfiguration);
         JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan, Collections.emptyMap(), null, context);
         return result.flush(new JsonStreamToPureFormatSerializer(result));
     }

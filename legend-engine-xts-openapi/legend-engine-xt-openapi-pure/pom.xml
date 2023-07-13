@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-openapi</artifactId>
-        <version>4.17.1-SNAPSHOT</version>
+        <version>4.18.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-openapi-pure</artifactId>
@@ -184,6 +184,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

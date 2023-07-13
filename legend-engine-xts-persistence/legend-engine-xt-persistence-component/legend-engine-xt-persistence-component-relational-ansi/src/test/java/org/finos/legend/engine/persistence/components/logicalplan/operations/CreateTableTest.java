@@ -15,7 +15,9 @@
 package org.finos.legend.engine.persistence.components.logicalplan.operations;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableType;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
@@ -69,6 +71,7 @@ public class CreateTableTest
             .name("my_table")
             .alias("my_alias")
             .schema(schemaWithAllColumns)
+            .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
             .build();
         Operation create = Create.of(true, dataset);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
@@ -80,7 +83,7 @@ public class CreateTableTest
 
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
+        String expected = "CREATE TEMPORARY TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
             "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_INTEGER\" INTEGER NOT NULL UNIQUE,\"COL_BIGINT\" BIGINT," +
             "\"COL_TINYINT\" TINYINT,\"COL_SMALLINT\" SMALLINT,\"COL_CHAR\" CHAR,\"COL_VARCHAR\" VARCHAR," +
             "\"COL_STRING\" VARCHAR,\"COL_TIMESTAMP\" TIMESTAMP,\"COL_DATETIME\" DATETIME,\"COL_DATE\" DATE," +

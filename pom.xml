@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.17.1-SNAPSHOT</version>
+    <version>4.18.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -75,18 +75,19 @@
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
+        <module>legend-engine-xts-configuration</module>
 
         <!-- Analytics -->
         <module>legend-engine-xts-analytics</module>
 
 
-
+        <module>legend-engine-pure-code</module>
+        <module>legend-engine-pure-ide</module>
+        <module>legend-engine-pure-runtime</module>
 
 
 
         <module>legend-engine-external-format-jsonSchema</module>
-
-
 
         <module>legend-engine-pure-platform-modular-generation</module>
 
@@ -106,14 +107,7 @@
 
 
 
-        <module>legend-engine-pure-code-compiled-core</module>
 
-
-
-        <module>legend-engine-pure-ide-light</module>
-        <module>legend-engine-pure-ide-light-pure</module>
-        <module>legend-engine-pure-ide-light-metadata-pure</module>
-        <module>legend-engine-pure-runtime-compiler</module>
 
         <module>legend-engine-executionPlan-generation</module>
         <module>legend-engine-external-shared</module>
@@ -121,6 +115,7 @@
         <module>legend-engine-external-shared-format-runtime</module>
         <module>legend-engine-external-language-java</module>
         <module>legend-engine-language-pure-dsl-generation</module>
+        <module>legend-engine-language-pure-dsl-generation-pure</module>
         <module>legend-engine-language-pure-dsl-service</module>
         <module>legend-engine-language-pure-dsl-service-generation</module>
         <module>legend-engine-language-pure-dsl-service-execution</module>
@@ -128,11 +123,7 @@
         <module>legend-engine-test-runner-mapping</module>
         <module>legend-engine-test-runner-service</module>
         <module>legend-engine-service-post-validation-runner</module>
-        <module>legend-engine-configuration</module>
-        <module>legend-engine-protocol</module>
-        <module>legend-engine-protocol-generation</module>
-        <module>legend-engine-protocol-pure</module>
-        <module>legend-engine-protocol-api</module>
+
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
@@ -143,30 +134,23 @@
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-java-runtime-compiler</module>
-
-        <module>legend-engine-pure-code-compiled-core-configuration</module>
-        <module>legend-engine-pure-runtime-execution</module>
 
         <module>legend-engine-xt-elasticsearch</module>
 
         <module>legend-engine-xt-artifact-generation-api</module>
 
 
-        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
-        <module>legend-engine-test-reports</module>
         <module>legend-engine-server</module>
         <module>legend-engine-test-server-shared</module>
         <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
-        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
+        <top.project>${project.basedir}</top.project>
+
         <!-- Legend -->
         <legend.pure.version>4.5.8</legend.pure.version>
-        <legend.shared.version>0.23.7</legend.shared.version>
+        <legend.shared.version>0.23.8</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -457,9 +441,6 @@
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
-                    <reportsDirectory>
-                        ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
-                    </reportsDirectory>
                     <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
@@ -1516,6 +1497,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-artifact-generation-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1670,6 +1656,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

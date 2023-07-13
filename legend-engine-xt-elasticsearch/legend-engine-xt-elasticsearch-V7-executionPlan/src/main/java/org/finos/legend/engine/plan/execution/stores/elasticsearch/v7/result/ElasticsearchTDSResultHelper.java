@@ -71,7 +71,7 @@ public final class ElasticsearchTDSResultHelper
             @Override
             public Function<Hit<ObjectNode>, Object> visit(_IDResultPath val)
             {
-                return hit -> hit._id;
+                return hit -> hit._id.getLiteral();
             }
 
             @Override
@@ -81,7 +81,7 @@ public final class ElasticsearchTDSResultHelper
 
                 return hit ->
                 {
-                    List<Object> fieldValue = (List<Object>) hit.fields.get(nameAsString);
+                    List<Object> fieldValue = (List<Object>) hit.fields.get(nameAsString).getLiteral();
                     if (fieldValue != null && fieldValue.size() > 1)
                     {
                         throw new UnsupportedOperationException(nameAsString + " contains more than one value, and tds does not support array");

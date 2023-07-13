@@ -5,6 +5,7 @@
     "platform",
     "platform_functions",
     "platform_functions_json",
+    "core_functions",
     "core",
     "core_external_language_java"
   ]

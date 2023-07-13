@@ -34,6 +34,9 @@ import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerOutput;
+import org.finos.legend.engine.plan.execution.cache.executionPlan.ExecutionPlanCache;
+import org.finos.legend.engine.plan.execution.parameterization.ParameterizedValueSpecification;
+import org.finos.legend.engine.plan.execution.cache.executionPlan.PlanCacheKey;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -43,11 +46,16 @@ import org.finos.legend.engine.plan.generation.PlanWithDebug;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
+import org.finos.legend.engine.query.pure.cache.PureExecutionCacheKey;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -59,7 +67,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
-import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
+import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
@@ -82,6 +90,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
@@ -100,6 +110,7 @@ public class Execute
     private final Iterable<? extends PlanTransformer> transformers;
     private final PlanExecutionAuthorizer planExecutionAuthorizer;
     private final IdentityFactory identityFactory;
+    private final ExecutionPlanCache executionPlanCache;
 
     public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers)
     {
@@ -108,14 +119,24 @@ public class Execute
 
     public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
     {
+        this(modelManager, planExecutor, extensions, transformers, planExecutionAuthorizer, identityFactory, null);
+
+    }
+
+    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers,
+                   PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory, ExecutionPlanCache executionPlanCache)
+    {
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
         this.extensions = extensions;
         this.transformers = transformers;
         this.identityFactory = identityFactory;
         this.planExecutionAuthorizer = planExecutionAuthorizer;
+        this.executionPlanCache = executionPlanCache;
         MetricsHandler.createMetrics(this.getClass());
+
     }
+
 
     @POST
     @ApiOperation(value = "Execute a Pure query (function) in the context of a Mapping and a Runtime. Full Interactive and Semi Interactive modes are supported by giving the appropriate PureModelContext (respectively PureModelDataContext and PureModelContextComposite). Production executions need to use the Service interface.")
@@ -129,6 +150,29 @@ public class Execute
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
             Map<String, Object> parameters = Maps.mutable.empty();
+
+            List<ValueSpecification> lambda = null;
+            PureExecutionCacheKey executionCacheKey = null;
+            List<Variable> lambdaParameters = new ArrayList<>();
+            lambdaParameters.addAll(executeInput.function.parameters);
+            if (request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE) != null && executeInput.model instanceof PureModelContextPointer && executionPlanCache != null)
+            {
+                ParameterizedValueSpecification cachableValueSpec = new ParameterizedValueSpecification(executeInput.function, "GENERATED");
+                lambdaParameters.addAll(cachableValueSpec.getVariables());
+                lambda = ((Lambda) cachableValueSpec.getValueSpecification()).body;
+                executionCacheKey = new PureExecutionCacheKey(lambda, executeInput.runtime, executeInput.mapping, ((PureModelContextPointer) executeInput.model).sdlcInfo);
+
+                for (ParameterValue parameterValue : cachableValueSpec.getParameterValues())
+                {
+                    parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
+                }
+            }
+
+            else
+            {
+                lambda = executeInput.function.body;
+            }
+
             if (executeInput.parameterValues != null)
             {
                 for (ParameterValue parameterValue : executeInput.parameterValues)
@@ -136,7 +180,10 @@ public class Execute
                     parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
                 }
             }
-            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext()),
+
+
+            List<ValueSpecification> finalLambda = lambda;
+            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(finalLambda, lambdaParameters, pureModel.getContext()),
                     () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
                     this.planExecutor,
                     executeInput.mapping,
@@ -147,7 +194,7 @@ public class Execute
                     request.getRemoteUser(),
                     format,
                     parameters,
-                    RequestContextHelper.RequestContext(request));
+                    RequestContextHelper.RequestContext(request), executionCacheKey);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
             {
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
@@ -233,10 +280,10 @@ public class Execute
 
     public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
     {
-        return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, null);
+        return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, new RequestContext(), null);
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext)
+    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         /*
             planExecutionAuthorizer is used as a feature flag.
@@ -245,33 +292,31 @@ public class Execute
          */
         if (this.planExecutionAuthorizer == null)
         {
-            return this.execLegacy(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext);
+            return this.execLegacy(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext, planCacheKey);
         }
         else
         {
-            return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext);
+            return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext, planCacheKey);
         }
     }
 
 
-    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameterToValues, RequestContext requestContext)
+    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameterToValues, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         try
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
-            PureModel pureModel = pureModelFunc.value();
-            SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTrace(functionFunc.valueOf(pureModel),
-                    mapping == null ? null : pureModel.getMapping(mapping),
-                    HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
-                    HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext()),
-                    pureModel,
-                    clientVersion,
-                    PlanPlatform.JAVA,
-                    pm,
-                    this.extensions.apply(pureModel),
-                    this.transformers
-            );
+            SingleExecutionPlan plan;
+            if (planCacheKey != null && executionPlanCache != null)
+            {
+                plan = executionPlanCache.getCache().get(planCacheKey, () -> this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm));
+            }
+            else
+            {
+                plan = this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm);
+            }
+
             MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
             buildParameterToConstantResult(plan, parameterToValues, parametersToConstantResult);
             Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm, null, requestContext);
@@ -293,17 +338,26 @@ public class Execute
 
     public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
     {
-        return execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, new RequestContext());
+        return execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, new RequestContext(), null);
     }
 
-    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext)
+    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext, PlanCacheKey planCacheKey)
     {
         try
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
-            SingleExecutionPlan plan = this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm);
-            return this.execImpl(planExecutor, pm, user, format, start, plan, parameters, requestContext);
+            SingleExecutionPlan singleExecutionPlan;
+            if (planCacheKey != null && executionPlanCache != null)
+            {
+                singleExecutionPlan = executionPlanCache.getCache().get(planCacheKey, () -> this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm));
+
+            }
+            else
+            {
+                singleExecutionPlan = this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm);
+            }
+            return this.execImpl(planExecutor, pm, user, format, start, singleExecutionPlan, parameters, requestContext);
         }
         catch (Exception ex)
         {
@@ -344,6 +398,7 @@ public class Execute
 
     private SingleExecutionPlan buildPlan(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
+
         PureModel pureModel = pureModelFunc.value();
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTrace(functionFunc.valueOf(pureModel),
                 mapping == null ? null : pureModel.getMapping(mapping),

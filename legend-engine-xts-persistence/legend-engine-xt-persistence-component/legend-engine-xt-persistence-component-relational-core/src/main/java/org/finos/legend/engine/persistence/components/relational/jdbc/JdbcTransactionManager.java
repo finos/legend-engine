@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -87,7 +88,12 @@ public class JdbcTransactionManager
                     Map<String, Object> row = new HashMap<>();
                     for (int i = 1; i <= columnCount; i++)
                     {
-                        row.put(metaData.getColumnName(i), resultSet.getObject(i));
+                        Object value = resultSet.getObject(i);
+                        if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof byte[])
+                        {
+                            value = new String((byte[]) value, StandardCharsets.UTF_8);
+                        }
+                        row.put(metaData.getColumnName(i), value);
                     }
                     resultList.add(row);
                 }

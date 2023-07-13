@@ -1174,8 +1174,8 @@ public class PureModel implements IPureModel
         }
 
         return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, this.getType(M3Paths.Multiplicity))
-                ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.lowerBound))
-                ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("") : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.getUpperBoundInt()));
+                ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, this.getType(M3Paths.MultiplicityValue))._value((long) multiplicity.lowerBound))
+                ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, this.getType(M3Paths.MultiplicityValue)) : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, this.getType(M3Paths.MultiplicityValue))._value((long) multiplicity.getUpperBoundInt()));
     }
 
     public static GenericType buildFunctionType(MutableList<VariableExpression> parameters, GenericType returnType, Multiplicity returnMultiplicity, PureModel pureModel)

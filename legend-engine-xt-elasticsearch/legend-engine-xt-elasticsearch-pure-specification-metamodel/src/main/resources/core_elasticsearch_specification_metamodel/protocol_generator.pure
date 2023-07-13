@@ -45,7 +45,8 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
                          taxonomies = $taxonomies,
                          visitorByTaxonomy=$visitorByTaxonomy);
 
-  let javaClasses = $pack->map(c|generateElasticsearchSpecificationClasses($c, $config.elementsToBeExcluded, $context));
+  let exclusions = $config.elementsToBeExcluded->concatenate('meta::external::store::elasticsearch::v7::metamodel::specification::LiteralOrExpression');
+  let javaClasses = $pack->map(c|generateElasticsearchSpecificationClasses($c, $exclusions, $context));
 
   newProject()
     ->addClasses($javaClasses)
@@ -201,7 +202,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
   // add a method to pick the 1st non-empty instance
   let lambdaX = j_parameter(javaObject(), 'x');
   let pickFirstNotNullCode = javaStream()
-    ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name)), javaStream(javaObject()))
+    ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name, $f.type)), javaStream(javaObject()))
     ->js_filter(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionUtils')->j_methodReference('nonEmpty', javaFunctionType(javaObject(), javaBoolean())))
     ->js_resolve(javaObject())
     ->j_return();
@@ -446,7 +447,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
       javaClass('org.finos.legend.engine.shared.core.ObjectMapperFactory')
         ->j_invoke('getNewStandardObjectMapper', [], $objectMapperClass)
         ->j_invoke('setSerializationInclusion', j_field(javaClass('com.fasterxml.jackson.annotation.JsonInclude'), 'Include.NON_EMPTY', javaClass('com.fasterxml.jackson.annotation.JsonInclude.Include')), $objectMapperClass)
-  );
+  )->concatenate($mapper->j_invoke('addMixIn', [j_classField(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression')), j_classField(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression__protocolToEsMixIn'))], $objectMapperClass));
 
   let mixInInvocations = $mapperDeclaration
                   ->concatenate($p->allClasses()->filter(cls | $cls.simpleName->endsWith('__protocolToEsMixIn'))

@@ -22,6 +22,7 @@ public class RequestContextHelper
 {
     public static String REFERER = "REFERER"; //spelling is correct
     public static String LEGEND_REQUEST_ID = "x-legend-request-id";
+    public static String LEGEND_USE_PLAN_CACHE = "x-legend-use-plan-cache";
 
     public static RequestContext RequestContext(HttpServletRequest httpRequest)
     {

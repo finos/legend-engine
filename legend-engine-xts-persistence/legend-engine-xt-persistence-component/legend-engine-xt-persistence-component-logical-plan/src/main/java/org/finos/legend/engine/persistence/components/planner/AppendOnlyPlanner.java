@@ -36,6 +36,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -115,7 +116,13 @@ class AppendOnlyPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
     {
-        return LogicalPlan.builder().addOps(Create.of(true, mainDataset())).build();
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, stagingDataset()));
+        }
+        return LogicalPlan.of(operations);
     }
 
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)

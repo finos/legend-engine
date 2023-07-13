@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.e2e;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class BigQueryEndToEndTest
@@ -131,7 +133,8 @@ public class BigQueryEndToEndTest
             .addFields(digest)
             .build();
 
-    protected IngestorResult ingestViaExecutor(IngestMode ingestMode, SchemaDefinition stagingSchema, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
+    protected IngestorResult ingestViaExecutorAndVerifyStagingFilters(IngestMode ingestMode, SchemaDefinition stagingSchema,
+                                                                      DatasetFilter stagingFilter, String path, Clock clock, boolean VerifyStagingFilters) throws IOException, InterruptedException
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -154,7 +157,14 @@ public class BigQueryEndToEndTest
         loadData(path, datasets.stagingDataset(), 1);
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
         IngestorResult ingestorResult = ingestor.ingest(connection, datasets);
+
+        verifyStagingFilters(ingestor, connection, datasets);
         return ingestorResult;
+    }
+
+    protected IngestorResult ingestViaExecutor(IngestMode ingestMode, SchemaDefinition stagingSchema, DatasetFilter stagingFilter, String path, Clock clock) throws IOException, InterruptedException
+    {
+        return ingestViaExecutorAndVerifyStagingFilters(ingestMode, stagingSchema, stagingFilter, path, clock, false);
     }
 
 
@@ -189,6 +199,25 @@ public class BigQueryEndToEndTest
 
         // Perform ingestion
         ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+    }
+
+    void verifyStagingFilters(RelationalIngestor ingestor, RelationalConnection connection, Datasets datasets) throws JsonProcessingException
+    {
+        List<DatasetFilter> filters = ingestor.getLatestStagingFilters(connection, datasets);
+        DerivedDataset derivedDataset = (DerivedDataset) datasets.stagingDataset();
+        List<DatasetFilter> expectedFilters = new ArrayList<>(derivedDataset.datasetFilters());
+        Assertions.assertEquals(filters.size(), expectedFilters.size());
+
+        Comparator comparator = Comparator.comparing(DatasetFilter::fieldName).thenComparing(DatasetFilter::filterType);
+        Collections.sort(filters, comparator);
+        Collections.sort(expectedFilters, comparator);
+
+        for (int i = 0; i < filters.size(); i++)
+        {
+            Assertions.assertEquals(expectedFilters.get(i).fieldName(), filters.get(i).fieldName());
+            Assertions.assertEquals(expectedFilters.get(i).filterType(), filters.get(i).filterType());
+            Assertions.assertEquals(expectedFilters.get(i).value(), filters.get(i).value());
+        }
     }
 
     void delete(String dataset, String name) throws IOException, InterruptedException

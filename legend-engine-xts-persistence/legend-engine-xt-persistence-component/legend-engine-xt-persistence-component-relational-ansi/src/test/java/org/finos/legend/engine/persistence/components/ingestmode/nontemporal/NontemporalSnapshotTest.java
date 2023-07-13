@@ -46,6 +46,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT * FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseStagingTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 

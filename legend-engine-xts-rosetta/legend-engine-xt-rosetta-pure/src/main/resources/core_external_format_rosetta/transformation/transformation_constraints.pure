@@ -52,7 +52,7 @@ function meta::external::format::rosetta::generation::functionDispatch():Map<Str
       pair('extractEnumValue',{ f:FunctionExpression[1], state:State[1]|[$f.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@Enumeration<Any>)->enumName()->cast(@String),
                                                        ' -> ',
                                                         $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@String)
-                                                        ]->joinStrings()}),
+                                                        ]->joinStrings('')}),
       pair( 'isNotEmpty', {f:FunctionExpression[1], state:State[1]| $f.parametersValues->at(0)->asString($state)+ ' exists'}),
       pair( 'map', {f:FunctionExpression[1], state:State[1]|let x = $f.parametersValues->at(0)->asString(^$state(processingMap=true));
                                                             let y = $f.parametersValues->at(1)->asString(^$state(processingMap=true));
@@ -78,7 +78,7 @@ function meta::external::format::rosetta::generation::functionDispatch():Map<Str
                                             $f.parametersValues->at(1)->asString(^$state(processingIf = true)),
                                              '\n      else ',
                                             $f.parametersValues->at(2)->asString(^$state(processingIf = true))
-                                          ]->joinStrings();}),
+                                          ]->joinStrings('');}),
       pair('in', {f:FunctionExpression[1], state:State[1]|
                                                            let func = functionDispatch()->get('equal')->toOne();
                                                             if($f.parametersValues->at(1)->instanceOf(InstanceValue),
@@ -108,14 +108,14 @@ function meta::external::format::rosetta::generation::twoParamFunction(operator:
 {
   { f:FunctionExpression[1], state:State[1]|let leftside = $f.parametersValues->at(0)->asString($state)->removeTrailingArrows($state)->possiblyAddParenthesis();
                                             let rightSide = $f.parametersValues->at(1)->asString($state)->removeTrailingArrows($state)->possiblyAddParenthesis();
-                                            [$leftside]->concatenate(if($rightSide->in(['true', 'false']),|[],|[$operator, $rightSide]))->joinStrings()->removeTrailingArrows($state);}
+                                            [$leftside]->concatenate(if($rightSide->in(['true', 'false']),|[],|[$operator, $rightSide]))->joinStrings('')->removeTrailingArrows($state);}
 }
 
 
 
 function meta::external::format::rosetta::generation::possiblyAddParenthesis(value:String[1] ): String[1]
 {
-   if($value->contains(' and ') || $value->contains(' or ')  ,| ['( ', $value, ' )']->joinStrings(),| $value);
+   if($value->contains(' and ') || $value->contains(' or ')  ,| ['( ', $value, ' )']->joinStrings(''),| $value);
 }
 
 function meta::external::format::rosetta::generation::asString(f:ValueSpecification[1], state:State[1]):String[1]

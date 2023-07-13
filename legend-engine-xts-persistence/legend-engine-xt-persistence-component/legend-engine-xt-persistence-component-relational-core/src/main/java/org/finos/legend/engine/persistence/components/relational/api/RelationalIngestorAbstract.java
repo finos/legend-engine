@@ -14,11 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -31,30 +36,31 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisit
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
-import java.sql.Connection;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -96,6 +102,18 @@ public abstract class RelationalIngestorAbstract
     public boolean cleanupStagingData()
     {
         return true;
+    }
+
+    @Default
+    public boolean createDatasets()
+    {
+        return true;
+    }
+
+    @Default
+    public boolean createStagingDataset()
+    {
+        return false;
     }
 
     @Default
@@ -141,6 +159,7 @@ public abstract class RelationalIngestorAbstract
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
+            .createStagingDataset(createStagingDataset())
             .build();
     }
 
@@ -171,6 +190,22 @@ public abstract class RelationalIngestorAbstract
             dataSplitRanges = Arrays.asList(DataSplitRange.of(1,1));
         }
         return ingest(connection, datasets, dataSplitRanges);
+    }
+
+    public List<DatasetFilter> getLatestStagingFilters(RelationalConnection connection, Datasets datasets) throws JsonProcessingException
+    {
+        MetadataDataset metadataDataset = datasets.metadataDataset().isPresent()
+                ? datasets.metadataDataset().get()
+                : MetadataDataset.builder().build();
+        MetadataUtils store = new MetadataUtils(metadataDataset);
+        String tableName = datasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
+        Selection selection = store.getLatestStagingFilters(StringValue.of(tableName));
+
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
+        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
+        Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        return extractDatasetFilters(metadataDataset, executor, physicalPlan);
     }
 
     // ---------- UTILITY METHODS ----------
@@ -219,6 +254,7 @@ public abstract class RelationalIngestorAbstract
             .relationalSink(relationalSink())
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
+            .createStagingDataset(createStagingDataset())
             .enableSchemaEvolution(enableSchemaEvolution())
             .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
             .caseConversion(caseConversion())
@@ -230,8 +266,12 @@ public abstract class RelationalIngestorAbstract
         Planner planner = Planners.get(updatedDatasets, enrichedIngestMode, plannerOptions());
         GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
 
-        // Create tables
-        executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+        // Create Datasets
+        if (createDatasets())
+        {
+            executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+        }
+
         // The below boolean is created before the execution of pre-actions, hence it represents whether the main table has already existed before that
         if (mainDatasetExists)
         {
@@ -491,4 +531,31 @@ public abstract class RelationalIngestorAbstract
         }
         return Optional.empty();
     }
+
+    private List<DatasetFilter> extractDatasetFilters(MetadataDataset metadataDataset, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan physicalPlan) throws JsonProcessingException
+    {
+        List<DatasetFilter> datasetFilters = new ArrayList<>();
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlan);
+        Optional<String> stagingFilters = results.stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.stagingFiltersField()));
+
+        // Convert map of Filters to List of Filters
+        if (stagingFilters.isPresent())
+        {
+            Map<String, Map<String, Object>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Object>>>() {});
+            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.entrySet())
+            {
+                for (Map.Entry<String, Object> filterEntry : filtersMapEntry.getValue().entrySet())
+                {
+                    DatasetFilter datasetFilter = DatasetFilter.of(filtersMapEntry.getKey(), FilterType.fromName(filterEntry.getKey()), filterEntry.getValue());
+                    datasetFilters.add(datasetFilter);
+                }
+            }
+        }
+        return datasetFilters;
+    }
+
 }

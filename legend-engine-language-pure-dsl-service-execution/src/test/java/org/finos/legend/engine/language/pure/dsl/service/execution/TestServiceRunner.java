@@ -407,6 +407,7 @@ public class TestServiceRunner
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTime__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231+0000\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeTimeZone__String_1_", "{\"birthDate\":\"2014-12-27 18:01:35.231+03\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeStrictDatePattern__String_1_", "{\"birthDate\":\"2014-12-27\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeMilliseconds__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.000000Z\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"12/27/2014 at 03:01PM GMT\"}");
 
         RuntimeException e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_"));
@@ -598,7 +599,7 @@ public class TestServiceRunner
     {
         XStoreServiceRunnerWithSingleCrossPropertyAccess xStoreServiceRunner = new XStoreServiceRunnerWithSingleCrossPropertyAccess();
         Assert.assertEquals(1, xStoreServiceRunner.getGraphFetchCrossAssociationKeys().size());
-        Assert.assertEquals("<default, root.firm>", xStoreServiceRunner.getGraphFetchCrossAssociationKeys().get(0).getName());
+        Assert.assertEquals("<default, root.firm@test_Firm>", xStoreServiceRunner.getGraphFetchCrossAssociationKeys().get(0).getName());
 
         ExecutionCache<GraphFetchCacheKey, List<Object>> firmCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         OperationalContext operationalContext = OperationalContext
@@ -624,7 +625,7 @@ public class TestServiceRunner
     {
         XStoreServiceRunnerWithToManyCrossPropertyAccess xStoreServiceRunner = new XStoreServiceRunnerWithToManyCrossPropertyAccess();
         Assert.assertEquals(1, xStoreServiceRunner.getGraphFetchCrossAssociationKeys().size());
-        Assert.assertEquals("<default, root.persons>", xStoreServiceRunner.getGraphFetchCrossAssociationKeys().get(0).getName());
+        Assert.assertEquals("<default, root.persons@test_Person>", xStoreServiceRunner.getGraphFetchCrossAssociationKeys().get(0).getName());
 
         ExecutionCache<GraphFetchCacheKey, List<Object>> personCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         OperationalContext operationalContext = OperationalContext
@@ -650,15 +651,15 @@ public class TestServiceRunner
     {
         XStoreServiceRunnerWithMultiCrossPropertyAccess xStoreServiceRunner = new XStoreServiceRunnerWithMultiCrossPropertyAccess();
         Assert.assertEquals(2, xStoreServiceRunner.getGraphFetchCrossAssociationKeys().size());
-        Assert.assertEquals(Sets.mutable.of("<default, root.firm>", "<default, root.address>"), xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().map(GraphFetchCrossAssociationKeys::getName).collect(Collectors.toSet()));
+        Assert.assertEquals(Sets.mutable.of("<default, root.firm@test_Firm>", "<default, root.address@test_Address>"), xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().map(GraphFetchCrossAssociationKeys::getName).collect(Collectors.toSet()));
 
         ExecutionCache<GraphFetchCacheKey, List<Object>> firmCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         ExecutionCache<GraphFetchCacheKey, List<Object>> addressCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         OperationalContext operationalContext = OperationalContext
                 .newInstance()
                 .withGraphFetchCrossAssociationKeysCacheConfig(Maps.mutable.of(
-                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm>".equals(x.getName())).findFirst().orElse(null), firmCache,
-                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.address>".equals(x.getName())).findFirst().orElse(null), addressCache
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm@test_Firm>".equals(x.getName())).findFirst().orElse(null), firmCache,
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.address@test_Address>".equals(x.getName())).findFirst().orElse(null), addressCache
                 ));
 
         String expectedRes = "[" +
@@ -682,16 +683,16 @@ public class TestServiceRunner
     {
         XStoreServiceRunnerWithDeepCrossPropertyAccess xStoreServiceRunner = new XStoreServiceRunnerWithDeepCrossPropertyAccess();
         Assert.assertEquals(3, xStoreServiceRunner.getGraphFetchCrossAssociationKeys().size());
-        Assert.assertEquals(Sets.mutable.of("<default, root.firm>", "<default, root.address>", "<default, root.firm.address>"), xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().map(GraphFetchCrossAssociationKeys::getName).collect(Collectors.toSet()));
+        Assert.assertEquals(Sets.mutable.of("<default, root.firm@test_Firm>", "<default, root.address@test_Address>", "<default, root.firm@test_Firm.address@test_Address>"), xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().map(GraphFetchCrossAssociationKeys::getName).collect(Collectors.toSet()));
 
         ExecutionCache<GraphFetchCacheKey, List<Object>> firmCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         ExecutionCache<GraphFetchCacheKey, List<Object>> addressCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
         OperationalContext operationalContext = OperationalContext
                 .newInstance()
                 .withGraphFetchCrossAssociationKeysCacheConfig(Maps.mutable.of(
-                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm>".equals(x.getName())).findFirst().orElse(null), firmCache,
-                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.address>".equals(x.getName())).findFirst().orElse(null), addressCache,
-                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm.address>".equals(x.getName())).findFirst().orElse(null), addressCache
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm@test_Firm>".equals(x.getName())).findFirst().orElse(null), firmCache,
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.address@test_Address>".equals(x.getName())).findFirst().orElse(null), addressCache,
+                        xStoreServiceRunner.getGraphFetchCrossAssociationKeys().stream().filter(x -> "<default, root.firm@test_Firm.address@test_Address>".equals(x.getName())).findFirst().orElse(null), addressCache
                 ));
 
         String expectedRes = "[" +

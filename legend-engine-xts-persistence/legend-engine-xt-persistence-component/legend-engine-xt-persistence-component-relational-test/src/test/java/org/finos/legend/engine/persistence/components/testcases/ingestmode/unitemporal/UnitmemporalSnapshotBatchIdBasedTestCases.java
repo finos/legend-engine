@@ -44,6 +44,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .createStagingDataset(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(operations);

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::elasticsearch::v7::specification::utils::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::*;
 import meta::external::store::elasticsearch::v7::metamodel::specification::global::search::*;
 import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
@@ -28,15 +29,20 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
 
   let processOutput = meta::external::store::elasticsearch::v7::pureToEs::process($sq, $ext, $m, $runtime, $esCtx, $extensions, $debug);
 
-  let request = ^SearchRequest(body = $processOutput.search, index = $processOutput.index().indexName);
+  let request = ^SearchRequest(body = $processOutput.search, index = $processOutput.index().indexName->literal());
 
   let tdsDetailsIndexed = $processOutput.tdsESDetails->toIndexed()->toOneMany('TDS operations should have at least one output column');
 
-  ^Elasticsearch7RequestExecutionNode(    
+  let esNode = ^Elasticsearch7RequestExecutionNode(    
     resultSizeRange = ZeroMany,
     request = $request,
     connection = $runtime->toOne('missing required runtime for ES plan execution').connectionByElement($sq.store)->cast(@Elasticsearch7StoreConnection),
     resultType = ^meta::pure::executionPlan::TDSResultType(type = TabularDataSet, tdsColumns = $tdsDetailsIndexed->map(p | ^TDSColumn(name = $p.second.name, offset = $p.first, type = $p.second.type))),
     metadata = ^TDSMetadata(columnResultPaths = $tdsDetailsIndexed->map(ci | ^TDSColumnResultPath(index = $ci.first, resultPath = $ci.second.resultPath)))
+  );
+
+  if ($processOutput.extraNodes->isEmpty(),
+    |$esNode, 
+    |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicates({x, y | $x.varName == $y.varName})->concatenate($esNode))
   );
 }

@@ -501,7 +501,8 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
@@ -515,7 +516,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass3.csv";
@@ -524,7 +525,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test
@@ -564,7 +565,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
@@ -578,7 +579,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass3.csv";
@@ -587,7 +588,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test
@@ -627,7 +628,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
@@ -641,7 +642,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(4, 0, 1, 2, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass3.csv";
@@ -650,7 +651,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test
@@ -690,7 +691,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
@@ -704,7 +705,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass3.csv";
@@ -713,7 +714,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test
@@ -753,7 +754,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
@@ -767,7 +768,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(9, 0, 1, 3, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass3.csv";
@@ -776,7 +777,7 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test

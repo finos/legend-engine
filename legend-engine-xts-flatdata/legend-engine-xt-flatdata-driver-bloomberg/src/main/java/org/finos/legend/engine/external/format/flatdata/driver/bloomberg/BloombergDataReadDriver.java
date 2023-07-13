@@ -28,6 +28,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +68,7 @@ public class BloombergDataReadDriver<T> extends AbstractBloombergReadDriver<T>
 
         parseMetadataUntil(START_OF_DATA);
         setupParsing();
-        dataFactory = new HeadedFlatDataFactory<>(heads, helper.context.getDefiningPath(), Collections.singletonList(NULL_STRING));
+        dataFactory = new HeadedFlatDataFactory<>(heads, helper.context.getDefiningPath(), Arrays.asList(NULL_STRING, " "));
         this.fieldHandlers = this.commonDataHandler.computeFieldHandlers(dataFactory::getRawDataAccessor);
         this.objectFactory = context.createToObjectFactory(new FieldHandlerRecordType(section.recordType, fieldHandlers));
     }

@@ -29,7 +29,7 @@ function meta::external::format::rosetta::generation::processEnumValues(values: 
 
 function meta::external::format::rosetta::generation::classToRosettaString(class: Class<Any>[1]):String[1]
 {   
-    if($class->isAbstract(),| 'abstract ',|'') 
+    if($class->meta::external::format::rosetta::generation::isAbstract(),| 'abstract ',|'')
    +'type '+ $class.name->toOne() 
    + $class.generalizations->processGeneralizations() 
    + $class.taggedValues->processTaggedValues() 
@@ -39,7 +39,7 @@ function meta::external::format::rosetta::generation::classToRosettaString(class
 
 function meta::external::format::rosetta::generation::processStereotypes(stereotypes: Stereotype[*]):String[1]
 {
-   $stereotypes->map (s | '   [' +$s.profile.name->toOne() + ' '  + $s.value->toOne() + ']\n')->joinStrings();
+   $stereotypes->map (s | '   [' +$s.profile.name->toOne() + ' '  + $s.value->toOne() + ']\n')->joinStrings('');
 
 }
 
@@ -51,7 +51,7 @@ function meta::external::format::rosetta::generation::processProperties(properti
                     + processMultiplicity($p.multiplicity)+
                     + processTaggedValues($p.taggedValues)+ ''
                     + $p.stereotypes->processStereotypes()
-                )->joinStrings()
+                )->joinStrings('')
 }
 
 function meta::external::format::rosetta::generation::processMultiplicity(m:Multiplicity[1]): String[1]

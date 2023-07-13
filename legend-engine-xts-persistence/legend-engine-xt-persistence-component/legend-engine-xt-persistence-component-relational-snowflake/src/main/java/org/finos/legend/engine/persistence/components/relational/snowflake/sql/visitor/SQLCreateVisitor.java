@@ -18,7 +18,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfNotExistsTableModifier;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.CreateTable;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.CreateTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -37,6 +37,7 @@ public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.dataset().datasetReference());
         logicalPlanNodes.add(current.dataset().schema());
+        current.dataset().datasetAdditionalProperties().ifPresent(logicalPlanNodes::add);
 
         if (current.ifNotExists())
         {

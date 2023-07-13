@@ -16,8 +16,15 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 
+import java.util.Optional;
+
 public interface Dataset extends LogicalPlanNode
 {
+    default Optional<DatasetAdditionalProperties> datasetAdditionalProperties()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     default SchemaDefinition schema()
     {
         throw new UnsupportedOperationException();

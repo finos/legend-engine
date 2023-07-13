@@ -56,7 +56,7 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
 
-            specifics.setMaximumSchemaObjectSize(executionState.getGraphFetchBatchMemoryLimit());
+            specifics.setMaximumSchemaObjectSize(executionState.getGraphFetchExecutionConfiguration().getGraphFetchBatchMemorySoftLimit());
 
             FlatDataContext<?> context = specifics.createContext();
             FlatDataReader<?> deserializer = new FlatDataReader<>(context, inputStream);
