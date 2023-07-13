@@ -38,13 +38,13 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testSelectStarFromNoParammyTableFunc()
+    public void testSelectStarFromNoParamTableFunc()
     {
         check("SELECT * FROM myTable()");
     }
 
     @Test
-    public void testSelectStarFrommyTableFuncWithParams()
+    public void testSelectStarFromTableFuncWithParams()
     {
         check("SELECT * FROM myTable(1, a => 1, b => [1, 2, 3])");
     }
@@ -149,7 +149,9 @@ public class TestSQLRoundTrip
     public void testCompositeWhereOperators()
     {
         check("SELECT * FROM myTable WHERE col = 1 AND col > 1 AND col < 1 " +
-                "AND col >= 1 AND col <= 1 AND col IN (1, 2, 3) AND col IS NULL AND col IS NOT NULL");
+                "AND col >= 1 AND col <= 1 AND col IN (1, 2, 3) AND col IS NULL AND " +
+                "col IS NOT NULL AND col IS DISTINCT FROM 1 AND col IS NOT DISTINCT FROM 1 AND " +
+                "col BETWEEN 0 AND 1");
     }
 
     @Test

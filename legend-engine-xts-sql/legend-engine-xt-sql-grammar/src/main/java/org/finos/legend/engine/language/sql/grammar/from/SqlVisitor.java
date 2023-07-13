@@ -1072,13 +1072,26 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitDistinctFrom(SqlBaseParser.DistinctFromContext context)
     {
-        return unsupported();
+        ComparisonOperator operator = context.NOT() != null ? ComparisonOperator.IS_NOT_DISTINCT_FROM : ComparisonOperator.IS_DISTINCT_FROM;
+
+        ComparisonExpression expression = new ComparisonExpression();
+        expression.operator = operator;
+        expression.left = (Expression) visit(context.value);
+        expression.right = (Expression) visit(context.right);
+
+        return expression;
     }
 
     @Override
     public Node visitBetween(SqlBaseParser.BetweenContext context)
     {
-        return unsupported();
+        BetweenPredicate predicate = new BetweenPredicate();
+
+        predicate.min = (Expression) visit(context.lower);
+        predicate.max = (Expression) visit(context.upper);
+        predicate.value = (Expression) visit(context.value);
+
+        return predicate;
     }
 
     @Override
