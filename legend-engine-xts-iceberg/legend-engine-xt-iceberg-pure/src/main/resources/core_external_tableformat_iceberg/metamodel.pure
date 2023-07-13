@@ -4,6 +4,8 @@ Class meta::external::tableformat::iceberg::metamodel::Type
 {
 }
 
+// nested types
+
 Class meta::external::tableformat::iceberg::metamodel::NestedType extends meta::external::tableformat::iceberg::metamodel::Type
 {
 }
@@ -33,7 +35,60 @@ Class meta::external::tableformat::iceberg::metamodel::NestedField
   doc: String[1];
 }
 
+// primitive types
+
 Class meta::external::tableformat::iceberg::metamodel::PrimitiveType extends meta::external::tableformat::iceberg::metamodel::Type
 {
 }
 
+Class meta::external::tableformat::iceberg::metamodel::BooleanType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::IntegerType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::LongType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::FloatType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::DoubleType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::DecimalType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+  scale: Integer[1];
+  precision: Integer[1];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::DateType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::TimeType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::TimestampType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+  adjustToUtc: Boolean[1];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::StringType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::FixedType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+  length: Integer[1];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::BinaryType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
