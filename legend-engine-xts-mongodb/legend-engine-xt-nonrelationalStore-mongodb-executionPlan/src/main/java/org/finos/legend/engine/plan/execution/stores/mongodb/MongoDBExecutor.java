@@ -55,7 +55,7 @@ public class MongoDBExecutor
             catch (Exception e)
             {
                 throw new EngineException(
-                        String.format("Failed to execute query : %s, database: %s", dbCommand.toString(), dbConnection.dataSourceSpecification.databaseName),
+                        String.format("Failed to execute query : %s, database: %s", dbCommand, dbConnection.dataSourceSpecification.databaseName),
                         e,
                         ExceptionCategory.SERVER_EXECUTION_ERROR);
             }
@@ -63,7 +63,7 @@ public class MongoDBExecutor
         catch (Exception e)
         {
             throw new EngineException(
-                    String.format("Failed to execute query : %s, database: %s", dbCommand.toString(), dbConnection.dataSourceSpecification.databaseName),
+                    String.format("Failed to execute query : %s, database: %s", dbCommand, dbConnection.dataSourceSpecification.databaseName),
                     e,
                     ExceptionCategory.SERVER_EXECUTION_ERROR);
         }
@@ -74,5 +74,4 @@ public class MongoDBExecutor
         MongoDBStoreConnectionProvider connectionProvider = new MongoDBStoreConnectionProvider(this.credentialProviderProvider);
         return connectionProvider;
     }
-
 }
