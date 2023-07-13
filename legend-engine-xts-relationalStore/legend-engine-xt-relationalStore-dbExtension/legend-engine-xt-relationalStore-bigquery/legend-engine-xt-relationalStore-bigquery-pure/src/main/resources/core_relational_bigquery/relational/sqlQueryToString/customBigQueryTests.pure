@@ -152,7 +152,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDateOnQueryVa
    let result = meta::pure::executionPlan::executionPlan(
     date:StrictDate[1]|Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $date),
     meta::relational::tests::simpleRelationalMapping, 
-     ^Runtime(connections = ^DatabaseConnection(type=DatabaseType.BigQuery, element = Any)),
+     ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = Any,connection=^DatabaseConnection(type=DatabaseType.BigQuery))),
      meta::relational::extension::relationalExtensions());
    let expected = 
       'Sequence\n'+
@@ -180,7 +180,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDateTimeOnQue
    let result = meta::pure::executionPlan::executionPlan(
     dateTime:DateTime[1]|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDate('settlementDateTime') < $dateTime),
     meta::relational::tests::simpleRelationalMapping, 
-     ^Runtime(connections = ^DatabaseConnection(type=DatabaseType.BigQuery, element = Any)),
+     ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = Any,connection=^DatabaseConnection(type=DatabaseType.BigQuery))),
      meta::relational::extension::relationalExtensions());
    let expected = 
       'Sequence\n'+

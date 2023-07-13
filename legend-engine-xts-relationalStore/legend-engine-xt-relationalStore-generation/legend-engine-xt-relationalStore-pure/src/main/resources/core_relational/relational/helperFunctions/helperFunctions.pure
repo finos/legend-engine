@@ -60,7 +60,7 @@ function meta::relational::runtime::extractDBs(m:meta::pure::mapping::Mapping[*]
    let dbFromMappings = $allMappings->map(m| let db = $m->extractDBs();
                                             print(if($db->size() > 1, |'WARNING: The system found multiple databases in the mapping "'+$m->elementToPath()+'": '+$db.name->joinStrings(','), |''));
                                             $db;);
-   let dbFromRuntime = $r.connections.element->filter(c | $c->instanceOf(Database))->cast(@Database);
+   let dbFromRuntime = $r.connectionElementAssociations.element->filter(c | $c->instanceOf(Database))->cast(@Database);
 
    $dbFromMappings->concatenate($dbFromRuntime)->removeDuplicates();
 }

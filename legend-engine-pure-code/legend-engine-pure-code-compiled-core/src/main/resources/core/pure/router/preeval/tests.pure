@@ -1514,7 +1514,7 @@ function <<access.private>> meta::pure::router::preeval::tests::myFunc2():String
 function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]
 {
   // Need element as string to allow roundtrip to pass. When using ^ModelStore(), preeval evaluates it to a instance, however expected as it as a new function
-  ^Runtime(connections=^meta::pure::mapping::modelToModel::ModelConnection(element = 'DummyStore', instances=newMap(pair($sourceClass, list($inputs)))));
+  ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element = 'DummyStore', connection=^meta::pure::mapping::modelToModel::ModelConnection(instances=newMap(pair($sourceClass, list($inputs))))));
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]

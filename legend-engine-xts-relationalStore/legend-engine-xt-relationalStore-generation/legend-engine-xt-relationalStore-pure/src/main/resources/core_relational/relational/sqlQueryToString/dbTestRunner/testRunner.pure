@@ -43,10 +43,10 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
   if($testConfig.connection->isEmpty(),
     |   true ,                                                     // test Connection not available ,do nothing further,
     |     let conn1= $testConfig.connection->toOne();
-          let conn = ^$conn1(element= ^Database(name='dummyDB'));                      // overwite given connection db 
+          let connEl = ^ConnectionElementAssociation(element= ^Database(name='dummyDB'),connection=$conn1);                      // overwite given connection db 
           
           let expectedResultTypes = $expectedResult->map(e|$e->inferRelationalType())->toOneMany();
-          let plan = wrapSQLStringInExecutionPlan($sqlString, $expectedResultTypes, $testConfig.dbType,$conn, $inputs);
+          let plan = wrapSQLStringInExecutionPlan($sqlString, $expectedResultTypes, $testConfig.dbType,$connEl, $inputs);
           
           let res = executePlan($plan,relationalExtensions());
 
@@ -116,7 +116,7 @@ function meta::relational::dbTestRunner::timestampEqualityComparatorGenerator(to
   }
 }
 
-function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:String[1], resultTypes:meta::relational::metamodel::datatype::DataType[1..*], dbType:DatabaseType[1], connection:DatabaseConnection[1], inputs:Pair<VarPlaceHolder, Any>[*]):ExecutionPlan[1]
+function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:String[1], resultTypes:meta::relational::metamodel::datatype::DataType[1..*], dbType:DatabaseType[1], connEl:ConnectionElementAssociation[1], inputs:Pair<VarPlaceHolder, Any>[*]):ExecutionPlan[1]
 {
   let allocationNodes = $inputs->map(v | ^AllocationExecutionNode
                                              (
@@ -129,7 +129,7 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
                                                                  )
                                              ));
 
-  let runtime = ^Runtime(connections=$connection);
+  let runtime = ^Runtime(connectionElementAssociations=$connEl);
   
   let resultType = ^DataTypeResultType(type= $resultTypes->at(0)->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType());
 
@@ -141,7 +141,7 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
                            executionNodes=^SQLExecutionNode(
                                 sqlComment= '-- "executionTraceID" : "${execID}"',
                                 sqlQuery=$sqlString ,
-                                connection=$connection , 
+                                connection=$connEl, 
                                 resultType=$resultType,
                                 resultColumns=$resultColumns));
  

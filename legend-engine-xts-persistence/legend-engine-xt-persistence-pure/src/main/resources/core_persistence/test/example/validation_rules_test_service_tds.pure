@@ -46,7 +46,9 @@ function meta::pure::persistence::test::example::RelationalRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = meta::pure::persistence::test::example::RelationalMapping,
-    connections = meta::pure::persistence::test::example::RelationalConnection()
+    connectionElementAssociations = ^ConnectionElementAssociation(
+     element = meta::pure::persistence::test::example::RelationalDatabase,
+     connection=meta::pure::persistence::test::example::RelationalConnection())
   );
 }
 

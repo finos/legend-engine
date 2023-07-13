@@ -25,14 +25,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->filter(f|$f.addresses->exists(a|$a.street == 'MyStreet')),
             primitiveModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_Person_Address , list([
                                                                                                                         ^_Person_Address (name='ok', street='MyStreet')
                                                                                                                     ])
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    assertSameElements(['ok'], $res.values->at(0).lastName);

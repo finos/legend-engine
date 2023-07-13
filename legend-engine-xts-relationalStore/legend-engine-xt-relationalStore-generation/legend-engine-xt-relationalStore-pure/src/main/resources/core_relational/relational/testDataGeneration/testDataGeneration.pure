@@ -184,7 +184,7 @@ function meta::relational::testDataGeneration::generateTestData(func:FunctionDef
 {
    let newVars = $func->generateParametersNameValuePair($parameters);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newVars, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnection = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
+   let dbConnection = $runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
    let generationResult = meta::relational::testDataGeneration::generateTestDataStartingFromRoot($relationTree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $config, $extensions);
@@ -784,8 +784,8 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationWithParameterValuePairs(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], temporalMilestoningDates: TemporalMilestoningDates[0..1], parameterNameValuePairs: Pair<String, List<Any>>[*], extensions:Extension[*]):ExecutionPlan[1]
 {
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $parameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnection = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->toOne();
-   let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnection)->cast(@DatabaseConnection);
+   let dbConnection = $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(DatabaseConnection))->toOne();
+   let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnection)->toOne()->cast(@DatabaseConnection);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
@@ -851,9 +851,11 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                       | ^$rootSelect_PreMilestoning(filteringOperation = $rootSelect_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                                    );
 
-                  let runtime = ^Runtime(connections=$dbConnection);
+                  // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
 
-                  let postProcessResult = postProcessSQLQuery($rootSelect, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+                  let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+
+                  let postProcessResult = postProcessSQLQuery($rootSelect, $element, [], [], $runtime, $exeCtx, $extensions);
 
 
                   let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
@@ -866,7 +868,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                        columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                                        type = RelationData
                                     );
-                  let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
+                  let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection)->toOne(), '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
 
                   let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
                   let finalNode = if($nodes->size() > 1,
@@ -940,8 +942,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                               | ^$childSQL_PreMilestoning(filteringOperation = $childSQL_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                            );
 
-            let runtime = ^Runtime(connections=$dbConnection);
-            let postProcessResult = postProcessSQLQuery($childSQL, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+            // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
+            let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+            let postProcessResult = postProcessSQLQuery($childSQL, $element, [], [], $runtime, $exeCtx, $extensions);
 
             let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
             let resultType = ^RelationResultType
@@ -953,7 +956,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                  columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                                  type = RelationData
                               );
-            let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
+            let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection)->toOne(), '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
 
             let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
             let finalNode = if($nodes->size() > 1,
@@ -1061,8 +1064,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                    | ^$rootSelect_PreMilestoning(filteringOperation = $rootSelect_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                                 );
 
-               let runtime = ^Runtime(connections=$dbConnection);
-               let postProcessResult = postProcessSQLQuery($rootSelect, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+              //  let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
+              let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+               let postProcessResult = postProcessSQLQuery($rootSelect, $element, [], [], $runtime, $exeCtx, $extensions);
 
                let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
                
@@ -1075,7 +1079,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                     columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
                                     type = RelationData
                                  );
-               let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
+               let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection)->toOne(), '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
 
                let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
                let finalNode = if($nodes->size() > 1,
@@ -1128,8 +1132,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
             toRow = $viewQueryReprocessed.toRow
          );
 
-         let runtime = ^Runtime(connections=$dbConnection);
-         let postProcessResult = postProcessSQLQuery($viewRelationDataQuery, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+        //  let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
+        let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+         let postProcessResult = postProcessSQLQuery($viewRelationDataQuery, $element, [], [], $runtime, $exeCtx, $extensions);
 
          let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
          let resultType = ^RelationResultType
@@ -1141,7 +1146,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                               columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
                               type = RelationData
                            );
-         let sqlExecutionNode = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions)->cast(@SQLExecutionNode);
+         let sqlExecutionNode = generateSQLExecutionNode($relationDataQuery, $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection)->toOne(), '', $extensions)->cast(@SQLExecutionNode);
          let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = ^$sqlExecutionNode(resultColumns = $relationDataQuery->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->cast(@Alias).name, dataType = $c->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())), a:Any[1] | []])), resultType = $resultType, resultSizeRange = ZeroMany);
 
          let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
@@ -1185,8 +1190,9 @@ function <<access.protected>> meta::relational::testDataGeneration::executionPla
                           | ^$childSQL_PreMilestoning(filteringOperation = $childSQL_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                        );
          
-        let runtime = ^Runtime(connections=$dbConnection);
-        let postProcessResult = postProcessSQLQuery($childSQL, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+        // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
+        let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+        let postProcessResult = postProcessSQLQuery($childSQL, $element, [], [], $runtime, $exeCtx, $extensions);
 
         let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
         let resultType = ^RelationResultType
@@ -1198,7 +1204,7 @@ function <<access.protected>> meta::relational::testDataGeneration::executionPla
                              columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType(^TranslationContext(dbType=$dbConnection.type))->toOne())),
                              type = RelationData
                           );
-        let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
+        let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection)->toOne(), '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
         let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
         let finalNode = if($nodes->size() > 1,
                            | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessResult.templateFunctions),

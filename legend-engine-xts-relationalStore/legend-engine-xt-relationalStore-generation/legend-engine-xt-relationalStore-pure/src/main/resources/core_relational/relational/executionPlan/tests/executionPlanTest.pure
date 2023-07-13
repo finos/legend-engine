@@ -57,7 +57,7 @@ function meta::pure::executionPlan::tests::templateFunctionsList():String[*]
 
 function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParameter(dbType:DatabaseType[1], expectedPlan:String[1]):Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=$dbType)), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element = relationalDB, connection=^DatabaseConnection(type=$dbType))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    assertEquals($expectedPlan, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
@@ -65,7 +65,7 @@ function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParame
 
 function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParameterWithGreaterThanLessThan(func:FunctionDefinition<Any>[1], dbType:DatabaseType[1], expectedPlan:String[1]):Boolean[1]
 {
-   let generatedPlan = executionPlan($func, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=$dbType)), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan($func, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(connection=^DatabaseConnection(type=$dbType), element = relationalDB)), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    assertEquals($expectedPlan, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
@@ -151,7 +151,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]      
 {
-   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
    let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Time,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[optionalID:String[0..1],optionalActive:Boolean[0..1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Time,Integer,INT,"")]resultColumns=[("Time",INT)]sql=select"root".timeas"Time"frominteractionTableas"root"where((${optionalVarPlaceHolderOperationSelector(optionalID![],\'"root".ID=${varPlaceHolderToString(optionalID![]"\\\'""\\\'"{"\\\'":"\\\'\\\'"}"null")}\',\'"root".IDisnull\')})and(${optionalVarPlaceHolderOperationSelector(optionalActive![],\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'end=${varPlaceHolderToString(optionalActive![]"\\\'""\\\'"{}"null")}\',\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'endisnull\')}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
    assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
@@ -396,7 +396,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithNoTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -423,7 +423,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2, timeZone='US/Arizona'))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -557,7 +557,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParametersDateTimeWithNoTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -584,7 +584,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParameterDateTimeWithTimeZone():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2, timeZone='US/Arizona'))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -1013,8 +1013,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 
 function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone(timeZone:String[0..1]):Pair<ExecutionPlan, String>[1]
 {
-    let connectionWithTimeZone = ^TestDatabaseConnection(element = db, type=DatabaseType.H2, timeZone=$timeZone);
-    let runtime = ^Runtime(connections = $connectionWithTimeZone);
+    let connectionWithTimeZone = ^TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
+    let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = db, connection=$connectionWithTimeZone));
     let q = {dt:DateTime[1]|Order.all()->filter(o|$o.settlementDateTime == $dt)};
     let plan = executionPlan($q, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
     pair($plan, $plan->planToString(meta::relational::extension::relationalExtensions())->replace('\n',' '));
@@ -1022,8 +1022,8 @@ function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDa
 
 function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(dt:DateTime[1], timeZone:String[0..1]):Pair<ExecutionPlan, String>[1]
 {
-    let connectionEST = ^TestDatabaseConnection(element = db, type=DatabaseType.H2, timeZone=$timeZone);
-    let runtime = ^Runtime(connections = $connectionEST);
+    let connectionEST = ^TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
+    let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = db, connection=$connectionEST));
     let q = {|Order.all()->filter(o|$o.settlementDateTime == $dt)};
     let plan = executionPlan($q, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
     pair($plan, $plan->planToString(meta::relational::extension::relationalExtensions())->replace('\n',' '));
@@ -1577,9 +1577,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
 
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulationLegacy():Boolean[1]
 {
-   let runtime = ^Runtime(
-      connections = ^TestDatabaseConnection(type = DatabaseType.H2, element = meta::relational::tests::db, testDataSetupCsv = '')
-   );
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = meta::relational::tests::db, connection=^TestDatabaseConnection(type = DatabaseType.H2, testDataSetupCsv = '')));
+
    let result = executionPlan({|Person.all()->project(c | $c.firstName, 'firstName')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
    let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@TestDatabaseConnection);
@@ -1590,12 +1589,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulation():Boolean[1]
 {
    let runtime = ^Runtime(
-      connections = ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+    connectionElementAssociations= ^ConnectionElementAssociation(
+      element = meta::relational::tests::db,
+      connection=^meta::pure::alloy::connections::RelationalDatabaseConnection(
          type = DatabaseType.H2,
-         element = meta::relational::tests::db,
          datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
          authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
-      ));
+      )));
 
    let result = executionPlan({|Person.all()->project(c | $c.firstName, 'firstName')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
@@ -1685,13 +1685,19 @@ function meta::pure::executionPlan::tests::twoDBRunTimeSybaseIQ():meta::pure::ru
 {
    ^meta::pure::runtime::Runtime
    (
-      connections = [^TestDatabaseConnection(
-                        element = dbInc,
+      connectionElementAssociations = [
+        ^ConnectionElementAssociation(
+          element= dbInc,
+          connection=^TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
-                    ),^TestDatabaseConnection(
-                        element = database2,
+                        )
+        ),
+        ^ConnectionElementAssociation(
+          element = database2,
+          connection=^TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
-                    )]
+                    ))
+        ]
    );
 }
 
@@ -1969,8 +1975,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimp
    let res = executionPlan(
                   |meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalName'])->olapGroupBy(['legalName'],'legalName'->func(x|$x->count()),'Firm Instance Count'),
                   meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation,
-                  ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
-                                                                                                   mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
+                  ^Runtime(connectionElementAssociations= [
+                    ^ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=
+                    ^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping)),
                      getConnection()]), meta::relational::extension::relationalExtensions());
 
    let expected =
@@ -1989,11 +1996,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionDeep
    let res = executionPlan(
                   |meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->project([p|$p.firstName, p|$p.lastName], ['firstName','lastName']),
                      meta::pure::mapping::modelToModel::test::simple::simpleModelMappingO,
-                     ^Runtime(connections = [
-                        ^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
-                                                                                 mappings = [meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
+                     ^Runtime(connectionElementAssociations= [
+                    ^ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=
+                    ^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = [meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
                                                                                              meta::pure::mapping::modelToModel::test::shared::relationalMapping]
-                                                                                  ),
+                                                                                  )),
                         getConnection()]
                         )
             , meta::relational::extension::relationalExtensions());
@@ -2014,8 +2021,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionJoin
    let res = executionPlan(
                   |meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName', 'lastName']),
                   meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation,
-                  ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
-                                                                                                   mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
+                  ^Runtime(connectionElementAssociations= [
+                    ^ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=
+                    ^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping)),
                      getConnection()]), meta::relational::extension::relationalExtensions());
    let expected =
       'Relational\n'+
@@ -2033,8 +2041,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
    let g = agg(x:meta::pure::mapping::modelToModel::test::shared::dest::Person[1] | $x.lastName,  y:String[*] | $y->count());
    let res = executionPlan(|meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->groupBy([x | $x.firstName], $g, ['FirstName', 'PersonCount' ]),
             meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
-            ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
-                                                                                             mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
+            ^Runtime(connectionElementAssociations= [
+              ^ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),
+              connection=^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping)),
                                        meta::pure::mapping::modelToModel::test::shared::getConnection()
                                    ]
              ), meta::relational::extension::relationalExtensions());
@@ -2060,8 +2069,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMult
                                     ],
                                    ['FirstName', 'PersonCount', 'PersonCountViaSize' ]),
             meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
-            ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
-                                                                                             mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
+            ^Runtime(connectionElementAssociations= [
+              ^ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),
+              connection=^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping)),
                                        meta::pure::mapping::modelToModel::test::shared::getConnection()
                                    ]
              ), meta::relational::extension::relationalExtensions());
@@ -2079,7 +2089,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMult
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenerationForFrom() : Boolean[1]
 {
    let res = executionPlan(
-      |_Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::mapping::modelToModel::test::shared::getConnection()));, meta::relational::extension::relationalExtensions()
+      |_Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=meta::pure::mapping::modelToModel::test::shared::getConnection()));, meta::relational::extension::relationalExtensions()
    );
    let expected =
       'Relational\n'+
@@ -2096,7 +2106,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenerationForFromInAllocation() : Boolean[1]
 {
    let res = executionPlan(
-      | let var = _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::mapping::modelToModel::test::shared::getConnection()));, meta::relational::extension::relationalExtensions()
+      | let var = _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=meta::pure::mapping::modelToModel::test::shared::getConnection()));, meta::relational::extension::relationalExtensions()
    );
    let expected =
       'Allocation\n'+
@@ -2122,8 +2132,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenerationForFromWithMultiClusters() : Boolean[1]
 {
    let res = executionPlan(
-      {|  let var = _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::mapping::modelToModel::test::shared::getConnection()));
-         _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::mapping::modelToModel::test::shared::getConnection()));}, meta::relational::extension::relationalExtensions()
+      {|  let var = _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=meta::pure::mapping::modelToModel::test::shared::getConnection()));
+         _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=meta::pure::mapping::modelToModel::test::shared::getConnection()));}, meta::relational::extension::relationalExtensions()
    );
    let expected =
       'Sequence\n'+
@@ -2161,21 +2171,23 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<access.private>> meta::pure::executionPlan::tests::relationalConnectionForSnowflake(queryTags: Boolean[1]): RelationalDatabaseConnection[1]
+function <<access.private>> meta::pure::executionPlan::tests::relationalConnectionForSnowflake(queryTags: Boolean[1]): ConnectionElementAssociation[1]
 {
-  ^RelationalDatabaseConnection(
+  ^ConnectionElementAssociation(
     element = relationalDB, 
+    connection=
+  ^RelationalDatabaseConnection(
     datasourceSpecification = ^SnowflakeDatasourceSpecification(region='', warehouseName= '', databaseName = '', accountName = '', enableQueryTags = $queryTags), 
     authenticationStrategy = ^AuthenticationStrategy(), 
     type=DatabaseType.Snowflake
-  )
+  ))
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForNotInWithCollectionInputForSnowflake() : Boolean[1]
 {
    let res = executionPlan(
       {name:String[*] |_Person.all()->filter(x | !$x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions()
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions()
    );
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
@@ -2186,7 +2198,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan(
       {lengths:Integer[*] |_Person.all()->filter(x | $x.fullName->length()->in($lengths))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions()
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions()
    );
    let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"wherechar_length("root".fullname)in(${renderCollection(lengths![]","""""{}"null")})connection=DatabaseConnection(type="H2"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
@@ -2196,7 +2208,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan(
       {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in(['A', 'B']))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.SybaseIQ)), meta::relational::extension::relationalExtensions()
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.SybaseIQ))), meta::relational::extension::relationalExtensions()
    );
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
@@ -2206,7 +2218,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan(
       {name:String[*], name1:String[*]|_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in($name1))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.DB2)), meta::relational::extension::relationalExtensions()
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.DB2))), meta::relational::extension::relationalExtensions()
    );
    let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
       'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
@@ -2216,7 +2228,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForMultipleInWithTwoCollectionInputsForSnowflake() : Boolean[1]
 {
    let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
+                           simpleRelationalMapping, ^Runtime(connectionElementAssociations=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
    let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
                    'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
@@ -2226,7 +2238,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationWithQueryTagsForSnowflake() : Boolean[1]
 {
    let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
+                           simpleRelationalMapping, ^Runtime(connectionElementAssociations=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
    let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
                    'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
@@ -2236,7 +2248,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationWithoutQueryTagsForSnowflake() : Boolean[1]
 {
    let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(false)), meta::relational::extension::relationalExtensions());
+                           simpleRelationalMapping, ^Runtime(connectionElementAssociations=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(false)), meta::relational::extension::relationalExtensions());
    let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))',
                    'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'"{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
@@ -2246,14 +2258,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithVarAndConstantInputs():Boolean[1]
 {
    let res = executionPlan({name:String[1] |_Person.all()->filter(x | $x.fullName->in([$name, 'John', 'Peter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))->project([x | $x.fullName], ['fullName']);},
-                           meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^TestDatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
+                           meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element = relationalDB, connection=^TestDatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[1]])Allocation(type=meta::pure::functions::collection::Listname=tempVarForIn_4value=(Constant(type=meta::pure::functions::collection::Listvalues=[[[John,Peter,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50]]])))CreateAndPopulateTempTable(type=VoidinputVarNames=[name,tempVarForIn_4]tempTableName=tempTableForIn_4tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(select"temptableforin_4_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_4as"temptableforin_4_0")connection=TestDatabaseConnection(type="H2"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForInWithCollectionParameterHavingTimeZoneForH2():Boolean[1]
 {
-   let generatedPlan = executionPlan({optionalDateTime:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($optionalDateTime))->project([x | $x.id], ['TradeId'])}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalDateTime:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($optionalDateTime))->project([x | $x.id], ['TradeId'])}, simpleRelationalMapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.H2, timeZone='US/Arizona'))), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -2279,7 +2291,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan({dates:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($dates))->project([x | $x.id], ['TradeId'])},
                            simpleRelationalMapping,
-                           ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Presto, timeZone='US/Arizona')),
+                           ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.Presto, timeZone='US/Arizona'))),
                            meta::relational::extension::relationalExtensions());
    let expected =
       'Sequence\n'+
@@ -2306,7 +2318,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan({dates:StrictDate[*] |Trade.all()->filter(t|$t.date->in($dates))->project([x | $x.id], ['TradeId'])},
                            simpleRelationalMapping,
-                           ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Sybase)),
+                           ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=relationalDB, connection=^DatabaseConnection(type=DatabaseType.Sybase))),
                            meta::relational::extension::relationalExtensions());
    let expected =
       'Sequence\n'+
@@ -2468,7 +2480,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagGr
 
 function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagWithGraphFetchAndFrom():Boolean[1]
 {
-   let runtime = ^Runtime(connections = getConnection());
+   let runtime = ^Runtime(connectionElementAssociations= getConnection());
    let query = {firmName:String[*]|
                  let targetGraph = #{meta::pure::mapping::modelToModel::test::shared::dest::Firm{legalName,
                                           employees{
@@ -2491,10 +2503,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagWi
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlag():Boolean[1]
 {
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
-                                                             ));
+                                                             )));
    let result = executionPlan({|Product.all()->filter(p|$p.name == 'bla')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertEquals('Relational\n'+
                 '(\n'+
@@ -2508,10 +2520,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagInOrderByClause():Boolean[1]
 {
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
-                                                             ));
+                                                             )));
    let result = executionPlan({|Product.all()->project(p|$p.name, 'name')->sort('name')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertEquals('Relational\n'+
                 '(\n'+
@@ -2524,10 +2536,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagInGroupBy():Boolean[1]
 {
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
-                                                             ));
+                                                             )));
    let result = executionPlan({|Product.all()->project([#/Product/name!prodName#])->groupBy('prodName', agg('cnt', x|$x, y| $y->count()))}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertEquals('Relational\n'+
                 '(\n'+
@@ -2540,10 +2552,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagWithGraphFetch():Boolean[1]
 {
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
-                                                             ));
+                                                             )));
    let graph = #{Product{name}}#;
    let result = executionPlan({|Product.all()->graphFetch($graph)->serialize($graph)}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertEquals('PureExp(type=Stringexpression=->serialize(#{meta::relational::tests::model::simple::Product{name}}#)(StoreMappingGlobalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]resultSizeRange=*store=meta::relational::tests::dblocalGraphFetchExecutionNode=RelationalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]nodeIndex=0relationalNode=SQL(type=meta::pure::metamodel::type::AnyresultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root"."ID"as"pk_0","root"."NAME"as"name"from"productSchema"."productTable"as"root"connection=TestDatabaseConnection(type="H2"))children=[])children=[]localTreeIndices=[0,1]dependencyIndices=[])))', $result->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
@@ -2553,13 +2565,12 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
 {
   let conn = ^meta::pure::alloy::connections::RelationalDatabaseConnection
                     (
-                       element = db,
                        type = meta::relational::runtime::DatabaseType.H2,
                        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=['a','b']),
                        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
                     );
 
-  let runtime = ^Runtime(connections = $conn);
+  let runtime = ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=db, connection=$conn));
   let plan = executionPlan({|Product.all()->filter(p|$p.name == 'ok')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
   assertEquals(['a','b'], $plan.rootExecutionNode.executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
   let transformedPlan = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($plan, meta::relational::extension::relationalExtensions());

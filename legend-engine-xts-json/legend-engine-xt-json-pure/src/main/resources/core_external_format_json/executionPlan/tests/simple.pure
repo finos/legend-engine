@@ -159,7 +159,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJson(): Boolean[1]
 {
   let binding = getTestBinding();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::ModelChainConnection(element=^meta::pure::mapping::modelToModel::ModelStore(), mappings = M2MMapping1));
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::ModelChainConnection(mappings = M2MMapping1)));
   let query   = {data:String[1]| RefinedPerson.all()->graphFetch(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping2, mergeRuntimes([$runtime, getRuntimeWithModelQueryConnection(Person, 'application/json', $data)]))->externalize($binding, #{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));

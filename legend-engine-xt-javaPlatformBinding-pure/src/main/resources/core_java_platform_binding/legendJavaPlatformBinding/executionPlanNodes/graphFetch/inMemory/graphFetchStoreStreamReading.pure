@@ -48,7 +48,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let conventions = $context.conventions;
    let class       = $node.graphFetchTree.class;
    let simpleType  = ^SimpleJavaType(pureType = $class, javaType = $conventions->className($class));
-   let returnType  = if($node.checked, | ^CheckedJavaType(checkedOf = $simpleType, source = $node.connection->sourceTypeFromConnection($conventions, $extensions)), | $simpleType);
+   let returnType  = if($node.checked, | ^CheckedJavaType(checkedOf = $simpleType, source = $node.connection.connection->sourceTypeFromConnection($conventions, $extensions)), | $simpleType);
    
    let newTypeInfos = $context.typeInfos
       ->addForGraphFetchTree($node.graphFetchTree)

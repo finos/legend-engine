@@ -29,7 +29,7 @@ import meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::
 import meta::protocols::pure::vX_X_X::metamodel::store::relational::element::*;
 import meta::protocols::pure::vX_X_X::transformation::toPureGraph::model::*;
 
-function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::getTestConnection(dbType:DatabaseType[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::getTestConnection(dbType:DatabaseType[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):meta::pure::runtime::ConnectionElementAssociation[0..1]
 {
    let resp= executeHTTPRaw(^URL(host=$host, port=$port , path='/api/pure/v1/utilities/tests/connections/'+ $dbType->toString()),
                              HTTPMethod.GET ,
@@ -46,7 +46,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::testConnection::g
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::buildRelationalDatabaseConnection(connectionJSON:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::buildRelationalDatabaseConnection(connectionJSON:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::runtime::ConnectionElementAssociation[0..1]
 {
   let protocolConn = meta::json::fromJSON($connectionJSON, 
                   meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection ,
@@ -75,11 +75,11 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                             )
                 );
   let pureConn = $protocolConn->meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection($extensions);
-  $pureConn->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection); 
+  $pureConn; 
 }
 
 
-function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection(conn : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection[1] , extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[1]
+function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection(conn : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection[1], extensions:meta::pure::extension::Extension[*]):meta::pure::runtime::ConnectionElementAssociation[0..1]
 {
   let element = if($conn.element=='',                       // legend test server sends '' as element for testConnections , as store is not known before hand
                   | ^Database(name='dummyDB'),
@@ -88,15 +88,16 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
 
   let type =  extractEnumValue(meta::relational::runtime::DatabaseType, $conn.type);
   
-  ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+  ^meta::pure::runtime::ConnectionElementAssociation(
+    element=$element, 
+    connection=^meta::pure::alloy::connections::RelationalDatabaseConnection(
               timeZone = $conn.timeZone,
               quoteIdentifiers = $conn.quoteIdentifiers,
-              element = $element,
               type = $type,
               datasourceSpecification = $conn.datasourceSpecification->meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformDatasourceSpecification($extensions),
               authenticationStrategy = $conn.authenticationStrategy->meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformAuthenticationStrategy($extensions),
               postProcessors = $conn.postProcessors->meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformPostProcessors($extensions)
-            );
+  ));
 }
 
 function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformAuthenticationStrategy(a: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]

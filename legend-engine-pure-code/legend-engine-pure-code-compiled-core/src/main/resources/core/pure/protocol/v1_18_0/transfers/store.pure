@@ -21,7 +21,7 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::runtime:
    $pureRuntime->match([
       legacy:Runtime[1] | ^meta::protocols::pure::v1_18_0::metamodel::LegacyRuntime(
                              _type = 'legacyRuntime',
-                             connections = $pureRuntime.connections->map(con|$con->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::runtime::transformConnection($extensions))
+                             connections = $pureRuntime.connectionElementAssociations->map(conn|$conn.connection->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->map(c|^$c(element=$conn.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s]))))
                           );
    ])
 }

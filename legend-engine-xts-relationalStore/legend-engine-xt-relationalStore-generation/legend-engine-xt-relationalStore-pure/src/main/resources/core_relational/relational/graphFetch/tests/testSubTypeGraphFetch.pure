@@ -25,8 +25,8 @@ import meta::pure::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::setup(): Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=meta::relational::graphFetch::tests::subType::db, type=DatabaseType.H2)]);
-   let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let runtime =  ^Runtime(connectionElementAssociations= [^ConnectionElementAssociation(element=meta::relational::graphFetch::tests::subType::db,connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let connection  = $runtime.connectionElementAssociations->at(0).connection->cast(@DatabaseConnection);
    executeInDb('Drop table if exists addressTable;', $connection);
    executeInDb('Drop table if exists landmarkTable;', $connection);
    executeInDb('Drop table if exists landmarkTable1;', $connection);

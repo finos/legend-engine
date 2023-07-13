@@ -40,8 +40,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfOneObje
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_S_Person, 
                                 url='data:application/xml,' +                                     
                                        '<_S_Person version=\'1.1\' type=\'md\'>\n' +
@@ -49,7 +48,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfOneObje
                                             '<address/>\n' +  
                                        '</_S_Person>'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -68,8 +67,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipl
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_S_Person, 
                                     url='data:application/xml,' +  
                                        '<S_PersonList>\n' +
@@ -81,7 +79,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipl
                                        '</_S_Person>' +
                                        '</S_PersonList>\n'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -100,8 +98,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipl
    let result = execute(
       |Person.all()->graphFetchChecked($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_S_Person, 
                                     url='data:application/xml,' +  
                                        '<S_PersonList>\n' +
@@ -113,7 +110,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfMultipl
                                        '</_S_Person>' +
                                        '</S_PersonList>\n'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -169,8 +166,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOneObject
    let result = execute(
       |_S_Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMappingReverse,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=Person,
                                 url='data:application/xml,' +                                     
                                        '<Person>\n' +
@@ -178,7 +174,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOneObject
                                             '<lastName>DeBelen</lastName>\n' +  
                                        '</Person>'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -199,8 +195,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForPrimitiv
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_SomeData,
                                 url='data:application/xml,' +
                                     '<_SomeData>' +
@@ -220,7 +215,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForPrimitiv
                                         '<s>VERT</s>'+
                                     '</_SomeData>'                   
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -241,8 +236,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForEmptyVal
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_SomeData,                               
                                 url='data:application/xml,' +
                                     '<_SomeData>' +
@@ -254,7 +248,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForEmptyVal
                                         '<c>ROUGE</c>'+
                                     '</_SomeData>'        
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -275,8 +269,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForReplacem
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_SomeData,                               
                                 url='data:application/xml,' +
                                     '<_.SomeData>' +
@@ -288,7 +281,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForReplacem
                                         '<c>ROUGE</c>'+
                                     '</_.SomeData>'        
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
  
@@ -310,8 +303,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlIgnoresUnwantedVal
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_S_Person,                               
                                 url='data:application/xml,' +
                                        '<_S_Person>\n' +
@@ -323,7 +315,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlIgnoresUnwantedVal
                                              '</Address>' +
                                        '</_S_Person>' 
                        )      
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -344,8 +336,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplex
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       complexModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_Person,
                                 url='data:application/xml,' +                                     
                                        '<_Person version="1.1">\n' +
@@ -358,7 +349,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplex
                                             '</addresses>' +
                                        '</_Person>'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -377,8 +368,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplex
    let result = execute(
       |Person.all()->graphFetchChecked($tree)->serialize($tree),
       complexModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_Person,
                                 url='data:application/xml,' +                                     
                                        '<_Person version="1.1">\n' +
@@ -391,7 +381,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplex
                                             '</addresses>' +
                                        '</_Person>'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    let expected = '{' +
@@ -442,8 +432,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfObjectW
 {  
    let tree = #{Person {firstName,lastName,alternateName{value, lang}} }#;
 
-   let pureRuntime = ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+   let pureRuntime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=_S_Person, 
                                 url='data:application/xml,' +                                     
                                        '<_S_Person version=\'1.1\' type=\'md\'>\n' +
@@ -451,7 +440,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfObjectW
                                             '<AlternateName lang=\'en\'>John Doe</AlternateName>\n' +
                                        '</_S_Person>'
                              )
-      );
+      ));
    
    let result = execute(
       {|Person.all()->graphFetch($tree)->serialize($tree)},
@@ -476,8 +465,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeValueWi
    let result = execute(
       |meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade.all()->graphFetch($tree)->serialize($tree),
       complexModelMapping,
-      ^Runtime(connections = ^XmlModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^XmlModelConnection(
                                 class=meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade,
                                 url='data:application/xml,' +                                     
                                        '<Trades>\n' +
@@ -485,7 +473,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeValueWi
                                             '<Trade id="2">200</Trade>' +  
                                        '</Trades>'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    println($result.values->toOne());

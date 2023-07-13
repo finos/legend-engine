@@ -14,27 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EngineRuntime extends Runtime
+public class ConnectionStores
 {
-    public List<PackageableElementPointer> mappings = new ArrayList<>();
-    public List<StoreConnections> connections = new ArrayList<>();
-    public List<ConnectionStores> connectionStores = new ArrayList<>();
-
-    @JsonIgnore
-    public StoreConnections getStoreConnections(String store)
-    {
-        return this.connections.stream().filter(storeConnections -> storeConnections.store.path.equals(store)).findFirst().orElse(null);
-    }
-
-    @JsonIgnore
-    public ConnectionStores getConnectionStores(String connection)
-    {
-        return this.connectionStores.stream().filter(connectionStores -> connectionStores.connectionPointer.connection.equals(connection)).findFirst().orElse(null);
-    }
+    public ConnectionPointer connectionPointer;
+    public List<PackageableElementPointer> storePointers = new ArrayList<>();
+    public SourceInformation sourceInformation;
 }

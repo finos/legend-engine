@@ -45,7 +45,7 @@ function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[
 
 function meta::relational::metamodel::execute::createTestDatabaseConnection():DatabaseConnection[1]
 {
-   ^TestDatabaseConnection(element='TEST', type=DatabaseType.H2);
+   ^TestDatabaseConnection(type=DatabaseType.H2);
 }
 
 function meta::relational::metamodel::execute::resultSetToTDS(resultSet:ResultSet[1]):TabularDataSet[1]
@@ -71,7 +71,7 @@ function meta::relational::runtime::mergeRuntimes(runtimes:Runtime[1..*]):Runtim
 {
    if($runtimes->distinct()->size()==1,
       |$runtimes->at(0),
-      | ^Runtime(connections = $runtimes.connections->distinct())
+      | ^Runtime(connectionElementAssociations= $runtimes.connectionElementAssociations->distinct())
     );
 }
 

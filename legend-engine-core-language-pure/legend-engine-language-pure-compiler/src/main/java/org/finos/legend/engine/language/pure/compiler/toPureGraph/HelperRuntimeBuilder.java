@@ -15,12 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -44,9 +44,9 @@ import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Map
 
 public class HelperRuntimeBuilder
 {
-    public static Store getConnectionStore(Root_meta_pure_runtime_Connection connection)
+    public static Store getConnectionStore(Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation)
     {
-        Object store = connection._element();
+        Object store = connectionElementAssociation._element();
         if (store instanceof Store)
         {
             return (Store) store;
@@ -72,9 +72,9 @@ public class HelperRuntimeBuilder
     public static void checkRuntimeMappingCoverage(Root_meta_pure_runtime_Runtime pureRuntime, List<Mapping> mappings, CompileContext context, SourceInformation sourceInformation)
     {
         Set<String> mappedStores = getAllMapStorePathsFromMappings(mappings, context);
-        ListIterate.forEach(pureRuntime._connections().toList(), connection ->
+        ListIterate.forEach(pureRuntime._connectionElementAssociations().toList(), connectionElementAssociation ->
         {
-            Store store = getConnectionStore(connection);
+            Store store = getConnectionStore(connectionElementAssociation);
             // TODO Identify binding store as ModelStore better than this
             if (store instanceof Root_meta_external_shared_format_binding_Binding)
             {
@@ -114,18 +114,25 @@ public class HelperRuntimeBuilder
         // verify if each mapping associated with the PackageableRuntime exists
         List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
         // build connections
-        List<Connection> connections = new ArrayList<>();
         List<CoreInstance> visitedSourceClasses = new ArrayList<>();
         List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
         List<String> visitedStores = new ArrayList<>();
         Set<String> ids = new HashSet<>();
+        ListIterate.forEach(engineRuntime.connectionStores, connectionStores ->
+        {
+            Root_meta_pure_runtime_Connection connection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+           ListIterate.forEach(connectionStores.storePointers, storePointer ->
+           {
+               Store store = context.resolveStore(storePointer.path);
+               Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation =
+                       new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("")
+                       ._connection(connection)
+                       ._element(store);
+               pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
+           });
+        });
         ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_shared_format_binding_Binding)).collect(Collectors.toList()), storeConnections ->
         {
-            if (!storeConnections.store.path.equals("ModelStore"))
-            {
-                // verify stores used for indexing exist
-                context.resolveStore(storeConnections.store.path, storeConnections.store.sourceInformation);
-            }
             ListIterate.forEach(storeConnections.storeConnections, identifiedConnection ->
             {
                 // ID must be unique across all connections of the runtime
@@ -137,71 +144,59 @@ public class HelperRuntimeBuilder
                 {
                     ids.add(identifiedConnection.id);
                 }
-                if (identifiedConnection.connection instanceof ConnectionPointer)
-                {
-                    ConnectionPointer pointer = (ConnectionPointer) identifiedConnection.connection;
-                    Store connectionStore = HelperRuntimeBuilder.getConnectionStore(context.resolveConnection(pointer.connection, pointer.sourceInformation));
-                    String connectionStorePath = HelperModelBuilder.getElementFullPath(connectionStore, context.pureModel.getExecutionSupport());
-                    if (!storeConnections.store.path.equals(connectionStorePath))
-                    {
-                        throw new EngineException("Connection pointer for store '" + connectionStorePath + "' should not be indexed to store '" + storeConnections.store.path + "'", pointer.sourceInformation, EngineErrorType.COMPILATION);
-                    }
-                    connections.add(identifiedConnection.connection);
-                }
-                else if (storeConnections.store.path.equals(identifiedConnection.connection.element))
-                {
-                    connections.add(identifiedConnection.connection);
-                }
-                else if (identifiedConnection.connection.element == null)
-                {
-                    identifiedConnection.connection.element = storeConnections.store.path;
-                    identifiedConnection.connection.elementSourceInformation = identifiedConnection.connection.sourceInformation;
-                    connections.add(identifiedConnection.connection);
-                }
-                else
-                {
-                    throw new EngineException("Connection for store '" + identifiedConnection.connection.element + "' should not be indexed to store '" + storeConnections.store.path + "'", identifiedConnection.connection.sourceInformation, EngineErrorType.COMPILATION);
-                }
-            });
-        });
+                Connection connection = identifiedConnection.connection;
+                final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+                connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+                final Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation = new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("", null, context.pureModel.getClass("meta::pure::runtime::ConnectionElementAssociation"))
+                        ._connection(pureConnection)
+                        ._element(!storeConnections.store.path.equals("ModelStore") ?
+                                context.resolveStore(storeConnections.store.path, storeConnections.store.sourceInformation)
+                                : Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))));
 
-        ListIterate.forEach(connections, connection ->
-        {
-            final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
-            connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-
-            if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
-            {
-                if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
+                if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
                 {
-                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
-                }
-                else
-                {
-                    visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
-                }
-            }
-            else
-            {
-                if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
-                {
-                    if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
+                    if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
                     {
-                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
                     }
                     else
                     {
-                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()))));
+                        visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
                     }
                 }
                 else
                 {
-                    visitedConnectionTypes.add(pureConnection.getClassifier());
+                    if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
+                    {
+                        if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
+                        {
+                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                        }
+                        else
+                        {
+                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()))));
+                        }
+                    }
+                    else
+                    {
+                        visitedConnectionTypes.add(pureConnection.getClassifier());
+                    }
                 }
-            }
 
-            visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()));
-            pureRuntime._connectionsAdd(pureConnection);
+                visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()));
+
+                pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
+            });
+        });
+        pureRuntime._connectionElementAssociations().forEach(connectionElementAssociation ->
+        {
+            Store store = (Store) connectionElementAssociation._element();
+            RichIterable<? extends Root_meta_pure_runtime_ConnectionElementAssociation> potentialDupes =
+                    pureRuntime._connectionElementAssociations().select(connEl -> connEl._element().equals(store));
+            if (potentialDupes.size() > 1 && !(store instanceof Root_meta_pure_mapping_modelToModel_ModelStore))
+            {
+                throw new EngineException("Found " + potentialDupes.size() + " connections against store: " + store._name());
+            }
         });
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
@@ -221,7 +216,10 @@ public class HelperRuntimeBuilder
             {
                 final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-                pureRuntime._connectionsAdd(pureConnection);
+                final Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation = new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("", null, context.pureModel.getClass("meta::pure::runtime::ConnectionElementAssociation"))
+                        ._connection(pureConnection)
+                        ._element(!connection.element.equals("ModelStore") ? context.resolveStore(connection.element, connection.elementSourceInformation) : context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"));
+                pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
             });
             return pureRuntime;
         }

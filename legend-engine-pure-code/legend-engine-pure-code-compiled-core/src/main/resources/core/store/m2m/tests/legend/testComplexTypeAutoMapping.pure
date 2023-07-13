@@ -29,11 +29,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id}}}#;
   let mapping = testComplexTypePassThroughSimple();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
 
   let result = executeReflectively($query);
@@ -44,11 +43,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id, address {street}}}}#;
   let mapping = testComplexTypePassThroughSimple();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -59,11 +57,12 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firm {id, address {street}}}}#;
   let mapping = testComplexTypePassThroughSimple();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
+                                            element=^meta::pure::mapping::modelToModel::ModelStore(),
+                                            connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -74,11 +73,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id, address {street}}, addresses {street}}}#;
   let mapping = testComplexTypePassThroughWithMultipleProperties();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}, "address1": {"street": "Person Street A"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -89,11 +87,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id, address {street}}}}#;
   let mapping = testComplexTypePassThroughAtPropertyLevel();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}, "address1": {"street": "Person Street A"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -104,11 +101,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id, address {street}}, addresses {street}}}#;
   let mapping = testComplexTypePassThroughWithConcatenateFunctionMapping();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}, "address1": {"street": "Person Street A"}, "address2": {"street": "Person Street B"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -119,11 +115,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, addresses {street}}}#;
   let mapping = testComplexTypePassThroughViaPropertyAccess();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}, "address1": {"street": "Person Street A"}, "address2": {"street": "Person Street B"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -134,11 +129,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, addresses {street}}}#;
   let mapping = testComplexTypePassThroughViaUserDefinedFunction();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}}, "address1": {"street": "Person Street A"}, "address2": {"street": "Person Street B"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -149,11 +143,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id}}}#;
   let mapping = testComplexTypePassThroughWithSubType();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson1, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}, "size" : 1000}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);
@@ -164,11 +157,10 @@ function <<test.Test, test.AlloyOnly>> meta::pure::mapping::modelToModel::test::
 {
   let tree    = #{Person{firstName, lastName, firm {id}}}#;
   let mapping = testComplexTypePassThroughWithNestedSubType();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                            element=^meta::pure::mapping::modelToModel::ModelStore(), 
+  let runtime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(), connection=^meta::pure::mapping::modelToModel::JsonModelConnection(
                                             class=SPerson2, 
                                             url='data:application/json,{"fullName":"John Doe", "firm" : {"id" : "Firm A", "address" : {"street": "A"}, "size" : 1000, "legalName": "Firm legalName"}}'
-                                        ));
+                                        )));
   let query = {| Person.all()->graphFetch($tree)->from($mapping, $runtime)->serialize($tree)};
   
   let result = executeReflectively($query);

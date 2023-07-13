@@ -48,9 +48,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testTableNameInJoinAlias(config:DbTestConfig[1]):Boolean[1]
-{
-  let runtime = ^Runtime(connections=$config.connection);
-  
+{  
    let result = executeViaPlan(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
     runDataAssertion($result, $config,
        | assertSize($result, 1);
@@ -78,7 +76,6 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let smallAlphabets = 'abcdefghijklmnopqrstuvwxzy';
   let capitalAlphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-  let runtime = ^Runtime(connections=$config.connection);
   let result = executeViaPlan(| MyClassD.all()->project([x | $x.a, x | $x.b, x | $x.c, x | $x.d] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
   
   runDataAssertion($result, $config,

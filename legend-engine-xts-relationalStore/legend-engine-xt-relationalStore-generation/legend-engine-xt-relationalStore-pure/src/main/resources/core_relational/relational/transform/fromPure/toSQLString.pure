@@ -38,13 +38,13 @@ function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDef
 
 function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):String[1]
 {
-   let databaseConnection = $runtime.connections->toOne()->cast(@DatabaseConnection);
+   let databaseConnection = $runtime.connectionElementAssociations.connection->toOne()->cast(@DatabaseConnection);
    toSQL($f, $mapping, $runtime, $extensions).toSQLString($databaseConnection.type, $databaseConnection.timeZone, $databaseConnection.quoteIdentifiers, ^Format(newLine='\n', indent='\t'));
 }
 
 function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):SQLResult[1]
 {
-   let databaseConnection = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
+   let databaseConnection = $runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
    let postProcessors = meta::relational::mapping::sqlQueryDefaultPostProcessors()->map(pp | {select:SelectSQLQuery[*] | $pp->eval($select, $extensions)})->concatenate($databaseConnection.sqlQueryPostProcessors);
    let sql = toSQL($f, $mapping, $databaseConnection.type, $databaseConnection.timeZone, $postProcessors, $extensions, noDebug());
 
@@ -91,14 +91,14 @@ function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinitio
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifier:Boolean[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], format:Format[1], extensions:Extension[*], debug:DebugContext[1]):String[1]
 {
-   let routed = $f->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
+   let routed = $f->routeFunction($mapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(connection=^Connection(),element='Mock')), $extensions, $debug);
    let sqlResult = toSQL($routed.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
    $sqlResult.toSQLString($databaseType, $dbTimeZone, $quoteIdentifier, $format);
 }
 
 function <<access.private>> meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], extensions:Extension[*], debug:DebugContext[1]):SQLResult[1]
 {
-   let routed = $f->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
+   let routed = $f->routeFunction($mapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(connection=^Connection(),element='Mock')), $extensions, $debug);
    toSQL($routed.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
 }
 
@@ -108,7 +108,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
    let clusterBeforeAggregateRewrite = $clusters->head()->toOne();
    if($clusterBeforeAggregateRewrite->instanceOf(StoreMappingClusteredValueSpecification) && $clusterBeforeAggregateRewrite->cast(@StoreMappingClusteredValueSpecification).store->toOne()->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareStore),
       | let reprocessedFunction = meta::pure::mapping::aggregationAware::reprocessFunction($clusterBeforeAggregateRewrite.val->cast(@FunctionExpression)->toOne(), $vars, []->cast(@RoutedValueSpecification), $mapping, $debug);
-        let routed = $reprocessedFunction->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
+        let routed = $reprocessedFunction->routeFunction($mapping, ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(connection=^Connection(),element='Mock')), $extensions, $debug);
         toSQL($routed.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification), $vars, $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult);,
       | let cluster = $clusterBeforeAggregateRewrite;
         let firstDbCluster = findDBCluster($cluster->at(0), []->cast(@StoreMappingClusteredValueSpecification));

@@ -38,9 +38,14 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnSourceToB
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMappingWithFilter]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection=^ModelChainConnection(mappings = [SrcToBridgeMappingWithFilter]),
+            element=^ModelStore()),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element=^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -93,9 +98,14 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnBridgeToD
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMappingWithFilter,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection=^ModelChainConnection(mappings = [SrcToBridgeMappingWithFilter]),
+            element=^ModelStore()),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element=^ModelStore()
+          ) 
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -208,9 +218,14 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnBothMappi
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMappingWithFilter,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMappingWithFilter]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection=^ModelChainConnection(mappings = [SrcToBridgeMappingWithFilter]),
+            element=^ModelStore()),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element=^ModelStore()
+          ) 
          ]
       ),
       meta::pure::extension::defaultExtensions()

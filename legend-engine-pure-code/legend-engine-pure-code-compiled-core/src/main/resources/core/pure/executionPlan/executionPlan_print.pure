@@ -123,14 +123,13 @@ function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:
    )
 }
 
-function meta::pure::executionPlan::toString::connectionToString(connection:Connection[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::pure::executionPlan::toString::connectionToString(connEl:meta::pure::runtime::ConnectionElementAssociation[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   $connection->class() ->toString() + '('+
-   $connection->match(
+   $connEl.connection->class() ->toString() + '('+
+   $connEl.connection->match(
                $extensions.executionPlanExtensions().printConnectionToString->map(x|$x->eval($extensions))->concatenate(
-               [
-                   connection:Connection[1] | $connection.element ->toString()
-               ])->toOneMany()
+               [connection:Connection[1] | '']
+               )->toOneMany()
             )
    + ')'
 }

@@ -112,12 +112,12 @@ function meta::external::store::service::tests::runtime::serviceStoreRuntime():R
 {
    let serviceStore = meta::external::store::service::tests::store::TradeProductServiceStore();
    
-   ^Runtime(connections = ^ServiceStoreConnection(element = $serviceStore,
+   ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element = $serviceStore,connection=^ServiceStoreConnection(
                                                   baseUrl = 'http://127.0.0.1:9090/api/user/serviceStore/test',
-                                                  authenticationSpecifications = ^Map<String,meta::pure::runtime::connection::authentication::AuthenticationSpecification>()));
+                                                  authenticationSpecifications = ^Map<String,meta::pure::runtime::connection::authentication::AuthenticationSpecification>())));
 }
 
 function meta::external::store::service::tests::runtime::modelChainConnectionRuntime():Runtime[1]
 {
-   ^Runtime(connections = serviceStoreRuntime().connections->concatenate(^ModelChainConnection(element = ^ModelStore(), mappings = meta::external::store::service::tests::mapping::serviceStoreMapping())));
+   ^Runtime(connectionElementAssociations= serviceStoreRuntime().connectionElementAssociations->concatenate(^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelChainConnection(mappings = meta::external::store::service::tests::mapping::serviceStoreMapping()))));
 }

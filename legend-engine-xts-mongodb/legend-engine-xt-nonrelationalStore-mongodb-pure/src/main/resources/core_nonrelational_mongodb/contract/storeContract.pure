@@ -66,12 +66,13 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
         $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
       |
         // Normal Flow
-        let connections = $runtime.connections->filter(c | $c->instanceOf(MongoDBConnection));
+        let connections = $runtime.connectionElementAssociations->filter(c | $c.connection->instanceOf(MongoDBConnection));
         let storeRuntime = if($connections->size() <= 1,
                                 | $runtime->toOne(),
                                 | let oldRuntime = $runtime->toOne();
-                                  let dbConn = $oldRuntime->connectionByElement($store)->cast(@MongoDBConnection);
-                                  ^$oldRuntime(connections = $dbConn);
+                                  let connEl = $oldRuntime.connectionElementAssociations->filter(c|$c.element==$store)->toOne();
+                                  let dbConn = $connEl->cast(@MongoDBConnection);
+                                  ^$oldRuntime(connectionElementAssociations = ^$connEl(connection=$dbConn));
                               );
 
         let databaseCommand = $sq.fe->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);

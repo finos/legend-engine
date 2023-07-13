@@ -72,7 +72,7 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
               esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode(
                 _type = 'elasticsearch7RequestExecutionNode',
                 resultType = $esNode.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                connection = $esNode.connection->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions),
+                connection = $esNode.connection->map(conn|$conn.connection->cast(@Elasticsearch7StoreConnection)->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)->map(c|^$c(element=$conn.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s])))),
                 request = $esNode.request,
                 metadata = $esNode.metadata->match([
                   tds: TDSMetadata[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSMetadata(
@@ -122,7 +122,7 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::tr
 {
   ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection(
     _type = 'elasticsearch7StoreConnection',
-    element = $conn.element->cast(@PackageableElement)->elementToPath(),
+    element = '',
     sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(            
             url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), $conn.sourceSpec.url.host, $conn.sourceSpec.url.port, $conn.sourceSpec.url.path])
           ),

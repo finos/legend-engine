@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::runtime::*;
-import meta::pure::runtime::connection::authentication::*;
-import meta::external::store::service::metamodel::*;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 
-Class meta::external::store::service::metamodel::runtime::ServiceStoreConnection extends Connection
-// [
-//    $this.element->instanceOf(ServiceStore)
-// ]
+public class ConnectionElementAssociation
 {
-   baseUrl                      : String[1];
-   authenticationSpecifications : Map<String,AuthenticationSpecification>[1];
+    public Connection connection;
+    public String element;
 }

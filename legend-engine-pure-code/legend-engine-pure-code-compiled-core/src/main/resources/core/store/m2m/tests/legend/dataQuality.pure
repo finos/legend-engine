@@ -98,11 +98,12 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsPassWhen
    let func = {|SomeDataConstrained.all()->graphFetch($tree)->serialize($tree)};
    let mapping = simpleConstrainedDataMapping;
    let runtime = ^Runtime(
-      connections = ^JsonModelConnection(
-         element=^ModelStore(),
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^JsonModelConnection(
          class = _SomeDataConstrained,
          url = 'data:application/json,{"i":3, "b":false, "child": {"s":"Hello"}}'
-      )
+      ))
    );
    
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());

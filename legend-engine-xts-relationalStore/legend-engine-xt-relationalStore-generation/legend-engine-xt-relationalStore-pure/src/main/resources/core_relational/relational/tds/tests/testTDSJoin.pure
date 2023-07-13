@@ -1007,13 +1007,13 @@ function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::pure::runt
 {
    ^meta::pure::runtime::Runtime
    (
-      connections = [^TestDatabaseConnection(
-                        element = dbInc,
+      connectionElementAssociations = [
+        ^meta::pure::runtime::ConnectionElementAssociation(element=dbInc,connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    ),^TestDatabaseConnection(
-                        element = database2,
+                    )),
+                    ^meta::pure::runtime::ConnectionElementAssociation(element=database2, connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    )]
+                    ))]
    );
 }
 

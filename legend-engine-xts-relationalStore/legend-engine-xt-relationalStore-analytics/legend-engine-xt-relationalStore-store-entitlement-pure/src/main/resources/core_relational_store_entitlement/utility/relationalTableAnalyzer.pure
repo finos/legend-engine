@@ -51,14 +51,14 @@ function meta::analytics::store::entitlements::getAllDatabases(database : Databa
    if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases($visited->concatenate($database)))));
 }
 
-function meta::analytics::store::entitlements::getRelationalDatabaseConnection(runtime: Runtime[1]): RelationalDatabaseConnection[*]
+function meta::analytics::store::entitlements::getRelationalDatabaseConnection(runtime: Runtime[1]): ConnectionElementAssociation[*]
 {
-   $runtime.connections->filter(c|$c->instanceOf(RelationalDatabaseConnection) && $c->cast(@RelationalDatabaseConnection).postProcessors->filter(p| !($p->instanceOf(meta::pure::alloy::connections::MapperPostProcessor)))->isEmpty())->cast(@RelationalDatabaseConnection);
+   $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(RelationalDatabaseConnection) && $c.connection->cast(@RelationalDatabaseConnection).postProcessors->filter(p| !($p->instanceOf(meta::pure::alloy::connections::MapperPostProcessor)))->isEmpty());
 }
 
 function meta::analytics::store::entitlements::runMappersOnTables(tables:Table[*], runtime: Runtime[1]):Table[*]
 {
-   let mappers =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection)->map(dc|$dc.queryPostProcessorsWithParameter).parameters;
+   let mappers =  $runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection)->map(dc|$dc.queryPostProcessorsWithParameter).parameters;
    let tableMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::TableNameMapper))->cast(@meta::relational::postProcessor::TableNameMapper);
    let schemaMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::SchemaNameMapper))->cast(@meta::relational::postProcessor::SchemaNameMapper);
    let pureAlloyTableMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);

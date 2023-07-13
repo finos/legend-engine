@@ -769,7 +769,8 @@ import meta::pure::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::multipleChainedJoins::setup():Runtime[1]
 {
-   let connection = meta::relational::tests::testRuntime(multipleChainedJoinsDB).connections->toOne()->cast(@TestDatabaseConnection);
+   let connEl = meta::relational::tests::testRuntime(multipleChainedJoinsDB).connectionElementAssociations->toOne();
+   let connection = $connEl.connection->cast(@TestDatabaseConnection);
   
    executeInDb('drop table if exists X0;', $connection);
    executeInDb('create table X0 (pk INTEGER, fk INTEGER, from_z DATE, thru_z DATE)', $connection);
@@ -891,5 +892,5 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::union::multipl
    executeInDb('insert into L values(111, 111, \'2015-1-1\', \'2017-1-1\');', $connection);
    executeInDb('insert into L values(111, 111, \'2017-1-1\', \'9999-12-31\');', $connection);
    
-   ^Runtime(connections = $connection);
+   ^Runtime(connectionElementAssociations= $connEl);
 }

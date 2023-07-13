@@ -105,10 +105,11 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filter::testParametrizedEnumFilter(): Boolean[1]
 {
   let runtime = meta::relational::tests::testRuntime();
-  let connection = $runtime.connections->at(0)->cast(@meta::relational::runtime::TestDatabaseConnection);
+  let connEl = $runtime.connectionElementAssociations->at(0);
+  let connection = $connEl.connection->cast(@meta::relational::runtime::TestDatabaseConnection);
   
   let runtimeWithTestData = ^$runtime(
-    connections = ^$connection(
+    connectionElementAssociations = ^$connEl(connection=^$connection(
       testDataSetupCsv =
         'default\n'+
         'addressTable\n'+
@@ -116,7 +117,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filt
         '1,1,Address_1\n'+
         '2,2,Address_2\n'+
         '-----\n'
-      )
+      ))
   );
  
   let func = {g: GeographicEntityType[1]|

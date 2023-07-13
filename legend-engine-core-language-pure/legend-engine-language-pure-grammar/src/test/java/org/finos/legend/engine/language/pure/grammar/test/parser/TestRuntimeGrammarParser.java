@@ -65,6 +65,13 @@ public class TestRuntimeGrammarParser extends TestGrammarParser.TestGrammarParse
                 " connections: []; connections: [];" +
                 "}\n" +
                 "\n\n", "PARSER error at [2:1-4:51]: Field 'connections' should be specified only once");
+        test("###Runtime\n" +
+                "Runtime test\n" +
+                "{\n" +
+                " mappings: [me];\n" +
+                " connectionStores: [];\n connectionStores: [];\n" +
+                "}\n" +
+                "\n\n", "PARSER error at [2:1-7:1]: Field 'connectionPointerStores' should be specified only once");
         // empty embedded connection
         test("###Runtime\n" +
                 "Runtime meta::mySimpleRuntime\n" +

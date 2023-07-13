@@ -14,11 +14,12 @@
 
 import meta::pure::executionPlan::toString::*;
 import meta::pure::extension::*;
+import meta::pure::runtime::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
 
 Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::Elasticsearch7RequestExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
-   connection : meta::external::store::elasticsearch::v7::metamodel::runtime::Elasticsearch7StoreConnection[1];
+   connection : ConnectionElementAssociation[1];
    request    : meta::external::store::elasticsearch::v7::metamodel::specification::types::RequestBase[1];
    metadata   : meta::external::store::elasticsearch::v7::metamodel::executionPlan::RequestResultMetadata[1];
 }

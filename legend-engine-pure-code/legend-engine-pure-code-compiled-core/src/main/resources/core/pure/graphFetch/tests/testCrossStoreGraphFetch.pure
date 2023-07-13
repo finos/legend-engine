@@ -154,21 +154,24 @@ import meta::pure::runtime::*;
 
 function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade():JsonModelConnection[1]
 {
-   ^JsonModelConnection(element = ^ModelStore(),
-                        class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,
+   ^JsonModelConnection(class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,
                         url = 'data:application/json,\n{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n')
 }
 
 function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct():JsonModelConnection[1]
 {
-   ^JsonModelConnection(element = ^ModelStore(),
+   ^JsonModelConnection(
                         class = meta::pure::graphFetch::tests::XStore::inMemory::S_Product,
                         url = 'data:application/json,\n{"s_productId": "30", "s_productName": "Product 30", "s_description": "Product 30 description", "s_synonyms": [{"s_name":"product 30 synonym 1", "s_type":"isin"}, {"s_name":"product 30 synonym 2", "s_type":"cusip"}]}\n{"s_productId": "31", "s_productName": "Product 31", "s_description": "Product 31 description", "s_synonyms": [{"s_name":"product 31 synonym 1", "s_type":"isin"}, {"s_name":"product 31 synonym 2", "s_type":"cusip"}]}\n')
 }
 
 function meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime():Runtime[1]
 {
-   ^Runtime(connections = [meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade(), meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct()]);
+   ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(connection=meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade(),element=^ModelStore()),
+      ^ConnectionElementAssociation(connection=meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct(),element=^ModelStore())
+    ]);
 }
 
 

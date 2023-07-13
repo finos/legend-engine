@@ -537,14 +537,17 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
 
    let runtime = ^meta::pure::runtime::Runtime
                  (
-                    connections = ^RelationalDatabaseConnection
+                    connectionElementAssociations = 
+                    ^meta::pure::runtime::ConnectionElementAssociation(
+                      element=meta::relational::tests::db,
+                      connection=
+                    ^RelationalDatabaseConnection
                     (
-                       element = meta::relational::tests::db,
                        type = meta::relational::runtime::DatabaseType.H2,
                        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
                        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
                        postProcessors = ^MapperPostProcessor(mappers = ^TableNameMapper(schema = ^SchemaNameMapper(from = 'default', to = 'default'), from = 'personTable' , to = 'differentPersonTable'))
-                    )
+                    ))
                  );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;

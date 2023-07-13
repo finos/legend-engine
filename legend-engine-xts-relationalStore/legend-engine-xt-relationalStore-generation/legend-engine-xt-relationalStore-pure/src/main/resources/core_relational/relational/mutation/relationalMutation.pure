@@ -149,13 +149,13 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
     )->newMap();
 
   let mainTable = $rootMapping.mainTableAlias.relationalElement->cast(@Table);
-  let dbConnection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+  let dbConnection = $runtime.connectionElementAssociations->at(0);
   
   let upsertQuery = 
     ^UpsertSQLQuery(
       data = $mainTable,
       equalityStatements = $databaseColumnToFreeMarkerVariable
-    )->processOperation($dbConnection.type, $extensions);
+    )->processOperation($dbConnection.connection->cast(@DatabaseConnection).type, $extensions);
 
   let funcParams = $sq.fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
   let varInputs = $funcParams->filter(x| $sq.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));

@@ -68,10 +68,13 @@ function meta::pure::persistence::test::example::FlatM2mRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = meta::pure::persistence::test::example::FlatM2mMapping,
-    connections = ^JsonModelConnection(
+    connectionElementAssociations =
+    ^ConnectionElementAssociation(
       element=^ModelStore(),
-      class = meta::pure::persistence::test::example::FlatInput,
-      url = 'executor:default'));
+      connection=
+        ^JsonModelConnection(
+          class = meta::pure::persistence::test::example::FlatInput,
+          url = 'executor:default')));
 }
 
 function meta::pure::persistence::test::example::FlatM2mService(): Service[1]

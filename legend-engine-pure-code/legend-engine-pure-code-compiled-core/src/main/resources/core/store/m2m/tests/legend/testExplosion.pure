@@ -29,11 +29,12 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testBasicExplosion():
    let result = execute(
       |FirmEmployee.all()->graphFetch($tree)->serialize($tree),
       basicExplosionMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA"},{"fullName":"PersonB"}]}'
-                             )
+                             ))
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -50,12 +51,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testMultiplePropertyE
    let result = execute(
       |FirmEmployee.all()->graphFetch($tree)->serialize($tree),
       multipleExplosionMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA","address":{"street":"first"}},{"fullName":"PersonB","address":{"street":"second"}}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -71,12 +73,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testTargetConstraints
    let result = execute(
       |FirmEmployeeWithConstraint.all()->graphFetchChecked($tree)->serialize($tree),
       explosionWithConstraintMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA"},{"fullName":"PersonB"}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -96,12 +99,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testMappingWithSetsUs
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       mappingWithSetsUsingAndNotUsingExplosion,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
+                                element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_S_Person, 
                                 url='data:application/json,{"fullName":"Pierre Doe"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -120,12 +124,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionAtProper
    let result = execute(
       |TargetFirm.all()->graphFetch($tree)->serialize($tree),
       mappingWithSetsUsingAndNotUsingExplosion,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA","dateOfBirth":"2020-11-09","address":{"street":"first"}},{"fullName":"PersonB","dateOfBirth":"2020-11-10","address":{"street":"second"}}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    assert(jsonEquivalent('{"name": "Anonymous Company","firmEmployees": [{"firmName": "Anonymous Company","fullName": "PersonA","streetAddress": "first","dateOfBirth": "2020-11-09"},{"firmName": "Anonymous Company","fullName": "PersonB","streetAddress": "second","dateOfBirth": "2020-11-10"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -144,12 +149,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testMappingWithExplos
    let result =  execute(
       |TargetFirm.all()->graphFetch($tree)->serialize($tree),
       mappingWithSetsUsingAndNotUsingExplosion,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA","dateOfBirth":"2020-11-09","address":{"street":"first"}},{"fullName":"PersonB","dateOfBirth":"2020-11-10","address":{"street":"second"}}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    assert(jsonEquivalent('{"name": "Anonymous Company","firmEmployees": [{"firmName": "Anonymous Company"}, {"firmName": "Anonymous Company"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -168,12 +174,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionAtProper
    let result = execute(
       |TargetFirm.all()->graphFetch($tree)->serialize($tree),
       mappingWithSetsUsingAndNotUsingExplosion,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA","dateOfBirth":"2020-11-09","address":{"street":"first"}},{"fullName":"PersonB","dateOfBirth":"2020-11-10","address":{"street":"second"}}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    assert(jsonEquivalent('{"name": "Anonymous Company","firmEmployees": [{"firmName": "Anonymous Company","fullName": "PersonA"},{"firmName": "Anonymous Company","fullName": "PersonB"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -192,12 +199,13 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionAtProper
    let result = execute(
       |TargetFirm.all()->graphFetch($tree)->serialize($tree),
       mappingWithSetsUsingAndNotUsingExplosion,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_SimpleFirm,
                                 url='data:application/json,{"name":"Anonymous Company","simpleEmployees":[{"fullName":"PersonA","address":{"street":"first"}},{"fullName":"PersonB","dateOfBirth":"2020-11-10"}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
    assert(jsonEquivalent('{"name": "Anonymous Company","firmEmployees": [{"firmName": "Anonymous Company","fullName": "PersonA","streetAddress": "first","dateOfBirth": null},{"firmName": "Anonymous Company","fullName": "PersonB","streetAddress": null,"dateOfBirth": "2020-11-10"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -211,7 +219,7 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionWithEnum
    let result = execute(
       |Trade.all()->graphFetch($tree)->serialize($tree),
       enumExplosionMapping,
-      ^Runtime(connections = ^JsonModelConnection(element=^ModelStore(), class=_Trade, url='data:application/json,{"side": 1}')),
+      ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^JsonModelConnection( class=_Trade, url='data:application/json,{"side": 1}'))),
       meta::pure::extension::defaultExtensions()
    );
    assertJsonStringsEqual('[{"side":"Buy"},{"side":"Buy"},{"side":"Buy"}]', $result.values->toOne());

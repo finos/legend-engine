@@ -51,7 +51,7 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : SQLResultColumn[*];
-   connection: DatabaseConnection[1];
+   connection: meta::pure::runtime::ConnectionElementAssociation[1];
 }
 
 Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode
@@ -60,7 +60,7 @@ Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode
   sqlQuery : String[1];
   onConnectionCloseCommitQuery : String[0..1];
   onConnectionCloseRollbackQuery : String[0..1];
-  connection: DatabaseConnection[1];
+  connection: meta::pure::runtime::ConnectionElementAssociation[1];
   generatedVariableName: String[1];
   // map of column names to value generators
   columnValueGenerators: Map<String, ExecutionNode>[1];
@@ -95,7 +95,7 @@ Class meta::relational::mapping::CreateAndPopulateTempTableExecutionNode extends
    inputVarNames            : String[*];
    tempTableName            : String[1];
    tempTableColumnMetaData  : TempTableColumnMetaData[*];
-   connection               : DatabaseConnection[1];
+   connection               : meta::pure::runtime::ConnectionElementAssociation[1];
 }
 
 Class meta::pure::executionPlan::RelationalBlockExecutionNode extends meta::pure::executionPlan::SequenceExecutionNode

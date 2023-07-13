@@ -103,12 +103,19 @@ Class meta::protocols::pure::vX_X_X::metamodel::EngineRuntime extends meta::prot
 {
     mappings:meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
     connections: meta::protocols::pure::vX_X_X::metamodel::StoreConnections[*];
+    connectionStores: meta::protocols::pure::vX_X_X::metamodel::ConnectionStores[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::StoreConnections
 {
    store: meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[1];
    storeConnections: meta::protocols::pure::vX_X_X::metamodel::IdentifiedConnection[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::ConnectionStores
+{
+   connection: meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[1];
+   storeConnections: meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::IdentifiedConnection

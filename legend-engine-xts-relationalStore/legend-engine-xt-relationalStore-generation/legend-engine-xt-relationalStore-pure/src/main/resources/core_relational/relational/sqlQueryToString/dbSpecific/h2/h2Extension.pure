@@ -11,7 +11,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::h
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::createDbExtensionForH2():DbExtension[1]
 {
-  let conn = ^TestDatabaseConnection(element=emptyDb, type=DatabaseType.H2);
+  let conn = ^TestDatabaseConnection(type=DatabaseType.H2);
   let results = executeInDb('SELECT H2VERSION();', $conn);
   let h2Versions = $results.rows.values;
   assertEquals(1, size($h2Versions), 'More than one H2 version found when loading extension');

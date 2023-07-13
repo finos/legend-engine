@@ -172,7 +172,7 @@ function meta::protocols::pure::v1_26_0::invocation::execution::execute::generat
 function meta::protocols::pure::v1_26_0::invocation::execution::execute::generateAlloyRelationalStoreObjectReference(mapping:Mapping[1], set:RelationalInstanceSetImplementation[1], sets:SetImplementation[*], runtime:Runtime[1], pkMap:Map<String, Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::objectReference::AlloyRelationalStoreObjectReference[1]
 {
    let store                = $set.stores->toOne();
-   let databaseConnection   = $runtime->connectionByElement($store->toOne())->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->cast(@meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::DatabaseConnection);
+   let databaseConnection   = $runtime.connectionElementAssociations->filter(c|$c.element==$store)->toOne()->map(conn|$conn.connection->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->cast(@meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::DatabaseConnection)->map(c|^$c(element=$conn.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s]))));
 
    let setIdx               = if($sets->size() == 1, | '', | '_' + $sets->indexOf($set)->toString());
    let transformedPkMap     = meta::relational::mapping::resolvePrimaryKeysNames($set->cast(@RelationalInstanceSetImplementation), $pkMap, $setIdx, true, $extensions);

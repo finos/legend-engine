@@ -45,7 +45,7 @@ public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisito
         if (executionNode instanceof Elasticsearch7RequestExecutionNode)
         {
             Elasticsearch7RequestExecutionNode esNode = (Elasticsearch7RequestExecutionNode) executionNode;
-            Elasticsearch7StoreConnection connection = esNode.connection;
+            Elasticsearch7StoreConnection connection = (Elasticsearch7StoreConnection) esNode.connection.connection;
 
             HttpClientContext httpClientContext = ElasticsearchHttpContextUtil.authToHttpContext(this.identity, this.executionState.getCredentialProviderProvider(), connection.authSpec, this.state.getProviders());
 

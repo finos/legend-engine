@@ -121,10 +121,10 @@ function meta::protocols::pure::v1_23_0::invocation::execution::execute::buildEx
             clientVersion = 'v1_23_0',
             function = transformLambda($f, $extensions),
             mapping = if($m.name->isEmpty(), |[], |$m->toOne()->elementToPath()),
-            runtime = if($runtime.connections->isEmpty(), |[], |transformRuntime($runtime->toOne(), $extensions)),
+            runtime = if($runtime.connectionElementAssociations->isEmpty(), |[], |transformRuntime($runtime->toOne(), $extensions)),
             context = $transformedContext,
             model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
-                        |let stores =  $runtime.connections.element->cast(@meta::pure::store::Store)
+                        |let stores =  $runtime.connectionElementAssociations.element->cast(@meta::pure::store::Store)
                                           ->map(s|$s->findAllStoreIncludes())
                                           ->removeDuplicates()
                                           ->filter(s | !$s->instanceOf(meta::pure::mapping::modelToModel::ModelStore))

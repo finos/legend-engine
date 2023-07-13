@@ -351,10 +351,22 @@ import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::createTablesInDb():Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=db1, type=DatabaseType.H2), ^TestDatabaseConnection(element=db2, type=DatabaseType.H2), ^TestDatabaseConnection(element=db3, type=DatabaseType.H2)]);
-   let dbConn1 = $runtime.connections->at(0)->cast(@DatabaseConnection);   
-   let dbConn2 = $runtime.connections->at(1)->cast(@DatabaseConnection);
-   let dbConn3 = $runtime.connections->at(2)->cast(@DatabaseConnection);
+   let runtime =  ^Runtime(connectionElementAssociations= [
+    ^ConnectionElementAssociation(
+      element=db1,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2)), 
+    ^ConnectionElementAssociation(
+      element=db2,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2)), 
+    ^ConnectionElementAssociation(
+      element=db3,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let dbConn1 = $runtime.connectionElementAssociations->at(0).connection->cast(@DatabaseConnection);   
+   let dbConn2 = $runtime.connectionElementAssociations->at(1).connection->cast(@DatabaseConnection);
+   let dbConn3 = $runtime.connectionElementAssociations->at(2).connection->cast(@DatabaseConnection);
 
    dropAndCreateTableInDb(db1, 'tradeTable', $dbConn1);
    dropAndCreateTableInDb(db1, 'traderTable', $dbConn2);
@@ -803,7 +815,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -815,7 +826,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations= $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(),connection=$jsonConnection)));
    
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -870,7 +881,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -882,7 +892,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    
    let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping4;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations= $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(),connection=$jsonConnection)));
    
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    
@@ -932,7 +942,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_TradesWrapper, 
                             url     = 'data:application/json,'+
                                       '{"s_trades" : [{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},'+
@@ -944,7 +953,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    
    let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping5;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations= $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(element=^meta::pure::mapping::modelToModel::ModelStore(),connection=$jsonConnection)));
    
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    

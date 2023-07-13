@@ -94,7 +94,7 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
                resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity()),
                trees = $g.trees->map(t|$t->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)),
                enableConstraints = $g.enableConstraints,
-               store=$g.connections->map(c|$c.element->match($extensions.serializerExtension('v1_18_0')->cast(@meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0).transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode->concatenate([
+               store=$g.connectionElementAssociation->map(c|$c.element->match($extensions.serializerExtension('v1_18_0')->cast(@meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0).transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode->concatenate([
                   any: Any[*] | []
                ])->toOneMany()))->first()
             );,

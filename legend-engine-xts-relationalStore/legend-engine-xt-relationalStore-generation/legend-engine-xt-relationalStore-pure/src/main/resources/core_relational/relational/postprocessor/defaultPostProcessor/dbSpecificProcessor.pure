@@ -26,7 +26,8 @@ import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
-   let conn = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection);
+   let connEl = $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(DatabaseConnection) && $c.element==store);
+   let conn = $connEl.connection->cast(@DatabaseConnection);
    let postProcessorQuery = if($conn->isNotEmpty(),
                                 | let type = $conn.type;
                                   assert(type->size()==1, 'found not enough or too many DB types');
@@ -43,8 +44,8 @@ function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runti
                                       |$dbConfig.preAndFinallyExecutionSQLQuery($conn->toOne()->cast(@RelationalDatabaseConnection).datasourceSpecification),
                                       |[]);
                   if($sqlPairs->isNotEmpty(),
-                    | let executionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).preQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
-                      let finallyExecutionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).finallyQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
+                    | let executionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).preQueryExecutionSQLQuery->toOne()->generateSQLExecNode($connEl->toOne()));
+                      let finallyExecutionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).finallyQueryExecutionSQLQuery->toOne()->generateSQLExecNode($connEl->toOne()));
                       ^$postProcessorOutput(executionNodes = $executionNodes, finallyExecutionNodes = $finallyExecutionNodes);,
                     | $postProcessorOutput);,
                 | $postProcessorOutput);
@@ -59,7 +60,7 @@ Class meta::relational::mapping::PreAndFinallyExecutionSQLQuery
    finallyQueryExecutionSQLQuery : String[0..1];
 }
 
-function <<access.private>> meta::relational::mapping::generateSQLExecNode(sql:String[1], dbCon:DatabaseConnection[1]) : SQLExecutionNode[1]
+function <<access.private>> meta::relational::mapping::generateSQLExecNode(sql:String[1], dbCon:meta::pure::runtime::ConnectionElementAssociation[1]) : SQLExecutionNode[1]
 {
    ^SQLExecutionNode(sqlQuery = $sql, resultType = ^meta::pure::executionPlan::VoidResultType(type=meta::pure::router::store::routing::Void), connection = $dbCon);
 }

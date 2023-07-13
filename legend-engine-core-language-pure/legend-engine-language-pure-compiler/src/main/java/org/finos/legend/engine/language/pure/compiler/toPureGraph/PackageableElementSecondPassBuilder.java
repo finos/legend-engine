@@ -237,7 +237,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
         Root_meta_pure_runtime_Runtime runtime = this.context.pureModel.getRuntime(fullPath);
         HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, runtime, this.context);
-        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connections(runtime._connections()));
+        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connectionElementAssociations(runtime._connectionElementAssociations()));
         return metamodel;
     }
 

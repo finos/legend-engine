@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -50,9 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
 import java.io.ByteArrayOutputStream;
@@ -105,7 +104,16 @@ public class MappingTestRunner
     public void setupTestData()
     {
         ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
-        this.buildTestConnection(conn -> this.runtime._connectionsAdd(conn.accept(connectionVisitor)));
+        this.buildTestConnection(conn ->
+        {
+            CompileContext context = this.pureModel.getContext();
+            Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation = new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("")
+                    ._connection(conn.accept(connectionVisitor))
+                    ._element(!conn.element.equals("ModelStore") ?
+                            context.resolveStore(conn.element, conn.elementSourceInformation)
+                            : Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))));
+            this.runtime._connectionElementAssociationsAdd(connectionElementAssociation);
+        });
     }
 
     private void buildTestConnection(Consumer<? super Connection> connectionRegistrar)
