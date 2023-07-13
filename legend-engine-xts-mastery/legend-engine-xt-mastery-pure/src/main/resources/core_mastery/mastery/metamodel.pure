@@ -156,14 +156,14 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
 {
   paths: meta::pure::mastery::metamodel::precedence::PropertyPath[1..*];
   scope: meta::pure::mastery::metamodel::precedence::RuleScope[*];
-  masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
+  masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Boolean[1]}>[1];
   
 }
 
 Class meta::pure::mastery::metamodel::precedence::PropertyPath
 {
   property: Property<Nil, Any|*>[1];
-  filter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
+  filter: meta::pure::metamodel::function::LambdaFunction<{Any[1]->Boolean[1]}>[1];
 }
 
 
@@ -175,7 +175,7 @@ Class meta::pure::mastery::metamodel::precedence::UpdateRule extends meta::pure:
 
 Class meta::pure::mastery::metamodel::precedence::SourcePrecedenceRule extends meta::pure::mastery::metamodel::precedence::UpdateRule
 [
-   noRuleScope( ~function: $this.scope->isEmpty()
+   noRuleScope( ~function: $this.scope->isNotEmpty()
                           ~enforcementLevel: Error
                           ~message: 'Source Precedence Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
 ]
@@ -193,7 +193,7 @@ Class meta::pure::mastery::metamodel::precedence::ConditionalRule extends meta::
 
 Class meta::pure::mastery::metamodel::precedence::CreateRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
 [
-   noRuleScope( ~function: $this.scope->isEmpty()
+   noRuleScope( ~function: $this.scope->isNotEmpty()
                           ~enforcementLevel: Error
                           ~message: 'Create Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
 ]
@@ -204,7 +204,7 @@ Class meta::pure::mastery::metamodel::precedence::CreateRule extends meta::pure:
 
 Class meta::pure::mastery::metamodel::precedence::DeleteRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
 [
-   noRuleScope( ~function: $this.scope->isEmpty()
+   noRuleScope( ~function: $this.scope->isNotEmpty()
                           ~enforcementLevel: Error
                           ~message: 'Delete Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
 ]
