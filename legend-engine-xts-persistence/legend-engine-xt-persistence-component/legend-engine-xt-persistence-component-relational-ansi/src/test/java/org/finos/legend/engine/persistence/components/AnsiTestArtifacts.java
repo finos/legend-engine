@@ -88,6 +88,13 @@ public class AnsiTestArtifacts
             "\"biz_date\" DATE," +
             "PRIMARY KEY (\"id\", \"name\"))";
 
+    public static String expectedBaseStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
+            "\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "PRIMARY KEY (\"id\", \"name\"))";
+
     public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
@@ -96,6 +103,14 @@ public class AnsiTestArtifacts
             "PRIMARY KEY (\"ID\", \"NAME\"))";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "PRIMARY KEY (\"id\", \"name\"))";
+
+    public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
             "\"amount\" DOUBLE," +
@@ -121,6 +136,9 @@ public class AnsiTestArtifacts
         "\"VERSION\" INTEGER," +
         "PRIMARY KEY (\"ID\", \"NAME\"))";
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
+
+    public static String expectedBaseStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
 
     public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
@@ -171,6 +189,15 @@ public class AnsiTestArtifacts
             "\"validity_through_target\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
+    public static String expectedBitemporalStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"" +
+            "(\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME NOT NULL," +
+            "\"validity_through_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
+
     public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
@@ -205,6 +232,14 @@ public class AnsiTestArtifacts
             "\"validity_from_target\" DATETIME NOT NULL," +
             "\"validity_through_target\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"" +
+            "(\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME NOT NULL," +
+            "\"digest\" VARCHAR," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
 
     public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

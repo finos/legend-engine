@@ -50,7 +50,8 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

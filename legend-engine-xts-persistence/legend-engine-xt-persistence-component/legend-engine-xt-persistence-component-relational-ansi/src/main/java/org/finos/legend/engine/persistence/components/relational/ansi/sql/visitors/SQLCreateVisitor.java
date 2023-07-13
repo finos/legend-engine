@@ -37,6 +37,7 @@ public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.dataset().datasetReference());
         logicalPlanNodes.add(current.dataset().schema());
+        current.dataset().datasetAdditionalProperties().ifPresent(logicalPlanNodes::add);
 
         if (current.ifNotExists())
         {

@@ -52,7 +52,8 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

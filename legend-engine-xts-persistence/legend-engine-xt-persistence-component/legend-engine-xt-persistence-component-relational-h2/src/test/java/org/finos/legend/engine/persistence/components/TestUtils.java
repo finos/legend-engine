@@ -373,7 +373,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchema())
             .alias(stagingTableName)
-            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2L))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2))
             .build();
     }
 
@@ -384,7 +384,8 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchema())
             .alias(stagingTableName)
-            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3L))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.LESS_THAN_EQUAL, 5))
             .build();
     }
 
@@ -395,7 +396,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
-            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2L))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2))
             .build();
     }
 
@@ -406,7 +407,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
-            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3L))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3))
             .build();
     }
 

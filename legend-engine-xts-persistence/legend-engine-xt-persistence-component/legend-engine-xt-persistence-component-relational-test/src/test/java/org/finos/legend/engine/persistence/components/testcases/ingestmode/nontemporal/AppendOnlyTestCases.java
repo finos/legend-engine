@@ -44,6 +44,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
+                .createStagingDataset(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyAppendOnlyAllowDuplicatesNoAuditing(operations);
@@ -57,6 +58,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
+                .createStagingDataset(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyAppendOnlyAllowDuplicatesNoAuditing(operations);

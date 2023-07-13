@@ -23,6 +23,13 @@ public class BigQueryTestArtifacts
             "`biz_date` DATE," +
             "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
+    public static String expectedStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
+            "`id` INT64 NOT NULL," +
+            "`name` STRING NOT NULL," +
+            "`amount` FLOAT64," +
+            "`biz_date` DATE," +
+            "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
+
     public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INT64 NOT NULL," +
             "`NAME` STRING NOT NULL," +
@@ -31,6 +38,14 @@ public class BigQueryTestArtifacts
             "PRIMARY KEY (`ID`, `NAME`) NOT ENFORCED)";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64 NOT NULL," +
+            "`name` STRING NOT NULL," +
+            "`amount` FLOAT64," +
+            "`biz_date` DATE," +
+            "`digest` STRING," +
+            "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
+
+    public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
@@ -65,6 +80,13 @@ public class BigQueryTestArtifacts
             "PRIMARY KEY (`ID`, `NAME`) NOT ENFORCED)";
 
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INT64," +
+            "`name` STRING," +
+            "`amount` FLOAT64," +
+            "`biz_date` DATE," +
+            "`digest` STRING)";
+
+    public static String expectedStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INT64," +
             "`name` STRING," +
             "`amount` FLOAT64," +
@@ -197,6 +219,15 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
+    public static String expectedBitemporalStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
+            "`id` INT64 NOT NULL," +
+            "`name` STRING NOT NULL," +
+            "`amount` FLOAT64," +
+            "`validity_from_reference` DATETIME NOT NULL," +
+            "`validity_through_reference` DATETIME," +
+            "`digest` STRING," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
+
     public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
@@ -231,6 +262,14 @@ public class BigQueryTestArtifacts
             "`validity_from_target` DATETIME NOT NULL," +
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
+
+    public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
+            "`id` INT64 NOT NULL," +
+            "`name` STRING NOT NULL," +
+            "`amount` FLOAT64," +
+            "`validity_from_reference` DATETIME NOT NULL," +
+            "`digest` STRING," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
 
     public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +

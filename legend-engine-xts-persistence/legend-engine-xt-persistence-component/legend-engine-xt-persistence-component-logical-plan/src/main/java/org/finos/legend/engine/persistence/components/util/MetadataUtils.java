@@ -33,6 +33,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,5 +140,39 @@ public class MetadataUtils
             metaSelectFields.add(jsonFunction);
         }
         return Insert.of(metaDataset, Selection.builder().addAllFields(metaSelectFields).build(), metaInsertFields);
+    }
+
+
+    /*
+    SELECT STAGING_FILTERS FROM <batch_metadata> WHERE
+        TABLE_NAME = <mainTableName> AND
+        TABLE_BATCH_ID = (SELECT MAX(TABLE_BATCH_ID) from <batch_metadata> where TABLE_NAME = <mainTableName>)
+    LIMIT 1
+    */
+    public Selection getLatestStagingFilters(StringValue mainTableName)
+    {
+        FieldValue stagingFiltersField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.stagingFiltersField()).build();
+        FieldValue tableNameField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.tableNameField()).build();
+        FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameField).build();
+        StringValue mainTableNameInUpperCase = StringValue.builder().value(mainTableName.value().map(field -> field.toUpperCase()))
+                .alias(mainTableName.alias()).build();
+
+        Condition tableNameEqualsCondition = Equals.of(tableNameInUpperCase, mainTableNameInUpperCase);
+
+        FieldValue tableBatchIdField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.tableBatchIdField()).build();
+        FunctionImpl maxBatchId = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(tableBatchIdField).build();
+        SelectValue maxBatchIdValue = SelectValue.of(Selection.builder().source(metaDataset.datasetReference()).condition(tableNameEqualsCondition).addFields(maxBatchId).build());
+        Condition maxBatchIdCondition = Equals.of(tableBatchIdField, maxBatchIdValue);
+
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(tableNameEqualsCondition);
+        conditions.add(maxBatchIdCondition);
+
+        return Selection.builder()
+                .source(metaDataset)
+                .condition(And.of(conditions))
+                .addFields(stagingFiltersField)
+                .limit(1)
+                .build();
     }
 }

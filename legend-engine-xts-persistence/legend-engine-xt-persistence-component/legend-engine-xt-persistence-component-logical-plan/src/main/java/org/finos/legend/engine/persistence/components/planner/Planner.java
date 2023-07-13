@@ -81,6 +81,12 @@ public abstract class Planner
         {
             return false;
         }
+
+        @Default
+        default boolean createStagingDataset()
+        {
+            return false;
+        }
     }
 
     private final Datasets datasets;

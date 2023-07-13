@@ -49,6 +49,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`) " +
                 "(SELECT * FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingTableCreateQueryWithNoPKs, preActionsSqlList.get(1));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         // Stats

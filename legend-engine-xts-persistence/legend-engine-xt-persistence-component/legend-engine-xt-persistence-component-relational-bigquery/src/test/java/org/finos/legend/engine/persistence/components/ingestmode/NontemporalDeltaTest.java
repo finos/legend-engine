@@ -63,6 +63,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
             "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
 
         // Stats

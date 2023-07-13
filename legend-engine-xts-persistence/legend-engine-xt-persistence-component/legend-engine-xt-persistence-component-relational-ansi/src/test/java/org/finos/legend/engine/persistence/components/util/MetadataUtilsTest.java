@@ -161,4 +161,23 @@ public abstract class MetadataUtilsTest
         String expectedSql = "INSERT INTO " + upperCaseTableName() + " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\") (SELECT 'main',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
+
+    @Test
+    public void testGetMaxStagingFilters()
+    {
+        MetadataUtils store = new MetadataUtils(metadataDataset());
+        Selection selection = store.getLatestStagingFilters(tableName);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedSql = "SELECT " + lowerCaseTableName() + ".\"STAGING_FILTERS\" FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " " +
+                "WHERE (UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'MAIN') AND " +
+                "(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\" = (SELECT MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\") " +
+                "FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE " +
+                "UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'MAIN')) LIMIT 1";
+        Assertions.assertEquals(expectedSql, list.get(0));
+
+    }
+
 }

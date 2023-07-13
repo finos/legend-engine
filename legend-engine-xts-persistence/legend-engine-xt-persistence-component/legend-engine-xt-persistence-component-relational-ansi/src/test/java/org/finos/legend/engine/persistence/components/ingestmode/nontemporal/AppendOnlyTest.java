@@ -43,6 +43,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
                 "(SELECT * FROM \"mydb\".\"staging\" as stage)";
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseStagingTableCreateQueryWithNoPKs, preActionsSqlList.get(1));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         // Stats

@@ -50,7 +50,8 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`validity_from_target` = stage.`validity_from_reference`))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBitemporalStagingTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
