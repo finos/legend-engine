@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-mongodb</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Protobuf</name>
+    <name>Legend Engine - XTS - MongoDB</name>
 
     <modules>
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
