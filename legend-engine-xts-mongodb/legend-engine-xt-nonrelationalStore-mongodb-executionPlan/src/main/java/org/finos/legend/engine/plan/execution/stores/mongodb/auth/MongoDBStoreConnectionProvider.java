@@ -19,9 +19,15 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
@@ -40,7 +46,7 @@ import java.util.stream.Collectors;
 
 public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<MongoClient>>
 {
-
+    private static final int DEFAULT_BATCH_SIZE = 10;
     private static final String ADMIN_DB = "admin";
 
     public MongoDBStoreConnectionProvider(CredentialProviderProvider credentialProviderProvider)
@@ -48,9 +54,12 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
         super(credentialProviderProvider);
     }
 
-    @Override
-    public Supplier<MongoClient> makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
+
+    public Supplier<Pair<MongoClient, MongoCursor<Document>>> executeQuery(MongoDBConnection dbConnection, Identity identity, Document bsonCmd) throws Exception
     {
+        final MongoDBConnectionSpecification connectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
+        final AuthenticationSpecification authenticationSpec = dbConnection.authenticationSpecification;
+
         if (!(connectionSpec instanceof MongoDBConnectionSpecification && (authenticationSpec instanceof UserPasswordAuthenticationSpecification || authenticationSpec instanceof KerberosAuthenticationSpecification)))
         {
             throw new IllegalStateException("Invalid ConnectionSpecification/AuthenticationSpecification. Please reach out to dev team");
@@ -61,7 +70,7 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder().applyToClusterSettings(builder -> builder.hosts(serverAddresses)).applicationName("Legend Execution Server");
 
-        Supplier<MongoClient> mongoClientSupplier;
+        Supplier<Pair<MongoClient, MongoCursor<Document>>> mongoResultSupplier;
         if (authenticationSpec instanceof KerberosAuthenticationSpecification)
         {
             Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
@@ -82,27 +91,43 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
 
             MongoCredential mongoCredential = MongoCredential.createGSSAPICredential(kerberosPrincipal.getName());
             MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
-            mongoClientSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<MongoClient>) () -> MongoClients.create(clientSettings));
+            mongoResultSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<Pair<MongoClient, MongoCursor<Document>>>) () -> this.executeMongoCommand(clientSettings,
+                    dbConnection.dataSourceSpecification.databaseName, bsonCmd));
         }
         else
         {
             // authenticationSpec instanceof UserPasswordAuthenticationSpecification
             Credential credential = makeCredential(authenticationSpec, identity);
-
             if (credential instanceof PlaintextUserPasswordCredential)
             {
                 PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
                 MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
                 MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
-                mongoClientSupplier = () -> MongoClients.create(clientSettings);
+                mongoResultSupplier = () -> this.executeMongoCommand(clientSettings, dbConnection.dataSourceSpecification.databaseName, bsonCmd);
             }
             else
             {
                 String errMesg = String.format("Within UserPasswordAuthenticationSpecification only PlaintextUserPasswordCredential is supported, but got: %s", credential.getClass().getName());
                 throw new IllegalStateException(errMesg);
             }
-
         }
-        return mongoClientSupplier;
+        return mongoResultSupplier;
+    }
+
+    private Pair<MongoClient, MongoCursor<Document>> executeMongoCommand(MongoClientSettings clientSettings, String databaseName, Document bsonCmd)
+    {
+        MongoClient mongoClient = MongoClients.create(clientSettings);
+        MongoDatabase mongoDatabase = mongoClient.getDatabase(databaseName);
+        MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
+                .aggregate(bsonCmd.getList("pipeline", Document.class))
+                .batchSize(DEFAULT_BATCH_SIZE).iterator();
+        return Tuples.pair(mongoClient, cursor);
+
+    }
+
+    @Override
+    public Supplier<MongoClient> makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
+    {
+        throw new UnsupportedOperationException("MakeConnection is not supported for MongoDB, only executeQuery - since authentication is at execution not connection");
     }
 }
