@@ -22,6 +22,8 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.ConnectionSpecification;
@@ -53,7 +55,7 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
     }
 
 
-    public Supplier<MongoCursor<Document>> executeQuery(MongoDBConnection dbConnection, Identity identity, Document bsonCmd) throws Exception
+    public Supplier<Pair<MongoClient, MongoCursor<Document>>> executeQuery(MongoDBConnection dbConnection, Identity identity, Document bsonCmd) throws Exception
     {
         final MongoDBConnectionSpecification connectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
         final AuthenticationSpecification authenticationSpec = dbConnection.authenticationSpecification;
@@ -68,7 +70,7 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
         MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder().applyToClusterSettings(builder -> builder.hosts(serverAddresses)).applicationName("Legend Execution Server");
 
-        Supplier<MongoCursor<Document>> mongoCursorSupplier;
+        Supplier<Pair<MongoClient, MongoCursor<Document>>> mongoResultSupplier;
         if (authenticationSpec instanceof KerberosAuthenticationSpecification)
         {
             Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
@@ -89,20 +91,19 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
 
             MongoCredential mongoCredential = MongoCredential.createGSSAPICredential(kerberosPrincipal.getName());
             MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
-            mongoCursorSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<MongoCursor<Document>>) () -> this.executeMongoCommand(clientSettings,
+            mongoResultSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<Pair<MongoClient, MongoCursor<Document>>>) () -> this.executeMongoCommand(clientSettings,
                     dbConnection.dataSourceSpecification.databaseName, bsonCmd));
         }
         else
         {
             // authenticationSpec instanceof UserPasswordAuthenticationSpecification
             Credential credential = makeCredential(authenticationSpec, identity);
-
             if (credential instanceof PlaintextUserPasswordCredential)
             {
                 PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
                 MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
                 MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
-                mongoCursorSupplier = () -> this.executeMongoCommand(clientSettings, dbConnection.dataSourceSpecification.databaseName, bsonCmd);
+                mongoResultSupplier = () -> this.executeMongoCommand(clientSettings, dbConnection.dataSourceSpecification.databaseName, bsonCmd);
             }
             else
             {
@@ -110,17 +111,17 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
                 throw new IllegalStateException(errMesg);
             }
         }
-        return mongoCursorSupplier;
+        return mongoResultSupplier;
     }
 
-    private MongoCursor<Document> executeMongoCommand(MongoClientSettings clientSettings, String databaseName, Document bsonCmd)
+    private Pair<MongoClient, MongoCursor<Document>> executeMongoCommand(MongoClientSettings clientSettings, String databaseName, Document bsonCmd)
     {
         MongoClient mongoClient = MongoClients.create(clientSettings);
         MongoDatabase mongoDatabase = mongoClient.getDatabase(databaseName);
         MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
                 .aggregate(bsonCmd.getList("pipeline", Document.class))
                 .batchSize(DEFAULT_BATCH_SIZE).iterator();
-        return cursor;
+        return Tuples.pair(mongoClient, cursor);
 
     }
 

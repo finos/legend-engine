@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.mongodb;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
@@ -44,13 +45,11 @@ public class MongoDBExecutor
         {
             MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
             MongoDBConnectionSpecification mongoDBConnectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
-            Supplier<MongoClient> mongoClientSupplier = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
-            MongoClient mongoClient = mongoClientSupplier.get();
             try
             {
                 Document bsonCmd = Document.parse(dbCommand);
-                Supplier<MongoCursor<Document>> mongoCursorSupplier = mongoDBConnectionProvider.executeQuery(dbConnection, serviceIdentity, bsonCmd);
-                return new MongoDBResult(mongoClient, mongoCursorSupplier.get());
+                Supplier<Pair<MongoClient, MongoCursor<Document>>> mongoResultSupplier = mongoDBConnectionProvider.executeQuery(dbConnection, serviceIdentity, bsonCmd);
+                return new MongoDBResult(mongoResultSupplier.get().getOne(), mongoResultSupplier.get().getTwo());
             }
             catch (Exception e)
             {
