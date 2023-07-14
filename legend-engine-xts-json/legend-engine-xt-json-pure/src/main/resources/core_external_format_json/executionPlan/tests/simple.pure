@@ -17,6 +17,7 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::external::shared::format::functions::*;
+import meta::external::format::json::executionPlan::model::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQuery(): Boolean[1]
@@ -127,6 +128,34 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndCompleteCheckedTree(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| TargetPerson.all()->graphFetchChecked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, checked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree(), checked(#{Person{firstName, lastName}}#, defaultDefectTree(),  #{JsonDataRecord {number, record}}#)))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
+
+  assertEquals('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}},"value":{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}}', $result);
+
+  let resultWithDefcts = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John"}'));
+
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"No Input Available","enforcementLevel":"Critical","ruleType":"NoInput","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::TargetPerson","path":[]}],"source":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for lastName: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]},{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\"}"},"value":null},"value":null}', $resultWithDefcts);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndOnlyDefectsCheckedTree(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| TargetPerson.all()->graphFetchChecked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, checked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree()))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
+
+  assertEquals('{"defects":[],"value":{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}}', $result);
+
+  let resultWithDefcts = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John"}'));
+
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"No Input Available","enforcementLevel":"Critical","ruleType":"NoInput","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::TargetPerson","path":[]}],"value":null}', $resultWithDefcts);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJson(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -136,6 +165,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
   assertEquals('{"fullName":"John Doe refined","firm":{"legalName":"Firm A refined"},"addresses":[]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJsonAndChecked(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::ModelChainConnection(element=^meta::pure::mapping::modelToModel::ModelStore(), mappings = M2MMapping1));
+  let query   = {data:String[1]| RefinedPerson.all()->graphFetchChecked(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping2, mergeRuntimes([$runtime, getRuntimeWithModelQueryConnection(Person, 'application/json', $data)]))->externalize($binding, checked(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree()))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
+
+  assertEquals('{"defects":[],"value":{"fullName":"John Doe refined","firm":{"legalName":"Firm A refined"},"addresses":[]}}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testBindingAndM2MChainedWithQualifiedProperty(): Boolean[1]
