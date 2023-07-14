@@ -76,6 +76,7 @@
             <artifactId>legend-engine-external-shared-format-runtime</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
