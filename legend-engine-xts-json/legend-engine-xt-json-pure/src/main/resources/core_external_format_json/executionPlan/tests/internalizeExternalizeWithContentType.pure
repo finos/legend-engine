@@ -26,7 +26,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithByte(): Boolean[1]
@@ -35,7 +35,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', meta::external::format::json::executionPlan::test::convertStringToBytes('{"firstName": "John", "lastName":"Doe"}')));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithPartialTree(): Boolean[1]
@@ -44,7 +44,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithNestedTree(): Boolean[1]
@@ -53,7 +53,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}, "addresses": {"street": "Street A"}}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testSimpleJsonQueryWithIncompleteData(): Boolean[1]
@@ -62,7 +62,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::withContentType::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}}', $result);
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::withContentType::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::withContentType::testM2MChainingWithJson(): Boolean[1]
@@ -71,7 +71,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}}', $result);
+  assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
 }
 
 // =========================================================================================================

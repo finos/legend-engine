@@ -18,6 +18,9 @@ import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecuti
 import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.read.JsonDataReader;
 import org.finos.legend.engine.external.format.json.read.JsonDataRecord;
+import org.finos.legend.engine.external.format.json.write.IJsonExternalizeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.write.IJsonSerializer;
+import org.finos.legend.engine.external.format.json.write.IJsonWriter;
 import org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
@@ -38,6 +41,9 @@ public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExten
         DEPENDENCIES.put("meta::external::format::json::executionPlan::model::JsonDataRecord", JsonDataRecord.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IJsonInternalizeExecutionNodeSpecifics", IJsonInternalizeExecutionNodeSpecifics.class);
         DEPENDENCIES.put(PURE_PACKAGE + "JsonDataReader", JsonDataReader.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "_IJsonExternalizeExecutionNodeSpecifics", IJsonExternalizeExecutionNodeSpecifics.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "IJsonSerializer", IJsonSerializer.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "IJsonWriter", IJsonWriter.class);
     }
 
     @Override

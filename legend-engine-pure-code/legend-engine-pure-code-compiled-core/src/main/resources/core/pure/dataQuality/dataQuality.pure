@@ -55,31 +55,42 @@ function <<functionType.NotImplementedFunction>> meta::pure::dataQuality::checke
    $collection->map(e|^Checked<T>(value=$e));
 }
 
-function meta::pure::dataQuality::checked(valueTree: RootGraphFetchTree<Any>[1], defectTree: RootGraphFetchTree<Defect>[1], sourceTree: RootGraphFetchTree<Any>[1]):RootGraphFetchTree<Checked<Any>>[1]
+function meta::pure::dataQuality::defaultDefectTree():RootGraphFetchTree<Defect>[1]
 {
-   let castedClass          = Checked->cast(@Class<Checked<Nil>>);
+  #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#
+}
 
-   let valueProperty        = $castedClass.properties->filter(p | $p.name == 'value')->toOne();
-   let updatedValueProperty = ^$valueProperty(genericType = ^GenericType(rawType = $valueTree.class));
-   let valuePropTree        = ^PropertyGraphFetchTree(
-                                property = $updatedValueProperty,
-                                subTrees = $valueTree.subTrees
-                              );
+function meta::pure::dataQuality::checked(valueTree: RootGraphFetchTree<Any>[1], defectTree: RootGraphFetchTree<Defect>[1]):RootGraphFetchTree<Checked<Any>>[1]
+{
+  checked($valueTree, $defectTree, [])
+}
 
-   let defectsPropTree      = ^PropertyGraphFetchTree(
-                                property = $castedClass.properties->filter(p | $p.name == 'defects')->toOne(),
-                                subTrees = $defectTree.subTrees
-                              );
-   
-   let sourcePropTree       = ^PropertyGraphFetchTree(
-                                property = $castedClass.properties->filter(p | $p.name == 'source')->toOne(),
-                                subTrees = $sourceTree.subTrees,
-                                subType = $sourceTree.class
-                              );
+function meta::pure::dataQuality::checked(valueTree: RootGraphFetchTree<Any>[1], defectTree: RootGraphFetchTree<Defect>[1], sourceTree: RootGraphFetchTree<Any>[0..1]):RootGraphFetchTree<Checked<Any>>[1]
+{
+  let castedClass          = Checked->cast(@Class<Checked<Nil>>);
 
-   ^RootGraphFetchTree<Checked<Nil>>
-   (
-     class    = $castedClass,
-     subTrees = [$defectsPropTree, $sourcePropTree, $valuePropTree]
-   );
+  let valuePropTree        = ^PropertyGraphFetchTree(
+                              property = $castedClass.properties->filter(p | $p.name == 'value')->toOne(),
+                              subTrees = $valueTree.subTrees,
+                              subType  = $valueTree.class
+                            );
+
+  let defectsPropTree      = ^PropertyGraphFetchTree(
+                              property = $castedClass.properties->filter(p | $p.name == 'defects')->toOne(),
+                              subTrees = $defectTree.subTrees
+                            );
+  
+  let sourcePropTree       = if($sourceTree->isNotEmpty(),
+                              | ^PropertyGraphFetchTree(
+                                  property = $castedClass.properties->filter(p | $p.name == 'source')->toOne(),
+                                  subTrees = $sourceTree.subTrees,
+                                  subType = $sourceTree.class
+                                );,
+                              | []);
+
+  ^RootGraphFetchTree<Checked<Nil>>
+  (
+    class    = $castedClass,
+    subTrees = $defectsPropTree->concatenate($sourcePropTree)->concatenate($valuePropTree)
+  );
 }

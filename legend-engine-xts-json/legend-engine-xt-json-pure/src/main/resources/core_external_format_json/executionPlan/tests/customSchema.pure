@@ -31,7 +31,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let input   = '{"first.name": "John", "last@name": "Doe", "age": 1, "address": [{"street name": "Street A"}]}';
   let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"firstName":"John","lastAtName":"Doe","age":1,"address":[{"streetName":"Street A"}]}}', $result);
+  assertJsonStringsEqual('{"firstName":"John","lastAtName":"Doe","age":1,"address":[{"streetName":"Street A"}]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::customSchema::testSpecialCharacterHandlingOnSerialization(): Boolean[1]
+{
+  let binding  = compileLegendGrammar(readFile('/core_external_format_json/executionPlan/tests/resources/customSchema.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:Byte[*] | meta::external::format::json::executionPlan::test::customSchema::Person->internalize($binding, $data)->graphFetch(#{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)->externalize($binding, #{meta::external::format::json::executionPlan::test::customSchema::Person{firstName, lastAtName, age, address {streetName}}}#)};
+
+  let input   = '{"first.name": "John", "last@name": "Doe", "age": 1, "address": [{"street name": "Street A"}]}';
+  let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+  
+  assertJsonStringsEqual($input, $result);
 }
 
 ###Pure

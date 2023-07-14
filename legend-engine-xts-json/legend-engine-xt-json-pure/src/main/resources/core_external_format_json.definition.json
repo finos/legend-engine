@@ -1,6 +1,6 @@
 {
   "name": "core_external_format_json",
-  "pattern": "(meta::external::format::json|meta::protocols::pure)(::.*)?",
+  "pattern": "(meta::external::format::json)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

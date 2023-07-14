@@ -1799,7 +1799,7 @@ public class TestServiceTestSuite
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
-                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 1}}';\n" +
+                "                    data: '{\"name\" : \"Firm A\", \"ranking\" : 1}';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1853,7 +1853,7 @@ public class TestServiceTestSuite
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
-                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 1}}';\n" +
+                "                    data: '{\"name\" : \"Firm A\", \"ranking\" : 1}';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1907,7 +1907,7 @@ public class TestServiceTestSuite
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
-                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 2}}';\n" +
+                "                    data: '{\"name\" : \"Firm A\", \"ranking\" : 2}';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1932,8 +1932,8 @@ public class TestServiceTestSuite
         Assert.assertEquals(1, ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.size());
         Assert.assertTrue(((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0) instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0).id);
-        JsonAssert.assertJsonEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 1\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).actual);
-        JsonAssert.assertJsonEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 2\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).expected);
+        JsonAssert.assertJsonEquals("{\n    \"name\" : \"Firm A\",\n    \"ranking\" : 1\n  }", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).actual);
+        JsonAssert.assertJsonEquals("{\n    \"name\" : \"Firm A\",\n    \"ranking\" : 2\n  }", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).expected);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).message);
     }
 

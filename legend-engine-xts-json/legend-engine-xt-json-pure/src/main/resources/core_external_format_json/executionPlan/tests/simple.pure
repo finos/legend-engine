@@ -26,7 +26,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithStaticInput(): Boolean[1]
@@ -36,7 +36,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, []);
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithChecked(): Boolean[1]
@@ -46,11 +46,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":{"firstName":"John","lastName":"Doe"}}}', $result);
+  assertEquals('{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":{"firstName":"John","lastName":"Doe"}}', $result);
 
   let result1 = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for lastName: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\"}"},"value":null}}', $result1);
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for lastName: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\"}"},"value":null}', $result1);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithCustomCheckedTree(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data)->checked()->externalize($binding, checked(#{Person{firstName, lastName}}#, defaultDefectTree()))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"defects":[],"value":{"firstName":"John","lastName":"Doe"}}', $result);
+
+  let result1 = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John"}'));
+
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for lastName: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"value":null}', $result1);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithPartialTree(): Boolean[1]
@@ -60,7 +74,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithNestedTree(): Boolean[1]
@@ -70,7 +84,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName" : "Firm A"}, "addresses": [{"street": "Street A"}]}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A"}]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithPartialTreeInExternalize(): Boolean[1]
@@ -80,7 +94,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName" : "Firm A"}, "addresses": [{"street": "Street A"}]}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithIncompleteData(): Boolean[1]
@@ -90,7 +104,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                  
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}}', $result);
+  assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithPartialTreeAndChecked(): Boolean[1]
@@ -100,7 +114,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                  
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}}}', $result);
+  assertEquals('{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJson(): Boolean[1]
@@ -110,7 +124,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}}', $result);
+  assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJson(): Boolean[1]
@@ -121,7 +135,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"fullName":"John Doe refined","firm":{"legalName":"Firm A refined"},"addresses":[]}}', $result);
+  assertEquals('{"fullName":"John Doe refined","firm":{"legalName":"Firm A refined"},"addresses":[]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testBindingAndM2MChainedWithQualifiedProperty(): Boolean[1]
@@ -132,7 +146,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '[{"firstName":"John", "lastName":"Doe", "firm":{"legalName":"Firm A"}, "addresses": {"street": "Street A"}}, {"firstName":"John", "lastName":"Doe2", "firm":{"legalName":"Firm B"}, "addresses": [{"street": "Street A"}, {"street": "Street B"}]}, {"firstName":"John", "lastName":"Doe3", "firm":{"legalName":"Firm C"}}]'));
 
-  assertEquals('{"builder":{"_type":"json"},"values":[{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"}]},{"fullName":"John Doe2","firm":{"legalName":"Firm B"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"},{"street":"Street B","decoratedStreet()":"Street:Street B"}]},{"fullName":"John Doe3","firm":{"legalName":"Firm C"},"addresses":[]}]}', $result);
+  assertEquals('[{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"}]},{"fullName":"John Doe2","firm":{"legalName":"Firm B"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"},{"street":"Street B","decoratedStreet()":"Street:Street B"}]},{"fullName":"John Doe3","firm":{"legalName":"Firm C"},"addresses":[]}]', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testBindingAndM2MChainedWithXStore(): Boolean[1]
@@ -162,7 +176,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, $vars);
 
-  assertEquals('{"builder":{"_type":"json"},"values":[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}}]}', $result);
+  assertEquals('[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}}]', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testBindingAndM2MChainedWithUnion(): Boolean[1]
@@ -183,7 +197,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, $vars);
 
-  assertEquals('{"builder":{"_type":"json"},"values":[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":5,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":6,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":7,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":8,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}}]}', $result);
+  assertEquals('[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":5,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":6,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":7,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":8,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}}]', $result);
 }
 
 // =========================================================================================================

@@ -17,13 +17,17 @@ package org.finos.legend.engine.external.format.json;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.write.IJsonExternalizeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.format.json.write.JsonDataWriter;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
+import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSerializeResult;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
@@ -33,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -91,18 +96,51 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
                 throw new RuntimeException("Only Java implementations are currently supported, found: " + node.implementation);
             }
 
-            JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) node.implementation;
-            String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-            Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, executionState, profiles);
+            String executionClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, executionState, profiles);
 
-            org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics nodeSpecifics = (org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics) clazz.newInstance();
             IExecutionNodeContext context = new DefaultExecutionNodeContext(executionState, result);
-
-            return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, null, result, context);
+            if (Arrays.asList(specificsClass.getInterfaces()).contains(IJsonExternalizeExecutionNodeSpecifics.class))
+            {
+                IJsonExternalizeExecutionNodeSpecifics nodeSpecifics = (IJsonExternalizeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+                JsonDataWriter<?> jsonDataWriter = new JsonDataWriter<>(nodeSpecifics, extractStreamFromResult(result), context);
+                return new ExternalFormatSerializeResult(jsonDataWriter, result);
+            }
+            else
+            {
+                // Deprecated Flow to handle old plans
+                org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics nodeSpecifics = (org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics) specificsClass.newInstance();
+                return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, null, result, context);
+            }
         }
-        catch (InstantiationException | IllegalAccessException e)
+        catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static Stream<?> extractStreamFromResult(Result result)
+    {
+        if (result instanceof ConstantResult)
+        {
+            Object value = ((ConstantResult) result).getValue();
+            if (value instanceof List)
+            {
+                value = ((List<?>) value).stream();
+            }
+            if (!(value instanceof Stream))
+            {
+                value = Stream.of(value);
+            }
+            return (Stream<?>) value;
+        }
+        else if (result instanceof StreamingObjectResult)
+        {
+            return ((StreamingObjectResult<?>) result).getObjectStream();
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unexpected result: " + result.getClass().getName());
         }
     }
 }

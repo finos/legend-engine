@@ -45,14 +45,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                  '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"Road"}]';
   let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]}', $result);
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
 
   let input1  = '[{ "zipCode": "10000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"}},\n' + 
                  '{ "zipCode": "20000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "street" : "myStreet" , "@type":"meta::external::format::json::executionPlan::test::inheritance::Street"}\n,' +
                  '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"meta::external::format::json::executionPlan::test::inheritance::Road"}]';
   let result1 = executeLegendQuery($query, pair('data', convertStringToBytes($input1)), jsonExtensions());
   
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]}', $result);
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
 }
 
 function <<meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::inheritance::testInheritanceAtPropertyLevel(): Boolean[1]
@@ -81,7 +81,7 @@ function <<meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnl
                  '{ "zipCode": "30000000", "coordinates": {"latitude": "11.11", "longitude": "11.11"} , "road" : "myRoad" , "@type":"Road"}]';
   let result  = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]}', $result);
+  assertJsonStringsEqual('[{"zipCode":"10000000","coordinates":{"latitude":"11.11","longitude":"11.11"}},{"zipCode":"20000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"street":"myStreet"},{"zipCode":"30000000","coordinates":{"latitude":"11.11","longitude":"11.11"},"road":"myRoad"}]', $result);
 }
 
 ###Pure

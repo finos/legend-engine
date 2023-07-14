@@ -32,7 +32,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
   // Execution should not run "validEmployeesSize" constraint and not complain on addresses multiplicity
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"name":"Name A","ranking":1},{"name":"Name B","ranking":null}]}', $result);
+  assertJsonStringsEqual('[{"name":"Name A","ranking":1},{"name":"Name B","ranking":null}]', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithChecked():Boolean[1]
@@ -70,7 +70,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
   // Execution should not complain on Firm.addresses multiplicity, it should complain on validEmployeesSize, validRanking, firstNameLength, lastNameLength & addressesLength constraints
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}}', $result);
+  assertJsonStringsEqual('{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchChecked():Boolean[1]
@@ -114,7 +114,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
   
   // Execution should not complain on Firm.addresses multiplicity, lastNameLength & addressesLength constraints, it should complain on validEmployeesSize, validRanking & firstNameLength constraints
-  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}}', $result);
+  assertJsonStringsEqual('{"name":"Name A","ranking":1,"employees":[{"firstName":"FirstName A"},{"firstName":"FirstName B"}]}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchUnexpandedChecked():Boolean[1]

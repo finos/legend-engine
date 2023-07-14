@@ -196,7 +196,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
               let listType       = if(isJavaList($javaType), |$javaType, |javaList($javaType));
               let elementType    = if(isJavaList($javaType), |elementTypeOfJavaList($javaType), |$javaType);
               let variable       = j_variable($listType, '_' + $conventions->fieldName($p));
-              let fieldName      = $bindingDetail.propertyToFieldNameGenerator->eval($p);
+              let fieldName      = $bindingDetail.fieldNameForProperty($p);
 
               let propertyType   = $p.genericType.rawType->toOne();
               let lParam         = j_parameter(javaString(), 'm');
