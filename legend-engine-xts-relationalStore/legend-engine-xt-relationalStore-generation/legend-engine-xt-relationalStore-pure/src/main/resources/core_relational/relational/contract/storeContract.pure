@@ -197,7 +197,7 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
             $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
            |
              // Normal Flow
-            let connections = $runtime.connectionElementAssociations->filter(c | $c->instanceOf(DatabaseConnection));
+            let connections = $runtime.connectionElementAssociations->filter(c | $c.connection->instanceOf(DatabaseConnection));
             let storeRuntime = if($connections->size() <= 1,
                                | $runtime->toOne(),
                                | let oldRuntime = $runtime->toOne();
