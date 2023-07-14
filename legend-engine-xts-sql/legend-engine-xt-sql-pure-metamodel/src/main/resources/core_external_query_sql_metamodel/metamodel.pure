@@ -313,6 +313,13 @@ Class meta::external::query::sql::metamodel::InPredicate extends meta::external:
   valueList: meta::external::query::sql::metamodel::Expression[1];
 }
 
+Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  min: meta::external::query::sql::metamodel::Expression[1];
+  max: meta::external::query::sql::metamodel::Expression[1];
+  value: meta::external::query::sql::metamodel::Expression[1];
+}
+
 Class meta::external::query::sql::metamodel::Window extends meta::external::query::sql::metamodel::Statement
 {
   windowRef: String[0..1];
@@ -390,7 +397,9 @@ Enum meta::external::query::sql::metamodel::ComparisonOperator
   LESS_THAN,
   LESS_THAN_OR_EQUAL,
   GREATER_THAN,
-  GREATER_THAN_OR_EQUAL
+  GREATER_THAN_OR_EQUAL,
+  IS_DISTINCT_FROM,
+  IS_NOT_DISTINCT_FROM
 }
 
 Enum meta::external::query::sql::metamodel::CurrentTimeType

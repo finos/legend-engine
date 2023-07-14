@@ -31,7 +31,9 @@ public class SQLGrammarComposer
             Tuples.pair(ComparisonOperator.GREATER_THAN, ">"),
             Tuples.pair(ComparisonOperator.LESS_THAN, "<"),
             Tuples.pair(ComparisonOperator.LESS_THAN_OR_EQUAL, "<="),
-            Tuples.pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ">=")
+            Tuples.pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ">="),
+            Tuples.pair(ComparisonOperator.IS_DISTINCT_FROM, "IS DISTINCT FROM"),
+            Tuples.pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, "IS NOT DISTINCT FROM")
     );
     private final MutableMap<LogicalBinaryType, String> binaryComparator = UnifiedMap.newMapWith(
             Tuples.pair(LogicalBinaryType.AND, "AND"),
@@ -360,6 +362,16 @@ public class SQLGrammarComposer
             public String visit(ArrayLiteral val)
             {
                 return "[" + visit(val.values, ", ") + "]";
+            }
+
+            @Override
+            public String visit(BetweenPredicate val)
+            {
+                String value = val.value.accept(this);
+                String min = val.min.accept(this);
+                String max = val.max.accept(this);
+
+                return value + " BETWEEN " + min + " AND " +  max;
             }
 
             @Override

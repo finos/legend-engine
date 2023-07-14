@@ -55,6 +55,15 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
     }
 
     @Override
+    public Set<TableSource> visit(BetweenPredicate val)
+    {
+        Set<TableSource> minTables = val.min.accept(this);
+        Set<TableSource> maxTables = val.max.accept(this);
+        Set<TableSource> valueTables = val.value.accept(this);
+        return Sets.mutable.withAll(minTables).withAll(maxTables).withAll(valueTables);
+    }
+
+    @Override
     public Set<TableSource> visit(BooleanLiteral val)
     {
         return Collections.emptySet();
