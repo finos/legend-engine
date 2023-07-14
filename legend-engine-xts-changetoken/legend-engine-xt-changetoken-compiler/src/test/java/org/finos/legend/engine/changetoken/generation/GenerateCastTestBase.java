@@ -16,6 +16,8 @@ package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.classgraph.ClassGraph;
+import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
+import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
 import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryClassLoader;
 import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryFileManager;
 import org.junit.Assert;
@@ -46,11 +48,41 @@ public abstract class GenerateCastTestBase
 
     public static void setupSuite(String versionsFuncName) throws IOException, ClassNotFoundException
     {
+        setupSuiteFrom(versionsFuncName, "function");
+    }
+
+    public static void setupSuiteFromVersions(Root_meta_pure_changetoken_Versions versions) throws IOException, ClassNotFoundException
+    {
+        setupSuiteFrom(versions, "versions");
+    }
+
+    public static void setupSuiteFromJson(String json) throws IOException, ClassNotFoundException
+    {
+        setupSuiteFrom(json, "json");
+    }
+
+    private static void setupSuiteFrom(Object fromValue, String generatorType) throws IOException, ClassNotFoundException
+    {
         Path generatedSourcesDirectory = tmpFolder.newFolder("generated-sources", "java").toPath();
         String classpath = new ClassGraph().getClasspath();
 
         String baseClassName = "TestCastFunction";
-        GenerateCast.main(generatedSourcesDirectory.toString(), versionsFuncName, baseClassName);
+        GenerateJavaProject generateCastProject = null;
+        switch (generatorType)
+        {
+            case "function":
+                generateCastProject = new GenerateCast(generatedSourcesDirectory.toString(), (String) fromValue, baseClassName);
+                break;
+            case "versions":
+                generateCastProject = new GenerateCastFromVersions(generatedSourcesDirectory.toString(), (Root_meta_pure_changetoken_Versions) fromValue, baseClassName);
+                break;
+            case "json":
+                generateCastProject = new GenerateCastFromJson(generatedSourcesDirectory.toString(), (String) fromValue, baseClassName);
+                break;
+            default:
+                Assert.fail(generatorType);
+        }
+        generateCastProject.execute();
 
         Path fileName = generatedSourcesDirectory.resolve(
                 "org/finos/legend/engine/generated/meta/pure/changetoken/cast_generation/" + baseClassName + ".java");

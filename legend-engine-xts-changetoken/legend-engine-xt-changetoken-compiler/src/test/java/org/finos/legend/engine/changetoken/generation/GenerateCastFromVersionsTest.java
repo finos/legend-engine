@@ -16,6 +16,7 @@ package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.pure.generated.*;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,12 +28,29 @@ import java.util.Map;
 
 import static org.junit.Assert.assertThrows;
 
-public class GenerateCastTest extends GenerateCastTestBase
+public class GenerateCastFromVersionsTest extends GenerateCastTestBase
 {
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
-        setupSuite("meta::pure::changetoken::tests::getVersions");
+        Root_meta_pure_changetoken_Version abcdefg123 = new Root_meta_pure_changetoken_Version_Impl("Anonymous_NoCounter");
+        abcdefg123._version("ftdm:abcdefg123");
+        Root_meta_pure_changetoken_Version abcdefg456 = new Root_meta_pure_changetoken_Version_Impl("Anonymous_NoCounter");
+        abcdefg456._version("ftdm:abcdefg456");
+        abcdefg456._prevVersion("ftdm:abcdefg123");
+        Root_meta_pure_changetoken_AddField addField = new Root_meta_pure_changetoken_AddField_Impl("Anonymous_NoCounter");
+        addField._class("meta::pure::changetoken::tests::SampleClass");
+        addField._fieldName("abc");
+        addField._fieldType("Integer[1]");
+        addField._safeCast(true);
+        Root_meta_pure_changetoken_ConstValue value =  new Root_meta_pure_changetoken_ConstValue_Impl("Anonymous_NoCounter");
+        value._value(100L);
+        addField._defaultValue(value);
+        abcdefg456._changeTokensAdd(addField);
+        Root_meta_pure_changetoken_Versions versions = new Root_meta_pure_changetoken_Versions_Impl("Anonymous_NoCounter");
+        versions._versionsAdd(abcdefg123);
+        versions._versionsAdd(abcdefg456);
+        setupSuiteFromVersions(versions);
     }
 
     @Test
