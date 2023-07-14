@@ -23,6 +23,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertThrows;
@@ -33,6 +35,14 @@ public class GenerateCastChainTest extends GenerateCastTestBase
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
         setupSuite("meta::pure::changetoken::tests::getVersionsChain");
+    }
+
+    @Test
+    public void testVersions() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        List<String> versions = (List<String>) compiledClass.getMethod("versions").invoke(null);
+        List<String> expected = Arrays.asList("ftdm:abcdefg123", "ftdm:abcdefg456", "ftdm:abcdefg789");
+        Assert.assertEquals(expected, versions);
     }
 
     @Test

@@ -31,6 +31,22 @@ function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName
     ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
     ->eval();
 
+  generateCastFromVersions($versions, $outputClassName);
+}
+
+function meta::pure::changetoken::cast_generation::generateCastFromJson(jsonString:String[1], outputClassName:String[1]):Project[1]
+{
+  let versions = $jsonString->jsonToVersions();
+  generateCastFromVersions($versions, $outputClassName);
+}
+
+function meta::pure::changetoken::cast_generation::jsonToVersions(jsonString:String[1]):Versions[1]
+{
+  $jsonString->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true));
+}
+
+function meta::pure::changetoken::cast_generation::generateCastFromVersions(versions:Versions[1], outputClassName:String[1]):Project[1]
+{
   // generated class  
   let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
   
@@ -38,8 +54,20 @@ function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName
     $class
       ->_generateUpcastFunction($versions)
       ->_generateDowncastFunction($versions)
+      ->_generateVersionsFunction($versions)
       ->addMethods(_generateUtilMethods())
   );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateVersionsFunction(
+  class:meta::external::language::java::metamodel::Class[1],
+  versions:Versions[1]
+)
+:meta::external::language::java::metamodel::Class[1]
+{
+  let versionsList = javaArrays()->j_invoke('asList', $versions.versions->map(ver|j_string($ver.version)), javaList(javaString()));
+  let versionsMethod = javaMethod(['public', 'static'], javaList(javaString()), 'versions', [], j_return($versionsList));
+  $class->addMethod($versionsMethod);
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_generateDowncastFunction(
@@ -181,6 +209,9 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:RemoveField[1]|[],
+      t:AddedClass[1]|[],
+      t:RemovedClass[1]|[],
       t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
@@ -252,6 +283,9 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:RemoveField[1]|[],
+      t:AddedClass[1]|[],
+      t:RemovedClass[1]|[],
       t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
@@ -581,8 +615,12 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_getChange
     |'convertField_IntegerToString',
   |if($fromType == 'String[1]' && $toType == 'Integer[1]',
     |'convertField_StringToInteger',
+  |if($fromType->endsWith('[1]') && $toType->endsWith('[0..1]') ,
+    |'convertField_Ignore',
+  |if($fromType->endsWith('[0..1]') && $toType->endsWith('[1]') ,
+    |'convertField_Ignore',
   {|fail('No conversion from ' + $fromType + ' to ' + $toType); '';}
-  ));
+  ))));
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleChangeFieldTypeUpcast
@@ -625,7 +663,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
         $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)])
       ]->concatenate([
         // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not(),
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
             javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
         // objectNode.remove(fieldName)
@@ -638,7 +676,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
         javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
       ]->concatenate([
         // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not(),
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
         javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
         // objectNode.remove(fieldName)
@@ -847,6 +885,12 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
       '            throw new RuntimeException("Expected an Integer, not " + value + " at path " + pathToString(path));\n' +
       '        }\n' +
       '        return value.toString();\n'
+  ),
+  javaMethod(['public', 'static'], javaObject(), 'convertField_Ignore', [
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaObject(), 'value')
+  ],
+  '        return value;\n'
   ),
   // public static Integer convertField_StringToInteger(List<Object> path, Object value)
   javaMethod(['public', 'static'], toBoxed(javaInt()), 'convertField_StringToInteger', [
