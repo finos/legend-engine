@@ -151,7 +151,7 @@ public class HelperRuntimeBuilder
                         ._connection(pureConnection)
                         ._element(!storeConnections.store.path.equals("ModelStore") ?
                                 context.resolveStore(storeConnections.store.path, storeConnections.store.sourceInformation)
-                                : Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))));
+                                : new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore")));
 
                 if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
                 {
