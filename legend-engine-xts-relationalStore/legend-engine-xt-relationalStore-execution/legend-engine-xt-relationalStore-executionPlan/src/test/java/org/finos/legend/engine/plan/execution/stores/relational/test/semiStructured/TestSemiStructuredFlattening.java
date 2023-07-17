@@ -18,6 +18,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertThrows;
+
 public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
 {
     private static final String snowflakeMapping = "flatten::mapping::SnowflakeMapping";
@@ -32,7 +34,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Other Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1)\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n";
@@ -48,7 +50,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1)\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name, String, \"\", \"\")]\n";
@@ -96,7 +98,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line 0 Line No, Integer, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Line 0 Line No\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value['lines'][0]['lineno'] as \"Firm Address Line 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1)\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value['lines'][0]['lineno'] as \"Firm Address Line 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line 0 Line No, Integer, \"\", \"\")]\n";
@@ -128,7 +130,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\")]\n" +
-                "      sql = select distinct \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1) where \"ss_flatten_0\".value::varchar = 'A'\n" +
+                "      sql = select distinct \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" where \"ss_flatten_0\".value::varchar = 'A'\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\")]\n";
@@ -138,17 +140,11 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPrimitivePropertyFilteringInProject()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Other Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1 and \"ss_flatten_0\".value::varchar like 'A%')\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+        Exception e = assertThrows(RuntimeException.class, () ->
+        {
+            this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        });
+        Assert.assertTrue(e.getMessage().contains("Filter in column projections is not supported. Use a Post Filter if filtering is necessary"));
     }
 
     @Test
@@ -163,17 +159,11 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyFilteringInProject()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name 1, String, \"\", \"\"), (Firm Address Name 2, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Name 1\", \"\"), (\"Firm Address Name 2\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name 1\", \"ss_flatten_1\".value['name']::varchar as \"Firm Address Name 2\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1 and \"ss_flatten_0\".value['name']::varchar = 'A') left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\" on (1 = 1 and \"ss_flatten_1\".value['name']::varchar = 'B')\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name 1, String, \"\", \"\"), (Firm Address Name 2, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+        Exception e = assertThrows(RuntimeException.class, () ->
+        {
+            this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        });
+        Assert.assertTrue(e.getMessage().contains("Filter in column projections is not supported. Use a Post Filter if filtering is necessary"));
     }
 
     @Test
@@ -185,7 +175,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Names, String, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Names\", INT)]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".aggCol as \"Firm Address Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join (select \"person_table_2\".ID as ID, listagg(\"ss_flatten_0\".value['name']::varchar, ';') as aggCol from PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" left outer join lateral flatten(input => \"person_table_2\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1) group by \"person_table_2\".ID) as \"person_table_1\" on (\"root\".ID = \"person_table_1\".ID)\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".aggCol as \"Firm Address Names\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join (select \"person_table_2\".ID as ID, listagg(\"ss_flatten_0\".value['name']::varchar, ';') as aggCol from PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" inner join lateral flatten(input => \"person_table_2\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" group by \"person_table_2\".ID) as \"person_table_1\" on (\"root\".ID = \"person_table_1\".ID)\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Names, String, \"\", \"\")]\n";
@@ -201,7 +191,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "    (\n" +
                 "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line No Sum, Integer, \"\", \"\")]\n" +
                 "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Line No Sum\", INT)]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".aggCol as \"Firm Address Line No Sum\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join (select \"person_table_2\".ID as ID, sum(\"ss_flatten_1\".value['lineno']) as aggCol from PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" left outer join lateral flatten(input => \"person_table_2\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1) left outer join lateral flatten(input => \"ss_flatten_0\".value['lines'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\" on (1 = 1) group by \"person_table_2\".ID) as \"person_table_1\" on (\"root\".ID = \"person_table_1\".ID)\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".aggCol as \"Firm Address Line No Sum\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join (select \"person_table_2\".ID as ID, sum(\"ss_flatten_1\".value['lineno']) as aggCol from PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" inner join lateral flatten(input => \"person_table_2\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" inner join lateral flatten(input => \"ss_flatten_0\".value['lines'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\" group by \"person_table_2\".ID) as \"person_table_1\" on (\"root\".ID = \"person_table_1\".ID)\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line No Sum, Integer, \"\", \"\")]\n";
@@ -215,12 +205,12 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Address Name A, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\"), (\"Firm Address Line 0 No\", \"\"), (\"Firm Address Name A\", \"\"), (\"Firm Other Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name\", \"ss_flatten_0\".value['lines'][0]['lineno'] as \"Firm Address Line 0 No\", \"ss_flatten_1\".value['name']::varchar as \"Firm Address Name A\", \"ss_flatten_2\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" on (1 = 1) left outer join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\" on (1 = 1 and \"ss_flatten_1\".value['name']::varchar = 'A') left outer join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_2\" on (1 = 1)\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\"), (\"Firm Address Line 0 No\", \"\"), (\"Firm Other Name\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"ss_flatten_0\".value['name']::varchar as \"Firm Address Name\", \"ss_flatten_0\".value['lines'][0]['lineno'] as \"Firm Address Line 0 No\", \"ss_flatten_1\".value::varchar as \"Firm Other Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['otherNames']::varchar, outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Address Name A, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("flatten::semiStructuredMultiFlatten__TabularDataSet_1_", snowflakeMapping));
