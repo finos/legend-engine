@@ -73,6 +73,16 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
+    public void setFlowProviderClass(Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass)
+    {
+        this.flowProviderClass = flowProviderClass;
+    }
+
+    public void setFlowProviderConfiguration(DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration)
+    {
+        this.flowProviderConfiguration = flowProviderConfiguration;
+    }
+
     public static Builder newInstance()
     {
         return new Builder();
