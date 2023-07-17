@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 
 import java.util.List;
 
+@Deprecated
 public class RelationalRootGraphFetchExecutionNode extends RelationalTempTableGraphFetchExecutionNode
 {
     @Override

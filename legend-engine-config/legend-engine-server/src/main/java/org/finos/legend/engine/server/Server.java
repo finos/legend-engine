@@ -79,6 +79,8 @@ import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
+import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
+import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
@@ -263,7 +265,13 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         PlanExecutor planExecutor;
         if (serverConfiguration.graphFetchExecutionConfiguration != null)
         {
-            planExecutor = PlanExecutor.newPlanExecutor(serverConfiguration.graphFetchExecutionConfiguration, relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = serverConfiguration.graphFetchExecutionConfiguration;
+            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            if (graphFetchExecutionConfiguration.canExecuteInParallel())
+            {
+                ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
+                planExecutor.injectGraphFetchExecutionNodeExecutorPool(parallelGraphFetchExecutionExecutorPool);
+            }
         }
         else
         {

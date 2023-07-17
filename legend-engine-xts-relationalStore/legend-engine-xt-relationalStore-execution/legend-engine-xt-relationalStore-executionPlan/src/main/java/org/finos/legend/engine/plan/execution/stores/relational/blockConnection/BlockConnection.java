@@ -228,7 +228,7 @@ public class BlockConnection implements Connection
     @Override
     public int getHoldability() throws SQLException
     {
-        return this.getHoldability();
+        return this.conn.getHoldability();
     }
 
     @Override

@@ -1,0 +1,46 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.execution.graphFetch;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class ParallelGraphFetchExecutionConfig
+{
+    public final long DEFAULT_DEFAULT_MAX_CONNECTIONS_PER_DATABASE = 10;
+    public final long DEFAULT_PARALLEL_EXECUTION_POOL_SIZE = 100;
+
+    @JsonProperty
+    public final long parallelExecutionPoolSize;
+    @JsonProperty
+    private final long defaultMaxConnectionsPerDatabase;
+    @JsonProperty
+    private final Map<String, Integer> maxConnectionsPerDatabaseTypeOverrides;
+
+    public ParallelGraphFetchExecutionConfig()
+    {
+        this.parallelExecutionPoolSize = DEFAULT_PARALLEL_EXECUTION_POOL_SIZE;
+        this.defaultMaxConnectionsPerDatabase = DEFAULT_DEFAULT_MAX_CONNECTIONS_PER_DATABASE;
+        this.maxConnectionsPerDatabaseTypeOverrides = new HashMap<>();
+    }
+
+    public int getMaxConnectionsPerDatabaseForDatabase(String database)
+    {
+        return this.maxConnectionsPerDatabaseTypeOverrides.getOrDefault(database, (int) this.defaultMaxConnectionsPerDatabase);
+    }
+}

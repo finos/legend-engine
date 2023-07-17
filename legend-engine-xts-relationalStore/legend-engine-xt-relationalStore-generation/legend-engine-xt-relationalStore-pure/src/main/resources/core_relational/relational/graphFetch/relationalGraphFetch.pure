@@ -121,7 +121,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::getTupl
    if($dbType == DatabaseType.DB2,
     | 100,
     | if($dbType == DatabaseType.Snowflake,
-      | 1000,
+      | 2000,
       | 100;
       );
     );
@@ -134,12 +134,12 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsin
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsingLoadFromSubQueryTempTableStrategyForComplexProperty():DatabaseType[*]
 {
-   [DatabaseType.Snowflake]
+   []
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsingLoadFromResultSetAsValueTuplesTempTableStrategyForNonPrimitiveChildNode():DatabaseType[*]
 {
-   [DatabaseType.DB2]
+   [DatabaseType.DB2, DatabaseType.Snowflake]
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsingLoadFromResultSetAsValueTuplesTempTableStrategyForRoot():DatabaseType[*]
