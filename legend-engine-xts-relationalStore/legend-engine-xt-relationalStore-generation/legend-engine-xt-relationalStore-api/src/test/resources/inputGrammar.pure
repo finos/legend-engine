@@ -1,0 +1,13 @@
+###Relational
+Database meta::relational::transform::autogen::tests::testDB
+(
+   Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+   Table Employee(fullname VARCHAR(1000) PRIMARY KEY, passportId INT PRIMARY KEY, firmname VARCHAR(200), location VARCHAR(200))
+   Table City(city_id INT PRIMARY KEY, name VARCHAR(200))
+   Table Passport(passportId INT PRIMARY KEY, countryName VARCHAR(200))
+   Table Country(name VARCHAR(200) PRIMARY KEY)
+   Join CompanyEmployee(Company.location != 'Toronto' and Employee.fullname = 'John Doe' and Company.name = Employee.firmname)
+   Join EmployeeCity(Employee.location = City.name)
+   Join EmployeePassport(Employee.passportId = Passport.passportId)
+   Join PassportCountry(Passport.countryName = Country.name)
+)

@@ -62,6 +62,7 @@ import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.api.elementGenerationFromSchema.ElementGenerationAPI;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
@@ -289,6 +290,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new PureProtocol());
 
         // Grammar
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         environment.jersey().register(new GrammarToJson());
         environment.jersey().register(new JsonToGrammar());
         environment.jersey().register(new RelationalOperationElementGrammarToJson());
@@ -297,6 +300,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformJsonToGrammar());
         environment.jersey().register(new TransformRelationalOperationElementGrammarToJson());
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
+        environment.jersey().register(new ElementGenerationAPI(routerExtensions, serverConfiguration.deployment.mode));
 
         // Relational
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
@@ -314,8 +318,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
