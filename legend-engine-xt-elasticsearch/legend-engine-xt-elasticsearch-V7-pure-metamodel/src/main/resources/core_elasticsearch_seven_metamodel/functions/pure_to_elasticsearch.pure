@@ -266,7 +266,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
     |
       // with group by fields, we need to wrap it on composite
       let composite = ^CompositeAggregation(
-        size = 100->literal(), // todo deal with pagination
+        size = [], // todo allow to set limit?
         sources = $groupByTdsESDetails->map(x | newMap(pair($x.name, ^CompositeAggregationSource( terms = ^TermsAggregation(field = $x.path()->literal(), missing_bucket = true->literal())))))
       );
       newMap(pair('groupByComposite', ^AggregationContainer(composite = $composite, aggregations = $aggregations)));
@@ -433,38 +433,41 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
   compositeSources : Pair<String, CompositeAggregationSource>[*]
 ): Map<String, AggregationContainer>[1]
 {
-  let bucketSize = 500->literal();// up to 500 buckets for now
-
   let compositeSourcesToSort = $toSort->map(x | $compositeSources->filter(m | $m.first == $x.first));
-  let compositeSourcesNotToSort = $compositeSources->removeAll($compositeSourcesToSort);
-  let aggSorts = $toSort->filter(x | $x.first->in($compositeSources.first)->not());
 
-  let aggToComputeAllLevels = $aggSorts->map(s | $aggregations->map(m | $m->get($s.first)->map(v | pair($s.first, $v))));
+  if ($compositeSources->size() == 1,
+    |
+      let aggSorts = $toSort->filter(x | $x.first->in($compositeSources.first)->not());
+      let sorts = $toSort->map(s | pair(if($s->in($aggSorts)->not(), |'_key', |$s.first), $s.second));
 
-  let notSortedAgg = $compositeSourcesNotToSort->fold({x, agg |
-      let terms = $x.second.terms->toOne();
+      let terms = $compositeSources->toOne().second.terms->toOne();
       let sortedTerms = ^$terms(
-        size = $bucketSize,
+        size = [], // todo allow to set limit?
         missing_bucket = [],
-        order = ^TermsAggregationSortOrder(orderMap = $aggSorts->map(s | $s->newMap()))
-      );
-      pair($x.first, ^AggregationContainer(terms = $sortedTerms, aggregations = $agg->putAll($aggToComputeAllLevels)))->newMap();
-    },
-    $aggregations->orElse(newMap([]))
-  );
-
-  let termsAggregation = $compositeSourcesToSort->reverse()->fold({x, agg |
-      let sorts = $toSort->filter(s | $s->in($aggSorts) || $s.first == $x.first)->map(s | pair(if($s.first == $x.first, |'_key', |$s.first), $s.second));
-      let terms = $x.second.terms->toOne();
-      let sortedTerms = ^$terms(
-        size = $bucketSize, 
-        missing_bucket = [],
+        missing = [], /*todo handle null / missing*/
         order = ^TermsAggregationSortOrder(orderMap = $sorts->map(s | $s->newMap()))
       );
-      pair($x.first, ^AggregationContainer(terms = $sortedTerms, aggregations = $agg->putAll($aggToComputeAllLevels)))->newMap();
-    },
-    $notSortedAgg
-  );
+      let sortedContainer = ^AggregationContainer(terms = $sortedTerms, aggregations = $aggregations);
+      pair($compositeSources->toOne().first, $sortedContainer);
+    ,
+    |
+      assertEmpty($compositeSourcesToSort,
+        | 'No supported: multiple sort fields, where the source of these fields is mixed between aggregate fields and group by fields.  Either remove group by fields or aggregate fields from sort' 
+      );
+
+      let terms = $compositeSources.second.terms->map(x | ^MultiTermLookup(field = $x.field->toOne(), missing = [] /*todo handle null / missing*/));
+
+      let aggregationSorted = ^MultiTermsAggregation(
+        size = [], // todo allow to set limit?
+        terms = $terms->toOneMany(),
+        order = $toSort->map(x | $x->newMap())
+      );
+
+      let sortedContainer = ^AggregationContainer(multi_terms = $aggregationSorted, aggregations = $aggregations);
+      pair($compositeSources.first->joinStrings('~'), $sortedContainer);
+  )->newMap();
+
+
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueSpecification[1], req: State[1]): State[1]

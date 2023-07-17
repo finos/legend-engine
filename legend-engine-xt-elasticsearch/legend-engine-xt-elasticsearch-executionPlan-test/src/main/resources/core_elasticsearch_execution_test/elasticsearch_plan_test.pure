@@ -39,7 +39,8 @@ function meta::external::store::elasticsearch::executionTest::test::collectTest(
     tag: String[1],
     extension: Extension[1],
     modelFile: String[1],
-    indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1]
+    indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1],
+    testFilter: Function<{FunctionDefinition<Any>[1] -> Boolean[1]}>[0..1]
   ): PureTestCollection[1]
 {
   meta::pure::test::collectParameterizedTests(
@@ -52,7 +53,7 @@ function meta::external::store::elasticsearch::executionTest::test::collectTest(
         indexRecordRequest = $indexRecordRequest
       ),
     [],
-    []
+    $testFilter
   );
 }
 

@@ -15,25 +15,26 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.filter.FilteringParserDelegate;
+import com.fasterxml.jackson.core.filter.JsonPointerBasedFilter;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.TokenBuffer;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,14 +44,18 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.block.function.checked.ThrowingFunction2;
+import org.eclipse.collections.impl.lazy.iterator.CollectIterator;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.TDSResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -58,11 +63,12 @@ import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsea
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.http.ElasticsearchV7RequestToHttpRequestVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
+import org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionMap;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.tds.TDSColumnResultPath;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.tds.TDSMetadata;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.ResponseBody;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.Hit;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.TotalHits;
@@ -73,16 +79,17 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.typ
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AbstractMultiBucketBaseVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Aggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregateBase;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregationContainer;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AvgAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.DoubleTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.LongTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MinAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MultiBucketBase;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MultiTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.StringTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SumAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.TermsAggregateBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.TermsBucketBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.ValueCountAggregate;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
@@ -95,9 +102,6 @@ import org.slf4j.Logger;
 public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    private static final TypeReference<ResponseBody<ObjectNode>> RESPONSE_BODY_TYPE_REFERENCE = new TypeReference<ResponseBody<ObjectNode>>()
-    {
-    };
 
     private final HttpClient client;
     private final HttpClientContext httpClientContext;
@@ -125,46 +129,43 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
     {
         Assert.assertTrue(ExecutionNodeTDSResultHelper.isResultTDS(this.node), () -> "ES only supports TDS result");
 
-        boolean isAggregation = !val.body.aggregations.isEmpty();
-
-        HttpUriRequest request = val.accept(new ElasticsearchV7RequestToHttpRequestVisitor(this.url, this.executionState));
-        String query = ((HttpEntityEnclosingRequest) request).getEntity().toString();
-
         Span span = GlobalTracer.get().buildSpan("Elasticsearch Request").start();
-        try (Scope ignore = GlobalTracer.get().activateSpan(span))
-        {
-            span.log(Collections.singletonMap("query", query));
+        Scope scope = GlobalTracer.get().activateSpan(span);
 
-            long start = System.currentTimeMillis();
-            LOGGER.info("{}", new LogInfo(ElasticsearchExecutionLoggingEventType.EXECUTION_ELASTICSEARCH_START, this.executionState.authId, query));
+        List<ExecutionActivity> activities = Lists.mutable.empty();
 
-            InputStream result = this.post(request, span, start);
+        ElasticsearchResultSpliterator spliterator = new ElasticsearchResultSpliterator(val, activities);
 
-            // todo handle pagination since this streams all data into memory...
-            ResponseBody<ObjectNode> responseBody = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.readValue(result, RESPONSE_BODY_TYPE_REFERENCE);
+        Stream<Object[]> stream = StreamSupport.stream(spliterator, false)
+                .flatMap(Function.identity())
+                .onClose(spliterator::close)
+                .onClose(scope::close)
+                .onClose(span::finish);
 
-            Stream<Object[]> stream = isAggregation ? this.processAggregateResponse(responseBody) : this.processNotAggregateResponse(responseBody);
-
-            return new TDSResult(
-                    stream,
-                    new TDSBuilder(this.node),
-                    Collections.singletonList(new ElasticsearchV7ExecutionActivity(request.getURI(), query)),
-                    RequestContext.getSessionID(this.executionState.getRequestContext())
-            );
-        }
-        catch (IOException e)
-        {
-            throw new EngineException(e.getMessage(), e, ExceptionCategory.USER_EXECUTION_ERROR);
-        }
-        finally
-        {
-            span.finish();
-        }
+        return new TDSResult(
+                stream,
+                new TDSBuilder(this.node),
+                activities,
+                RequestContext.getSessionID(this.executionState.getRequestContext())
+        );
     }
 
-    private Stream<Object[]> processAggregateResponse(ResponseBody<?> responseBody) throws IOException
+    private Iterator<Object[]> processAggregateResponse(SearchRequest searchRequest, JsonParser parser, Span span, Procedure<MultiBucketBase> lastBucket) throws IOException
     {
-        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor(responseBody.hits.total);
+        Map<String, AggregationContainer> aggregations = searchRequest.body.aggregations;
+
+        // extract total hits
+        FilteringParserDelegate totalHitsParse = new FilteringParserDelegate(parser, new JsonPointerBasedFilter("/hits/total"), false, false);
+        TotalHits totalHits = totalHitsParse.readValueAs(TotalHits.class);
+        span.log(String.format("Aggregation query hit %s %d documents", totalHits.relation, totalHits.value.getLiteral()));
+
+        // reset parser back to root after reading totals
+        while (!parser.getParsingContext().getParent().inRoot())
+        {
+            parser.nextToken();
+        }
+
+        AggregateTDSResultVisitor aggregateTDSResultVisitor = new AggregateTDSResultVisitor(totalHits);
         List<TDSColumn> tdsColumns = ((TDSResultType) this.node.resultType).tdsColumns;
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
@@ -172,116 +173,168 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 .map(ElasticsearchTDSResultHelper::aggregationTransformer)
                 .collect(Collectors.toList());
 
-        Stream<ObjectNode> objectNodeStream = null;
+        Iterator<ObjectNode> objectNodeStream = null;
 
-        if (responseBody.aggregations.size() == 1)
+        FilteringParserDelegate aggsParser = new FilteringParserDelegate(parser, new JsonPointerBasedFilter("/aggregations"), false, false);
+
+        if (aggregations.size() == 1)
         {
-            Map.Entry<String, Aggregate> topAggEntry = responseBody.aggregations.entrySet().iterator().next();
-            Object result = topAggEntry.getValue().unionValue();
-            if (result instanceof CompositeAggregate)
+            Map.Entry<String, AggregationContainer> aggregationContainerEntry = aggregations.entrySet().iterator().next();
+            AggregationContainer aggregationContainer = aggregationContainerEntry.getValue();
+
+            if (aggregationContainer.composite != null)
             {
-                objectNodeStream = processComposite(aggregateTDSResultVisitor, (CompositeAggregate) result);
+                FilteringParserDelegate bucketsParser = new FilteringParserDelegate(aggsParser, new JsonPointerBasedFilter("/composite#" + aggregationContainerEntry.getKey() + "/buckets"), false, false);
+                bucketsParser.nextToken();
+                bucketsParser.clearCurrentToken();
+                Iterator<CompositeBucket> compositeBucketIterator = bucketsParser.readValuesAs(CompositeBucket.class);
+                objectNodeStream = processComposite(aggregateTDSResultVisitor, compositeBucketIterator, lastBucket);
             }
-            else if (result instanceof TermsAggregateBase)
+            else if (aggregationContainer.terms != null)
             {
-                TermsAggregateBase<? extends MultiBucketBase> termsAggregateBase = (TermsAggregateBase<? extends TermsBucketBase>) result;
-                List<Map<String, Object>> rows = processBucket(topAggEntry.getKey(), termsAggregateBase, Maps.immutable.empty(), aggregateTDSResultVisitor);
-                ArrayNode jsonNodes = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(rows);
-                objectNodeStream = StreamSupport.stream(Spliterators.spliterator(jsonNodes.elements(), jsonNodes.size(), 0), false).map(ObjectNode.class::cast);
+                aggsParser.nextToken(); // move inside aggregation map
+                String fieldName = aggsParser.nextFieldName();
+                int typeSeparator = fieldName.indexOf('#');
+                String key = fieldName.substring(typeSeparator + 1);
+                String fieldType = fieldName.substring(0, typeSeparator);
+
+                Class<? extends TermsBucketBase> bucketClazz;
+
+                switch (fieldType)
+                {
+                    case "sterms":
+                        bucketClazz = StringTermsBucket.class;
+                        break;
+                    case "lterms":
+                        bucketClazz = LongTermsBucket.class;
+                        break;
+                    case "dterms":
+                        bucketClazz = DoubleTermsBucket.class;
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Terms aggregation not supported: " + fieldName);
+                }
+
+                FilteringParserDelegate bucketsParser = new FilteringParserDelegate(aggsParser, new JsonPointerBasedFilter("/buckets"), false, false);
+                bucketsParser.nextToken();
+                bucketsParser.clearCurrentToken();
+                Iterator<? extends TermsBucketBase> bucketsIterator = bucketsParser.readValuesAs(bucketClazz);
+                objectNodeStream = processTermsBucket(key, aggregateTDSResultVisitor, bucketsIterator, lastBucket);
+            }
+            else if (aggregationContainer.multi_terms != null)
+            {
+                FilteringParserDelegate bucketsParser = new FilteringParserDelegate(aggsParser, new JsonPointerBasedFilter("/multi_terms#" + aggregationContainerEntry.getKey() + "/buckets"), false, false);
+                bucketsParser.nextToken();
+                bucketsParser.clearCurrentToken();
+                Iterator<MultiTermsBucket> bucketsIterator = bucketsParser.readValuesAs(MultiTermsBucket.class);
+                objectNodeStream = processMultiTermsBucket(aggregationContainerEntry.getKey(), aggregateTDSResultVisitor, bucketsIterator, lastBucket);
             }
         }
 
         if (objectNodeStream == null)
         {
-            try (TokenBuffer tokenBuffer = new TokenBuffer(ElasticsearchObjectMapperProvider.OBJECT_MAPPER, false))
+            Map<String, Aggregate> aggregateMap = aggsParser.readValueAs(new TypeReference<ExternalTaggedUnionMap<String, Aggregate>>()
             {
-                for (Map.Entry<String, Aggregate> entry : responseBody.aggregations.entrySet())
-                {
-                    tokenBuffer.writeObjectField(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
-                }
 
-                objectNodeStream = Stream.of(tokenBuffer.asParser().readValueAsTree());
-            }
-            catch (IOException e)
+            });
+
+            MutableMap<String, Object> result = Maps.mutable.empty();
+
+            for (Map.Entry<String, Aggregate> entry : aggregateMap.entrySet())
             {
-                throw new UncheckedIOException(e);
+                result.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
             }
+
+            ObjectNode tree = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(result);
+
+            objectNodeStream = Collections.singletonList(tree).iterator();
         }
 
-        return objectNodeStream.map(h -> extractors.stream().map(x -> x.apply(h)).toArray());
+        return new CollectIterator<>(objectNodeStream, h -> extractors.stream().map(x -> x.apply(h)).toArray());
     }
 
-    private static Stream<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, CompositeAggregate compositeAggregate)
+    private static Iterator<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<CompositeBucket> buckets, Procedure<MultiBucketBase> lastBucket)
     {
-        Assert.assertTrue(compositeAggregate.buckets.keyed.isEmpty(), () -> "Keyed buckets not supported");
-
-        return compositeAggregate.buckets.array.stream().map(b ->
+        return new CollectIterator<>(buckets, b ->
         {
-            try (TokenBuffer tokenBuffer = new TokenBuffer(ElasticsearchObjectMapperProvider.OBJECT_MAPPER, false))
-            {
-                for (Map.Entry<String, FieldValue> entry : b.key.entrySet())
-                {
-                    tokenBuffer.writeObjectField(entry.getKey(), entry.getValue().unionValue());
-                }
+            lastBucket.accept(b);
+            MutableMap<Object, Object> map = Maps.mutable.empty();
 
-                for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
-                {
-                    tokenBuffer.writeObjectField(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
-                }
-
-                return tokenBuffer.asParser().readValueAsTree();
-            }
-            catch (IOException e)
+            for (Map.Entry<String, FieldValue> entry : b.key.entrySet())
             {
-                throw new UncheckedIOException(e);
+                map.put(entry.getKey(), entry.getValue().unionValue());
             }
+
+            for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
+            {
+                map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+            }
+
+            return ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map);
         });
     }
 
-    private List<Map<String, Object>> processBucket(String key, TermsAggregateBase<? extends MultiBucketBase> terms, ImmutableMap<String, Object> rowSoFar, AggregateTDSResultVisitor aggregateTDSResultVisitor)
+    private static Iterator<ObjectNode> processMultiTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<MultiTermsBucket> buckets, Procedure<MultiBucketBase> lastBucket)
     {
-        Assert.assertTrue(terms.buckets.keyed.isEmpty(), () -> "Keyed buckets not supported");
+        String[] fields = key.split("~");
 
-        MultiBucketKeyVisitor bucketKeyVisitor = new MultiBucketKeyVisitor();
-
-        List<Map<String, Object>> rows = Lists.mutable.empty();
-
-        if (terms.buckets.array.isEmpty())
+        return new CollectIterator<>(buckets, b ->
         {
-            rows.add(rowSoFar.toMap().withKeyValue(key, null));
-        }
-        else
-        {
-            for (MultiBucketBase bucket : terms.buckets.array)
+            lastBucket.accept(b);
+            MutableMap<Object, Object> map = Maps.mutable.empty();
+
+            for (int i = 0; i < fields.length; i++)
             {
-                MutableMap<String, Object> newRow = rowSoFar.toMap();
-
-                newRow.put(key, bucket.accept(bucketKeyVisitor));
-
-                Set<Map.Entry<String, Aggregate>> entries = bucket.additionalProperties().entrySet();
-
-                Optional<Map.Entry<String, Aggregate>> maybeNestedTerms = entries.stream().filter(x -> x.getValue().unionValue() instanceof TermsAggregateBase).findAny();
-
-                entries.stream().filter(x -> !(x.getValue().unionValue() instanceof TermsAggregateBase))
-                        .forEach(entry -> newRow.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor)));
-
-                if (maybeNestedTerms.isPresent())
-                {
-                    Map.Entry<String, Aggregate> entry = maybeNestedTerms.get();
-                    rows.addAll(processBucket(entry.getKey(), (TermsAggregateBase<? extends MultiBucketBase>) entry.getValue().unionValue(), newRow.toImmutable(), aggregateTDSResultVisitor));
-                }
-                else
-                {
-                    rows.add(newRow);
-                }
+                String field = fields[i];
+                Object value = ((LiteralOrExpression<?>) b.key.get(i).unionValue()).getLiteral();
+                map.put(field, value);
             }
-        }
 
-        return rows;
+            for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
+            {
+                map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+            }
+
+            return ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map);
+        });
     }
 
-    private Stream<Object[]> processNotAggregateResponse(ResponseBody<ObjectNode> responseBody) throws IOException
+    private static Iterator<ObjectNode> processTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<? extends TermsBucketBase> buckets, Procedure<MultiBucketBase> lastBucket)
     {
+        MultiBucketKeyVisitor multiBucketKeyVisitor = new MultiBucketKeyVisitor();
+        return new CollectIterator<>(buckets, b ->
+        {
+            lastBucket.accept(b);
+            MutableMap<Object, Object> map = Maps.mutable.with(key, b.accept(multiBucketKeyVisitor));
+
+            for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
+            {
+                map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+            }
+
+            return ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map);
+        });
+    }
+
+    private Iterator<Object[]> processNotAggregateResponse(JsonParser parser, Span span) throws IOException
+    {
+        TypeReference<Hit<ObjectNode>> hitTypeReference = new TypeReference<Hit<ObjectNode>>()
+        {
+        };
+
+        // move parser to hits...
+        FilteringParserDelegate hitsParser = new FilteringParserDelegate(parser, new JsonPointerBasedFilter("/hits"), false, false);
+
+        // extract total hits
+        FilteringParserDelegate d3 = new FilteringParserDelegate(hitsParser, new JsonPointerBasedFilter("/total"), false, false);
+        TotalHits totalHits = d3.readValueAs(TotalHits.class);
+        span.log(String.format("Query reported total hits %s %d", totalHits.relation.esName(), totalHits.value.getLiteral()));
+
+        FilteringParserDelegate hitsListParser = new FilteringParserDelegate(hitsParser, new JsonPointerBasedFilter("/hits"), false, false);
+        hitsListParser.nextToken(); // start array
+        hitsListParser.clearCurrentToken(); // force to look into next token
+        Iterator<Hit<ObjectNode>> hits = hitsListParser.readValuesAs(hitTypeReference);
+
         List<TDSColumn> tdsColumns = ((TDSResultType) this.node.resultType).tdsColumns;
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
@@ -289,7 +342,25 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 .map(x -> ElasticsearchTDSResultHelper.hitTransformer(tdsColumns.get((int) x.index), x.resultPath))
                 .collect(Collectors.toList());
 
-        return responseBody.hits.hits.stream().map(h -> extractors.stream().map(x -> x.apply(h)).toArray());
+        return new CollectIterator<>(hits, h -> extractors.stream().map(x -> x.apply(h)).toArray());
+    }
+
+    private static JsonParser toResponseBodyJsonParser(InputStream responseBody, Span span) throws IOException
+    {
+        // root parser...
+        JsonParser parser = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.getFactory().createParser(responseBody);
+
+        // extract how long took
+        FilteringParserDelegate tookParser = new FilteringParserDelegate(parser, new JsonPointerBasedFilter("/took"), false, false);
+        Long took = tookParser.readValueAs(Long.class);
+        span.log(String.format("Query took %dms", took));
+
+        // extract if timed out
+        FilteringParserDelegate timedOutParser = new FilteringParserDelegate(parser, new JsonPointerBasedFilter("/timed_out"), false, false);
+        Boolean timedOut = timedOutParser.readValueAs(Boolean.class);
+
+        Assert.assertFalse(timedOut, () -> String.format("Elastic reported query timed out after %dms", took));
+        return parser;
     }
 
     private InputStream post(HttpUriRequest request, Span span, long startTime) throws IOException
@@ -396,6 +467,172 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         public Object visit(ValueCountAggregate val)
         {
             return val.value;
+        }
+    }
+
+    private class ElasticsearchResultSpliterator extends Spliterators.AbstractSpliterator<Stream<Object[]>> implements AutoCloseable
+    {
+        private static final long MAX_COMPOSITE_BUCKETS_PER_REQUEST = 1000L;
+        private static final long MAX_TERMS_BUCKETS_PER_REQUEST = 5_001L;
+
+        private final SearchRequest searchRequest;
+        private final List<ExecutionActivity> activities;
+        private boolean closed = false;
+        private InputStream currInputStream = EmptyInputStream.INSTANCE;
+        private MultiBucketBase lastBucket = null;
+        private long totalBuckets = 0L;
+
+        private ElasticsearchResultSpliterator(SearchRequest searchRequest, List<ExecutionActivity> activities)
+        {
+            super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.IMMUTABLE);
+            this.searchRequest = searchRequest;
+            this.activities = activities;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Stream<Object[]>> action)
+        {
+            if (!this.closed)
+            {
+                // close previous, just in case...
+                this.closeCurrentInputStream();
+
+                boolean next = false;
+                boolean isAggregation = !this.searchRequest.body.aggregations.isEmpty();
+
+                ThrowingFunction2<JsonParser, Span, Iterator<Object[]>> processor;
+
+                if (isAggregation)
+                {
+                    processor = (x, y) -> ExecutionRequestVisitor.this.processAggregateResponse(this.searchRequest, x, y, b ->
+                    {
+                        this.lastBucket = b;
+                        this.totalBuckets++;
+                    });
+
+                    Map<String, AggregationContainer> aggregations = searchRequest.body.aggregations;
+                    if (aggregations.size() == 1)
+                    {
+                        Map.Entry<String, AggregationContainer> aggregationContainerEntry = aggregations.entrySet().iterator().next();
+                        AggregationContainer aggregationContainer = aggregationContainerEntry.getValue();
+
+                        if (aggregationContainer.composite != null)
+                        {
+                            next = true; // only composite aggregation can handle multiple request
+
+                            if (!activities.isEmpty())
+                            {
+                                // we called once already, check if we need to call again
+                                if (this.totalBuckets == MAX_COMPOSITE_BUCKETS_PER_REQUEST)
+                                {
+                                    // reset
+                                    this.totalBuckets = 0L;
+                                    // search after last bucket
+                                    aggregationContainer.composite.after = ((CompositeBucket) this.lastBucket).key;
+                                }
+                                else
+                                {
+                                    return false; // if we got less than requested, we are done...
+                                }
+                            }
+                            else
+                            {
+                                Assert.assertTrue(aggregationContainer.composite.size == null, () -> "Limit/Take on group by not supported yet");
+                                aggregationContainer.composite.size = LiteralOrExpression.literal(MAX_COMPOSITE_BUCKETS_PER_REQUEST);
+                            }
+                        }
+                        else if (aggregationContainer.terms != null)
+                        {
+                            if (!activities.isEmpty())
+                            {
+                                Assert.assertTrue(this.totalBuckets < MAX_TERMS_BUCKETS_PER_REQUEST,
+                                        () -> String.format("While sorting on aggregate values, we received more buckets that configured of %d.  Either avoid sorting group by, or reduce with filters.", MAX_TERMS_BUCKETS_PER_REQUEST - 1));
+                                return false; // if we got less than requested, we are done...
+                            }
+                            else
+                            {
+                                Assert.assertTrue(aggregationContainer.terms.size == null, () -> "Limit/Take on group by not supported yet");
+                                aggregationContainer.terms.size = LiteralOrExpression.literal(MAX_TERMS_BUCKETS_PER_REQUEST);
+                                // we want to check on size of result in case there are more than supported...
+                                next = true;
+                            }
+                        }
+                        else if (aggregationContainer.multi_terms != null)
+                        {
+                            if (!activities.isEmpty())
+                            {
+                                Assert.assertTrue(this.totalBuckets < MAX_TERMS_BUCKETS_PER_REQUEST,
+                                        () -> String.format("While sorting on aggregate values, we received more buckets that configured of %d.  Either avoid sorting group by, or reduce with filters.", MAX_TERMS_BUCKETS_PER_REQUEST - 1));
+                                return false; // if we got less than requested, we are done...
+                            }
+                            else
+                            {
+                                Assert.assertTrue(aggregationContainer.multi_terms.size == null, () -> "Limit/Take on group by not supported yet");
+                                aggregationContainer.multi_terms.size = LiteralOrExpression.literal(MAX_TERMS_BUCKETS_PER_REQUEST);
+                                // we want to check on size of result in case there are more than supported...
+                                next = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    processor = ExecutionRequestVisitor.this::processNotAggregateResponse;
+                }
+
+                HttpUriRequest request = this.searchRequest.accept(new ElasticsearchV7RequestToHttpRequestVisitor(ExecutionRequestVisitor.this.url, ExecutionRequestVisitor.this.executionState));
+                String query = ((HttpEntityEnclosingRequest) request).getEntity().toString();
+
+                ElasticsearchV7ExecutionActivity executionActivity = new ElasticsearchV7ExecutionActivity(request.getURI(), query);
+                this.activities.add(executionActivity);
+
+                Span span = GlobalTracer.get().buildSpan("Elasticsearch Request Execution").start();
+                try (Scope ignore = GlobalTracer.get().activateSpan(span))
+                {
+                    span.log(Collections.singletonMap("query", query));
+                    long start = System.currentTimeMillis();
+                    LOGGER.info("{}", new LogInfo(ElasticsearchExecutionLoggingEventType.EXECUTION_ELASTICSEARCH_START, ExecutionRequestVisitor.this.executionState.authId, query));
+                    this.currInputStream = ExecutionRequestVisitor.this.post(request, span, start);
+
+                    JsonParser parser = toResponseBodyJsonParser(this.currInputStream, span);
+
+                    Iterator<Object[]> stream = processor.safeValue(parser, span);
+
+                    action.accept(StreamSupport.stream(Spliterators.spliteratorUnknownSize(stream, Spliterator.IMMUTABLE | Spliterator.NONNULL | Spliterator.ORDERED), false));
+
+                    return next;
+                }
+                catch (Exception e)
+                {
+                    throw new EngineException("Error while executing query: " + query, e, ExceptionCategory.USER_EXECUTION_ERROR);
+                }
+                finally
+                {
+                    span.finish();
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void close()
+        {
+            closeCurrentInputStream();
+            this.closed = true;
+        }
+
+        private void closeCurrentInputStream()
+        {
+            try
+            {
+                this.currInputStream.close();
+            }
+            catch (IOException ignore)
+            {
+                // ignore close failures...
+            }
         }
     }
 }
