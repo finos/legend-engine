@@ -598,23 +598,24 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    /* Generate Sql Query */
    print(if($debug.debug,|$debug.space+'   >Generate cross property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
    let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $mcForProperty, $debug->indent(2), $extensions);
-   let dbConnElement        = $runtime.connectionElementAssociations->filter(c|$c.element==$store)->toOne();
-   let dbConnectionPre        = $dbConnElement.connection->cast(@DatabaseConnection) ;
+   let dbConnElementPre = $runtime.connectionElementAssociations->filter(c|$c.element==$store)->toOne();
+   let dbConnectionPre        = $dbConnElementPre.connection->cast(@DatabaseConnection);
 
    let dbConnection =  if($clusteredTree.s.reprocessConnection->isEmpty(),|$dbConnectionPre,|$clusteredTree.s.reprocessConnection->toOne()->eval($dbConnectionPre))->cast(@DatabaseConnection) ;
-   let oneRuntime          = ^Runtime(connectionElementAssociations= ^$dbConnElement(connection=$dbConnection));
+   let dbConnElement = ^$dbConnElementPre(connection=$dbConnection);
+   let oneRuntime          = ^Runtime(connectionElementAssociations= $dbConnElement);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
    print(if($debug.debug,|$debug.space+'   >Generated cross property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
 
    /* Create execution node */
-   let sqlNode      = $postProcessedQuery->buildSQLExecutionNode($dbConnection, $extensions);
+   let sqlNode      = $postProcessedQuery->buildSQLExecutionNode($oneRuntime.connectionElementAssociations->toOne(), $extensions);
    let allExecNodes = $postProcessorResult.executionNodes->concatenate($sqlNode)->concatenate($postProcessorResult.postExecutionNodes);
    let wrappedNode  = generateExecutionNodeForPostProcessedResult($sqlNode, $allExecNodes, $postProcessorResult, $extensions);
 
    let children = $rootTree->generateRelationalChildGraphNodes($rootPath, $setImpl, $simplePrimitiveProperties, $orderedPaths, $store, $mapping, $oneRuntime, $inScopeVars, [], $exeCtx, $extensions, $debug);
-   let columns = $postProcessedQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(c | ^SQLResultColumn(label = $c.name->substring(1, $c.name->length() - 1), dataType = $c->inferRelationalType(^TranslationContext(dbType=$dbConnection.connection->cast(@DatabaseConnection).type))->toOne()));
-   let dbType = $dbConnection.connection->cast(@DatabaseConnection).type;
+   let columns = $postProcessedQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(c | ^SQLResultColumn(label = $c.name->substring(1, $c.name->length() - 1), dataType = $c->inferRelationalType(^TranslationContext(dbType=$dbConnElement.connection->cast(@DatabaseConnection).type))->toOne()));
+   let dbType = $dbConnElement.connection->cast(@DatabaseConnection).type;
    let hasChildren = $children->isNotEmpty();
    let dbConfig = $dbType->createDbConfig();
    let tempTableName = tempTableName($currentIdx);
@@ -622,17 +623,17 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
 
    let tempTableStrategy = if(($hasChildren && useTempTableStrategy($dbType)),
                             | let table = createTable($tempTableName,$columns,[],$dbConfig);
-                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnection,$extensions);
-                              let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnection,$extensions);
-                              let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnection,$extensions);
+                              let createTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$table,$dbConnElement,$extensions);
+                              let loadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$table,$dbConnElement,$extensions);
+                              let dropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$table,$dbConnElement,$extensions);
                               getTempTableStrategyForRootNode($dbType, $createTempTableNode, $loadTempTableNode, $dropTempTableNode);,
                             | []);
 
    let parentTempTableColumns = $srcProperties->map(x | ^SQLResultColumn(label = $x.name->toOne(), dataType = $x->crossKeyRelationalType()));
    let parentTable = createTable($parentTempTableName,$parentTempTableColumns,[],$dbConfig);
-   let parentCreateTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
-   let parentLoadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$parentTable,$dbConnection,$extensions);
-   let parentDropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$parentTable,$dbConnection,$extensions);
+   let parentCreateTempTableNode = meta::relational::graphFetch::executionPlan::getCreateTempTableNode($dbType,$parentTable,$dbConnElement,$extensions);
+   let parentLoadTempTableNode = meta::relational::graphFetch::executionPlan::getLoadTempTableNodeForRoot($dbType,$parentTable,$dbConnElement,$extensions);
+   let parentDropTempTableNode = meta::relational::graphFetch::executionPlan::getDropTempTableNode($dbType,$parentTable,$dbConnElement,$extensions);
 
    ^RelationalCrossRootQueryTempTableGraphFetchExecutionNode
    (

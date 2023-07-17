@@ -203,7 +203,7 @@ function meta::pure::graphFetch::tests::XStore::milestoning::runtimeM2M2R():Runt
                 'INSERT INTO Trade.Trade(tradeID,customerEntityId) VALUES (\'ABC\',12);\n'
 
                 ;
-  let runtime = ^Runtime( connections = [
+  let runtime = ^Runtime( connectionElementAssociations = [
                                      ^ConnectionElementAssociation(
                                            element=^meta::pure::mapping::modelToModel::ModelStore(),
                                            connection=
