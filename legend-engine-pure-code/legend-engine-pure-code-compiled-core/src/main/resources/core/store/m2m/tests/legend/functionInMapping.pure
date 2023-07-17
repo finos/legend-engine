@@ -96,6 +96,18 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testConflictVariableInMa
    assertEquals($expected, $json);   
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{ serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::testMatchInMapping(): Boolean[1]
+{
+   let runtime = testJsonRuntime(Firm, '[{"employees":[{"@type":"PersonA","role":"developer","firstNameA":"Smith","firstName":"testFirstName","lastName":"testLastName"}]}]');
+   let lambda = {|AllEmployees.all()->meta::pure::graphFetch::execution::graphFetch(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees{names}}#)->meta::pure::graphFetch::execution::serialize(#{meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees{names}}#)};
+   let result = execute($lambda, meta::pure::mapping::modelToModel::test::alloy::simple::function::MatchMappingTest, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '{"names":[]}';
+   assert(meta::json::jsonEquivalent($expected->meta::json::parseJSON(), $json->meta::json::parseJSON()));
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
 {
   name: String[0..1];
@@ -109,9 +121,25 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Person
   role: meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole[0..1];
 }
 
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonA extends Person
+{
+  firstNameA: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonB extends Person
+{
+  firstNameB: String[1];
+  middleNames: String[*];
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee
 {
   name: String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees
+{
+  names: String[*];
 }
 
 Enum meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole
@@ -151,5 +179,23 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaul
    {
      ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
      name: $src.employees->filter(x|$x.role.name == 'developer')->first().firstName
+   }
+ )
+
+###Mapping
+
+ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::MatchMappingTest
+ (
+   meta::pure::mapping::modelToModel::test::alloy::simple::function::AllEmployees: Pure
+   {
+     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+     names: $src.employees->map(
+        c|$c->match(
+           [
+             personA: meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonA[1]|[],
+             personB: meta::pure::mapping::modelToModel::test::alloy::simple::function::PersonB[1]|$personB.firstNameB
+           ]
+        )
+     )
    }
  )
