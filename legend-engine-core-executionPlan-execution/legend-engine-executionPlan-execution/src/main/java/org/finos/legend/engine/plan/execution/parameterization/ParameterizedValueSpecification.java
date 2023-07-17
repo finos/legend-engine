@@ -363,15 +363,21 @@ public class ParameterizedValueSpecification
     {
         if (specification instanceof Collection)
         {
-            String type = this.primitiveHelper.get(((Collection) specification).values.get(0).getClass());
-
-            Variable variable = new Variable(name, type, new Multiplicity(0, null));
-            variables.add(variable);
-            ParameterValue parameterValue = new ParameterValue();
-            parameterValue.name = name;
-            parameterValue.value = specification;
-            parameterValues.add(parameterValue);
-            return variable;
+            String type = this.primitiveHelper.getOrDefault(((Collection) specification).values.get(0).getClass(), null);
+            if (type != null)
+            {
+                Variable variable = new Variable(name, type, new Multiplicity(0, null));
+                variables.add(variable);
+                ParameterValue parameterValue = new ParameterValue();
+                parameterValue.name = name;
+                parameterValue.value = specification;
+                parameterValues.add(parameterValue);
+                return variable;
+            }
+            else
+            {
+                return specification;
+            }
         }
         else
         {
