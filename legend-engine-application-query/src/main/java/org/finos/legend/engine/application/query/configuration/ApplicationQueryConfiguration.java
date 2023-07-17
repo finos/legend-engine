@@ -17,9 +17,25 @@ package org.finos.legend.engine.application.query.configuration;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.finos.legend.engine.shared.core.vault.Vault;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisPooled;
 
 public class ApplicationQueryConfiguration
 {
+    public static Object getQueryStoreClient() {
+
+        if (Vault.INSTANCE.hasValue("redis.host"))
+        {
+            return new JedisPooled(new HostAndPort(Vault.INSTANCE.getValue("redis.host"),
+                                                   Integer.parseInt(Vault.INSTANCE.getValue("redis.port"))),
+                    DefaultJedisClientConfig.builder().build());
+        }
+        else {
+            return getMongoClient();
+        }
+    }
+
     public static MongoClient getMongoClient()
     {
         String mongoConnectionString = Vault.INSTANCE.hasValue("query.mongo.connectionString") ? Vault.INSTANCE.getValue("query.mongo.connectionString") : null;
