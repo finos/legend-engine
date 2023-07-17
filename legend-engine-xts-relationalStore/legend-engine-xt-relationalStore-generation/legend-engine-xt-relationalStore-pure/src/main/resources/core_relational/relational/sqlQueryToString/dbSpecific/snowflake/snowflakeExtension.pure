@@ -1,3 +1,4 @@
+import meta::relational::metamodel::join::*;
 import meta::pure::alloy::connections::*;
 import meta::relational::functions::sqlQueryToString::snowflake::*;
 import meta::relational::functions::sqlQueryToString::default::*;
@@ -31,6 +32,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationForSnowflake_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSnowflake_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -287,6 +289,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processJoinTreeNodeWithLateralJoinForSnowflake(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   // https://docs.snowflake.com/release-notes/bcr-bundles/2023_04/bcr-1057
+   assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Filter in column projections is not supported. Use a Post Filter if filtering is necessary');
+
+   assert($j.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | 'Lateral join in Snowflake should be followed by flatten operation');
+
+   // https://docs.snowflake.com/en/sql-reference/constructs/join-lateral#usage-notes
+   ' ' + $format.separator() + 'inner join lateral '
+   + $j.alias
+         ->map(a|^$a(name = '"' + $a.name + '"'))
+         ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSliceOrDropForSnowflake(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
