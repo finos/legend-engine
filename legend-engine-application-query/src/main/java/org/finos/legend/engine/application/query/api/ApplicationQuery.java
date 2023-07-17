@@ -29,6 +29,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
+import redis.clients.jedis.UnifiedJedis;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -50,9 +51,16 @@ public class ApplicationQuery
 {
     private final QueryStoreManager queryStoreManager;
 
-    public ApplicationQuery(MongoClient mongoClient)
+    public ApplicationQuery(Object client)
     {
-        this.queryStoreManager = new QueryStoreManager(mongoClient);
+        if (client instanceof UnifiedJedis)
+        {
+            this.queryStoreManager = new RedisQueryStoreManager((UnifiedJedis) client);
+        }
+        else
+        {
+            this.queryStoreManager = new MongoQueryStoreManager((MongoClient) client);
+        }
     }
 
     private static String getCurrentUser(ProfileManager<CommonProfile> profileManager)
