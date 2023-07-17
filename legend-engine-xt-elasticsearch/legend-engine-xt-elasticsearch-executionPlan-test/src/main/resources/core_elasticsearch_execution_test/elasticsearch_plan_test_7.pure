@@ -110,22 +110,32 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   ];
 }
 
-function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::collectTest(tag: String[1]): PureTestCollection[1]
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::collectTest(tag: String[1], testFilter: Function<{FunctionDefinition<Any>[1] -> Boolean[1]}>[0..1]): PureTestCollection[1]
 {
   collectTest(
     $tag,
     elasticsearchV7Extension(),
     '/core_elasticsearch_execution_test/engineGrammar_7._pure_',
-    index_String_1__Any_MANY__Any_MANY_
+    index_String_1__Any_MANY__Any_MANY_,
+    $testFilter
   );
 }
 
 function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_8_0(): PureTestCollection[1]
 {
-  '7.8.0'->collectTest();  
+  let testToIgnore = [
+    // start multi_term ignore - not supported until 7.12
+    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields_TestConfig_1__Boolean_1_,
+    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields_withRename_TestConfig_1__Boolean_1_,
+    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields_TestConfig_1__Boolean_1_,
+    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields_withRename_TestConfig_1__Boolean_1_
+    // end multi_term ignore - not supported until 7.12
+  ];
+
+  '7.8.0'->collectTest(x | $x->in($testToIgnore)->not());  
 }
 
 function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_17_0(): PureTestCollection[1]
 {
-  '7.17.0'->collectTest();
+  '7.17.0'->collectTest([]);
 }
