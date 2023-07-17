@@ -142,7 +142,7 @@
 
         <module>legend-engine-xt-relationalStore-memsql-execution</module>
         <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
-        <module>legend-engine-xt-relationalStore-memsql-pure</module>
+        <module>legend-engine-xt-relationalStore-memsql-pure</module> -->
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -291,7 +291,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>4.5.2</legend.pure.version>
-        <legend.shared.version>0.23.3</legend.shared.version>
+        <legend.shared.version>0.23.6-SNAPSHOT</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>

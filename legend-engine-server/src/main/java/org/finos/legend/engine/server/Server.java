@@ -324,7 +324,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode, planExecutor));
 
         // Query
-        environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
+        environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getQueryStoreClient()));
 
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());
