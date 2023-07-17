@@ -333,6 +333,11 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
 
 
 ###Pure
+import meta::pure::mapping::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::*;
+import meta::relational::mapping::*;
+import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
@@ -807,13 +812,13 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
    let dbRuntime = meta::relational::tests::testRuntime();
-   
+
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
    let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
    
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -965,3 +970,62 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
       $result
    );
 }
+
+
+ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::testCrossStoreWithCSVDataSource():Boolean[1]
+{
+
+   let tree = #{
+      Trade {
+         tradeId,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   
+   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+                         (
+                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
+                            class   = S_Trade, 
+                            url     = 'data:application/json,'+
+                                      '{"s_tradeId": 1, "s_tradeDetails": "productID 2:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
+                                      '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
+                                      '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
+                         );
+  
+
+  let dbRuntimeFromCSv  =   ^EngineRuntime(
+                                 mappings = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3,
+                                connections =  ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+                                                    type = DatabaseType.H2,
+                                                    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv =     
+                                                                'default\n'+
+                                                                'productTable\n'+
+                                                                'productId,productName,description\n'+
+                                                                'productID 2,productName 84,description 67\n'
+                                                                                  ),
+                                                    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+                                                  element = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db2
+                                                 )
+  );
+
+
+   let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
+   let runtime = ^$dbRuntimeFromCSv(connections = $dbRuntimeFromCSv.connections->concatenate($jsonConnection));
+
+   let query = {|Trade.all()->graphFetch($tree)->from($mapping,$runtime)->serialize($tree)};
+   
+   
+   let plan = executionPlan($query, meta::relational::extension::relationalExtensions());
+
+  assertEquals(7, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@RelationalDatabaseConnection)
+  .datasourceSpecification->cast(@LocalH2DatasourceSpecification).testDataSetupSqls->size());   
+  let result = meta::legend::executeLegendQuery($query,[], meta::relational::extension::relationalExtensions());
+  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"tradeId":1,"product":{"productId":"productID 2","productName":"productName 84","description":"description 67"}},{"tradeId":2,"product":null},{"tradeId":3,"product":null},{"tradeId":4,"product":null}]}',$result);
+
+}
+
