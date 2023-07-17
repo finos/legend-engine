@@ -67,6 +67,9 @@ public class MetricsHandler
     private static final Counter DATASTORE_SPEC_COUNT = Counter.build("legend_engine_datastore_spec_count", "Count datastore specifications").register(getMetricsRegistry());
     private static final Counter JAVA_COMPILATION_COUNT = Counter.build("legend_engine_java_compilation_count", "Count java compilations").register(getMetricsRegistry());
     private static final Gauge TEMP_FILE_COUNT = Gauge.build("legend_engine_temp_file_count", "Measure how many temporary files are being currently created").register(getMetricsRegistry());
+    private static final Gauge ACTIVE_CONNECTIONS =  Gauge.build("active_connections", "Active Connections in Pool").labelNames("poolName").register();
+    private static final Gauge TOTAL_CONNECTIONS = Gauge.build("total_connections", "total Connections in Pool").labelNames("poolName").register();
+    private static final Gauge IDLE_CONNECTIONS = Gauge.build("idle_connections", "Idle Connections in Pool").labelNames("poolName").register();
 
     public static CollectorRegistry getMetricsRegistry()
     {
@@ -110,6 +113,38 @@ public class MetricsHandler
     public static void incrementDatastoreSpecCount()
     {
         DATASTORE_SPEC_COUNT.inc();
+    }
+
+    public static void setActiveConnections(String poolName, double value)
+    {
+        ACTIVE_CONNECTIONS.labels(poolName).set(value);
+    }
+
+    public static void setTotalConnections(String poolName, double value)
+    {
+        TOTAL_CONNECTIONS.labels(poolName).set(value);
+    }
+
+    public static void setIdleConnections(String poolName, double value)
+    {
+        IDLE_CONNECTIONS.labels(poolName).set(value);
+    }
+
+    public static void setConnectionMetrics(String poolName, double activeCount, double totalCount, double idleCount)
+    {
+        if (!poolName.contains("DefaultH2"))
+        {
+            setActiveConnections(poolName, activeCount);
+            setTotalConnections(poolName, totalCount);
+            setIdleConnections(poolName, idleCount);
+        }
+    }
+
+    public static void removeConnectionMetrics(String poolName)
+    {
+        ACTIVE_CONNECTIONS.remove(poolName);
+        TOTAL_CONNECTIONS.remove(poolName);
+        IDLE_CONNECTIONS.remove(poolName);
     }
 
     public static void incrementJavaCompilationCount()

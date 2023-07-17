@@ -202,6 +202,14 @@
         </dependency>
         <!-- METRICS -->
 
+        <!-- PROMETHEUS -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- PROMETHEUS -->
+
         <!-- DRIVERS -->
         <dependency>
             <groupId>com.h2database</groupId>

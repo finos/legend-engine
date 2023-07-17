@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import io.prometheus.client.CollectorRegistry;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -83,6 +84,143 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolExists(true, "user2", ds2.getConnectionKey());
         assertPoolExists(true, "user3", ds3.getConnectionKey());
 
+    }
+
+    @Test
+    public void testMetricCreationForNewConnectionPoolUsingHouseKeeperRun()
+    {
+
+        CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+
+        //request new connection for user1 and ds1
+        requestConnection(user1, ds1);
+
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run();
+        //housekeeper evicts no old connections, default registry appends new instance of active, total and idle connection info for new pool entry
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool1).getTotalConnections(), 0d);
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool1).getActiveConnections(), 0d);
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(0.00, collectorRegistry.getSampleValue("idle_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+
+    }
+
+    @Test
+    public void testMetricUpdateForActiveConnectionPoolUsingHouseKeeperRun()
+    {
+        CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        //request new connection for user1 and ds1
+        requestConnection(user1, ds1);
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run();
+
+        requestConnection(user1, ds1);
+        requestConnection(user1, ds1);
+
+        //active, total and idle connection values are updated but Metrics will be updated in 10 minutes when housekeeper gets triggered.
+        Assert.assertNotEquals(connectionStateManager.getDataSourceByPoolName(pool1).getActiveConnections(), collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}));
+        Assert.assertNotEquals(connectionStateManager.getDataSourceByPoolName(pool1).getTotalConnections(), collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool1}));
+
+
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run(); //housekeeper evicts no old connections, updates default registry with active, total and idle connection info for existing pool entry
+
+        //values in both connection state manager and metrics handler will reflect the same now
+        Assert.assertEquals(connectionStateManager.getDataSourceByPoolName(pool1).getActiveConnections(), collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}),  0d);
+        Assert.assertEquals(connectionStateManager.getDataSourceByPoolName(pool1).getTotalConnections(), collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool1}),  0d);
+        Assert.assertEquals(connectionStateManager.getDataSourceByPoolName(pool1).getIdleConnections(), collectorRegistry.getSampleValue("idle_connections", new String[] {"poolName"}, new String[]{pool1}),  0d);
+        Assert.assertEquals(3.00, connectionStateManager.getDataSourceByPoolName(pool1).getTotalConnections(), 0d);
+        Assert.assertEquals(3.00, connectionStateManager.getDataSourceByPoolName(pool1).getActiveConnections(), 0d);
+        Assert.assertEquals(0.00, connectionStateManager.getDataSourceByPoolName(pool1).getIdleConnections(), 0d);
+        Assert.assertEquals(3.00, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(3.00, collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(0.00, collectorRegistry.getSampleValue("idle_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+
+    }
+
+    @Test
+    public void testMetricDeletionForEvictedConnectionPoolsFromHouseKeeperRun()
+    {
+        CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
+        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+
+        //create a new instance of pool entry with ds2 and user2
+        requestConnection(user2, ds2);
+        String pool2 = connectionStateManager.poolNameFor(user2, ds2.getConnectionKey());
+        assertPoolExists(true, user2.getName(), ds2.getConnectionKey());
+
+        //only have 1 active connection for this pool
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool2).getTotalConnections(), 0d);
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool2).getActiveConnections(), 0d);
+
+        //trigger housekeeper run after 10 minutes to create a new entry for this pool in metrics
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run(); //housekeeper run to update metrics
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool2}), 0d);
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool2}), 0d);
+        Assert.assertEquals(0.00, collectorRegistry.getSampleValue("idle_connections", new String[] {"poolName"}, new String[]{pool2}), 0d);
+
+        //close this to trigger cleanup in 10 mins
+        DataSourceWithStatistics userPool2 = connectionStateManager.getDataSourceByPoolName(pool2);
+        userPool2.close();
+
+        //before the next housekeeper run, Connection State Manager and Metrics display different results
+        Assert.assertEquals(0.00, connectionStateManager.getDataSourceByPoolName(pool2).getActiveConnections(), 0d);
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool2}), 0d);
+
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run();
+
+        //housekeeper evicts pool2 from connection state manager and removes metrics for pool2 from default registry
+        assertPoolExists(false, user2.getName(), ds2.getConnectionKey());
+        Assert.assertEquals(connectionStateManager.getDataSourceByPoolName(pool2), null);
+        Assert.assertEquals(null, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool2}));
+
+    }
+
+    @Test
+    public void testMetricsUpdateWithIdleConnectionInActivePool() throws SQLException
+    {
+        CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+
+        ConnectionStateManager.ConnectionStateHousekeepingTask houseKeeper = new ConnectionStateManager.ConnectionStateHousekeepingTask(Duration.ofMinutes(5).getSeconds());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+
+        //create new pool entry with new request connections
+        requestConnection(user1, ds1);
+        requestConnection(user1, ds1).close();
+
+        //connection state manager and metrics display different values since housekeeper hasnt been triggered yet
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool1).getActiveConnections(), 0d);
+        Assert.assertEquals(2.00, connectionStateManager.getDataSourceByPoolName(pool1).getTotalConnections(), 0d);
+        Assert.assertEquals(1.00, connectionStateManager.getDataSourceByPoolName(pool1).getIdleConnections(), 0d);
+        Assert.assertEquals(null, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}));
+
+        clock.advance(Duration.ofMinutes(11));
+        houseKeeper.run();
+
+        //housekeeper doesnt evict any pools, updates pool1 entry metrics by incrementing the total and idle connection values
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(2.00, collectorRegistry.getSampleValue("total_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
+        Assert.assertEquals(1.00, collectorRegistry.getSampleValue("idle_connections", new String[] {"poolName"}, new String[]{pool1}), 0d);
     }
 
     @Test

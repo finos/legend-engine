@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,7 +237,11 @@ public class ConnectionStateManager implements Closeable
         Set<Pair<String, DataSourceStatistics>> entriesToPurge = this.findUnusedPoolsOlderThan(duration);
         LOGGER.info("ConnectionStateManager.HouseKeeper : pools {} to be evicted", entriesToPurge.size());
         // step 2 - remove atomically - i.e remove iff the state has not been updated since it was read in step 1
-        entriesToPurge.forEach(pool -> this.atomicallyRemovePool(pool.getOne(), pool.getTwo()));
+        entriesToPurge.forEach(pool ->
+        {
+            this.atomicallyRemovePool(pool.getOne(), pool.getTwo());
+            MetricsHandler.removeConnectionMetrics(pool.getOne());
+        });
     }
 
     public int size()
@@ -303,12 +308,21 @@ public class ConnectionStateManager implements Closeable
             try
             {
                 instance.purge(durationInSeconds);
+                instance.updateMetricsForConnectionPools();
             }
             catch (Exception e)
             {
                 LOGGER.error("ConnectionStateManager.HouseKeeper purge failed {}", e);
             }
         }
+    }
+
+    private void updateMetricsForConnectionPools()
+    {
+        this.connectionPools.forEach(p ->
+        {
+            MetricsHandler.setConnectionMetrics(p.getPoolName(), p.getActiveConnections(), p.getTotalConnections(), p.getIdleConnections());
+        });
     }
 
     public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecification dataSourceSpecification, Supplier<DataSource> dataSourceBuilder)
@@ -416,7 +430,10 @@ public class ConnectionStateManager implements Closeable
         {
             try
             {
-                this.connectionPools.keySet().forEach(k -> closeAndRemoveConnectionPool(k));
+                this.connectionPools.keySet().forEach(k ->
+                {
+                    closeAndRemoveConnectionPool(k);
+                });
                 EXECUTOR_SERVICE.shutdown();
                 EXECUTOR_SERVICE = null;
             }
@@ -433,6 +450,7 @@ public class ConnectionStateManager implements Closeable
         if (ds != null)
         {
             LOGGER.info("Closing {} has active connections ? {}", ds.getPoolName(), ds.hasActiveConnections());
+            MetricsHandler.removeConnectionMetrics(ds.getPoolName());
             ds.close();
         }
         return true;
