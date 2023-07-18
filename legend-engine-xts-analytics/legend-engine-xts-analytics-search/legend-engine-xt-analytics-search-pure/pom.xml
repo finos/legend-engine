@@ -96,6 +96,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -189,6 +194,12 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -257,6 +268,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
