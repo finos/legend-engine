@@ -153,7 +153,7 @@ public class DataSourceWithStatistics
 
     public boolean hasIdleConnections()
     {
-        return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getIdleConnections()> 0;
+        return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getIdleConnections() > 0;
     }
 
     public double getActiveConnections()
