@@ -29,6 +29,10 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
         <dependency>
@@ -48,6 +52,13 @@
         </dependency>
         <!-- JACKSON -->
 
+        <!-- Utilities -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- Utilities -->
+
         <!-- MONGODB -->
         <dependency>
             <groupId>org.mongodb</groupId>
@@ -58,6 +69,13 @@
             <artifactId>mongo-java-driver</artifactId>
         </dependency>
         <!-- MONGODB -->
+
+        <!-- REDIS -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <!-- REDIS -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
@@ -138,5 +156,6 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
+
     </dependencies>
 </project>
