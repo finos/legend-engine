@@ -26,7 +26,9 @@
     <packaging>pom</packaging>
     <name>Legend Engine - Pure - Platform - Modular - Generation - JAVA</name>
 
-
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
 
     <modules>
         <module>legend-engine-pure-platform-dsl-diagram-java</module>

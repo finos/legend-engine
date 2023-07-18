@@ -34,5 +34,7 @@
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
     </modules>
 
-
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
 </project>

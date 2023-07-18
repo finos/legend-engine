@@ -8,7 +8,6 @@
     "platform_store_relational",
     "core_functions",
     "core",
-    "core_service",
     "core_relational",
     "core_external_compiler",
     "core_external_query_sql_metamodel"

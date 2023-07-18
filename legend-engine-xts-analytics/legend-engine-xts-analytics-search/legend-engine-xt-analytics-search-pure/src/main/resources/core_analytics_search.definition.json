@@ -9,7 +9,6 @@
     "platform_store_relational",
     "core",
     "core_relational",
-    "core_service",
     "core_diagram",
     "core_diagram_metamodel",
     "core_data_space_metamodel",

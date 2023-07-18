@@ -262,6 +262,11 @@ function <<functionType.NotImplementedFunction>> meta::pure::mapping::from(tds:T
    $tds;
 }
 
+function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], executionParameters: meta::legend::service::metamodel::SingleExecutionParameters[1]):T[m]
+{
+   $t
+}
+
 function <<functionType.NotImplementedFunction>> meta::pure::mapping::from(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1]):TabularDataSet[1]
 {
    $tds;
