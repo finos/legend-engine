@@ -808,7 +808,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    planTestDataGenerationWithParameterValuePairs($func, $mapping, $runtime, $exeCtx, $rowIdentifiers, $hashStrings, $temporalMilestoningDates,$func->generateParametersNameValuePair($parameters) ,$extensions)
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: ConnectionElementAssociation[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], connectionElement: ConnectionElementAssociation[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
 {
    assert($relationTree.root == true, 'Should start with a relation tree starting from a \'root\'');
    let childrenTrees = $relationTree.children;
@@ -819,16 +819,16 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
       let currentIndices = $indices->add('c' + $i->toString());
       let tree = $childrenTrees->at($i);
       if($tree.isView(),
-         |  let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($tree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, true, [], $config, $extensions);
+         |  let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($tree, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, true, [], $config, $extensions);
             if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
                | $nestedNodes,
                | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
-                 let childNodes = $tree->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+                 let childNodes = $tree->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
                  $nestedNodes->concatenate($childNodes);
             );,
 
          |  let table = $tree.table->toOne();
-            let pksAndErrorNodes = planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $dbConnection, false, [], $config, $extensions);
+            let pksAndErrorNodes = planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $connectionElement, false, [], $config, $extensions);
             let pks = $pksAndErrorNodes.first.values;
             let errorNodes = $pksAndErrorNodes.second.values;
             if($errorNodes->isEmpty(),
@@ -886,7 +886,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                      resultSizeRange = $finalNode.resultSizeRange,
                      executionNodes = $finalNode
                   );
-                  let childNodes = $tree->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+                  let childNodes = $tree->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
                   $thisNode->concatenate($childNodes);,
                |  $errorNodes
             );
@@ -898,8 +898,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    );
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationStartingFromNode(relationTree: RelationTree[1], nodeResPlaceHolder: String[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationStartingFromNode(relationTree: RelationTree[1], nodeResPlaceHolder: String[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], connectionElement: ConnectionElementAssociation[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
+   let dbConnection = $connectionElement.connection->cast(@DatabaseConnection);
    let root = $relationTree.relation->cast(@NamedRelation)->toOne();
    let newPairs = $relationTree.children->size()->range()->map({i |
       let child = $relationTree.children->at($i);
@@ -907,11 +908,11 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
       let join = $child.join->toOne();
       if($child.isView(),
          |
-           let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($child, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, false, $nodeResPlaceHolder, $config, $extensions);
+           let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($child, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, false, $nodeResPlaceHolder, $config, $extensions);
            if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
               | $nestedNodes,
               | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
-                let childNodes =  $child->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+                let childNodes =  $child->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
                 $nestedNodes->concatenate($childNodes);
            );,
 
@@ -945,8 +946,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                               | ^$childSQL_PreMilestoning(filteringOperation = $childSQL_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                            );
 
-            // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
-            let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+            let element = $connectionElement.element->cast(@Database);
             let postProcessResult = postProcessSQLQuery($childSQL, $element, [], [], $runtime, $exeCtx, $extensions);
 
             let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
@@ -974,14 +974,15 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                resultSizeRange = $finalNode.resultSizeRange,
                executionNodes = $finalNode
             );
-            let subChildNodes = $child->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+            let subChildNodes = $child->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
             $childNode->concatenate($subChildNodes);
       );
    });
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], connectionElement: ConnectionElementAssociation[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
+   let dbConnection = $connectionElement.connection->cast(@DatabaseConnection);
    let view = $relationTree.view;
    let mainRelation = $view->mainRelation();
    let currentIndices = $indices->add('v');
@@ -990,7 +991,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    let initialNodes = $mainRelation->match([
       {table : Table[1] |
          let pksAndErrorNodes = if ($root,
-                                    | planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $dbConnection, true, $view, $config, $extensions),
+                                    | planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $connectionElement, true, $view, $config, $extensions),
                                     | ^Pair<List<RowIdentifier>, List<ExecutionNode>>(first = ^List<RowIdentifier>(), second = ^List<ExecutionNode>())
                                 );
          let pks = $pksAndErrorNodes.first.values;
@@ -1097,18 +1098,18 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                   resultSizeRange = $finalNode.resultSizeRange,
                                   executionNodes = $finalNode
                                );
-               let childNodes =  $relationTree.nestedViewTree.children->at(0)->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+               let childNodes =  $relationTree.nestedViewTree.children->at(0)->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
                $thisNode->concatenate($childNodes);,
              | $errorNodes
          );
       },
 
       {v : View[1] |
-         let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($relationTree.nestedViewTree.children->toOne(), $runtime, $exeCtx, $dbConnection,  $relationColumnMap, $currentIndices, $root, $parentResPlaceHolder, $config, $extensions);
+         let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($relationTree.nestedViewTree.children->toOne(), $runtime, $exeCtx, $connectionElement,  $relationColumnMap, $currentIndices, $root, $parentResPlaceHolder, $config, $extensions);
          if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
             | $nestedNodes,
             | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
-              let childNodes =  $relationTree.nestedViewTree.children->toOne()->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+              let childNodes =  $relationTree.nestedViewTree.children->toOne()->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $connectionElement, $relationColumnMap, $currentIndices, $config, $extensions);
               $nestedNodes->concatenate($childNodes);
          );
       }
@@ -1169,8 +1170,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    );
 }
 
-function <<access.protected>> meta::relational::testDataGeneration::executionPlan::planRowIdentifierExtractionForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<RowIdentifier>, List<ExecutionNode>>[1]
+function <<access.protected>> meta::relational::testDataGeneration::executionPlan::planRowIdentifierExtractionForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], connectionElement: ConnectionElementAssociation[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<RowIdentifier>, List<ExecutionNode>>[1]
 {
+   let dbConnection = $connectionElement.connection->cast(@DatabaseConnection);
    let tablePk = $rowIdentifiers->filter(t | $t.table == $table);
    if($tablePk->size() == 1,
       | pair(list($tablePk->toOne().rowIdentifiers), list([])),
@@ -1193,8 +1195,8 @@ function <<access.protected>> meta::relational::testDataGeneration::executionPla
                           | ^$childSQL_PreMilestoning(filteringOperation = $childSQL_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                        );
          
-        // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
-        let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+        let runtime = ^Runtime(connectionElementAssociations=$connectionElement);
+        let element = $connectionElement.element->cast(@Database);
         let postProcessResult = postProcessSQLQuery($childSQL, $element, [], [], $runtime, $exeCtx, $extensions);
 
         let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
