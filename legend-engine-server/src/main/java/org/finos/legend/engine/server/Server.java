@@ -66,6 +66,7 @@ import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarTo
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.TransformGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.TransformJsonToGrammar;
+import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementGrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.RelationalOperationElementJsonToGrammar;
 import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElement.TransformRelationalOperationElementGrammarToJson;
@@ -299,7 +300,10 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new TransformRelationalOperationElementJsonToGrammar());
 
         // Relational
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
+        environment.jersey().register(new RelationalElementAPI(routerExtensions, serverConfiguration.deployment.mode));
 
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));
@@ -314,8 +318,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
 
         // Execution
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
