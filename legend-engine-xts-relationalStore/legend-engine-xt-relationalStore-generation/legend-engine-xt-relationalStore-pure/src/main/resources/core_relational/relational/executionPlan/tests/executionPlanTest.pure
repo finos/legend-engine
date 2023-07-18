@@ -1581,7 +1581,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
 
    let result = executionPlan({|Person.all()->project(c | $c.firstName, 'firstName')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@TestDatabaseConnection);
+   let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection.connection->cast(@TestDatabaseConnection);
 
    assertSize($resultConnection.testDataSetupSqls, 50);
 }
@@ -1600,7 +1600,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
    let result = executionPlan({|Person.all()->project(c | $c.firstName, 'firstName')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
    let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode)
-      .connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification
+      .connection.connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification
                  ->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification);
 
    assertSize($resultConnection.testDataSetupSqls, 50);
@@ -2572,7 +2572,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
 
   let runtime = ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(element=db, connection=$conn));
   let plan = executionPlan({|Product.all()->filter(p|$p.name == 'ok')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
-  assertEquals(['a','b'], $plan.rootExecutionNode.executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
+  assertEquals(['a','b'], $plan.rootExecutionNode.executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).connection.connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
   let transformedPlan = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($plan, meta::relational::extension::relationalExtensions());
   assertEquals(['a','b'], $transformedPlan.rootExecutionNode.executionNodes->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode).connection->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
 }

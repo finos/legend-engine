@@ -784,12 +784,13 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationWithParameterValuePairs(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], temporalMilestoningDates: TemporalMilestoningDates[0..1], parameterNameValuePairs: Pair<String, List<Any>>[*], extensions:Extension[*]):ExecutionPlan[1]
 {
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $parameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnection = $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(DatabaseConnection))->toOne();
-   let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnection)->toOne()->cast(@DatabaseConnection);
+   let dbConnEl = $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(DatabaseConnection))->toOne();
+   let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnEl)->toOne()->cast(@DatabaseConnection);
+   let dbConnection = ^$dbConnEl(connection=$updatedDbConnection);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
-   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $runtime, $exeCtx, $updatedDbConnection, $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
+   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
    ^ExecutionPlan
    (
       func = $func,
@@ -807,10 +808,12 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    planTestDataGenerationWithParameterValuePairs($func, $mapping, $runtime, $exeCtx, $rowIdentifiers, $hashStrings, $temporalMilestoningDates,$func->generateParametersNameValuePair($parameters) ,$extensions)
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: ConnectionElementAssociation[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]
 {
    assert($relationTree.root == true, 'Should start with a relation tree starting from a \'root\'');
    let childrenTrees = $relationTree.children;
+
+   let dbConnection = $connectionElement.connection->cast(@DatabaseConnection);
 
    let allNodes = $childrenTrees->size()->range()->map({i |
       let currentIndices = $indices->add('c' + $i->toString());
@@ -851,9 +854,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                       | ^$rootSelect_PreMilestoning(filteringOperation = $rootSelect_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
                                    );
 
-                  // let runtime = ^Runtime(connectionElementAssociations=$dbConnection);
+                  let runtime = ^Runtime(connectionElementAssociations=$connectionElement);
 
-                  let element = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConnection).element->toOne()->cast(@Database);
+                  let element = $connectionElement.element->cast(@Database);
 
                   let postProcessResult = postProcessSQLQuery($rootSelect, $element, [], [], $runtime, $exeCtx, $extensions);
 

@@ -21,7 +21,7 @@ import meta::pure::executionPlan::toString::*;
 
 function meta::relational::tests::advanced::resultSourcing::getConnection():ConnectionElementAssociation[1]
 {
-   let connection = meta::relational::tests::testRuntime().connectionElementAssociations->filter(c|$c==meta::relational::tests::db)->toOne();
+   let connection = meta::relational::tests::testRuntime().connectionElementAssociations->filter(c|$c.element==meta::relational::tests::db)->toOne();
    meta::relational::tests::createTablesAndFillDb();
    $connection;
  }

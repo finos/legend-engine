@@ -357,7 +357,9 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    let rootTree     = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
    let setImpls     = $rootTree.sets->cast(@RootRelationalInstanceSetImplementation);
    let store        = $sq.store->cast(@Database);
-   let dbConnection = $runtime.connectionElementAssociations->filter(c|$c.element==$store)->toOne();
+   let dbConn = $runtime->connectionByElement($store)->toOne()->cast(@DatabaseConnection);
+   let dbConnElPre = $runtime.connectionElementAssociations->filter(c|$c.connection==$dbConn)->toOne();
+   let dbConnection = ^$dbConnElPre(element=$store);
    let oneRuntime   = ^Runtime(connectionElementAssociations= [$dbConnection]);
    let batchSize    = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
                        | $fe->instanceValueAtParameter(2)->cast(@Integer),
