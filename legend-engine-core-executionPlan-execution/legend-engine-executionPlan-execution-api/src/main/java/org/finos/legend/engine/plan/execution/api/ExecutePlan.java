@@ -56,7 +56,7 @@ import static org.finos.legend.engine.plan.execution.authorization.PlanExecution
 
 public class ExecutePlan
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutePlan.class);
     private final PlanExecutor planExecutor;
     private IdentityFactory identityFactory;
     private final PlanExecutionAuthorizer planExecutionAuthorizer;

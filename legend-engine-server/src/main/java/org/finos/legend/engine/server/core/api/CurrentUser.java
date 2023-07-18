@@ -33,8 +33,6 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class CurrentUser
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-
     @GET
     @Path("currentUser")
     @ApiOperation(value = "Provides server build and dependency information")

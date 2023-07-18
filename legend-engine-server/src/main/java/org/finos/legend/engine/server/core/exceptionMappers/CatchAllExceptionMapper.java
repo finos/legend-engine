@@ -23,8 +23,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 public class CatchAllExceptionMapper implements ExceptionMapper<Exception>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-
     @Override
     public Response toResponse(Exception exception)
     {

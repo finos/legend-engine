@@ -34,7 +34,7 @@ import java.util.TimerTask;
 
 public class LightScheduler
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(LightScheduler.class);
     private MutableMap<String, Pair<TimerTask, Info>> infoBuffer = Maps.mutable.empty();
     private List<Timer> timers = Lists.mutable.empty();
 

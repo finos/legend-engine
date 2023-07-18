@@ -58,7 +58,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class ServiceModelingApi
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ServiceModelingApi.class);
     public static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final ServiceModeling serviceModeling;
 

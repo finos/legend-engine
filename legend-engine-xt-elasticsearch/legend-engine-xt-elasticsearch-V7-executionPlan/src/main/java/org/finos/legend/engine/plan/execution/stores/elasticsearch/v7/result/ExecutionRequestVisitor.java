@@ -101,7 +101,7 @@ import org.slf4j.Logger;
 
 public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutionRequestVisitor.class);
 
     private final HttpClient client;
     private final HttpClientContext httpClientContext;

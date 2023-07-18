@@ -59,7 +59,7 @@ import static org.finos.legend.engine.shared.core.kerberos.ExecSubject.exec;
 
 public class SDLCLoader implements ModelLoader
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SDLCLoader.class);
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private SubjectCache subjectCache = new SubjectCache(null);
     private final Supplier<Subject> subjectProvider;

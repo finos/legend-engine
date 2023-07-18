@@ -32,7 +32,7 @@ import java.util.Random;
 
 public class TemporaryFile implements Closeable
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TemporaryFile.class);
     private static final String localDevTempPath = System.getProperty("java.io.tmpdir");
     private String fileName;
     public Path path;

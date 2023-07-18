@@ -27,7 +27,7 @@ import java.io.IOException;
 
 public class MongoDBSchemaParser
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBSchemaParser.class);
 
 
     private MongoDBSchemaParser()

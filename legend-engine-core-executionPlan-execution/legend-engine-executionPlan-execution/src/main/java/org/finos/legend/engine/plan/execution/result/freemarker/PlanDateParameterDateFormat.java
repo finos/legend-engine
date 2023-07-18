@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 public class PlanDateParameterDateFormat extends TemplateDateFormat
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PlanDateParameterDateFormat.class);
 
     private static final RichIterable<PlanDateParameterFormatter> planStrictDateFormatters = Lists.immutable.with(new PlanDateParameterFormatter("yyyy-MM-dd", false, false, false, false));
     private static final RichIterable<PlanDateParameterFormatter> planDateTimeFormatters = Lists.immutable.with(

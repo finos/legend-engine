@@ -103,7 +103,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class Execute
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Execute.class);
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;

@@ -70,13 +70,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- LOG -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- LOG -->
-
         <!-- OPEN TRACING -->
         <dependency>
             <groupId>io.opentracing</groupId>

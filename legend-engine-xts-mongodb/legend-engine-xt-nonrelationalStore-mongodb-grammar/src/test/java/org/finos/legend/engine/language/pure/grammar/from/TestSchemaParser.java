@@ -33,7 +33,7 @@ import java.util.Objects;
 public class TestSchemaParser
 {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestSchemaParser.class);
     private final String inputJsonFile;
 
     public TestSchemaParser(String inputQueryFile)

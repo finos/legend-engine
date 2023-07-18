@@ -69,7 +69,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     public static final String OPERATOR_EXPRESSION = "OperatorExpression";
     public static final String FIELD_NAME = "fieldName";
     public static final String EXPR = "$expr";
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBQueryDeserializer.class);
     static Set<String> comparisonOperators = Sets.mutable.of("$eq", "$gt", "$gte", "$lt", "$lte", "$ne", "$in", "$nin");
     static Set<String> logicalOperators = Sets.mutable.of("$and", "$or", "$nor", "$not");
 

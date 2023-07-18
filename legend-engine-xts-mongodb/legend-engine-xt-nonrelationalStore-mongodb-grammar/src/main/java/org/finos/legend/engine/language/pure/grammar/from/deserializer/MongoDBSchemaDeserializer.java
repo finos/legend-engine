@@ -55,7 +55,7 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
 {
     public static final String BSON_TYPE = "bsonType";
     public static final String BSON_OBJECT = "object";
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBSchemaDeserializer.class);
 
     public MongoDBSchemaDeserializer()
     {

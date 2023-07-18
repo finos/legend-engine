@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 
 public class PureGrammarParser
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarParser.class);
     private static final String DEFAULT_SECTION_BEGIN = "\n###" + DomainParser.name + "\n";
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;

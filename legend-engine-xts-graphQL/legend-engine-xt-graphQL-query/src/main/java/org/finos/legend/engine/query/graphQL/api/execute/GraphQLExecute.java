@@ -115,7 +115,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class GraphQLExecute extends GraphQL
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GraphQLExecute.class);
     private final PlanExecutor planExecutor;
     private final Iterable<? extends PlanTransformer> transformers;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;

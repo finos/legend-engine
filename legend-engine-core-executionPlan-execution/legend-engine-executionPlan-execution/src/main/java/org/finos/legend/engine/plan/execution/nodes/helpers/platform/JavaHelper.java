@@ -45,7 +45,7 @@ import java.util.Map;
 
 public class JavaHelper
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaHelper.class);
     private static final String DEFAULT_EXECUTION_METHOD_NAME = "execute";
 
     private JavaHelper()

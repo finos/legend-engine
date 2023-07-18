@@ -46,7 +46,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.ComposerUtility.g
 
 public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BaseTypeVisitorImpl.class);
 
     private final int indentLevel;
 

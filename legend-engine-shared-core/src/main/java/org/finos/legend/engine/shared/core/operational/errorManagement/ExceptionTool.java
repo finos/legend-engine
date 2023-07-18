@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response;
 
 public class ExceptionTool
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExceptionTool.class);
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
 
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)

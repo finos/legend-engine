@@ -47,7 +47,7 @@ import java.util.Set;
 
 public class PackageableElementSecondPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PackageableElementSecondPassBuilder.class);
 
     private final CompileContext context;
 

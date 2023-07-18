@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 
 public class ExecutionNodeJavaPlatformHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutionNodeJavaPlatformHelper.class);
 
     public static Result executeJavaImplementation(ExecutionNode node, ExecutionNodeContextFactory contextFactory, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {

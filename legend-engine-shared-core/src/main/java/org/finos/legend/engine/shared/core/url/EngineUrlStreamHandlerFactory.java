@@ -38,7 +38,7 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
         INITIALIZATION_FAILED
     }
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(EngineUrlStreamHandlerFactory.class);
     private static final List<String> JRE_PROTOCOLS = Arrays.asList("file", "ftp", "http", "https", "jar", "mailto");
     private static volatile State factoryInitialized = State.UNINITIALIZED;
 

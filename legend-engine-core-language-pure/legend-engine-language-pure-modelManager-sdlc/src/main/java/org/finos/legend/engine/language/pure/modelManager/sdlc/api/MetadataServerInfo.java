@@ -31,7 +31,7 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetadataServerInfo
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MetadataServerInfo.class);
     private String message;
 
     public MetadataServerInfo(MetaDataServerConfiguration metaDataServerConfiguration)

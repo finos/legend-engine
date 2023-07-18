@@ -37,7 +37,7 @@ import java.io.PrintStream;
 
 public class ResultManager
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultManager.class);
     private static final JsonStringEncoder jsonStringEncoder = JsonStringEncoder.getInstance();
 
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, LoggingEventType loggingEventType)

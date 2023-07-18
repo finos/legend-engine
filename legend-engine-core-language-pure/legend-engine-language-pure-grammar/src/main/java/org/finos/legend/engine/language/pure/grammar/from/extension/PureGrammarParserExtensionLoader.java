@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class PureGrammarParserExtensionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarParserExtensionLoader.class);
     private static final AtomicReference<List<PureGrammarParserExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
