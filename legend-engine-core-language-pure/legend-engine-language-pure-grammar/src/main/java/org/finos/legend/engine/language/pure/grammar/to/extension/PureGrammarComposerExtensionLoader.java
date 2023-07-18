@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class PureGrammarComposerExtensionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarComposerExtensionLoader.class;
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarComposerExtensionLoader.class);
     private static final AtomicReference<List<PureGrammarComposerExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
