@@ -65,6 +65,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -1445,7 +1446,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n");
+                "}\n", null, Collections.singletonList("COMPILATION error at [48:1-114:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
@@ -1691,7 +1692,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                         "      }\n" +
                         "    ];\n" +
                         "  }\n" +
-                        "}");
+                        "}", null, Collections.singletonList("COMPILATION error at [68:1-149:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 

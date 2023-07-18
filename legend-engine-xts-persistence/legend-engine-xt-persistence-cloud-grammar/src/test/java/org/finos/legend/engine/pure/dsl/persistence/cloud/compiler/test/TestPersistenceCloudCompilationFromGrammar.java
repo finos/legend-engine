@@ -24,6 +24,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_cont
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.junit.Test;
 
+import java.util.Collections;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -179,7 +181,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "      modelClass: test::ServiceResult;\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n");
+                "}\n", null, Collections.singletonList("COMPILATION error at [88:1-117:1]: Persistence Spec V1 will be deprecated. Please shift to using Persistence Spec V2 grammar."));
 
         PureModel model = result.getTwo();
 
