@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class PureProtocolExtensionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureProtocolExtensionLoader.class);
     private static final AtomicReference<List<PureProtocolExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()

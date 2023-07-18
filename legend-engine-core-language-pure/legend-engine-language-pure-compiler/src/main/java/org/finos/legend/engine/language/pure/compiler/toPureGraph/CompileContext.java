@@ -56,7 +56,7 @@ import java.util.function.Function;
 
 public class CompileContext
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CompileContext.class);
 
     private static final ImmutableSet<String> SPECIAL_TYPES = _Package.SPECIAL_TYPES;
     private static final String PACKAGE_SEPARATOR = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.DEFAULT_PATH_SEPARATOR;

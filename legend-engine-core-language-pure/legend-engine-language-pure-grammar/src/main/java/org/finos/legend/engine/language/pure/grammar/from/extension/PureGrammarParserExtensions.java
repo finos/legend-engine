@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 public class PureGrammarParserExtensions
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarParserExtensions.class);
 
     private final ImmutableList<PureGrammarParserExtension> extensions;
     private final MapIterable<String, SectionParser> sectionParsers;

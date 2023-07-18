@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 public class MongoDBSchemaParseTreeWalker
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;

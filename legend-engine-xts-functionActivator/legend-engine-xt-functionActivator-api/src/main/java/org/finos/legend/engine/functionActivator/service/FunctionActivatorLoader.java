@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class FunctionActivatorLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FunctionActivatorLoader.class);
     private static final AtomicReference<MutableList<FunctionActivatorService>> INSTANCE = new AtomicReference<>();
 
     public static MutableList<FunctionActivatorService> extensions()

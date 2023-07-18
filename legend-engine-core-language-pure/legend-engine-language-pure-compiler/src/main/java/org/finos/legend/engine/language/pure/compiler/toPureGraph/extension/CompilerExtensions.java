@@ -68,7 +68,7 @@ import java.util.function.BiConsumer;
 
 public class CompilerExtensions
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompilerExtensions.class);
 
     @SuppressWarnings("unchecked")
     private static final ImmutableSet<Class<? extends PackageableElement>> FORBIDDEN_PROCESSOR_CLASSES = Sets.immutable.with(

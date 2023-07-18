@@ -26,7 +26,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.ComposerUtility.a
 
 public class MongoDBSchemaJsonComposer
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBSchemaJsonComposer.class);
 
     private MongoDBSchemaJsonComposer()
     {

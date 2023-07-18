@@ -64,7 +64,7 @@ import javax.ws.rs.core.Response;
 public class LineageAnalytics
 {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(LineageAnalytics.class);
 
     private final ModelManager modelManager;
 

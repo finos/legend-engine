@@ -68,7 +68,7 @@ import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementT
 
 public class HelperModelBuilder
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HelperModelBuilder.class);
 
     public static org.eclipse.collections.api.block.function.Function<Property, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object>> processProperty(CompileContext context, GenericType genericType, PropertyOwner owner)
     {

@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 
 public class PackageableElementFourthPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PackageableElementFourthPassBuilder.class);
 
     private final CompileContext context;
 

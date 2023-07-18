@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 
 public class PlanGenerator
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PlanGenerator.class);
 
     public static String generateExecutionPlanAsString(FunctionDefinition<?> l, Mapping mapping, Root_meta_pure_runtime_Runtime pureRuntime, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {

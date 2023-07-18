@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ExecutionPlanJavaCompilerExtensionLoader
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExecutionPlanJavaCompilerExtensionLoader.class);
     private static AtomicReference<List<ExecutionPlanJavaCompilerExtension>> EXTENSIONS = new AtomicReference<>();
 
     public static void logExtensionList()

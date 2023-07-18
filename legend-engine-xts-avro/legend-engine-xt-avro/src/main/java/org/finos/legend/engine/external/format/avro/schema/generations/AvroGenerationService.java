@@ -53,7 +53,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class AvroGenerationService
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AvroGenerationService.class);
     private final ModelManager modelManager;
 
     public AvroGenerationService(ModelManager modelManager)

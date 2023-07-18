@@ -138,7 +138,7 @@ import java.util.ServiceLoader;
 
 public class Server<T extends ServerConfiguration> extends Application<T>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Server.class);
 
     protected RelationalStoreExecutor relationalStoreExecutor;
 

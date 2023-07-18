@@ -52,7 +52,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Path("functionActivator/")
 public class FunctionActivatorAPI
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(FunctionActivatorAPI.class);
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final ModelManager modelManager;
     private final PureModel emptyModel;

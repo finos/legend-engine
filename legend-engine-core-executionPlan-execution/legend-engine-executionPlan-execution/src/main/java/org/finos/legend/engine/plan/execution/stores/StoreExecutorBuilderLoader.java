@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class StoreExecutorBuilderLoader
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutorBuilderLoader.class);
     private static AtomicReference<List<StoreExecutorBuilder>> EXTENSIONS = new AtomicReference<>();
 
     public static void logExtensionList()

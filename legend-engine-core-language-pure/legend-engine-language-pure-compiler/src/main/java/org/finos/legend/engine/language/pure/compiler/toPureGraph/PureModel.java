@@ -115,7 +115,7 @@ import java.util.Objects;
 
 public class PureModel implements IPureModel
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().select(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_")).collect(CodeRepository::getName));
     private final CompiledExecutionSupport executionSupport;
