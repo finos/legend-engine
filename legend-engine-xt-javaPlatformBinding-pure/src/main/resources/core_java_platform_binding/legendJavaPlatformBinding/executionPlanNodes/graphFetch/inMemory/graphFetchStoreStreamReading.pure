@@ -83,7 +83,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    
    let conventions       = $context.conventions;
    let pureClass         = $node.graphFetchTree.class;
-   let connection        = $node.connection;
+   let connection        = $node.connection.connection;
    let genReader         = $connection->match([
                               json  : JsonModelConnection[1] | true,
                               xml   : XmlModelConnection[1]  | true,
