@@ -146,6 +146,31 @@ public class DataSourceWithStatistics
         return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getActiveConnections() > 0;
     }
 
+    public boolean hasTotalConnections()
+    {
+        return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getTotalConnections() > 0;
+    }
+
+    public boolean hasIdleConnections()
+    {
+        return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getIdleConnections() > 0;
+    }
+
+    public double getActiveConnections()
+    {
+        return hasActiveConnections() ? ((HikariDataSource) dataSource).getHikariPoolMXBean().getActiveConnections() : (long) 0.00;
+    }
+
+    public double getTotalConnections()
+    {
+        return hasTotalConnections() ? ((HikariDataSource) dataSource).getHikariPoolMXBean().getTotalConnections() : 0.00;
+    }
+
+    public double getIdleConnections()
+    {
+        return hasIdleConnections() ? ((HikariDataSource) dataSource).getHikariPoolMXBean().getIdleConnections() : 0.00;
+    }
+
     public Properties getProperties()
     {
         return ((HikariDataSource) this.dataSource).getDataSourceProperties();
