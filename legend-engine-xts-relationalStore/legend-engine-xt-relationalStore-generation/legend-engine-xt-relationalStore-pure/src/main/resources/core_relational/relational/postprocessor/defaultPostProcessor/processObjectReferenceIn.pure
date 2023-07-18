@@ -35,7 +35,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
 {
    let connectionPre = $runtime->connectionByElement($store->toOne());
    let connElPre = $runtime.connectionElementAssociations->filter(c|$c.connection==$connection)->toOne();
-   let conection = $connectionPre->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
+   let connection = $connectionPre->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
    let connEl = ^$connElPre(connection=$connection);
    let tempTableNamePrefix     = 'tempTableForObjectReferenceIn_';
    let columnName              = 'ObjectReferenceInCollectionColumn';
