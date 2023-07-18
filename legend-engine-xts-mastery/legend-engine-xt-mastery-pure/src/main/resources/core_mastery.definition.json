@@ -4,7 +4,6 @@
   "dependencies": [
     "platform",
     "platform_functions",
-    "core",
-    "core_service"
+    "core"
   ]
 }

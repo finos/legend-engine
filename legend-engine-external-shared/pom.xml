@@ -26,7 +26,9 @@
     <artifactId>legend-engine-external-shared</artifactId>
     <name>Legend Engine - External - Format - Shared</name>
 
-
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
 
     <dependencies>
         <!-- PURE -->

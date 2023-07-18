@@ -26,7 +26,9 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Text</name>
 
-
+    <properties>
+        <top.project>${project.basedir}/../</top.project>
+    </properties>
 
     <modules>
         <module>legend-engine-xt-text-compiler</module>

@@ -1,4 +1,0 @@
-function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], executionParameters: meta::legend::service::metamodel::SingleExecutionParameters[1]):T[m]
-{
-   $t
-}

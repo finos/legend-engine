@@ -683,7 +683,9 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::toPureGr
                                                    ->concatenate([
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_),
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_),
-                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_)
+                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_),
+                                                      pair(meta::legend::service::validation::assertTabularDataSetEmpty_TabularDataSet_1__String_1__Boolean_1_.name->toOne(), meta::legend::service::validation::assertTabularDataSetEmpty_TabularDataSet_1__String_1__Boolean_1_),
+                                                      pair(meta::legend::service::validation::assertCollectionEmpty_Any_MANY__String_1__Boolean_1_.name->toOne(), meta::legend::service::validation::assertCollectionEmpty_Any_MANY__String_1__Boolean_1_)
                                                    ])
                                                    ->removeDuplicatesBy(p | $p.second)
                                                    ->newMultiValueMap();

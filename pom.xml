@@ -35,25 +35,13 @@
             otherwise, publishing could fail
         -->
 
-        <!-- Core System -->
         <module>legend-engine-core-executionPlan-execution</module>
-        <module>legend-engine-core-executionPlan-generation</module>
         <module>legend-engine-core-language-pure</module>
-        <module>legend-engine-core-query-pure</module>
-        <module>legend-engine-core-test</module>
-        <module>legend-engine-core-shared</module>
-
-        <!-- Pure Extension -->
-        <module>legend-engine-pure-code</module>
-        <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-runtime</module>
-        <module>legend-engine-pure-platform-modular-generation</module>
 
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
         <module>legend-engine-xts-relationalStore</module>
         <module>legend-engine-xts-mongodb</module>
-        <module>legend-engine-xts-elasticsearch</module>
 
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
@@ -67,7 +55,6 @@
         <module>legend-engine-xts-haskell</module>
         <module>legend-engine-xts-daml</module>
         <module>legend-engine-xts-morphir</module>
-        <module>legend-engine-xts-java</module>
 
         <!-- Query Protocol -->
         <module>legend-engine-xts-sql</module>
@@ -76,44 +63,91 @@
         <!-- Function Activators -->
         <module>legend-engine-xts-functionActivator</module>
         <module>legend-engine-xts-snowflakeApp</module>
-        <module>legend-engine-xts-service</module>
-        <module>legend-engine-xts-persistence</module>
 
         <!-- New Packageable Elements -->
         <module>legend-engine-xts-text</module>
+        <module>legend-engine-xts-persistence</module>
+        <module>legend-engine-xts-mastery</module>
         <module>legend-engine-xts-diagram</module>
         <module>legend-engine-xts-data-space</module>
-        <module>legend-engine-xts-changetoken</module>
-        <module>legend-engine-xts-generation</module>
-
-        <!-- App -->
-        <module>legend-engine-xts-mastery</module>
-
-        <!-- Translator -->
         <module>legend-engine-xts-openapi</module>
+        <module>legend-engine-xts-changetoken</module>
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
-        <module>legend-engine-config</module>
+        <module>legend-engine-xts-configuration</module>
 
         <!-- Analytics -->
         <module>legend-engine-xts-analytics</module>
 
 
-
+        <module>legend-engine-pure-code</module>
+        <module>legend-engine-pure-ide</module>
+        <module>legend-engine-pure-runtime</module>
 
 
 
         <module>legend-engine-external-format-jsonSchema</module>
 
+        <module>legend-engine-pure-platform-modular-generation</module>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <module>legend-engine-executionPlan-generation</module>
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
+        <module>legend-engine-external-language-java</module>
+        <module>legend-engine-language-pure-dsl-generation</module>
+        <module>legend-engine-language-pure-dsl-generation-pure</module>
+        <module>legend-engine-language-pure-dsl-service</module>
+        <module>legend-engine-language-pure-dsl-service-generation</module>
+        <module>legend-engine-language-pure-dsl-service-execution</module>
+        <module>legend-engine-test-runner-shared</module>
+        <module>legend-engine-test-runner-mapping</module>
+        <module>legend-engine-test-runner-service</module>
+        <module>legend-engine-service-post-validation-runner</module>
 
         <module>legend-engine-application-query</module>
+        <module>legend-engine-query-pure</module>
+        <module>legend-engine-shared-core</module>
+        <module>legend-engine-shared-javaCompiler</module>
+        <module>legend-engine-services-model</module>
+        <module>legend-engine-services-model-api</module>
+        <module>legend-engine-testable</module>
+        <module>legend-engine-xt-javaGeneration-pure</module>
+        <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
+        <module>legend-engine-xt-javaPlatformBinding-pure</module>
+
+        <module>legend-engine-xt-elasticsearch</module>
+
+        <module>legend-engine-xt-artifact-generation-api</module>
+
+
+        <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-server-integration-tests</module>
     </modules>
 
     <properties>
+        <top.project>${project.basedir}</top.project>
+
         <!-- Legend -->
         <legend.pure.version>4.5.8</legend.pure.version>
         <legend.shared.version>0.23.8</legend.shared.version>
@@ -1474,11 +1508,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

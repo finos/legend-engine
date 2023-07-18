@@ -9,7 +9,6 @@
     "platform_dsl_path",
     "platform_store_relational",
     "core",
-    "core_service",
     "core_relational"
   ]
 }

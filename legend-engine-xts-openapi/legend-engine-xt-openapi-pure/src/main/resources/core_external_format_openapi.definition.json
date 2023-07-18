@@ -9,7 +9,6 @@
     "platform_dsl_path",
     "platform_dsl_graph",
     "core",
-    "core_generation",
-    "core_service"
+    "core_generation"
   ]
 }
