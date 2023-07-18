@@ -25,9 +25,7 @@
     <artifactId>legend-engine-application-query</artifactId>
     <name>Legend Engine - Application - Query</name>
 
-    <properties>
-        <top.project>${project.basedir}/../</top.project>
-    </properties>
+
 
     <dependencies>
         <!-- ENGINE -->
