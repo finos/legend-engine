@@ -84,7 +84,7 @@ public class TestPersistenceRelationalGrammarRoundTrip extends TestGrammarRoundt
             "    ->\n" +
             "    Relational\n" +
             "    #{\n" +
-            "      table: TableB;\n" +
+            "      table: schemaA.TableB;\n" +
             "      database: test::Database;\n" +
             "      temporality: None\n" +
             "      {\n" +
@@ -126,7 +126,7 @@ public class TestPersistenceRelationalGrammarRoundTrip extends TestGrammarRoundt
             "    ->\n" +
             "    Relational\n" +
             "    #{\n" +
-            "      table: TableA;\n" +
+            "      table: someSchema.TableA;\n" +
             "      database: test::Database;\n" +
             "      temporality: Unitemporal\n" +
             "      {\n" +
