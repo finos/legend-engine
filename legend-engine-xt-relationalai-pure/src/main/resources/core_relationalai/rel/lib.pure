@@ -3,6 +3,14 @@ import meta::rel::lib::*;
 import meta::rel::metamodel::render::*;
 import meta::rel::utils::*;
 
+function meta::rel::lib::booleanTrue(): Expr[1] {
+  rel('boolean_true');
+}
+
+function meta::rel::lib::booleanFalse(): Expr[1] {
+  rel('boolean_false');
+}
+
 function meta::rel::lib::enumerate(expr: Expr[1]): Expr[1] {
   rel('enumerate')->appl($expr);
 }

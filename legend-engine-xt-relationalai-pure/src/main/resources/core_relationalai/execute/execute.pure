@@ -15,6 +15,7 @@ Class meta::rel::execute::RelKey {
 
 Class meta::rel::execute::Output {
   columns: Column[*];
+  rows: Row[*];
   relKey: RelKey[1];
 }
 
@@ -40,27 +41,6 @@ Class meta::rel::execute::Row {
   values: Any[*];
 }
 
-function meta::rel::execute::rowAt(output: Output[1], index: Integer[1]): Row[0..1] {
-  let values = 
-    $output
-      .columns
-      ->map(c | $c.values->maybeAt($index));
-
-  if ($values->isEmpty(), | [], | ^Row(values=$values));
-}
-
-function meta::rel::execute::rows(output: Output[1]): Row[*] {
-  let num = $output
-    .columns
-    ->maybeAt(0)
-    .values
-    ->size()
-    ->orElse(0);
-
-  range($num)
-    ->map(index | $output->rowAt($index));
-}
-
 function meta::rel::execute::toIndexed(result: RAIResult[1]): IndexedRAIResult[1] {
   let trie = 
     $result.output
@@ -71,7 +51,7 @@ function meta::rel::execute::toIndexed(result: RAIResult[1]): IndexedRAIResult[1
         let prefix = $output.relKey.keys->slice(0, $numKeys + $numKeyValues - $numCols);
 
         $output
-          ->rows()
+          .rows
           ->fold({row, accum |
             $accum->insert($prefix->concatenate($row.values));
           }, $accum);
@@ -140,7 +120,7 @@ function meta::rel::execute::toMapped(result: RAIResult[1]): MappedRAIResult[1] 
   ]);
 }*/
 
-function meta::rel::execute::RAIExecute(connection: meta::pure::runtime::Connection[1], source: String[1]): RAIResult[1] {
+function meta::rel::execute::RAIExecute2(connection: meta::pure::runtime::Connection[1], source: String[1]): RAIResult[1] {
   $connection->match([
     conn: RAIConnection[1] | $conn->RAIExecute($source),
     {conn: TestConnection[1] | 

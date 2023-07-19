@@ -240,7 +240,7 @@ function <<access.private>> meta::rel::mapping::execution(
 function <<access.private>> meta::rel::mapping::doRAIExecute(connection: meta::pure::runtime::Connection[1], rel: String[1]): RAIResult[1] {
   println(format('Executing program:\n-------------------\n%s', $rel));
   let result = 
-    measure(| $connection->RAIExecute($rel));
+    measure(| $connection->RAIExecute2($rel));
   
   println(format('Executed in %d milliseconds.', $result.first));
   println('');

@@ -22,6 +22,7 @@ import meta::rel::compile::utils::*;
 import meta::rel::metamodel::*;
 import meta::rel::metamodel::syntactic::*;
 import meta::rel::mapping::*;
+import meta::rel::lib::*;
 
 
 function meta::rel::compile::compile(
@@ -36,7 +37,7 @@ function meta::rel::compile::compile(
     f: FloatConst[1] | ^$state(current=meta::rel::metamodel::const($f.value)->annotate(Float))->ok(),
     b: BooleanConst[1] | ^$state(
       current=
-        if($b.value, | reltrue(), | relfalse())
+        if($b.value, | booleanTrue(), | booleanFalse())
           ->annotate(Boolean)
       )
       ->ok(),
