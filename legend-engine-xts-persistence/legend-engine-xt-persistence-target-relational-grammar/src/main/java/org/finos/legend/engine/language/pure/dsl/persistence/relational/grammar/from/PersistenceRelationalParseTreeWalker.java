@@ -68,7 +68,7 @@ public class PersistenceRelationalParseTreeWalker
 
         // table
         PersistenceRelationalParserGrammar.TableContext tableContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.table(), "table", persistenceTarget.sourceInformation);
-        persistenceTarget.table = PureGrammarParserUtility.fromIdentifier(tableContext.identifier());
+        persistenceTarget.table = tableContext.identifier().size() == 1 ? PureGrammarParserUtility.fromIdentifier(tableContext.identifier(0)) : PureGrammarParserUtility.fromIdentifier(tableContext.identifier(0)) + "." + PureGrammarParserUtility.fromIdentifier(tableContext.identifier(1));
 
         // database
         PersistenceRelationalParserGrammar.DatabaseContext databaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", persistenceTarget.sourceInformation);

@@ -30,7 +30,7 @@ definition:                                 (
                                             )*
                                             EOF
 ;
-table:                                      TARGET_RELATIONAL_TABLE COLON identifier SEMI_COLON
+table:                                      TARGET_RELATIONAL_TABLE COLON identifier (DOT identifier)? SEMI_COLON
 ;
 database:                                   TARGET_RELATIONAL_DATABASE COLON qualifiedName SEMI_COLON
 ;

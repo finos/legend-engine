@@ -78,6 +78,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
@@ -123,6 +124,36 @@ public class HelperPersistenceRelationalBuilder
     }
 
     public static Table buildTable(String tableName, SourceInformation sourceInformation, Database database)
+    {
+        String[] nameParts = tableName.split("\\.");
+        if (nameParts.length == 2)
+        {
+            return buildTableFromSpecifiedSchema(nameParts[1], nameParts[0], sourceInformation, database);
+        }
+        else
+        {
+            return buildTableFromAllSchemas(tableName, sourceInformation, database);
+        }
+    }
+
+    public static Table buildTableFromSpecifiedSchema(String tableName, String schemaName, SourceInformation sourceInformation, Database database)
+    {
+        Schema schema = database._schemas().detect(x -> x._name().equals(schemaName));
+        if (schema == null)
+        {
+            throw new EngineException(String.format("Schema '%s' is not defined", schemaName), sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        Table table = schema._tables().detect(t -> t._name().equals(tableName));
+        if (table == null)
+        {
+            throw new EngineException(String.format("Table '%s' is not defined", tableName), sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        return table;
+    }
+
+    public static Table buildTableFromAllSchemas(String tableName, SourceInformation sourceInformation, Database database)
     {
         SetIterable<Table> tables = getAllTables(database);
         Table table = tables.detect(t -> tableName.equals(t._name()));

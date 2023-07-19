@@ -239,6 +239,264 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
     }
 
     @Test
+    public void SchemaUndefined()
+    {
+        test("Class test::Person\n" +
+            "{\n" +
+            "  name: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping test::Mapping ()\n" +
+            "\n" +
+            "###Service\n" +
+            "Service test::Service \n" +
+            "{\n" +
+            "  pattern : 'test';\n" +
+            "  documentation : 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: |test::Person.all()->project([p|$p.name],['name']);\n" +
+            "    mapping: test::Mapping;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "      connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'test';\n" +
+            "    asserts: [];\n" +
+            "  }\n" +
+            "}\n" +
+            "\n" +
+            "###Relational\n" +
+            "Database test::Database\n" +
+            "(\n" +
+            "  Table personTable\n" +
+            "  (\n" +
+            "    ID INTEGER PRIMARY KEY,\n" +
+            "    NAME VARCHAR(100)\n" +
+            "  )\n" +
+            ")" +
+            "\n" +
+            "###Persistence\n" +
+            "Persistence test::TestPersistence\n" +
+            "{\n" +
+            "  doc: 'This is test documentation.';\n" +
+            "  trigger: Manual;\n" +
+            "  service: test::Service;\n" +
+            "  serviceOutputTargets:\n" +
+            "  [\n" +
+            "    TDS\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        foo, bar\n" +
+            "      ]\n" +
+            "      datasetType: Snapshot\n" +
+            "      {\n" +
+            "        partitioning: FieldBased\n" +
+            "        {\n" +
+            "          partitionFields:\n" +
+            "          [\n" +
+            "            foo1, bar2\n" +
+            "          ];\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: MaxVersion\n" +
+            "      {\n" +
+            "        versionField: version;\n" +
+            "      }\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    Relational\n" +
+            "    #{\n" +
+            "      table: personSchema.personTable;\n" +
+            "      database: test::Database;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "      }\n" +
+            "    }#\n" +
+            "  ];\n" +
+            "  tests:\n" +
+            "  [\n" +
+            "    test1:\n" +
+            "    {\n" +
+            "      testBatches:\n" +
+            "      [\n" +
+            "        testBatch1:\n" +
+            "        {\n" +
+            "         data:\n" +
+            "         {\n" +
+            "           connection:\n" +
+            "           {\n" +
+            "              ExternalFormat\n" +
+            "              #{\n" +
+            "                contentType: 'application/x.flatdata';\n" +
+            "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+            "              }#\n" +
+            "           }\n" +
+            "         }\n" +
+            "         asserts:\n" +
+            "         [\n" +
+            "           assert1:\n" +
+            "             EqualToJson\n" +
+            "             #{\n" +
+            "               expected: \n" +
+            "                 ExternalFormat\n" +
+            "                 #{\n" +
+            "                   contentType: 'application/json';\n" +
+            "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+            "                 }#;\n" +
+            "             }#\n" +
+            "          ]\n" +
+            "        }\n" +
+            "      ]\n" +
+            "      isTestDataFromServiceOutput: false;\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n", "COMPILATION error at [72:7-78:7]: Schema 'personSchema' is not defined");
+    }
+
+    @Test
+    public void SchemaDoesNotContainTableNeeded()
+    {
+        test("Class test::Person\n" +
+            "{\n" +
+            "  name: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping test::Mapping ()\n" +
+            "\n" +
+            "###Service\n" +
+            "Service test::Service \n" +
+            "{\n" +
+            "  pattern : 'test';\n" +
+            "  documentation : 'test';\n" +
+            "  autoActivateUpdates: true;\n" +
+            "  execution: Single\n" +
+            "  {\n" +
+            "    query: |test::Person.all()->project([p|$p.name],['name']);\n" +
+            "    mapping: test::Mapping;\n" +
+            "    runtime:\n" +
+            "    #{\n" +
+            "      connections: [];\n" +
+            "    }#;\n" +
+            "  }\n" +
+            "  test: Single\n" +
+            "  {\n" +
+            "    data: 'test';\n" +
+            "    asserts: [];\n" +
+            "  }\n" +
+            "}\n" +
+            "\n" +
+            "###Relational\n" +
+            "Database test::Database\n" +
+            "(\n" +
+            "  Schema schemaA\n" +
+            "  (\n" +
+            "    Table personTable\n" +
+            "    (\n" +
+            "      ID INTEGER PRIMARY KEY,\n" +
+            "      NAME VARCHAR(100),\n" +
+            "      time_in TIMESTAMP,\n" +
+            "      time_out TIMESTAMP\n" +
+            "    )\n" +
+            "  )\n" +
+            "  Schema schemaB\n" +
+            "  (\n" +
+            "    Table otherPersonTable\n" +
+            "    (\n" +
+            "      OTHER INTEGER PRIMARY KEY\n" +
+            "    )\n" +
+            "  )\n" +
+            ")" +
+            "\n" +
+            "###Persistence\n" +
+            "Persistence test::TestPersistence\n" +
+            "{\n" +
+            "  doc: 'This is test documentation.';\n" +
+            "  trigger: Manual;\n" +
+            "  service: test::Service;\n" +
+            "  serviceOutputTargets:\n" +
+            "  [\n" +
+            "    TDS\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        foo, bar\n" +
+            "      ]\n" +
+            "      datasetType: Snapshot\n" +
+            "      {\n" +
+            "        partitioning: FieldBased\n" +
+            "        {\n" +
+            "          partitionFields:\n" +
+            "          [\n" +
+            "            foo1, bar2\n" +
+            "          ];\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: MaxVersion\n" +
+            "      {\n" +
+            "        versionField: version;\n" +
+            "      }\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    Relational\n" +
+            "    #{\n" +
+            "      table: schemaB.personTable;\n" +
+            "      database: test::Database;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "      }\n" +
+            "    }#\n" +
+            "  ];\n" +
+            "  tests:\n" +
+            "  [\n" +
+            "    test1:\n" +
+            "    {\n" +
+            "      testBatches:\n" +
+            "      [\n" +
+            "        testBatch1:\n" +
+            "        {\n" +
+            "         data:\n" +
+            "         {\n" +
+            "           connection:\n" +
+            "           {\n" +
+            "              ExternalFormat\n" +
+            "              #{\n" +
+            "                contentType: 'application/x.flatdata';\n" +
+            "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+            "              }#\n" +
+            "           }\n" +
+            "         }\n" +
+            "         asserts:\n" +
+            "         [\n" +
+            "           assert1:\n" +
+            "             EqualToJson\n" +
+            "             #{\n" +
+            "               expected: \n" +
+            "                 ExternalFormat\n" +
+            "                 #{\n" +
+            "                   contentType: 'application/json';\n" +
+            "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+            "                 }#;\n" +
+            "             }#\n" +
+            "          ]\n" +
+            "        }\n" +
+            "      ]\n" +
+            "      isTestDataFromServiceOutput: false;\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n", "COMPILATION error at [84:7-90:7]: Table 'personTable' is not defined");
+    }
+
+    @Test
     public void tableUndefined()
     {
         test("Class test::Person\n" +
@@ -757,12 +1015,22 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "###Relational\n" +
                 "Database test::Database\n" +
                 "(\n" +
-                "  Table personTable\n" +
+                "  Schema schemaA\n" +
                 "  (\n" +
-                "    ID INTEGER PRIMARY KEY,\n" +
-                "    NAME VARCHAR(100)," +
-                "    time_in TIMESTAMP," +
-                "    time_out TIMESTAMP\n" +
+                "    Table personTable\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY,\n" +
+                "      NAME VARCHAR(100),\n" +
+                "      time_in TIMESTAMP,\n" +
+                "      time_out TIMESTAMP\n" +
+                "    )\n" +
+                "  )\n" +
+                "  Schema schemaB\n" +
+                "  (\n" +
+                "    Table otherPersonTable\n" +
+                "    (\n" +
+                "      OTHER INTEGER PRIMARY KEY\n" +
+                "    )\n" +
                 "  )\n" +
                 ")" +
                 "\n" +
@@ -799,7 +1067,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "    Relational\n" +
                 "    #{\n" +
                 "      database: test::Database;\n" +
-                "      table: personTable;\n" +
+                "      table: schemaA.personTable;\n" +
                 "      temporality: Unitemporal\n" +
                 "      {\n" +
                 "        processingDimension: DateTime\n" +
@@ -894,6 +1162,9 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
         // table
         assertNotNull(relationalPersistenceTarget._table());
         assertEquals("personTable", relationalPersistenceTarget._table()._name());
+
+        // schema
+        assertEquals("schemaA", relationalPersistenceTarget._table()._schema()._name());
 
         // temporality
         Root_meta_pure_persistence_relational_metamodel_Milestoning milestoning = relationalPersistenceTarget._milestoning();
