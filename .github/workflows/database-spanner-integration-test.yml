@@ -75,4 +75,4 @@ jobs:
       - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=ExternalIntegration*Spanner test
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-spanner/legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=ExternalIntegration*Spanner test

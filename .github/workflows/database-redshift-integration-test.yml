@@ -69,4 +69,4 @@ jobs:
           REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
           REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
         run: |
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Redshift*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Redshift*" test

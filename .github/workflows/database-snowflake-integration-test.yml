@@ -70,8 +70,8 @@ jobs:
           SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY }}
           SNOWFLAKE_INTEGRATION_USER1_PASSWORD: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PASSWORD }}
         run: |
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection  -Dtest="ExternalIntegration*Snowflake*" test
-          mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection  -Dtest="ExternalIntegration*Snowflake*" test
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Snowflake*" test
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
