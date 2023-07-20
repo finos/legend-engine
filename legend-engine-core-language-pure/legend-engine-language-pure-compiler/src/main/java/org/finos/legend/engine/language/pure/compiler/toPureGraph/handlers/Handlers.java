@@ -849,6 +849,8 @@ public class Handlers
         register(m(m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
                 m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
 
+        register("meta::pure::functions::date::dayOfYear_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
+
         register(h("meta::pure::functions::date::hasDay_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), DATE)));
         register(h("meta::pure::functions::date::hasHour_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), DATE)));
         register(h("meta::pure::functions::date::hasMinute_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), DATE)));
@@ -908,6 +910,8 @@ public class Handlers
         register("meta::pure::functions::string::toString_Any_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::toUpper_String_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::trim_String_1__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::ltrim_String_1__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::string::rtrim_String_1__String_1_", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::matches_String_1__String_1__Boolean_1_", true, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isNoLongerThan_String_$0_1$__Integer_1__Boolean_1_", false, ps -> res("Boolean", "one"));
@@ -1076,6 +1080,7 @@ public class Handlers
                 h("meta::pure::functions::math::abs_Number_1__Number_1_", true, ps -> res("Number", "one"), ps -> typeOne(ps.get(0), "Number"))
         );
 
+        register("meta::pure::functions::math::cbrt_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::ceiling_Number_1__Integer_1_", true, ps -> res("Integer", "one"));
         register("meta::pure::functions::math::exp_Number_1__Float_1_", true, ps -> res("Float", "one"));
         register("meta::pure::functions::math::floor_Number_1__Integer_1_", true, ps -> res("Integer", "one"));
@@ -1783,6 +1788,7 @@ public class Handlers
         map.put("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "DayOfWeek".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::dayOfWeek_Integer_1__DayOfWeek_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::date::dayOfYear_Date_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::daysOfMonth_Date_1__Integer_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::firstDayOfMonth_Date_1__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::firstDayOfQuarter_Date_1__StrictDate_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
@@ -1871,6 +1877,7 @@ public class Handlers
         map.put("meta::pure::functions::math::average_Float_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Float".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::average_Integer_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::math::average_Number_MANY__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::math::cbrt_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::ceiling_Number_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::cos_Number_1__Float_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::math::distanceHaversineDegrees_Number_1__Number_1__Number_1__Number_1__Number_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(3)._genericType()._rawType()._name()));
