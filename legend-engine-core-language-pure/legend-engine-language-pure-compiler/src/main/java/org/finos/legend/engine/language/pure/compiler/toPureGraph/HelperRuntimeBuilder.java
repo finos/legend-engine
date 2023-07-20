@@ -195,7 +195,7 @@ public class HelperRuntimeBuilder
                     pureRuntime._connectionElementAssociations().select(connEl -> connEl._element().equals(store));
             if (potentialDupes.size() > 1 && !(store instanceof Root_meta_pure_mapping_modelToModel_ModelStore))
             {
-                throw new EngineException("Found " + potentialDupes.size() + " connections against store: " + store._name());
+                throw new EngineException("Found " + potentialDupes.size() + " connections against store [" + store._name() + "] under a single runtime.", engineRuntime.sourceInformation, EngineErrorType.COMPILATION);
             }
         });
         // verify runtime mapping coverage
