@@ -97,7 +97,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                         .group(datasetName)
                         .name("tsm_int64")
                         .alias("tsm_int64")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colInt64.withName("col")).build())
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colInt.withName("col")).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)
@@ -132,7 +132,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                         .group(datasetName)
                         .name("tsm_float64")
                         .alias("tsm_float64")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colFloat64.withName("col")).build())
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colFloat.withName("col")).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)
@@ -188,7 +188,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                         .group(datasetName)
                         .name("tsm_bool")
                         .alias("tsm_bool")
-                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colBool.withName("col")).build())
+                        .schema(SchemaDefinition.builder().addFields(BaseTestUtils.colBoolean.withName("col")).build())
                         .build(),
                 DatasetDefinition.builder()
                         .database(projectId)

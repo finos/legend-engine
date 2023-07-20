@@ -55,8 +55,8 @@ public class CreateTableTest
             "\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR,\"col_string\" VARCHAR," +
             "\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_real\" REAL," +
             "\"col_float\" REAL,\"col_decimal\" DECIMAL(10,4),\"col_double\" DOUBLE,\"col_binary\" BINARY," +
-            "\"col_time\" TIME,\"col_numeric\" NUMERIC,\"col_longtext\" LONGTEXT,\"col_bool\" BOOLEAN," +
-            "\"col_boolean\" BOOLEAN,\"col_varbinary\" VARBINARY(10),\"col_int64\" INT64,\"col_bit\" BIT" +
+            "\"col_time\" TIME,\"col_numeric\" NUMERIC,\"col_longtext\" LONGTEXT," +
+            "\"col_boolean\" BOOLEAN,\"col_varbinary\" VARBINARY(10),\"col_bit\" BIT" +
             ",INDEX \"my_idx\" (\"col_int\", \"col_varchar\"))";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -89,7 +89,7 @@ public class CreateTableTest
             "\"COL_STRING\" VARCHAR,\"COL_TIMESTAMP\" TIMESTAMP,\"COL_DATETIME\" DATETIME,\"COL_DATE\" DATE," +
             "\"COL_REAL\" REAL,\"COL_FLOAT\" REAL,\"COL_DECIMAL\" DECIMAL(10,4),\"COL_DOUBLE\" DOUBLE," +
             "\"COL_BINARY\" BINARY,\"COL_TIME\" TIME,\"COL_NUMERIC\" NUMERIC,\"COL_LONGTEXT\" LONGTEXT," +
-            "\"COL_BOOL\" BOOLEAN,\"COL_BOOLEAN\" BOOLEAN,\"COL_VARBINARY\" VARBINARY(10),\"COL_INT64\" INT64," +
+            "\"COL_BOOLEAN\" BOOLEAN,\"COL_VARBINARY\" VARBINARY(10)," +
             "\"COL_BIT\" BIT,INDEX \"MY_IDX\" (\"COL_INT\", \"COL_VARCHAR\"))";
 
         Assertions.assertEquals(expected, list.get(0));

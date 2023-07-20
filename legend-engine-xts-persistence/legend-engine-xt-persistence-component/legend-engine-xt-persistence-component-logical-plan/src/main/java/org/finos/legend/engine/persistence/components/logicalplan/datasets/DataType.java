@@ -22,46 +22,47 @@ import java.util.Set;
 
 public enum DataType
 {
+    // Integer Types
     INT,
     INTEGER,
     BIGINT,
     TINYINT,
     SMALLINT,
+
+    // Character Types
     CHAR,
-    CHARACTER,
     VARCHAR,
+    STRING,
+    LONGVARCHAR,
+    TEXT,
+    LONGTEXT,
+
+    // Date & Time types
     TIMESTAMP,
     TIMESTAMP_NTZ,
     TIMESTAMP_TZ,
     TIMESTAMP_LTZ,
     DATETIME,
-    TIMESTAMPTZ,
     DATE,
+    TIME,
+
+    // Number types
+    NUMERIC,
     REAL,
     DECIMAL,
     FLOAT,
     DOUBLE,
+
+    // Binary types
     BIT,
+    BYTES,
     BINARY,
     VARBINARY,
-    NUMBER,
-    NUMERIC,
-    LONGVARCHAR,
-    TIME,
     LONGVARBINARY,
-    NULL,
+
     BOOLEAN,
-    NCHAR,
-    NVARCHAR,
-    LONGNVARCHAR,
-    UNDEFINED,
-    INT64,
-    FLOAT64,
-    BYTES,
-    STRING,
-    BOOL,
-    LONGTEXT,
-    TEXT,
+
+    // Semi-structured types
     JSON,
     VARIANT,
     MAP,
@@ -69,13 +70,13 @@ public enum DataType
 
     public static boolean isStringDatatype(DataType type)
     {
-        List<DataType> stringDatatype = new ArrayList<>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON, STRING));
+        List<DataType> stringDatatype = new ArrayList<>(Arrays.asList(CHAR, VARCHAR, LONGVARCHAR, LONGTEXT, TEXT, JSON, STRING));
         return stringDatatype.contains(type);
     }
 
     public static Set<DataType> getComparableDataTypes()
     {
-        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, FLOAT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
-            TIME, TIMESTAMP, TIMESTAMP_NTZ, TIMESTAMP_TZ, TIMESTAMP_LTZ, DATETIME, TIMESTAMPTZ, DATE));
+        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, REAL, DECIMAL, FLOAT, DOUBLE, NUMERIC,
+            TIME, TIMESTAMP, TIMESTAMP_NTZ, TIMESTAMP_TZ, TIMESTAMP_LTZ, DATETIME, DATE));
     }
 }

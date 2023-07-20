@@ -75,7 +75,7 @@ public class AnsiDatatypeMapping implements DataTypeMapping
             case DATETIME:
                 dataType = new DateTime();
                 break;
-            case TIMESTAMPTZ:
+            case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
                 break;
             case DATE:
@@ -104,14 +104,10 @@ public class AnsiDatatypeMapping implements DataTypeMapping
                 dataType = new LongText();
                 break;
             case BOOLEAN:
-            case BOOL:
                 dataType = new Boolean();
                 break;
             case VARBINARY:
                 dataType = new VarBinary(type.length().get());
-                break;
-            case INT64:
-                dataType = new Int64();
                 break;
             case BIT:
                 dataType = new Bit();
@@ -121,11 +117,6 @@ public class AnsiDatatypeMapping implements DataTypeMapping
                 break;
             case LONGVARCHAR:
             case LONGVARBINARY:
-            case NULL:
-            case NCHAR:
-            case NVARCHAR:
-            case LONGNVARCHAR:
-            case UNDEFINED:
             default:
                 throw new IllegalArgumentException("Datatype not supported");
         }

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colBigint;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colBinary;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colBit;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colBool;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colBoolean;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colChar;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colDate;
@@ -31,7 +30,6 @@ import static org.finos.legend.engine.persistence.components.logicalplan.operati
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colDouble;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colFloat;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colInt;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colInt64;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colInteger;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colLongtext;
 import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.colNumeric;
@@ -69,12 +67,9 @@ public class DataTypeMappingTest
         Assertions.assertEquals("TIME", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colTime.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colNumeric.type())));
         Assertions.assertEquals("LONGTEXT", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colLongtext.type())));
-        Assertions.assertEquals("BOOLEAN", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colBool.type())));
         Assertions.assertEquals("BOOLEAN", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colBoolean.type())));
         Assertions.assertEquals("VARBINARY(10)", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colVarBinary.type())));
-        Assertions.assertEquals("INT64", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colInt64.type())));
         Assertions.assertEquals("BIT", getGeneratedSql(new AnsiDatatypeMapping().getDataType(colBit.type())));
-
     }
 
     private String getGeneratedSql(SqlGen sqlGen) throws SqlDomException

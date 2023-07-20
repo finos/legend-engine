@@ -55,8 +55,6 @@ public class CreateTableTest
                 "`col_bigint` INT64," +
                 "`col_tinyint` INT64," +
                 "`col_smallint` INT64," +
-                "`col_int64` INT64," +
-                "`col_number` NUMERIC," +
                 "`col_numeric` NUMERIC," +
                 "`col_numeric_with_precision` NUMERIC(29)," +
                 "`col_numeric_with_scale` NUMERIC(33,4)," +
@@ -64,9 +62,7 @@ public class CreateTableTest
                 "`col_real` FLOAT64," +
                 "`col_float` FLOAT64," +
                 "`col_double` FLOAT64," +
-                "`col_float64` FLOAT64," +
                 "`col_char` STRING," +
-                "`col_character` STRING," +
                 "`col_varchar` STRING," +
                 "`col_longvarchar` STRING," +
                 "`col_longtext` STRING," +
@@ -83,7 +79,6 @@ public class CreateTableTest
                 "`col_datetime` DATETIME," +
                 "`col_timestamp` TIMESTAMP," +
                 "`col_boolean` BOOL," +
-                "`col_bool` BOOL," +
                 "`col_json` JSON,PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -110,8 +105,6 @@ public class CreateTableTest
                 "`COL_BIGINT` INT64," +
                 "`COL_TINYINT` INT64," +
                 "`COL_SMALLINT` INT64," +
-                "`COL_INT64` INT64," +
-                "`COL_NUMBER` NUMERIC," +
                 "`COL_NUMERIC` NUMERIC," +
                 "`COL_NUMERIC_WITH_PRECISION` NUMERIC(29)," +
                 "`COL_NUMERIC_WITH_SCALE` NUMERIC(33,4)," +
@@ -119,9 +112,7 @@ public class CreateTableTest
                 "`COL_REAL` FLOAT64," +
                 "`COL_FLOAT` FLOAT64," +
                 "`COL_DOUBLE` FLOAT64," +
-                "`COL_FLOAT64` FLOAT64," +
                 "`COL_CHAR` STRING," +
-                "`COL_CHARACTER` STRING," +
                 "`COL_VARCHAR` STRING," +
                 "`COL_LONGVARCHAR` STRING," +
                 "`COL_LONGTEXT` STRING," +
@@ -138,7 +129,6 @@ public class CreateTableTest
                 "`COL_DATETIME` DATETIME," +
                 "`COL_TIMESTAMP` TIMESTAMP," +
                 "`COL_BOOLEAN` BOOL," +
-                "`COL_BOOL` BOOL," +
                 "`COL_JSON` JSON," +
                 "PRIMARY KEY (`COL_INT`, `COL_DATE`) NOT ENFORCED)";
 
