@@ -714,13 +714,13 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
                                                    testMapping,
                                                    meta::relational::runtime::DatabaseType.Snowflake,
                                                    meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(year,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffYears",'+
-                ' datediff(month,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffMonths",'+
-                ' datediff(week,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffWeeks",'+
-                ' datediff(day,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffDays",'+
-                ' datediff(hour,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffHours",'+
-                ' datediff(minute,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffMinutes",'+
-                ' datediff(second,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffSeconds"'+ ' from dataTable as "root"',$test);
+   assertEquals('select datediff(year,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffYears",'+
+                ' datediff(month,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffMonths",'+
+                ' datediff(week,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffWeeks",'+
+                ' datediff(day,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffDays",'+
+                ' datediff(hour,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffHours",'+
+                ' datediff(minute,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffMinutes",'+
+                ' datediff(second,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffSeconds"'+ ' from dataTable as "root"',$test);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128InSnowflake():Boolean[1]
