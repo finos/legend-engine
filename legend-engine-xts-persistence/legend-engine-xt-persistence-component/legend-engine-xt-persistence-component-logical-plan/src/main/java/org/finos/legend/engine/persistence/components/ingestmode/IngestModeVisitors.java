@@ -76,6 +76,12 @@ public class IngestModeVisitors
         {
             return true;
         }
+
+        @Override
+        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return bulkLoad.generateDigest();
+        }
     };
 
     public static final IngestModeVisitor<Optional<String>> EXTRACT_DIGEST_FIELD = new IngestModeVisitor<Optional<String>>()
@@ -120,6 +126,12 @@ public class IngestModeVisitors
         public Optional<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
             return Optional.of(bitemporalDelta.digestField());
+        }
+
+        @Override
+        public Optional<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return bulkLoad.digestField();
         }
     };
 
@@ -181,6 +193,13 @@ public class IngestModeVisitors
 
             return metaFields;
         }
+
+        @Override
+        public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            // TODO BULK_LOAD
+            return Collections.emptySet();
+        }
     };
 
     public static final IngestModeVisitor<Boolean> IS_INGEST_MODE_TEMPORAL = new IngestModeVisitor<Boolean>()
@@ -225,6 +244,12 @@ public class IngestModeVisitors
         public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
             return true;
+        }
+
+        @Override
+        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return false;
         }
     };
 
@@ -271,6 +296,12 @@ public class IngestModeVisitors
         {
             return false;
         }
+
+        @Override
+        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return false;
+        }
     };
 
     public static final IngestModeVisitor<List<OptimizationFilter>> RETRIEVE_OPTIMIZATION_FILTERS = new IngestModeVisitor<List<OptimizationFilter>>()
@@ -313,6 +344,12 @@ public class IngestModeVisitors
 
         @Override
         public List<OptimizationFilter> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return Collections.emptyList();
         }

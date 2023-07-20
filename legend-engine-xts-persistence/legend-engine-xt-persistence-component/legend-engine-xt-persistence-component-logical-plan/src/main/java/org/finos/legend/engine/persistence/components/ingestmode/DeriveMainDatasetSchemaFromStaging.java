@@ -138,6 +138,13 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
+    @Override
+    public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
+    {
+        // TODO BULK_LOAD
+        return null;
+    }
+
     private void removeDataSplitField(Optional<String> dataSplitField)
     {
         if (dataSplitField.isPresent())

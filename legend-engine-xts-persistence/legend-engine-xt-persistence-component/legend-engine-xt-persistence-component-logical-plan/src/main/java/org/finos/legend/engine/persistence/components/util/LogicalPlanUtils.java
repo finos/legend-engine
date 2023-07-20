@@ -41,6 +41,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 
@@ -374,6 +375,25 @@ public class LogicalPlanUtils
     {
         Set<String> primaryKeysFromMain = mainDataset.schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
         return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
+    }
+
+    public static List<Value> extractStagedFilesFieldValues(Dataset dataset)
+    {
+        List<Value> stagedFilesFields = new ArrayList<>();
+        boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
+        int iter = 1;
+        for (Field field : dataset.schema().fields())
+        {
+            StagedFilesFieldValue fieldValue = StagedFilesFieldValue.builder()
+                    .columnNumber(columnNumbersPresent ? field.columnNumber().get() : iter++)
+                    .datasetRefAlias(dataset.datasetReference().alias())
+                    .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
+                    .elementPath(field.elementPath())
+                    .fieldName(field.name())
+                    .build();
+            stagedFilesFields.add(fieldValue);
+        }
+        return stagedFilesFields;
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =

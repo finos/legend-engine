@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,27 +14,22 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum FunctionName
+import java.util.List;
+
+@org.immutables.value.Value.Immutable
+@org.immutables.value.Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface DigestUdfAbstract extends Value
 {
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    COALESCE,
-    CURRENT_TIME,
-    CURRENT_DATE,
-    HASH,
-    CURRENT_TIMESTAMP,
-    UPPER,
-    ROW_NUMBER,
-    SUBSTRING,
-    PARSE_JSON,
-    DATE,
-    DATE_TRUNC,
-    DATETIME_TRUNC,
-    TIMESTAMP_TRUNC,
-    RANGE_BUCKET,
-    GENERATE_ARRAY,
-    PARSE_DATETIME,
-    OBJECT_CONSTRUCT;
+
+    String udfName();
+
+    List<String> fieldNames();
+
+    List<Value> value();
 }

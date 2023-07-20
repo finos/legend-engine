@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,28 +14,27 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
-import org.immutables.value.Value.Immutable;
-import org.immutables.value.Value.Style;
-
-import java.util.Map;
+import org.immutables.value.Value;
 import java.util.Optional;
 
-@Immutable
-@Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
+@Value.Immutable
+@Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
 )
-public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
+public interface StagedFilesDatasetReferenceAbstract extends DatasetReference
 {
-    Optional<TableType> tableType();
+    String location();
 
-    Optional<TableOrigin> tableOrigin();
+    Optional<String> fileFormat();
 
-    Optional<String> externalVolume();
+    Optional<String> filePattern();
 
-    Map<String, String> tags();
+    default StagedFilesDatasetReferenceAbstract datasetReference()
+    {
+        return this;
+    }
 }
