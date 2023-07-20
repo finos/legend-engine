@@ -149,6 +149,75 @@ Enum meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeR
   projectManager
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'} 
+meta::pure::mapping::modelToModel::test::alloy::match::testVariableConflict(): Boolean[1]
+{
+  let tree = #{meta::pure::mapping::modelToModel::test::alloy::match::SettlementDatesResult{settlementDates}}#;
+  let result = execute(| meta::pure::mapping::modelToModel::test::alloy::match::SettlementDatesResult.all()->graphFetchChecked($tree)->serialize($tree),
+                         meta::pure::mapping::modelToModel::test::alloy::match::SettlementDateMapping,
+                         testJsonRuntime(meta::pure::mapping::modelToModel::test::alloy::match::ContractualTerms,
+                         '[{"financialTerms":[{"@type":"CommoditySwap","commoditySwapLegs":[{"@type":"CommodityLeg","paymentDates":{"@type":"CommodityPaymentDates","paymentDates":["2022-05-05"]}}]}]}]'),
+                         meta::pure::extension::defaultExtensions());
+  let json = $result.values->toOne();
+  let expected = '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"financialTerms\\":[{\\"@type\\":\\"CommoditySwap\\",\\"commoditySwapLegs\\":[{\\"@type\\":\\"CommodityLeg\\",\\"paymentDates\\":{\\"@type\\":\\"CommodityPaymentDates\\",\\"paymentDates\\":[\\"2022-05-05\\"]}}]}]}"},"value":{"financialTerms":{"commoditySwapLegs":[{"paymentDates":{"paymentDates":["2022-05-05"]}}]}}},"value":{"settlementDates":["2022-05-05"]}}';
+  assertEquals($expected, $json);
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::SettlementDatesResult
+{
+  settlementDates: StrictDate[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::ContractualTerms
+{
+  financialTerms: meta::pure::mapping::modelToModel::test::alloy::match::FinancialTerms[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::FinancialTerms
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::CommodityForward extends meta::pure::mapping::modelToModel::test::alloy::match::FinancialTerms
+{
+  financialLeg: meta::pure::mapping::modelToModel::test::alloy::match::CommodityLeg[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::CommoditySwap extends meta::pure::mapping::modelToModel::test::alloy::match::FinancialTerms
+{
+  commoditySwapLegs: meta::pure::mapping::modelToModel::test::alloy::match::CommodityLeg[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::CommodityLeg 
+{
+  paymentDates: meta::pure::mapping::modelToModel::test::alloy::match::AbstractCommodityPaymentDates[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::match::AbstractCommodityPaymentDates
+{
+  paymentDates: StrictDate[*];
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::match::settlementDateFinancialTerms(t: meta::pure::mapping::modelToModel::test::alloy::match::FinancialTerms[1]): StrictDate[*]
+{
+  $t->match(
+    [
+      commoditySwap: meta::pure::mapping::modelToModel::test::alloy::match::CommoditySwap[1]|$commoditySwap->meta::pure::mapping::modelToModel::test::alloy::match::getPaymentDates(),
+      commodityForward: meta::pure::mapping::modelToModel::test::alloy::match::CommodityForward[1]|$commodityForward.financialLeg.paymentDates->meta::pure::mapping::modelToModel::test::alloy::match::getPaymentDatesFromAbstractPaymentDates(),
+      default: Any[1]|[]
+    ]
+  )
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::match::getPaymentDates(s: meta::pure::mapping::modelToModel::test::alloy::match::CommoditySwap[1]): StrictDate[*]
+{
+  let paymentDates = $s.commoditySwapLegs->map( a|$a.paymentDates->toOne()->meta::pure::mapping::modelToModel::test::alloy::match::getPaymentDatesFromAbstractPaymentDates());
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::match::getPaymentDatesFromAbstractPaymentDates(a: meta::pure::mapping::modelToModel::test::alloy::match::AbstractCommodityPaymentDates[1]): StrictDate[*]
+{
+  $a.paymentDates
+}
+
 ###Mapping
    
 Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::m1
@@ -159,8 +228,6 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::m1
     name: $src.employees->at(0).lastName
   }
 )
-
-###Mapping
    
 Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaultIfEmptyMapping
 (
@@ -170,17 +237,24 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaul
     name: $src.employees->filter(e | $e.firstName == 'John').lastName->defaultIfEmpty('Unknown')->at(0)
   }
 )
-
-###Mapping
    
- Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping
- (
-   *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee: Pure
-   {
-     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
-     name: $src.employees->filter(x|$x.role.name == 'developer')->first().firstName
-   }
- )
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+    name: $src.employees->filter(x|$x.role.name == 'developer')->first().firstName
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::match::SettlementDateMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::match::SettlementDatesResult: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::match::ContractualTerms
+    settlementDates: $src.financialTerms->meta::pure::mapping::modelToModel::test::alloy::match::settlementDateFinancialTerms()
+  }
+)
 
 ###Mapping
 

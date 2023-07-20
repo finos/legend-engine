@@ -104,11 +104,11 @@ function <<access.private>> meta::external::language::java::transform::processVa
    print(if($debug.debug,|$debug.space+'VariableExpression: \''+($v.name)+'\'\n',|''));
    let varName = if($v.name == 'this', |$v.name, |$conventions->identifier($v.name));
    
-   if($conventions->isProvidedVariable($varName), 
+   if($conventions->isProvidedVariable($varName) && ($conventions->getProvidedVariable($varName).type == $conventions->pureTypeToJavaType($v.genericType, $v.multiplicity)),
       | $conventions->getProvidedVariable($varName),
       {|
          let type = $conventions->pureTypeToJavaType($v.genericType, $v.multiplicity);
-         j_variable($type, $varName)->debugAndReturn($debug);
+         processVariableExpressionAsParameter($v, $conventions, $debug);
       }
    );
 }
