@@ -142,7 +142,7 @@
 
         <module>legend-engine-xt-relationalStore-memsql-execution</module>
         <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
-        <module>legend-engine-xt-relationalStore-memsql-pure</module> -->
+        <module>legend-engine-xt-relationalStore-memsql-pure</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
