@@ -23,7 +23,8 @@ import redis.clients.jedis.JedisPooled;
 
 public class ApplicationQueryConfiguration
 {
-    public static Object getQueryStoreClient() {
+    public static Object getQueryStoreClient()
+    {
 
         if (Vault.INSTANCE.hasValue("redis.host"))
         {
@@ -31,7 +32,8 @@ public class ApplicationQueryConfiguration
                                                    Integer.parseInt(Vault.INSTANCE.getValue("redis.port"))),
                     DefaultJedisClientConfig.builder().build());
         }
-        else {
+        else
+        {
             return getMongoClient();
         }
     }

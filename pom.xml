@@ -335,6 +335,7 @@
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
         <mongodb.version>3.12.8</mongodb.version>
         <test.mongodb.version>1.38.0</test.mongodb.version>
+        <redis.client.version>4.4.3</redis.client.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <log4j.version>1.2.17</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
@@ -2511,6 +2512,11 @@
                 <groupId>de.bwaldvogel</groupId>
                 <artifactId>mongo-java-server-memory-backend</artifactId>
                 <version>${test.mongodb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${redis.client.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
