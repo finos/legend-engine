@@ -238,6 +238,13 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfQuarter::testFirstDayOfQuarterWithDateLiteral(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstDayOfQuarter', parameters=[^Literal(value=%2014-12-04)]);
+  let expected = ^Literal(value=%2014-10-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstDayOfYear::testFirstDayOfYear(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='firstDayOfYear', parameters=[^Literal(value=%2014-12-04T15:22:23)]);

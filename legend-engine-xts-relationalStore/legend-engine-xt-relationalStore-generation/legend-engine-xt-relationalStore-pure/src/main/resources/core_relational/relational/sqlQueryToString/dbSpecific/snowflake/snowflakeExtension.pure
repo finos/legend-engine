@@ -19,7 +19,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::s
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::createDbExtensionForSnowflake():DbExtension[1]
 {
    let reservedWords = defaultReservedWords();
-   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSnowflake());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForSnowflake()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
@@ -43,6 +43,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       processTempTableName = processTempTableNameSnowflake_String_1__String_1_
    );
 }
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::getLiteralProcessorsForSnowflake():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate, ^LiteralProcessor(format = '\'%s\'::date', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,   ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,       ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
 
 function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
 {
