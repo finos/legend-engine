@@ -24,6 +24,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::runtime::*;
 import meta::pure::router::metamodel::*;
+import meta::pure::functions::string::*;
 
 function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1]):Code[1]
 {
@@ -101,16 +102,31 @@ function meta::external::language::java::transform::getUnitConversionFunctionVar
 
 function <<access.private>> meta::external::language::java::transform::processVariableExpression(v: VariableExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
-   print(if($debug.debug,|$debug.space+'VariableExpression: \''+($v.name)+'\'\n',|''));
-   let varName = if($v.name == 'this', |$v.name, |$conventions->identifier($v.name));
-   
-   if($conventions->isProvidedVariable($varName) && ($conventions->getProvidedVariable($varName).type == $conventions->pureTypeToJavaType($v.genericType, $v.multiplicity)),
+  print(if($debug.debug,|$debug.space+'VariableExpression: \''+($v.name)+'\'\n',|''));
+  let varName = if($v.name == 'this', |$v.name, |$conventions->identifier($v.name));
+
+  if($conventions->isProvidedVariable($varName) && equalIgnoreCase(extractTypeName($conventions->getProvidedVariable($varName).type)->toOne(), extractTypeName($conventions->pureTypeToJavaType($v.genericType, $v.multiplicity))->toOne()),
       | $conventions->getProvidedVariable($varName),
       {|
-         let type = $conventions->pureTypeToJavaType($v.genericType, $v.multiplicity);
-         processVariableExpressionAsParameter($v, $conventions, $debug);
+        let type = $conventions->pureTypeToJavaType($v.genericType, $v.multiplicity);
+        j_variable($type, $varName)->debugAndReturn($debug);
       }
-   );
+    );
+}
+
+function <<access.private>> meta::external::language::java::transform::extractTypeName(type:meta::external::language::java::metamodel::Type[1]):String[*]
+{
+    if($type->instanceOf(meta::external::language::java::metamodel::ParameterizedType), 
+       | let clazz = $type->cast(@meta::external::language::java::metamodel::ParameterizedType);
+         if($clazz.typeArguments->at(0)->instanceOf(meta::external::language::java::metamodel::ParameterizedType),
+           | $clazz.typeArguments->at(0)->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->cast(@meta::external::language::java::metamodel::Class).simpleName,
+           | $clazz.typeArguments->cast(@meta::external::language::java::metamodel::Class).simpleName
+         );,
+       | if($type->instanceOf(meta::external::language::java::metamodel::PrimitiveType), 
+            | $type->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName,
+            | $type->cast(@meta::external::language::java::metamodel::Class).simpleName
+          )
+    )
 }
 
 function <<access.private>> meta::external::language::java::transform::processVariableExpressionAsParameter(v: VariableExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
