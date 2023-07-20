@@ -149,7 +149,8 @@ public class RedisQueryStoreManager implements QueryStoreManager
         return convertPropertiesMapToQueryEvent(convertDocumentToPropertiesMap(document));
     }
 
-    private static String getStringValue(Object value) {
+    private static String getStringValue(Object value)
+    {
         return value instanceof byte[] ? new String((byte[]) value, StandardCharsets.UTF_8) : String.valueOf(value);
     }
 
@@ -216,7 +217,8 @@ public class RedisQueryStoreManager implements QueryStoreManager
                     {
                         Pattern pattern = Pattern.compile(Pattern.quote(searchSpecification.searchTerm), Pattern.CASE_INSENSITIVE);
                         String queryId = getStringValue(propertiesMap.get(ID));
-                        if (pattern.matcher(getStringValue(propertiesMap.get(NAME))).find() || searchSpecification.searchTerm.equals(queryId)) {
+                        if (pattern.matcher(getStringValue(propertiesMap.get(NAME))).find() || searchSpecification.searchTerm.equals(queryId))
+                        {
                             searchSpecificationNameMatchAndOwnerList.add(queryId);
                         }
                     }
@@ -230,9 +232,11 @@ public class RedisQueryStoreManager implements QueryStoreManager
                 if (resultSet != null)
                 {
                     Pattern pattern = Pattern.compile(Pattern.quote(searchSpecification.searchTerm), Pattern.CASE_INSENSITIVE);
-                    for (Document document : resultSet.getDocuments()) {
+                    for (Document document : resultSet.getDocuments())
+                    {
                         String queryId = getStringValue(document.get(ID));
-                        if (pattern.matcher(getStringValue(document.get(NAME))).find() || searchSpecification.searchTerm.equals(queryId)) {
+                        if (pattern.matcher(getStringValue(document.get(NAME))).find() || searchSpecification.searchTerm.equals(queryId))
+                        {
                             searchSpecificationNameMatchAndOwnerList.add(queryId);
                         }
                     }
@@ -337,7 +341,8 @@ public class RedisQueryStoreManager implements QueryStoreManager
         {
             for (Map<String, Object> result : results)
             {
-                if (result != null) {
+                if (result != null)
+                {
                     //result.remove("isCurrentUser"); //TODO in conflict with ownership NULL logic
 
                     Query query = convertPropertiesMapToQuery(result);
@@ -559,23 +564,25 @@ public class RedisQueryStoreManager implements QueryStoreManager
         {
             fieldValue = handleSpecialCharacters(String.valueOf(fieldValue));
         }
-        return query.append(fieldModifier) .append(":{ ") .append(fieldValue) .append(" } ");
+        return query.append(fieldModifier).append(":{ ").append(fieldValue).append(" } ");
     }
 
     private StringBuffer appendQueryTagInCondition(StringBuffer query, String fieldModifier, List<String> fieldValues)
     {
         if (fieldValues == null && fieldValues.isEmpty())
+        {
             return query;
-
-        query.append(fieldModifier) .append(":{ ");
+        }
+        query.append(fieldModifier).append(":{ ");
 
         for (String fieldValue : fieldValues)
         {
             fieldValue = handleSpecialCharacters(fieldValue);
 
-            query.append(fieldValue) .append(" | ");
+            query.append(fieldValue).append(" | ");
         }
-        query.setLength(query.length() - 2); query.append("} ");
+        query.setLength(query.length() - 2);
+        query.append("} ");
 
         return query;
     }
@@ -586,7 +593,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         {
             fieldValue = handleSpecialCharacters(String.valueOf(fieldValue));
         }
-        return query.append(fieldModifier) .append(":[-inf ") .append(fieldValue) .append("] ");
+        return query.append(fieldModifier).append(":[-inf ").append(fieldValue).append("] ");
     }
 
     protected StringBuffer appendQueryTagGreaterThanOrEqualToCondition(StringBuffer query, String fieldModifier, Object fieldValue)
@@ -595,7 +602,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         {
             fieldValue = handleSpecialCharacters(String.valueOf(fieldValue));
         }
-        return query.append(fieldModifier) .append(":[") .append(fieldValue) .append(" inf] ");
+        return query.append(fieldModifier).append(":[").append(fieldValue).append(" inf] ");
     }
 
     private void buildIndex(UnifiedJedis redisClient, String collectionName, Schema schema)
@@ -604,8 +611,12 @@ public class RedisQueryStoreManager implements QueryStoreManager
         try
         {
             redisClient.ftInfo(indexName);
-            return; // if index does not exist this cannot be reached
-        } catch (Exception e) {}
+            return;
+        }
+        catch (Exception e)
+        {
+            // if index already exists this will consume the exception which is the expected behavior
+        }
 
         // For SORTABLE fields, the default ordering is ASC if not specified otherwise
         // Uniqueness will need to be managed at the INSERT level using the NX option since Redis does not support unique indexes
@@ -636,7 +647,8 @@ public class RedisQueryStoreManager implements QueryStoreManager
         }
     }
 
-    private static Query convertPropertiesMapToQuery(Map<String, Object> propertiesMap) {
+    private static Query convertPropertiesMapToQuery(Map<String, Object> propertiesMap)
+    {
         Query query = new Query();
 
         query.id = propertiesMap.containsKey(ID) ? getStringValue(propertiesMap.get(ID)) : query.id;
@@ -663,7 +675,8 @@ public class RedisQueryStoreManager implements QueryStoreManager
                 TaggedValue taggedValue = new TaggedValue();
                 taggedValue.value = getStringValue(taggedValueProperties.get("value"));
 
-                if (taggedValueProperties.containsKey("tag")) {
+                if (taggedValueProperties.containsKey("tag"))
+                {
                     Map<String, Object> tagProperties = (Map<String, Object>) taggedValueProperties.get("tag");
 
                     taggedValue.tag = new TagPtr();
@@ -754,8 +767,9 @@ public class RedisQueryStoreManager implements QueryStoreManager
     private long deleteByKey(String key)
     {
         if (key == null || key.isEmpty())
+        {
             return 0;
-
+        }
         return redisClient.unlink(key);
     }
 
@@ -774,20 +788,26 @@ public class RedisQueryStoreManager implements QueryStoreManager
         return new ArrayList<>();
     }
 
-    private  void upsert(String key, boolean isIndexUnique, boolean isIdRequired, Map<String, Object> propertiesMap) {
+    private  void upsert(String key, boolean isIndexUnique, boolean isIdRequired, Map<String, Object> propertiesMap)
+    {
         String status;
 
-        if (isIdRequired) {
+        if (isIdRequired)
+        {
             propertiesMap.putIfAbsent(ID, key);
         }
 
-        if (isIndexUnique) {
+        if (isIndexUnique)
+        {
             status = redisClient.jsonSet(key, Path.ROOT_PATH, propertiesMap, jsonSetOnlyIfNotExistParam);
-        } else {
+        }
+        else
+        {
             status = redisClient.jsonSet(key, Path.ROOT_PATH, propertiesMap);
         }
 
-        if (!"OK".equals(status)) {
+        if (!"OK".equals(status))
+        {
             throw new ApplicationQueryException("Error inserting dataset with key: '" + key + "' - ensure the key is unique",
                     Response.Status.NOT_MODIFIED);
         }
