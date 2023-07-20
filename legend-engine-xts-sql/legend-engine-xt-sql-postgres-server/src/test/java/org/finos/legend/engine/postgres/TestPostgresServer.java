@@ -15,7 +15,7 @@
 package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
@@ -40,14 +40,13 @@ public class TestPostgresServer extends PostgresServer
         if (channel != null)
         {
             channel.close().syncUninterruptibly();
-            channel = null;
         }
     }
 
     public void shutDown()
     {
-        NioEventLoopGroup bossGroup = this.getBossGroup();
-        NioEventLoopGroup workerGroup = this.getWorkerGroup();
+        EventLoopGroup bossGroup = this.getBossGroup();
+        EventLoopGroup workerGroup = this.getWorkerGroup();
         if (bossGroup != null)
         {
             bossGroup.shutdownGracefully(0, 5, TimeUnit.SECONDS);
