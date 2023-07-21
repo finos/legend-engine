@@ -123,11 +123,12 @@ public class HelperRuntimeBuilder
             Root_meta_pure_runtime_Connection connection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
            ListIterate.forEach(connectionStores.storePointers, storePointer ->
            {
-               Store store = context.resolveStore(storePointer.path);
                Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation =
                        new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("")
                        ._connection(connection)
-                       ._element(store);
+                       ._element(!storePointer.path.equals("ModelStore") ?
+                               context.resolveStore(storePointer.path, storePointer.sourceInformation)
+                               : new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore")));
                pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
            });
         });
@@ -153,38 +154,6 @@ public class HelperRuntimeBuilder
                                 context.resolveStore(storeConnections.store.path, storeConnections.store.sourceInformation)
                                 : new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore")));
 
-                if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
-                {
-                    if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
-                    {
-                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
-                    }
-                    else
-                    {
-                        visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
-                    }
-                }
-                else
-                {
-                    if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
-                    {
-                        if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
-                        {
-                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
-                        }
-                        else
-                        {
-                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()))));
-                        }
-                    }
-                    else
-                    {
-                        visitedConnectionTypes.add(pureConnection.getClassifier());
-                    }
-                }
-
-                visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()));
-
                 pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
             });
         });
@@ -197,6 +166,38 @@ public class HelperRuntimeBuilder
             {
                 throw new EngineException("Found " + potentialDupes.size() + " connections against store [" + store._name() + "] under a single runtime.", engineRuntime.sourceInformation, EngineErrorType.COMPILATION);
             }
+            Root_meta_pure_runtime_Connection pureConnection = connectionElementAssociation._connection();
+            if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
+            {
+                if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
+                {
+                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
+                }
+                else
+                {
+                    visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
+                }
+            }
+            else
+            {
+                if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport())))
+                {
+                    if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                    }
+                    else
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()))));
+                    }
+                }
+                else
+                {
+                    visitedConnectionTypes.add(pureConnection.getClassifier());
+                }
+            }
+
+            visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) connectionElementAssociation._element(),context.pureModel.getExecutionSupport()));
         });
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
@@ -218,7 +219,9 @@ public class HelperRuntimeBuilder
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
                 final Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation = new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("", null, context.pureModel.getClass("meta::pure::runtime::ConnectionElementAssociation"))
                         ._connection(pureConnection)
-                        ._element(!connection.element.equals("ModelStore") ? context.resolveStore(connection.element, connection.elementSourceInformation) : context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"));
+                        ._element(!connection.element.equals("ModelStore") ?
+                                context.resolveStore(connection.element, connection.elementSourceInformation)
+                                : new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore")));
                 pureRuntime._connectionElementAssociationsAdd(connectionElementAssociation);
             });
             return pureRuntime;
