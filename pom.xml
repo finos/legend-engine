@@ -237,7 +237,7 @@
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <wiremock.version>2.27.2</wiremock.version>
-        <io.netty.version>4.1.86.Final</io.netty.version>
+        <io.netty.version>4.1.95.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <opencsv.version>4.6</opencsv.version>
         <logback.version>1.2.3</logback.version>
