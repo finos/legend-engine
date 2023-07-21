@@ -14,11 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.StagedFilesField;
+import org.finos.legend.engine.persistence.components.relational.sqldom.common.FunctionName;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+
+import java.util.Arrays;
 
 public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFilesFieldValue>
 {
@@ -31,7 +36,16 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
         current.alias().ifPresent(stageField::setAlias);
         current.datasetRefAlias().ifPresent(stageField::setDatasetReferenceAlias);
 
-        prev.push(stageField);
+        if (current.dataType().equals(DataType.VARIANT) || current.dataType().equals(DataType.JSON))
+        {
+           Function parseJson = new Function(FunctionName.fromName("PARSE_JSON"), Arrays.asList(stageField), null, context.quoteIdentifier());
+           Function toVariant = new Function(FunctionName.fromName("TO_VARIANT"), Arrays.asList(parseJson), current.alias().orElse(null), context.quoteIdentifier());
+           prev.push(toVariant);
+        }
+        else
+        {
+            prev.push(stageField);
+        }
         return new VisitorResult(null);
     }
 }

@@ -51,14 +51,6 @@ class BulkLoadPlanner extends Planner
         {
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
-
-        if (ingestMode().generateDigest())
-        {
-             if (!ingestMode().digestField().isPresent() || !ingestMode().digestUdfName().isPresent())
-             {
-                 throw new IllegalArgumentException("For digest generation, digestField & digestUdfName are mandatory");
-             }
-        }
     }
 
     @Override
@@ -72,13 +64,6 @@ class BulkLoadPlanner extends Planner
     {
         List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
-            fieldsToSelect.add(batchStartTimestamp);
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
-        }
 
         // Digest Generation
         if (ingestMode().generateDigest())
@@ -87,12 +72,21 @@ class BulkLoadPlanner extends Planner
                     .builder()
                     .udfName(ingestMode().digestUdfName().orElseThrow(IllegalStateException::new))
                     .addAllFieldNames(stagingDataset().schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-                    .addAllValue(stagingDataset().schemaReference().fieldValues().stream().collect(Collectors.toList()))
+                    .addAllValues(fieldsToSelect)
                     .build();
             String digestField = ingestMode().digestField().orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(digestField).build());
             fieldsToSelect.add(digestValue);
         }
+
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
+            fieldsToSelect.add(batchStartTimestamp);
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+        }
+
 
         Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
         return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));

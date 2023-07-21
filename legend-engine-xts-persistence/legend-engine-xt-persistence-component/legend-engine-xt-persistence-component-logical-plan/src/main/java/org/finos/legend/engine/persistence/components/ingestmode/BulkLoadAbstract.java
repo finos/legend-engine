@@ -41,4 +41,16 @@ public interface BulkLoadAbstract extends IngestMode
     {
         return visitor.visitBulkLoad(this);
     }
+
+    @Value.Check
+    default void validate()
+    {
+        if (generateDigest())
+        {
+            if (!digestField().isPresent() || !digestUdfName().isPresent())
+            {
+                throw new IllegalArgumentException("For digest generation, digestField & digestUdfName are mandatory");
+            }
+        }
+    }
 }

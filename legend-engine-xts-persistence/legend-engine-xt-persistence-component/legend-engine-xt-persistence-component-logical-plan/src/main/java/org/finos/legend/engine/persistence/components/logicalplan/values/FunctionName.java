@@ -36,5 +36,6 @@ public enum FunctionName
     RANGE_BUCKET,
     GENERATE_ARRAY,
     PARSE_DATETIME,
-    OBJECT_CONSTRUCT;
+    OBJECT_CONSTRUCT,
+    TO_VARIANT;
 }

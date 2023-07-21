@@ -31,5 +31,5 @@ public interface DigestUdfAbstract extends Value
 
     List<String> fieldNames();
 
-    List<Value> value();
+    List<Value> values();
 }

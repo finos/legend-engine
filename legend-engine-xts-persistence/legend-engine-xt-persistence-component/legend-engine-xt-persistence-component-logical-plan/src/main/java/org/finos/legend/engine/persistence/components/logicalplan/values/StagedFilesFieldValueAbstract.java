@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+
 import java.util.Optional;
 
 import static org.immutables.value.Value.Immutable;
@@ -32,4 +34,6 @@ public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
     Integer columnNumber();
 
     Optional<String> elementPath();
+
+    DataType dataType();
 }
