@@ -206,6 +206,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', $jPureDate, 'datePart', [javaParam($jPureDate, 'p0')]))
       ->addMethod(javaMethod('public', javaLong(), 'dayOfMonth', [javaParam($jPureDate, 'p0')]))
       ->addMethod(javaMethod('public', javaLong(), 'dayOfWeekNumber', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'dayOfYear', [javaParam($jPureDate, 'p0')]))
       ->addMethod(javaMethod('public', javaBigDecimal(), 'decimalMultiply', [javaParam(javaBigDecimal(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
       ->addMethod(javaMethod('public', javaBigDecimal(), 'decimalPlus', [javaParam(javaBigDecimal(), 'p0'), javaParam(javaBigDecimal(), 'p1')]))
       ->addMethod(javaMethod('public', javaPredicate(javaTypeVar('V')), 'distinctByEql', [javaParam(javaBiPredicate(javaTypeVar('V'), javaTypeVar('V')), 'p0')]))

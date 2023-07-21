@@ -167,6 +167,7 @@ meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests
       meta::pure::functions::date::tests::testDayOfMonth__Boolean_1_,
       meta::pure::functions::date::tests::testDayOfWeekNumber__Boolean_1_,
       meta::pure::functions::date::tests::testDayOfWeek__Boolean_1_,
+      meta::pure::functions::date::tests::testDayOfYear__Boolean_1_,
       meta::pure::functions::date::tests::testHasDay__Boolean_1_,
       meta::pure::functions::date::tests::testWeekOfYear__Boolean_1_,
       meta::pure::functions::date::tests::testMonthNumber__Boolean_1_,

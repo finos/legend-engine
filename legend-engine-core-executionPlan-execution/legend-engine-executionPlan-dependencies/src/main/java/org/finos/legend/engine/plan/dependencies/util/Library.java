@@ -134,6 +134,16 @@ public class Library
         return date.getDay();
     }
 
+    public static long dayOfYear(PureDate date)
+    {
+        if (!date.hasDay())
+        {
+            throw new IllegalArgumentException("Cannot get day of year for " + date.toString());
+        }
+
+        return date.getCalendar().get(Calendar.DAY_OF_YEAR);
+    }
+
 
     public static long dayOfWeekNumber(PureDate date)
     {
@@ -1522,6 +1532,16 @@ public class Library
         if (Double.isNaN(res))
         {
             throw new RuntimeException("can't compute sqrt for input: " + input);
+        }
+        return res;
+    }
+
+    public static double cbrt(Number input)
+    {
+        double res = Math.cbrt(input.doubleValue());
+        if (Double.isNaN(res))
+        {
+            throw new RuntimeException("can't compute cbrt for input: " + input);
         }
         return res;
     }

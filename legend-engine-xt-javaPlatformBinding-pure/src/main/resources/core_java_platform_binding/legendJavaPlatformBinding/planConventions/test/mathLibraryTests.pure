@@ -142,6 +142,19 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testCbrt() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Cbrt (integer root)', {|cbrt(27.0d)}, 'org.finos.legend.engine.plan.dependencies.util.Library.cbrt(new java.math.BigDecimal("27.0"))', javaDouble())
+         ->assert('%s == 3.0d')
+      ->addTest('Cbrt (real root)', {|cbrt(28.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.cbrt(28.0)', javaDouble())
+         ->assert('%s > 3.036d')
+         ->assert('%s < 3.037d')         
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testAverage() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))

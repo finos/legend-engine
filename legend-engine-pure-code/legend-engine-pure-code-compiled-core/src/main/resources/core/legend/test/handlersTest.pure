@@ -132,45 +132,45 @@ Class meta::legend::test::handlers::model::TestMaxMin
 
 Class meta::legend::test::handlers::model::TestAlgebra
 {
-   number : Number[1];
-   float : Float[1];
-   integer : Integer[1];
+    number : Number[1];
+    float : Float[1];
+    integer : Integer[1];
 
-   minusNumbers() {$this.number-$this.number}:Number[1];
-   minusFloats() {$this.float-$this.float}:Float[1];
-   minusIntegers() {$this.integer-$this.integer}:Integer[1];
+    minusNumbers() {$this.number-$this.number}:Number[1];
+    minusFloats() {$this.float-$this.float}:Float[1];
+    minusIntegers() {$this.integer-$this.integer}:Integer[1];
 
-   plusNumbers() {$this.number+$this.number}:Number[1];
-   plusFloats() {$this.float+$this.float}:Float[1];
-   plusIntegers() {$this.integer+$this.integer}:Integer[1];
+    plusNumbers() {$this.number+$this.number}:Number[1];
+    plusFloats() {$this.float+$this.float}:Float[1];
+    plusIntegers() {$this.integer+$this.integer}:Integer[1];
 
-   timesNumbers() {$this.number*$this.number}:Number[1];
-   timesFloats() {$this.float*$this.float}:Float[1];
-   timesIntegers() {$this.integer*$this.integer}:Integer[1];
+    timesNumbers() {$this.number*$this.number}:Number[1];
+    timesFloats() {$this.float*$this.float}:Float[1];
+    timesIntegers() {$this.integer*$this.integer}:Integer[1];
 
-   divNumbers() {$this.number/$this.number}:Float[1];
-   divFloats() {$this.float/$this.float}:Float[1];
-   divIntegers() {$this.integer/$this.integer}:Float[1];
+    divNumbers() {$this.number/$this.number}:Float[1];
+    divFloats() {$this.float/$this.float}:Float[1];
+    divIntegers() {$this.integer/$this.integer}:Float[1];
+    
+    absNumber(){$this.number->abs()}:Number[1];
+    absFloat(){$this.float->abs()}:Float[1];
+    absInteger(){$this.integer->abs()}:Integer[1];
+    
+    ceilingNumber(){$this.number->ceiling()}:Number[1];
+    ceilingFloat(){$this.float->ceiling()}:Number[1];
+    ceilingInteger(){$this.integer->ceiling()}:Number[1];
+    
+    expNumber(){$this.number->exp()}:Float[1];
+    expFloat(){$this.float->exp()}:Float[1];  
+    expInteger(){$this.integer->exp()}:Float[1];   
+    
+    floorNumber(){$this.number->floor()}:Integer[1];
+    floorFloat(){$this.float->floor()}:Integer[1];
+    floorInteger(){$this.integer->floor()}:Integer[1];
    
-   absNumber(){$this.number->abs()}:Number[1];
-   absFloat(){$this.float->abs()}:Float[1];
-   absInteger(){$this.integer->abs()}:Integer[1];
-   
-   ceilingNumber(){$this.number->ceiling()}:Number[1];
-   ceilingFloat(){$this.float->ceiling()}:Number[1];
-   ceilingInteger(){$this.integer->ceiling()}:Number[1];
-   
-   expNumber(){$this.number->exp()}:Float[1];
-   expFloat(){$this.float->exp()}:Float[1];  
-   expInteger(){$this.integer->exp()}:Float[1];   
-   
-   floorNumber(){$this.number->floor()}:Integer[1];
-   floorFloat(){$this.float->floor()}:Integer[1];
-   floorInteger(){$this.integer->floor()}:Integer[1];
-   
-   logNumber(){$this.number->log()}:Float[1];
-   logFloat(){$this.float->log()}:Float[1];
-   logInteger(){$this.integer->log()}:Float[1];
+    logNumber(){$this.number->log()}:Float[1];
+    logFloat(){$this.float->log()}:Float[1];
+    logInteger(){$this.integer->log()}:Float[1];
 
     mod(){$this.integer->mod($this.integer)}:Integer[1];
     pow(){$this.number->pow($this.number)}:Number[1];
@@ -180,9 +180,13 @@ Class meta::legend::test::handlers::model::TestAlgebra
     roundFloat(){$this.float->round()}:Integer[1];
     roundInteger(){$this.integer->round()}:Integer[1];
    
-    sqrtNumbe(){$this.number->sqrt()}:Float[1];
+    sqrtNumber(){$this.number->sqrt()}:Float[1];
     sqrtFloat(){$this.float->sqrt()}:Float[1];
     sqrtInteger(){$this.integer->sqrt()}:Float[1];
+
+    cbrtNumber(){$this.number->cbrt()}:Float[1];
+    cbrtFloat(){$this.float->cbrt()}:Float[1];
+    cbrtInteger(){$this.integer->cbrt()}:Float[1];    
 }
 
 Class meta::legend::test::handlers::model::TestAggregation
@@ -329,6 +333,7 @@ Class meta::legend::test::handlers::model::TestString
    indexOfFromIndex(){indexOf($this.string, $this.string, 10)}:Integer[1];
    
    length(){$this.string->length()}:Integer[1];
+   ltrim(){$this.string->ltrim()}:String[1];
    
    parseBoolean(){$this.string->parseBoolean()}:Boolean[1];
    parseDate(){$this.string->parseDate()}:Date[1];
@@ -337,6 +342,7 @@ Class meta::legend::test::handlers::model::TestString
    
    replace(){$this.string->replace($this.string, $this.string)}:String[1];
    split(){$this.string->split($this.string)}:String[*];
+   rtrim(){$this.string->rtrim()}:String[1];
    substringTwo(){$this.string->substring(1,2)}:String[1];
    substring(){$this.string->substring(1)}:String[1];
    toLower(){$this.string->toLower()}:String[1];
@@ -438,9 +444,11 @@ Class meta::legend::test::handlers::model::TestDate
 
    date(){[date(1), date(1, 2), date(1,2,3), date(1,2,3,4), date(1,2,3,4,5), date(1,2,3,4,5,6)]}:Date[*];
 
-   dayOfMOnth(){dayOfMonth($this.date)+dayOfMonth($this.strictDate)+dayOfMonth($this.dateTime)}:Integer[1];
+   dayOfMonth(){dayOfMonth($this.date)+dayOfMonth($this.strictDate)+dayOfMonth($this.dateTime)}:Integer[1];
 
    dayOfWeekNumber(){$this.date->dayOfWeekNumber()+ $this.dateTime->dayOfWeekNumber()+$this.strictDate->dayOfWeekNumber()}:Integer[1];
+
+   dayOfYear(){$this.date->dayOfYear()+ $this.dateTime->dayOfYear()+$this.strictDate->dayOfYear()}:Integer[1];
 
    has(){hasDay($this.date) && hasDay($this.dateTime) && hasDay($this.strictDate) &&
          hasHour($this.date) && hasHour($this.dateTime) && hasHour($this.strictDate) &&

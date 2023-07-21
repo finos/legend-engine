@@ -48,6 +48,7 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
@@ -574,6 +575,7 @@ public class PostgresWireProtocol
     {
         String database = properties.getProperty("database");
         session = sessions.createSession(database, authenticatedUser);
+        MDC.put("user", authenticatedUser.getName());
         Messages.sendAuthenticationOK(channel)
                 .addListener(f -> sendParams(channel))
                 //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))

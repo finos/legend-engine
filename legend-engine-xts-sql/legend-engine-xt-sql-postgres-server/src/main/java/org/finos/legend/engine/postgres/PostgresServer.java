@@ -26,11 +26,18 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
@@ -47,8 +54,8 @@ public class PostgresServer
     private final AuthenticationProvider authenticationProvider;
     private final GSSConfig gssConfig;
     private Channel channel;
-    private NioEventLoopGroup bossGroup;
-    private NioEventLoopGroup workerGroup;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
 
     public PostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
     {
@@ -64,14 +71,14 @@ public class PostgresServer
         Netty4OpenChannelsHandler openChannelsHandler = new Netty4OpenChannelsHandler(
                 LoggerFactory.getLogger(Netty4OpenChannelsHandler.class));
 
-        bossGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
+        bossGroup = newEventLoopGroup();
+        workerGroup = newEventLoopGroup();
         SocketAddress socketAddress = new InetSocketAddress(port);
         try
         {
             ServerBootstrap bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(getChannelClass())
                     .localAddress(socketAddress)
                     .childHandler(new ChannelInitializer<SocketChannel>()
                     {
@@ -99,17 +106,41 @@ public class PostgresServer
         }
     }
 
+    private static Class<? extends ServerSocketChannel> getChannelClass()
+    {
+        if (Epoll.isAvailable())
+        {
+            return EpollServerSocketChannel.class;
+        }
+        else
+        {
+            return NioServerSocketChannel.class;
+        }
+    }
+
+    private static EventLoopGroup newEventLoopGroup()
+    {
+        if (Epoll.isAvailable())
+        {
+            return new EpollEventLoopGroup();
+        }
+        else
+        {
+            return new NioEventLoopGroup();
+        }
+    }
+
     public Channel getChannel()
     {
         return channel;
     }
 
-    public NioEventLoopGroup getBossGroup()
+    public EventLoopGroup getBossGroup()
     {
         return bossGroup;
     }
 
-    public NioEventLoopGroup getWorkerGroup()
+    public EventLoopGroup getWorkerGroup()
     {
         return workerGroup;
     }

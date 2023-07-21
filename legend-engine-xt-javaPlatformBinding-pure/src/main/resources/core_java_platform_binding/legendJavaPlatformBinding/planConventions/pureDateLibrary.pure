@@ -44,6 +44,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::pureDa
          fc1(datePart_Date_1__Date_1_,                                                               {ctx,dt                                 | $library->j_invoke('datePart', [$dt], $pureDate)}),
          fc1(dayOfMonth_Date_1__Integer_1_,                                                          {ctx,dt                                 | $library->j_invoke('dayOfMonth', [$dt], javaLong())}),
          fc1(dayOfWeekNumber_Date_1__Integer_1_,                                                     {ctx,dt                                 | $library->j_invoke('dayOfWeekNumber', [$dt], javaLong())}),
+         fc1(dayOfYear_Date_1__Integer_1_,                                                           {ctx,dt                                 | $library->j_invoke('dayOfYear', [$dt], javaLong())}),
          fc1(weekOfYear_Date_1__Integer_1_,                                                          {ctx,dt                                 | $library->j_invoke('weekOfYear', [$dt], javaLong())}),
          fc1(firstDayOfWeek_Date_1__Date_1_,                                                         {ctx,dt                                 | $library->j_invoke('firstDayOfWeek', [$dt], $ctx.conventions->className(PureDate))}),
          fc1(firstDayOfMonth_Date_1__Date_1_,                                                        {ctx,dt                                 | $library->j_invoke('firstDayOfMonth', [$dt], $ctx.conventions->className(PureDate))}),
