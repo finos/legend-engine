@@ -71,7 +71,7 @@ public class H2DataTypeMapping implements DataTypeMapping
                 dataType = new Timestamp();
                 type.scale().ifPresent(dataType::setScale);
                 break;
-            case TIMESTAMPTZ:
+            case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
                 type.scale().ifPresent(dataType::setScale);
                 break;
@@ -108,9 +108,9 @@ public class H2DataTypeMapping implements DataTypeMapping
                 type.length().ifPresent(dataType::setLength);
                 break;
             case BOOLEAN:
-            case BOOL:
                 dataType = new Boolean();
                 break;
+            case VARIANT:
             case JSON:
                 dataType = new Json();
                 break;
@@ -118,12 +118,6 @@ public class H2DataTypeMapping implements DataTypeMapping
             case LONGVARCHAR:
             case BIT:
             case LONGVARBINARY:
-            case NULL:
-            case NCHAR:
-            case NVARCHAR:
-            case LONGNVARCHAR:
-            case UNDEFINED:
-            case INT64:
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }

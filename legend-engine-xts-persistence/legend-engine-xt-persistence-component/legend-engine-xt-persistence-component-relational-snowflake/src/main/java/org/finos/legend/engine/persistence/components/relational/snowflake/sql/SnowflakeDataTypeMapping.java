@@ -64,7 +64,6 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 dataType = new SmallInt();
                 break;
             case NUMERIC:
-            case NUMBER:
             case DECIMAL:
                 dataType = new Number(38, 0);
                 type.length().ifPresent(dataType::setLength);
@@ -77,7 +76,6 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 break;
             // String & Binary types
             case CHAR:
-            case CHARACTER:
                 dataType = new Char();
                 type.length().ifPresent(dataType::setLength);
                 break;

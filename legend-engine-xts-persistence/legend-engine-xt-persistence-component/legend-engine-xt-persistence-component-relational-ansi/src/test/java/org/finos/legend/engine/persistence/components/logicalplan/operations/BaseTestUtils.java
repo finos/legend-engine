@@ -44,10 +44,8 @@ public class BaseTestUtils
     public static Field colTime = Field.builder().name("col_time").type(FieldType.of(DataType.TIME, Optional.empty(), Optional.empty())).build();
     public static Field colNumeric = Field.builder().name("col_numeric").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).build();
     public static Field colLongtext = Field.builder().name("col_longtext").type(FieldType.of(DataType.LONGTEXT, Optional.empty(), Optional.empty())).build();
-    public static Field colBool = Field.builder().name("col_bool").type(FieldType.of(DataType.BOOL, Optional.empty(), Optional.empty())).build();
     public static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
     public static Field colVarBinary = Field.builder().name("col_varbinary").type(FieldType.of(DataType.VARBINARY, 10, null)).build();
-    public static Field colInt64 = Field.builder().name("col_int64").type(FieldType.of(DataType.INT64, Optional.empty(), Optional.empty())).build();
     public static Field colBit = Field.builder().name("col_bit").type(FieldType.of(DataType.BIT, Optional.empty(), Optional.empty())).build();
     public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList("col_int", "col_varchar")).build();
 
@@ -71,10 +69,8 @@ public class BaseTestUtils
         .addFields(colTime)
         .addFields(colNumeric)
         .addFields(colLongtext)
-        .addFields(colBool)
         .addFields(colBoolean)
         .addFields(colVarBinary)
-        .addFields(colInt64)
         .addFields(colBit)
         .addIndexes(index)
         .build();
