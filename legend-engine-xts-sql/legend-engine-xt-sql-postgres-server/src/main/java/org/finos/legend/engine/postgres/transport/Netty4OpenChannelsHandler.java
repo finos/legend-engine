@@ -20,14 +20,19 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 @ChannelHandler.Sharable
 public class Netty4OpenChannelsHandler extends
@@ -77,7 +82,12 @@ public class Netty4OpenChannelsHandler extends
             // totalChannelsMetric.inc();
             ctx.channel().closeFuture().addListener(remover);
         }
-
+        SocketAddress remoteAddress = ctx.channel().remoteAddress();
+        if (remoteAddress instanceof InetSocketAddress)
+        {
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) remoteAddress;
+            MDC.put("clientIp", inetSocketAddress.getAddress().toString());
+        }
         super.channelActive(ctx);
     }
 

@@ -94,7 +94,7 @@ import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExe
 public class SqlExecute
 {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server - SQL");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SqlExecute.class);
     private static final SQLGrammarParser parser = SQLGrammarParser.newInstance();
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
