@@ -63,7 +63,7 @@ meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::
       ->addTest('Substring', {|'Hello, World'->substring(7)}, '"Hello, World".substring((int) 7L)', javaString())
          ->assert('%s.equals("World")')
       ->addTest('String trim', {|'Hello, World          '->trim()}, '"Hello, World          ".trim()', javaString())
-         ->assert('%s.equals("Hello, World")')
+         ->assert('%s.equals("Hello, World")')              
       ->addTest('String toUpperFirstCharacter', {|'hello world'->toUpperFirstCharacter()->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(java.util.Optional.ofNullable("hello world").map(java.util.stream.Stream::of).orElseGet(java.util.stream.Stream::empty).map(org.finos.legend.engine.plan.dependencies.util.Library::toUpperFirstCharacter).collect(java.util.stream.Collectors.toList()))', javaString())
          ->assert('%s.equals("Hello world")')
       ->addTest('String toLower', {|'Hello, World'->toLower()}, '"Hello, World".toLowerCase()', javaString())

@@ -48,6 +48,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
          fc2(lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_,               {ctx,s,other                 | $library->j_invoke('safeCompare', [$s, $other], javaInt())->j_le(j_int(0))}),
          fc (lessThanEqual_String_$0_1$__String_1__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
          fc (lessThanEqual_String_1__String_$0_1$__Boolean_1_,                   fcAlias(                       lessThanEqual_String_$0_1$__String_$0_1$__Boolean_1_)),
+         fc1(ltrim_String_1__String_1_,                                          {ctx,s                       | $s->j_invoke('ltrim', [])}),
 
          fc2(indexOf_String_1__String_1__Integer_1_,                             {ctx,s,toFind                | $s->j_invoke('indexOf', [$toFind])}),
          fc3(indexOf_String_1__String_1__Integer_1__Integer_1_,                  {ctx,s,toFind,fromIndex      | $s->j_invoke('indexOf', [$toFind, $fromIndex->j_cast(javaInt())])}),
@@ -65,6 +66,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
 
          fc2(chunk_String_1__Integer_1__String_MANY_,                            {ctx,s,val                   | $library->j_invoke('chunk', [$s, $val->j_cast(javaInt())], javaList(javaString()))}),
          fc3(replace_String_1__String_1__String_1__String_1_,                    {ctx,s,toReplace,replacement | $s->j_invoke('replace', [$toReplace, $replacement])}),
+         fc1(rtrim_String_1__String_1_,                                          {ctx,s                       | $s->j_invoke('rtrim', [])}),
          fc2(split_String_1__String_1__String_MANY_,                             {ctx,s,token                 | $library->j_invoke('split', [$s, $token], javaList(javaString()))}),
          fc2(substring_String_1__Integer_1__String_1_,                           {ctx,s,from                  | $s->j_invoke('substring', [$from->j_cast(javaInt())])}),
          fc3(substring_String_1__Integer_1__Integer_1__String_1_,                {ctx,s,from,to               | $s->j_invoke('substring', [$from->j_cast(javaInt()), $to->j_cast(javaInt())])}),

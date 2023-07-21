@@ -23,7 +23,6 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
 {
@@ -397,12 +396,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsDate():Boolean[1]
 {
-  let sqlString = 'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-01\' OR StrictDate <= CURRENT_DATE';
+  let sqlString = 'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-01\' OR StrictDate <= CURRENT_DATE OR StrictDate > \'2023-01-01\'';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today()) || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') <= today()))
+      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today()) 
+            || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') <= today()) || ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')))
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -900,8 +900,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDatePart():Boolean[1]
 {
   let sqlString = 'SELECT date_part(\'year\', StrictDate) AS "YEAR", date_part(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_part(\'month\', StrictDate) AS "MONTH", date_part(\'week\', StrictDate) AS "WEEK", ' +
-                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", date_part(\'second\', StrictDate) AS "SECOND", ' +
-                  'date_part(\'epoch\', StrictDate) AS "EPOCH" FROM service."/service/service1"';
+                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'doy\', StrictDate) AS "DOY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", ' + 
+                  'date_part(\'second\', StrictDate) AS "SECOND", date_part(\'epoch\', StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -916,6 +916,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
                 col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
                 col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | dayOfYear($row.getStrictDate('StrictDate')), 'DOY'),
                 col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
                 col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
                 col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
@@ -929,8 +930,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtract():Boolean[1]
 {
   let sqlString = 'SELECT EXTRACT(\'year\' FROM StrictDate) AS "YEAR", EXTRACT(\'quarter\' FROM CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", EXTRACT(\'month\' FROM StrictDate) AS "MONTH", EXTRACT(\'week\' FROM StrictDate) AS "WEEK", ' +
-                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", EXTRACT(\'second\' FROM StrictDate) AS "SECOND", ' +
-                  'EXTRACT(\'epoch\' FROM StrictDate) AS "EPOCH" FROM service."/service/service1"';
+                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'doy\' FROM StrictDate) AS "DOY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", ' + 
+                  'EXTRACT(\'second\' FROM StrictDate) AS "SECOND", EXTRACT(\'epoch\' FROM StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -945,6 +946,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
                 col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
                 col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | dayOfYear($row.getStrictDate('StrictDate')), 'DOY'),
                 col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
                 col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
                 col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
@@ -963,7 +965,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   'StrictDate + 1 AS "NUMERIC_ADD", ' +
                   'StrictDate + 6 * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES", ' +
                   'StrictDate + NULL * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES_NULL", ' +
-                  'StrictDate + NULL + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD_NULL" ' +
+                  'StrictDate + NULL + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD_NULL", ' +
+                  '(CAST(\'2023-01-01\' AS DATE) + 2 * INTERVAL \'1 DAY\') + 3 * INTERVAL \'2 DAY\' AS "INTERVAL_MIX", ' + 
+                  'StrictDate + EXTRACT(\'year\' FROM StrictDate) * INTERVAL \'2 YEAR 3 DAYS\' AS "INTERVAL_MIX2", '  +
+                  'CAST((DATE_TRUNC( \'DAY\', CAST("StrictDate" AS DATE) ) + (EXTRACT(DOW FROM "StrictDate") * INTERVAL \'1 DAY\')) AS DATE) AS "INTERVAL_MIX3" ' + 
                   'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -976,9 +981,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_ADD'),
                 col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS)->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_MULTI_ADD'),
                 col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS), 'NUMERIC_ADD'),
-                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(6, DurationUnit.YEARS)->adjust(18, DurationUnit.WEEKS)->adjust(12, DurationUnit.DAYS), 'INTERVAL_TIMES'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(6 * 1, DurationUnit.YEARS)->adjust(6 * 3, DurationUnit.WEEKS)->adjust(6 * 2, DurationUnit.DAYS), 'INTERVAL_TIMES'),
                 col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_TIMES_NULL'),
-                col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_ADD_NULL')
+                col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_ADD_NULL'),
+                col(row:TDSRow[1] | parseDate('2023-01-01')->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(year($row.getStrictDate('StrictDate')) * 2, DurationUnit.YEARS)->adjust(year($row.getStrictDate('StrictDate')) * 3, DurationUnit.DAYS), 'INTERVAL_MIX2'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->cast(@Date)->datePart()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS)->cast(@Date), 'INTERVAL_MIX3')
               ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -987,8 +995,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
-                  'starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
+  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
+                  'starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", rtrim(String) AS "RTRIM", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -1000,11 +1008,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | matches($row.getString('String'), 'test'), 'MATCH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'CHAR_LENGTH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM'),
                 col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                 col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
                 col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
                 col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
                 col(row:TDSRow[1] | indexOf($row.getString('String'), 'abc'), 'STRPOS'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
                 col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),

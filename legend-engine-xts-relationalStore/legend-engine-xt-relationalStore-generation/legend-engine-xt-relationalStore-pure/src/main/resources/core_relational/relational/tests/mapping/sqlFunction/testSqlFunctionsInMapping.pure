@@ -1152,6 +1152,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    date : Date[1];
 
    dayOfWeekNumber: Integer[1];
+   dayOfYear: Integer[1];
    decodeBase64Result: String[1];
    encodeBase64Result: String[1];
    dayOfWeek: String[1];
@@ -1260,6 +1261,7 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           date : datePart(dateTime),
           dayOfWeekNumber: dayOfWeekNumber(dateTime,'Monday'),
           dayOfWeek: dayOfWeek(dateTime),
+          dayOfYear: dayOfYear(dateTime),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString)),

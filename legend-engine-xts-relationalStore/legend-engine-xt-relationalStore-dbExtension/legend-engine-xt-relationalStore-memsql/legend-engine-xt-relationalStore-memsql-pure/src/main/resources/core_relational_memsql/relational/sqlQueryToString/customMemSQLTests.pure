@@ -54,6 +54,17 @@ function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : B
     assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
 }
 
+function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Boolean[1]
+{
+    let result = toSQLString(
+        |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project([s|$s.date->dayOfYear()], ['doy']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        meta::relational::runtime::DatabaseType.MemSQL,
+        meta::relational::extension::relationalExtensions());
+
+    assertEquals('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
+}
+
 ###Relational
 Database meta::relational::memsql::tests::db::schema1
 (

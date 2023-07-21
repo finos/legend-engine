@@ -281,6 +281,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'cbrt',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
          'ceiling',
          list([
             pair(
@@ -410,6 +420,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
 
       pair(
          'dayOfWeekNumber',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
+            )
+         ])
+      ),
+
+      pair(
+         'dayOfYear',
          list([
             pair(
                {params: RelationalOperationElement[*] | true},

@@ -317,6 +317,16 @@ function <<test.Test>> meta::relational::databricks::tests::dayOfWeekNumber():Bo
    assertEquals('select dayofweek(`root`.createdAt) as `dayOfWeekNumber` from test_schema.test_table as `root`', $result);
 }
 
+function <<test.Test>> meta::relational::databricks::tests::dayOfYear():Boolean[1]
+{
+   let result = toSQLString(
+    |meta::relational::databricks::tests::domain::Person.all()->project([x|$x.createdAt->dayOfYear()], ['dayOfYear']),
+    meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+    DatabaseType.Databricks,
+    meta::relational::extension::relationalExtensions());
+   assertEquals('select dayofyear(`root`.createdAt) as `dayOfYear` from test_schema.test_table as `root`', $result);
+}
+
 function <<test.Test>> meta::relational::databricks::tests::monthNumber():Boolean[1]
 {
    let result = toSQLString(

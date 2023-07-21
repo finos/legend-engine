@@ -137,9 +137,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
     // dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     // dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
-    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date'))
     // dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
-    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)'))
   ];
 }
 
