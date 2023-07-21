@@ -32,8 +32,6 @@ public class BaseTestUtils
     public static Field colBigint = Field.builder().name("col_bigint").type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).build();
     public static Field colTinyint = Field.builder().name("col_tinyint").type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).build();
     public static Field colSmallint = Field.builder().name("col_smallint").type(FieldType.of(DataType.SMALLINT, Optional.empty(), Optional.empty())).build();
-    public static Field colInt64 = Field.builder().name("col_int64").type(FieldType.of(DataType.INT64, Optional.empty(), Optional.empty())).build();
-    public static Field colNumber = Field.builder().name("col_number").type(FieldType.of(DataType.NUMBER, Optional.empty(), Optional.empty())).build();
     public static Field colNumeric = Field.builder().name("col_numeric").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).build();
     public static Field colNumericWithPrecision = Field.builder().name("col_numeric_with_precision").type(FieldType.of(DataType.NUMERIC, Optional.of(29), Optional.empty())).build();
     public static Field colNumericWithScale = Field.builder().name("col_numeric_with_scale").type(FieldType.of(DataType.NUMERIC, Optional.of(33), Optional.of(4))).build();
@@ -41,9 +39,7 @@ public class BaseTestUtils
     public static Field colReal = Field.builder().name("col_real").type(FieldType.of(DataType.REAL, Optional.empty(), Optional.empty())).build();
     public static Field colFloat = Field.builder().name("col_float").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     public static Field colDouble = Field.builder().name("col_double").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
-    public static Field colFloat64 = Field.builder().name("col_float64").type(FieldType.of(DataType.FLOAT64, Optional.empty(), Optional.empty())).build();
     public static Field colChar = Field.builder().name("col_char").type(FieldType.of(DataType.CHAR, Optional.empty(), Optional.empty())).build();
-    public static Field colCharacter = Field.builder().name("col_character").type(FieldType.of(DataType.CHARACTER, Optional.empty(), Optional.empty())).build();
     public static Field colVarchar = Field.builder().name("col_varchar").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
     public static Field colLongVarchar = Field.builder().name("col_longvarchar").type(FieldType.of(DataType.LONGVARCHAR, Optional.empty(), Optional.empty())).build();
     public static Field colLongtext = Field.builder().name("col_longtext").type(FieldType.of(DataType.LONGTEXT, Optional.empty(), Optional.empty())).build();
@@ -60,7 +56,6 @@ public class BaseTestUtils
     public static Field colDatetime = Field.builder().name("col_datetime").type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
     public static Field colTimestamp = Field.builder().name("col_timestamp").type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty())).build();
     public static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
-    public static Field colBool = Field.builder().name("col_bool").type(FieldType.of(DataType.BOOL, Optional.empty(), Optional.empty())).build();
     public static Field colJson = Field.builder().name("col_json").type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build();
 
     public static ClusterKey clusterKey1 = ClusterKey.builder().key(FieldValue.builder().fieldName("col_timestamp").build()).build();
@@ -76,8 +71,6 @@ public class BaseTestUtils
             .addFields(colBigint)
             .addFields(colTinyint)
             .addFields(colSmallint)
-            .addFields(colInt64)
-            .addFields(colNumber)
             .addFields(colNumeric)
             .addFields(colNumericWithPrecision)
             .addFields(colNumericWithScale)
@@ -85,9 +78,7 @@ public class BaseTestUtils
             .addFields(colReal)
             .addFields(colFloat)
             .addFields(colDouble)
-            .addFields(colFloat64)
             .addFields(colChar)
-            .addFields(colCharacter)
             .addFields(colVarchar)
             .addFields(colLongVarchar)
             .addFields(colLongtext)
@@ -104,7 +95,6 @@ public class BaseTestUtils
             .addFields(colDatetime)
             .addFields(colTimestamp)
             .addFields(colBoolean)
-            .addFields(colBool)
             .addFields(colJson)
             .build();
 
@@ -115,8 +105,6 @@ public class BaseTestUtils
             .addFields(colBigint.withType(colBigint.type().withDataType(DataType.INTEGER)))
             .addFields(colTinyint.withType(colTinyint.type().withDataType(DataType.INTEGER)))
             .addFields(colSmallint.withType(colSmallint.type().withDataType(DataType.INTEGER)))
-            .addFields(colInt64.withType(colInt64.type().withDataType(DataType.INTEGER)))
-            .addFields(colNumber.withType(colNumber.type().withDataType(DataType.NUMERIC)))
             .addFields(colNumeric)
             .addFields(colNumericWithPrecision)
             .addFields(colNumericWithScale)
@@ -124,9 +112,7 @@ public class BaseTestUtils
             .addFields(colReal.withType(colReal.type().withDataType(DataType.FLOAT)))
             .addFields(colFloat)
             .addFields(colDouble.withType(colDouble.type().withDataType(DataType.FLOAT)))
-            .addFields(colFloat64.withType(colFloat64.type().withDataType(DataType.FLOAT)))
             .addFields(colChar.withType(colChar.type().withDataType(DataType.STRING)))
-            .addFields(colCharacter.withType(colCharacter.type().withDataType(DataType.STRING)))
             .addFields(colVarchar.withType(colVarchar.type().withDataType(DataType.STRING)))
             .addFields(colLongVarchar.withType(colLongVarchar.type().withDataType(DataType.STRING)))
             .addFields(colLongtext.withType(colLongtext.type().withDataType(DataType.STRING)))
@@ -143,7 +129,6 @@ public class BaseTestUtils
             .addFields(colDatetime)
             .addFields(colTimestamp)
             .addFields(colBoolean)
-            .addFields(colBool.withType(colBool.type().withDataType(DataType.BOOLEAN)))
             .addFields(colJson)
             .build();
 

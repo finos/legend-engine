@@ -44,10 +44,8 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case BIGINT:
             case TINYINT:
             case SMALLINT:
-            case INT64:
                 dataType = new Int64();
                 break;
-            case NUMBER:
             case NUMERIC:
             case DECIMAL:
                 dataType = new Numeric();
@@ -57,12 +55,10 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case REAL:
             case FLOAT:
             case DOUBLE:
-            case FLOAT64:
                 dataType = new Float64();
                 break;
             // String & Binary types
             case CHAR:
-            case CHARACTER:
             case VARCHAR:
             case LONGVARCHAR:
             case LONGTEXT:
@@ -85,33 +81,26 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case TIME:
                 dataType = new Time();
                 break;
+            case TIMESTAMP_NTZ:
             case DATETIME:
                 dataType = new DateTime();
                 break;
             case TIMESTAMP:
+            case TIMESTAMP_TZ:
                 dataType = new Timestamp();
                 break;
             // Other types
             case BOOLEAN:
-            case BOOL:
                 dataType = new Bool();
                 break;
+            case VARIANT:
             case JSON:
                 dataType = new Json();
                 break;
-            case NCHAR:
-            case NVARCHAR:
-            case LONGNVARCHAR:
             case BIT:
-            case TIMESTAMP_NTZ:
-            case TIMESTAMP_TZ:
             case TIMESTAMP_LTZ:
-            case TIMESTAMPTZ:
-            case VARIANT:
             case MAP:
             case ARRAY:
-            case NULL:
-            case UNDEFINED:
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }

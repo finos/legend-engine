@@ -21,26 +21,21 @@ import org.junit.jupiter.api.Test;
 
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBigint;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBinary;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBool;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBoolean;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBytes;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBytesWithLength;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colChar;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colCharacter;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDate;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDatetime;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimal;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDouble;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat64;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInt;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInt64;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInteger;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colJson;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongVarBinary;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongVarchar;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongtext;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumber;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumeric;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumericWithPrecision;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumericWithScale;
@@ -66,8 +61,6 @@ public class DataTypeMappingTest
         Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBigint.type())));
         Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTinyint.type())));
         Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colSmallint.type())));
-        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInt64.type())));
-        Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumber.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumeric.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimal.type())));
         Assertions.assertEquals("NUMERIC(29)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumericWithPrecision.type())));
@@ -75,9 +68,7 @@ public class DataTypeMappingTest
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colReal.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat.type())));
         Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDouble.type())));
-        Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat64.type())));
         Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colChar.type())));
-        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colCharacter.type())));
         Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colVarchar.type())));
         Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colLongVarchar.type())));
         Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colLongtext.type())));
@@ -94,7 +85,6 @@ public class DataTypeMappingTest
         Assertions.assertEquals("DATETIME", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDatetime.type())));
         Assertions.assertEquals("TIMESTAMP", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTimestamp.type())));
         Assertions.assertEquals("BOOL", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBoolean.type())));
-        Assertions.assertEquals("BOOL", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBool.type())));
         Assertions.assertEquals("JSON", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colJson.type())));
     }
 

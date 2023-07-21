@@ -59,7 +59,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT64;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DOUBLE;
@@ -378,7 +377,7 @@ public class LogicalPlanUtils
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
-            new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
+            new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS = DataType.getComparableDataTypes();
 }

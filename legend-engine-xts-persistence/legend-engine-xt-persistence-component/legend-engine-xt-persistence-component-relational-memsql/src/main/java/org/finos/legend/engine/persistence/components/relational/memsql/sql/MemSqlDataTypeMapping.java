@@ -42,7 +42,6 @@ public class MemSqlDataTypeMapping implements DataTypeMapping
         {
             // Integer Number Data Types
             case BOOLEAN:
-            case BOOL:
                 dataType = new TinyInt(1);
                 break;
             case TINYINT:
