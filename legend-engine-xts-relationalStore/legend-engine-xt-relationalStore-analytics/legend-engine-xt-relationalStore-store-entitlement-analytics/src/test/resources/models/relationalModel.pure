@@ -211,7 +211,6 @@ Runtime runtime::CompoundRuntime
   [
     store::CovidDataStore:
     [
-      connection_1: runtime::connection::H2Connection,
       connection_2: runtime::connection::SnowflakeConnection
     ]
   ];
