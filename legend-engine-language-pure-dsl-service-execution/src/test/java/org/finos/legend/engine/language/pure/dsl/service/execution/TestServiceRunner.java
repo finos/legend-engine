@@ -413,7 +413,37 @@ public class TestServiceRunner
         RuntimeException e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_"));
         Assert.assertEquals("Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig\"", e1.getMessage());
     }
-    
+
+    private static class SimpleM2MServiceRunnerForVarConflict extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForVarConflict(String function)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", function), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    private void testServiceExecutionWithVarConflict(String fetchFunction, String expectedResult)
+    {
+        SimpleM2MServiceRunnerForVarConflict serviceRunner = new SimpleM2MServiceRunnerForVarConflict(fetchFunction);
+        ServiceRunnerInput serviceRunnerInputWithVarConflict = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = serviceRunner.run(serviceRunnerInputWithVarConflict);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerWithVarConflict()
+    {
+        this.testServiceExecutionWithVarConflict("test::VarConflict__String_1_", "{\"settlementDates\":[\"2022-05-05\"]}");
+    }
+
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
