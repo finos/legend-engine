@@ -1045,6 +1045,14 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
     assertEquals('select cast( parseDateTime("root".stringDateFormat,\'yyyy-MM-dd\') as date) as "date" from dataTable as "root"',$s);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::testToSQLConvertDateMemSQL():Boolean[1]
+{
+    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL2], ['date']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+    assertEquals('select cast( parseDateTime("root".stringDateFormat,\'MM-dd-YYYY\') as date) as "date" from dataTable as "root"',$s);
+}
+
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::base64::testBase64H2():Boolean[1]
 {
     let result = execute(
@@ -1130,6 +1138,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    convertToDate1: Date[1];
    convertToDate: Date[1];
    convertToDateMemSQL: Date[1];
+   convertToDateMemSQL2: Date[1];
    convertToDateUserDefinedFormat: Date[1];
    convertToDateUserDefinedFormat1: Date[1];
    convertToDateUserDefinedFormat2: Date[1];
@@ -1237,6 +1246,7 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           convertToDate1: convertDate(stringDateFormat),
           convertToDate: convertDate(stringDateFormat,'yyyy-MM-dd'),
           convertToDateMemSQL: convertDate(stringDateFormat,'YYYY-MM-DD'),
+          convertToDateMemSQL2: convertDate(stringDateFormat,'MM-DD-YYYY'),
           convertToDateUserDefinedFormat3: convertDate(stringUserDefinedDateFormat,'DD/MM/YYYY'),
           convertToDateUserDefinedFormat2: convertDate(stringUserDefinedDateFormat,'YYYY/MM/DD'),
           convertToDateUserDefinedFormat1: convertDate(stringUserDefinedDateFormat,'MMMYYYY'),

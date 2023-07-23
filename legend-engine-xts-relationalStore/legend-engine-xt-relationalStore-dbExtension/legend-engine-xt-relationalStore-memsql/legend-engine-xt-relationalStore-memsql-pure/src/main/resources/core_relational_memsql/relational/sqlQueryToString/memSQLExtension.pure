@@ -192,7 +192,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::dateFormatsMemSQL():String[*]
 {
-   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD', 'MM-DD-YYYY'];
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
