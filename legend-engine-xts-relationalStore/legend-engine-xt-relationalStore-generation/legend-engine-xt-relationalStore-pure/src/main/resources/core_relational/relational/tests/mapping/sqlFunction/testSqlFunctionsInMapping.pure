@@ -1050,7 +1050,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::date::test
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL2], ['date']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-    assertEquals('select cast( to_date("root".stringDateFormat,\'MM-dd-YYYY\') as date) as "date" from dataTable as "root"',$s);
+    assertEquals('select cast( to_date("root".stringDateFormat,\'MM-DD-YYYY\') as date) as "date" from dataTable as "root"',$s);
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::base64::testBase64H2():Boolean[1]
