@@ -72,6 +72,8 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -390,18 +392,23 @@ public class GraphQLExecute extends GraphQL
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/mapping/{mappingPath}/runtime/{runtimePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "GraphQL Prod execution", doc = "graphql prod api execution duration")
     public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        long start = System.currentTimeMillis();
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             GraphQLProdCacheKey key = new GraphQLProdCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            Response response = executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            MetricsHandler.observe("GraphQL Prod execution", start, System.currentTimeMillis());
+            return response;
         }
         catch (Exception ex)
         {
+            MetricsHandler.observeError(LoggingEventType.GRAPHQL_EXECUTE_ERROR, ex, null);
             return Response.ok(new GraphQLErrorMain(ex.getMessage())).build();
         }
     }
