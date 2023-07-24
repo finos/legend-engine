@@ -12,27 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.relational.api;
 
-public enum StatisticName
+public enum IngestStatus
 {
-    INCOMING_RECORD_COUNT("incomingRecordCount"),
-    ROWS_TERMINATED("rowsTerminated"),
-    ROWS_INSERTED("rowsInserted"),
-    ROWS_UPDATED("rowsUpdated"),
-    ROWS_DELETED("rowsDeleted"),
-    FILES_LOADED("filesLoaded"),
-    ROWS_WITH_ERRORS("rowsWithErrors");
-
-    String value;
-
-    StatisticName(String value)
-    {
-        this.value = value;
-    }
-
-    public String get()
-    {
-        return value;
-    }
+    COMPLETED, ERROR
 }

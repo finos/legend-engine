@@ -42,4 +42,8 @@ public abstract class IngestorResultAbstract
     public abstract Datasets updatedDatasets();
 
     public abstract Optional<List<String>> schemaEvolutionSql();
+
+    public abstract IngestStatus status();
+
+    public abstract Optional<String> message();
 }

@@ -139,6 +139,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -308,5 +309,10 @@ public class AnsiSqlSink extends RelationalSink
         union.putAll(map1);
         union.putAll(map2);
         return union;
+    }
+
+    public IngestorResult performBulkLoad(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        throw new UnsupportedOperationException("Bulk Load not supported!");
     }
 }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -36,6 +37,8 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
@@ -76,6 +79,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Objects;
+import java.util.ArrayList;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
@@ -204,4 +209,54 @@ public class SnowflakeSink extends AnsiSqlSink
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
     }
+
+    @Override
+    public IngestorResult performBulkLoad(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues);
+        List<Map<String, Object>> resultSets = results.get(0).getData();
+        List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
+
+        int totalFilesLoaded = 0;
+        int totalRowsLoaded = 0;
+        int totalRowsWithError = 0;
+
+        for (Map<String, Object> row: resultSets)
+        {
+            Object bulkLoadStatus = row.get("status");
+            Object filePath = row.get("file");
+            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals("LOADED"))
+            {
+                totalFilesLoaded++;
+                totalRowsLoaded += (Integer) row.get("rows_loaded");
+            }
+
+            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals("LOADED") && Objects.nonNull(filePath))
+            {
+                dataFilePathsWithFailedBulkLoad.add(filePath.toString());
+            }
+
+            Object rowsWithError = row.get("errors_seen");
+            if (Objects.nonNull(rowsWithError))
+            {
+                totalRowsWithError += (Integer) row.get("errors_seen");
+            }
+        }
+        IngestorResult result;
+        if (dataFilePathsWithFailedBulkLoad.isEmpty())
+        {
+            Map<StatisticName, Object> stats = new HashMap<>();
+            stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
+            stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
+            stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+            result = IngestorResult.builder().status(IngestStatus.COMPLETED).build();
+        }
+        else
+        {
+            String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
+            result = IngestorResult.builder().status(IngestStatus.ERROR).message(errorMessage).build();
+        }
+        return result;
+    }
+
 }
