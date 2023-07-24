@@ -97,7 +97,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testConflictVariableInMa
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
-{ serverVersion.start='v1_19_0'}
+{ serverVersion.start='v1_29_0'}
 meta::pure::mapping::modelToModel::test::alloy::simple::testMatchInMapping(): Boolean[1]
 {
    let runtime = testJsonRuntime(Firm, '[{"employees":[{"@type":"PersonA","role":"developer","firstNameA":"Smith","firstName":"testFirstName","lastName":"testLastName"}]}]');
