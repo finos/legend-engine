@@ -59,8 +59,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
                 new TrinoWithUserPasswordFlow(),
-                new SqlServerStaticWithUserPasswordFlow(),
-                new SpannerWithGCPApplicationDefaultCredentialsFlow()
+                new SqlServerStaticWithUserPasswordFlow()
         );
     }
 
