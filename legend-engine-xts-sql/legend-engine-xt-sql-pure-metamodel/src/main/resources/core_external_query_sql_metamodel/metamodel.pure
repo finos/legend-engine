@@ -374,7 +374,8 @@ Enum meta::external::query::sql::metamodel::ArithmeticType
   SUBTRACT,
   MULTIPLY,
   DIVIDE,
-  MODULUS
+  MODULUS,
+  POWER
 }
 
 Enum meta::external::query::sql::metamodel::SortItemOrdering
