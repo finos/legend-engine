@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code</artifactId>
-        <version>4.19.0</version>
+        <version>4.19.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
