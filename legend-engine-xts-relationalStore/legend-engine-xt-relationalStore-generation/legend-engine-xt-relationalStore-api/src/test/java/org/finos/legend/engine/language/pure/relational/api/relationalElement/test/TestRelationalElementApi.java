@@ -15,20 +15,13 @@
 package org.finos.legend.engine.language.pure.relational.api.relationalElement.test;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.input.DatabaseToModelGenerationInput;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +29,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 public class TestRelationalElementApi
 {
@@ -59,7 +51,7 @@ public class TestRelationalElementApi
     }
 
     @Test
-    public void shouldGenerateModelFromDatabase() throws IOException
+    public void shouldGenerateModelsFromDatabaseSpecification() throws IOException
     {
         String expectedJson = loadFromFile("expectedJson.json");
         String inputGrammar = loadFromFile("inputGrammar.pure");
@@ -68,10 +60,8 @@ public class TestRelationalElementApi
         PureModelContextData inputPmcd = compilePmcd(inputGrammar);
         String databasePath = "meta::relational::transform::autogen::tests::testDB";
         DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd);
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
-        RelationalElementAPI relationalElementAPI = new RelationalElementAPI(routerExtensions, DeploymentMode.PROD);
-        Response response = relationalElementAPI.generateModelFromDatabase(inputJson, null);
+        RelationalElementAPI relationalElementAPI = new RelationalElementAPI(DeploymentMode.PROD, null);
+        Response response = relationalElementAPI.generateModelsFromDatabaseSpecification(inputJson, null);
         Assert.assertNotNull(response);
         String actualJson = response.getEntity().toString();
         Assert.assertEquals(expectedJson, actualJson);
