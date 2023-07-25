@@ -64,12 +64,13 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
                                                       $r->match([
                                                          d  : DynaFunction[1] | if($d.name == 'in' &&  $d.parameters->at(1)->instanceOf(LiteralList) && ($d.parameters->at(1)->cast(@LiteralList).values->size() > $dbThreshold->toOne()),
                                                                                    |
+                                                                                   let dbType               = $connection.type;
                                                                                    let tempTableName        = 'tempTableForIn_' + $uniqueId->toString();
                                                                                    let tempTableColumnName  = 'ColumnForStoringInCollection';
 
                                                                                    let firstLiteralValue    = $d.parameters->at(1)->cast(@LiteralList).values->map(l | $l.value)->at(0);
                                                                                    let collectionValueType  = if($firstLiteralValue->instanceOf(VarPlaceHolder), | $firstLiteralValue->cast(@VarPlaceHolder).type, | $firstLiteralValue->type());
-                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$connection.type))->toOne());
+                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $dbType->createDbConfig([]).procesTempTableName($tempTableName), $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$dbType))->toOne());
 
                                                                                    ^$d(parameters           = [$d.parameters->at(0), $selectSQLQuery]);,
                                                                                    |$d);,
@@ -102,13 +103,14 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
    let getTypeLambda = {val:Any[1] |if($val->instanceOf(VarPlaceHolder), | $val->cast(@VarPlaceHolder).type, | $val->type())};
 
    $changedFunctions->fold({func, result |
+                          let dbType                                = $connection.type;
                           let origInFunction                        = $func.first->cast(@DynaFunction);
                           let newInFunction                         = $func.second->cast(@DynaFunction);
 
                           let outerAllocationNodeName               = if($newInFunction.parameters->at(1)->instanceOf(VarPlaceHolder),
                                                                          |$newInFunction.parameters->at(1)->cast(@VarPlaceHolder).name,
                                                                          |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace('tempTableForIn_', prefixForWrapperAllocationNodeName()));
-                          let tempTableName                         = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempTableForIn_');
+                          let tempTableName                         = $dbType->createDbConfig([]).procesTempTableName($outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempTableForIn_'));
                           let tempTableColumnName                   = 'ColumnForStoringInCollection';
                           let allocationNodeName                    = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempVarForIn_');
 
@@ -121,7 +123,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                           let collectionValuesWithoutVarPlaceHolder = $collectionValues->filter(val | !$val->instanceOf(VarPlaceHolder));
                           let varPlaceHoldersInCollection           = $collectionValues->filter(val | $val->instanceOf(VarPlaceHolder))->cast(@VarPlaceHolder);
 
-                          let translationContext = ^TranslationContext(dbType=$connection.type);
+                          let translationContext = ^TranslationContext(dbType=$dbType);
                           let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
                           let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQueryWithDefaultPostProcessors($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
 
