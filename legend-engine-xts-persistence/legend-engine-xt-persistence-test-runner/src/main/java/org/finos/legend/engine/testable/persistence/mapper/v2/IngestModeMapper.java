@@ -41,7 +41,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.ProcessingDimensionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FilterDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 import org.finos.legend.engine.testable.persistence.mapper.AppendOnlyMapper;
 import org.finos.legend.engine.testable.persistence.mapper.BitemporalDeltaMapper;
 import org.finos.legend.engine.testable.persistence.mapper.BitemporalSnapshotMapper;
@@ -375,16 +378,48 @@ public class IngestModeMapper
         throw new Exception("Test Runner only accepts Relational Target");
     }
 
-    public static ServiceOutputTarget getServiceOutputTarget(Persistence persistence) throws Exception
+    public static ServiceOutputTarget getServiceOutputTarget(Persistence persistence, Path graphFetchPath) throws Exception
     {
         List<ServiceOutputTarget> serviceOutputTargetList = persistence.serviceOutputTargets;
         if (serviceOutputTargetList.size() == 1)
         {
             return serviceOutputTargetList.get(0);
         }
-        throw new Exception("Only flat target is supported");
+        else
+        {
+            if (graphFetchPath == null)
+            {
+                throw new Exception("Graph fetch service-outputs require path parameter within tests");
+            }
+            List<String> testPropertyList = getPropertyList(graphFetchPath);
+
+            for (ServiceOutputTarget serviceOutputTarget: serviceOutputTargetList)
+            {
+                Path path = ((GraphFetchServiceOutput)serviceOutputTarget.serviceOutput).path;
+                List<String> propertyList = getPropertyList(path);
+
+                if (path.name == graphFetchPath.name && path.startType.equals(graphFetchPath.startType) && propertyList.containsAll(testPropertyList))
+                {
+                    return serviceOutputTarget;
+                }
+            }
+            throw new Exception("Exception : Cannot find a serviceOutputTarget with the matching path");
+        }
     }
 
+    public static List<String> getPropertyList(Path path)
+    {
+        List<String> propertyList = new ArrayList<>();
+        path.path.forEach(ppe ->
+        {
+            if (ppe instanceof PropertyPathElement)
+            {
+                String property = ((PropertyPathElement) ppe).property;
+                propertyList.add(property);
+            }
+        });
+        return propertyList;
+    }
 
     public static TemporalityType getTemporalityType(Temporality temporality)
     {

@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForGraphFetch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForTds;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingDateTime;
@@ -40,7 +41,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStart;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStartAndEnd;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -87,9 +92,9 @@ public class MappingVisitors
                         .addAllDeleteValues(val.deleteValues)
                         .build();
             }
-            //todo: Delete field for Graph fetch?
+            String property = getPropertyPathElement(((DeleteIndicatorForGraphFetch)val).deleteFieldPath);
             return DeleteIndicatorMergeStrategy.builder()
-                    //.deleteField(((DeleteIndicatorForGraphFetch) val).deleteFieldPath)
+                    .deleteField(property)
                     .addAllDeleteValues(val.deleteValues)
                     .build();
         }
@@ -186,9 +191,23 @@ public class MappingVisitors
                             .build();
                     fieldsToAdd.add(deleted);
                 }
-            //todo: Delete field for Graph fetch?
+                else if (val instanceof DeleteIndicatorForGraphFetch)
+                {
+                    String property = getPropertyPathElement(((DeleteIndicatorForGraphFetch)val).deleteFieldPath);
+                    Field deleted = Field.builder()
+                            .name(property)
+                            .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
+                            .build();
+                    fieldsToAdd.add(deleted);
+                }
             return null;
         }
+    }
+
+    public static String getPropertyPathElement(Path fieldPath)
+    {
+        List<PathElement> pathElements = fieldPath.path;
+        return ((PropertyPathElement)pathElements.get(pathElements.size() - 1)).property;
     }
 
     public static class DeriveStagingSchemaWithProcessingDimension implements ProcessingDimensionVisitor<Void>
@@ -300,5 +319,4 @@ public class MappingVisitors
             return null;
         }
     }
-
 }

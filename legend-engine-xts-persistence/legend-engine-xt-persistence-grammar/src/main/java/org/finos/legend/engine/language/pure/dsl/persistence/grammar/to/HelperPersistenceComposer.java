@@ -244,6 +244,7 @@ public class HelperPersistenceComposer
                 getTabString(indentLevel) + "{\n" +
                 getTabString(indentLevel + 1) + String.join(",\n", HelperPersistenceComposer.renderPersistenceTestBatches(persistenceTest, indentLevel, context)) +
                 getTabString(indentLevel + 1) + String.join(",\n", HelperPersistenceComposer.renderIsTestDataFromServiceOutput(persistenceTest)) +
+                String.join(",\n", HelperPersistenceComposer.renderGraphFetchPath(persistenceTest, indentLevel)) +
                 getTabString(indentLevel) + "}\n";
     }
 
@@ -257,6 +258,23 @@ public class HelperPersistenceComposer
             str.append("isTestDataFromServiceOutput")
                     .append(": ")
                     .append(persistenceTest.isTestDataFromServiceOutput)
+                    .append(";\n");
+        }
+
+        return str.toString();
+    }
+
+    public static String renderGraphFetchPath(PersistenceTest persistenceTest, int indentLevel)
+    {
+        StringBuilder str = new StringBuilder();
+
+        // graphFetchPath
+        if (persistenceTest.graphFetchPath != null)
+        {
+            getTabString(indentLevel + 1);
+            str.append("graphFetchPath")
+                    .append(": ")
+                    .append(persistenceTest.graphFetchPath)
                     .append(";\n");
         }
 

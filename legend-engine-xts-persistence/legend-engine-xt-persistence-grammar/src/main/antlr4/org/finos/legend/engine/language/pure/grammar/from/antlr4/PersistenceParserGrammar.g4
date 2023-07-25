@@ -17,7 +17,7 @@ identifier:                                 VALID_STRING | STRING
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_SERVICE_OUTPUT_TARGETS | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
-                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
+                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT | PERSISTENCE_TEST_DATA_GRAPH_FETCH_PATH
                                             | SERVICE_OUTPUT_TARGET_SERVICE_OUTPUT | SERVICE_OUTPUT_TARGET_TARGET
                                             | SERVICE_OUTPUT_TDS | DATASET_KEYS | DATASET_DEDUPLICATION | DATASET_TYPE
                                             | DEDUPLICATION_ANY | DEDUPLICATION_MAX | DEDUPLICATION_MAX_VERSION_FIELD
@@ -341,9 +341,11 @@ deleteIndicatorValues:                      ACTION_INDICATOR_DELETE_INDICATOR_VA
 
 tests:                                  PERSISTENCE_TESTS COLON BRACKET_OPEN ( test ( COMMA test )* )? BRACKET_CLOSE
 ;
-test:                                   identifier COLON BRACE_OPEN ( persistenceTestBatches ( isTestDataFromServiceOutput )? )* BRACE_CLOSE
+test:                                   identifier COLON BRACE_OPEN ( persistenceTestBatches ( isTestDataFromServiceOutput )? ( graphFetchPath )? )* BRACE_CLOSE
 ;
 isTestDataFromServiceOutput:            PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT COLON identifier SEMI_COLON
+;
+graphFetchPath:                         PERSISTENCE_TEST_DATA_GRAPH_FETCH_PATH COLON dslNavigationPath SEMI_COLON
 ;
 persistenceTestBatches:                 PERSISTENCE_TEST_BATCHES COLON BRACKET_OPEN ( persistenceTestBatch ( COMMA persistenceTestBatch )* )? BRACKET_CLOSE
 ;
