@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.language.pure.relational.api.relationalElement;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,6 +22,8 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.input.DatabaseToModelGenerationInput;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -40,18 +38,38 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
+
 @Api(tags = "Pure - Relational")
 @Path("pure/v1/relational")
 public class RelationalElementAPI
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalElementAPI.class);
+    private static final RelationalConnectionDbAuthenticationFlows dbDatasourceAuth = new RelationalConnectionDbAuthenticationFlows();
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensionsFunc;
     private final DeploymentMode deploymentMode;
+    private final ConnectionManagerSelector connectionManager;
+
+    public RelationalElementAPI(Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensionsFunc, DeploymentMode deploymentMode, RelationalStoreExecutor relationalStoreExecutor)
+    {
+        this.routerExtensionsFunc = routerExtensionsFunc;
+        this.deploymentMode = deploymentMode;
+        this.connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
+    }
 
     public RelationalElementAPI(Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensionsFunc, DeploymentMode deploymentMode)
     {
         this.routerExtensionsFunc = routerExtensionsFunc;
         this.deploymentMode = deploymentMode;
+        this.connectionManager = null;
     }
 
     @POST
@@ -79,6 +97,31 @@ public class RelationalElementAPI
         catch (Exception ex)
         {
             LOGGER.error("Failed to generate model from database", ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+        }
+    }
+
+    @GET
+    @Path("connection/supportedDbAuthenticationFlows")
+    @ApiOperation(value = "Get all available Database Authentication Flows")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDbDataSourceAuthComb(@Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        try
+        {
+            List<DbTypeDataSourceAuth> dbTypeDataSourceAuthCombinations = new ArrayList<>();
+            if (this.connectionManager.getFlowProviderHolder().isPresent())
+            {
+                dbTypeDataSourceAuthCombinations = dbDatasourceAuth.getDbTypeDataSourceAndAuthCombos(this.connectionManager.getFlowProviderHolder().get().getFlows());
+            }
+
+            return Response.status(200)
+                    .entity(dbTypeDataSourceAuthCombinations).build();
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error("Failed to fetch Database Authentication Flows", ex);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
         }
     }

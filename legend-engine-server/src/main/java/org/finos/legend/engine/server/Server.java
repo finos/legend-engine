@@ -47,6 +47,7 @@ import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
@@ -244,6 +245,13 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         RelationalExecutionConfiguration relationalExecution = serverConfiguration.relationalexecution;
         relationalExecution.setCredentialProviderProvider(credentialProviderProvider);
+
+        if (relationalExecution.getFlowProviderClass() == null || relationalExecution.getFlowProviderConfiguration() == null)
+        {
+            relationalExecution.setFlowProviderClass(LegendDefaultDatabaseAuthenticationFlowProvider.class);
+            relationalExecution.setFlowProviderConfiguration(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
+        }
+
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
 
         ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
@@ -303,7 +311,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
-        environment.jersey().register(new RelationalElementAPI(routerExtensions, serverConfiguration.deployment.mode));
+        environment.jersey().register(new RelationalElementAPI(routerExtensions, serverConfiguration.deployment.mode, relationalStoreExecutor));
 
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));

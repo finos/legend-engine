@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
@@ -32,6 +33,7 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
@@ -107,6 +109,12 @@ public class TestRelationalConnectionManager
         public Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection)
         {
             return Optional.empty();
+        }
+
+        @Override
+        public Map<DatabaseAuthenticationFlowKey, DatabaseAuthenticationFlow> getFlows()
+        {
+            return null;
         }
 
         @Override
