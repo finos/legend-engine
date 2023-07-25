@@ -20,7 +20,10 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetAbstract;
@@ -114,10 +117,36 @@ class BulkLoadPlanner extends Planner
     @Override
     public void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), ROWS_INSERTED.get(), Optional.empty()))
-                .build();
-        postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
+        // Only supported if Audit enabled
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            // Rows inserted = rows in main with audit column equals latest timestamp
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
+                    .addOps(getRowsBasedOnAppendTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
+                    .build());
+        }
     }
 
+    @Override
+    protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Only supported if Audit enabled
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            // Rows inserted = rows in main with audit column equals latest timestamp
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            postRunStatisticsResult.put(INCOMING_RECORD_COUNT, LogicalPlan.builder()
+                    .addOps(getRowsBasedOnAppendTimestamp(mainDataset(), auditField, INCOMING_RECORD_COUNT.get()))
+                    .build());
+        }
+    }
+
+    private Selection getRowsBasedOnAppendTimestamp(Dataset dataset, String field, String alias)
+    {
+        FieldValue fieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(field).build();
+        Equals condition = Equals.of(fieldValue, BatchStartTimestamp.INSTANCE);
+        FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
+        return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
+    }
 }

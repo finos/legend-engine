@@ -113,7 +113,12 @@ public class BulkLoadTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        assertStats(statsSql, "legend_persistence_stage");
+
+        Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -160,7 +165,10 @@ public class BulkLoadTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        assertStats(statsSql, "t");
+
+        Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
     }
 
     @Test
@@ -213,8 +221,8 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"ROWSUPDATED\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage", statsSql.get(INCOMING_RECORD_COUNT));
-        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -288,14 +296,5 @@ public class BulkLoadTest
         {
             Assertions.assertTrue(e.getMessage().contains("Only StagedFilesDataset are allowed under Bulk Load"));
         }
-    }
-
-    private void assertStats(Map<StatisticName, String> statsSql, String alias)
-    {
-        Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals(String.format("SELECT COUNT(*) as \"incomingRecordCount\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as %s", alias), statsSql.get(INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(String.format("SELECT COUNT(*) as \"rowsInserted\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as %s", alias), statsSql.get(ROWS_INSERTED));
     }
 }

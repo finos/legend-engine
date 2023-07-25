@@ -92,7 +92,7 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
     private static final Map<DataType, Set<DataType>> EXPLICIT_DATA_TYPE_MAPPING;
 
-    private static final String LOADED = "loaded";
+    private static final String LOADED = "LOADED";
     private static final String FILE = "file";
     private static final String BULK_LOAD_STATUS = "status";
     private static final String ROWS_LOADED = "rows_loaded";

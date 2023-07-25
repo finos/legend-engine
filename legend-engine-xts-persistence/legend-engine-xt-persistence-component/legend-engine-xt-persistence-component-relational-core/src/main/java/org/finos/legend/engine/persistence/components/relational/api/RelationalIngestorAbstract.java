@@ -96,6 +96,7 @@ public abstract class RelationalIngestorAbstract
     private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
 
     private static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
+    private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
 
     //---------- FLAGS ----------
 
@@ -261,6 +262,7 @@ public abstract class RelationalIngestorAbstract
             .caseConversion(caseConversion())
             .executionTimestampClock(executionTimestampClock())
             .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
+            .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
 
@@ -353,6 +355,8 @@ public abstract class RelationalIngestorAbstract
         // Execute metadata ingest SqlPlan
         if (generatorResult.metadataIngestSqlPlan().isPresent())
         {
+            // add batchEndTimestamp
+            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
             executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
         }
         return statisticsResultMap;
