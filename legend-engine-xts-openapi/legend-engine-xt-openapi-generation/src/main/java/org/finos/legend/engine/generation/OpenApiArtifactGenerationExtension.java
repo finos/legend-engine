@@ -20,7 +20,7 @@ import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGe
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_format_openapi_metamodel_Server_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.core_external_format_openapi_generation;
+import org.finos.legend.pure.generated.core_external_format_openapi_transformation_fromPure_pureToOpenApi;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.slf4j.Logger;
 
@@ -60,7 +60,7 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
     {
         try
         {
-            String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_format_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
+            String result = core_external_format_openapi_transformation_fromPure_pureToOpenApi.Root_meta_external_format_openapi_transformation_fromPure_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_format_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
             Artifact output = new Artifact(result, element.getName() + "_spec.json", "json");
             return Collections.singletonList(output);
         }

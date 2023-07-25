@@ -84,6 +84,12 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
     }
 
     @Override
+    public Map<DatabaseAuthenticationFlowKey, DatabaseAuthenticationFlow> getFlows()
+    {
+        return this.flows;
+    }
+
+    @Override
     public int count()
     {
         return this.flows.size();

@@ -304,7 +304,7 @@ predicate[ParserRuleContext value]
 valueExpression
     : primaryExpression                                                              #valueExpressionDefault
     | operator=(MINUS | PLUS) valueExpression                                        #arithmeticUnary
-    | left=valueExpression operator=(ASTERISK | SLASH | PERCENT)
+    | left=valueExpression operator=(ASTERISK | SLASH | PERCENT | CARET)
         right=valueExpression                                                        #arithmeticBinary
     | left=valueExpression operator=(PLUS | MINUS) right=valueExpression             #arithmeticBinary
     | left=valueExpression operator=(BITWISE_AND | BITWISE_OR | BITWISE_XOR)

@@ -229,7 +229,8 @@ public class TestSQLRoundTrip
     @Test
     public void testArithmetic()
     {
-        check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, (1 * 1) AS multiple FROM myTable");
+        check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, " +
+                "(1 * 1) AS multiply, (1 % 2) AS MOD, (1 ^ 2) AS POW FROM myTable");
     }
 
     @Test

@@ -19,15 +19,13 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.19.1-SNAPSHOT</version>
+        <version>4.20.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-application-query</artifactId>
     <name>Legend Engine - Application - Query</name>
 
-    <properties>
-        <top.project>${project.basedir}/../</top.project>
-    </properties>
+
 
     <dependencies>
         <!-- ENGINE -->

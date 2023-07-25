@@ -45,7 +45,8 @@ public class SQLGrammarComposer
             Tuples.pair(ArithmeticType.SUBTRACT, "-"),
             Tuples.pair(ArithmeticType.MULTIPLY, "*"),
             Tuples.pair(ArithmeticType.DIVIDE, "/"),
-            Tuples.pair(ArithmeticType.MODULUS, "*")
+            Tuples.pair(ArithmeticType.MODULUS, "%"),
+            Tuples.pair(ArithmeticType.POWER, "^")
     );
 
     private final MutableMap<JoinType, String> joins = UnifiedMap.newMapWith(

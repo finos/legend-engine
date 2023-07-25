@@ -342,6 +342,7 @@ MINUS: '-';
 ASTERISK: '*';
 SLASH: '/';
 PERCENT: '%';
+CARET: '^';
 CONCAT: '||';
 CAST_OPERATOR: '::';
 SEMICOLON: ';';
