@@ -182,7 +182,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     c:ComparisonExpression[1] | $c.left->extractAggregatesFromExpression()->concatenate($c.right->extractAggregatesFromExpression()),
     f:FunctionCall[1] | if (isExpressionAggregate($f), | $f, | []),
     i:IsNotNullPredicate[1] | $i.value->extractAggregatesFromExpression(),
-    i:IsNullPredicate[1] | $i.value->extractAggregatesFromExpression(),    
+    i:IsNullPredicate[1] | $i.value->extractAggregatesFromExpression(),
     l:LogicalBinaryExpression[1] | $l.left->extractAggregatesFromExpression()->concatenate($l.right->extractAggregatesFromExpression()),
     n:NegativeExpression[1] | $n.value->extractAggregatesFromExpression(),
     n:NotExpression[1] | $n.value->extractAggregatesFromExpression(),
@@ -774,7 +774,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     let name = iv($p.name);
 
     sfe(letFunction_String_1__T_m__T_m_, [$name, $value]);
-  );    
+  );
 }
 
 function meta::external::query::sql::transformation::queryToPure::convertValueSpecification(v:ValueSpecification[1], type:Type[0..1]):ValueSpecification[1]
@@ -923,7 +923,8 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
         pair(ArithmeticType.SUBTRACT, '-'),
         pair(ArithmeticType.MULTIPLY, '*'),
         pair(ArithmeticType.DIVIDE, '/'),
-        pair(ArithmeticType.MODULUS, '%')
+        pair(ArithmeticType.MODULUS, '%'),
+        pair(ArithmeticType.POWER, '^')
       ]->getValue($a.type);
 
       $a.left->extractNameFromExpression($context) + ' ' + $type + ' ' + $a.right->extractNameFromExpression($context);,
@@ -1059,7 +1060,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBetweenPredicate(b:BetweenPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   ^LogicalBinaryExpression(left = ^ComparisonExpression(left = $b.value, operator = ComparisonOperator.GREATER_THAN_OR_EQUAL ,right = $b.min),
-                           right = ^ComparisonExpression(left = $b.value, operator = ComparisonOperator.LESS_THAN_OR_EQUAL ,right = $b.max), 
+                           right = ^ComparisonExpression(left = $b.value, operator = ComparisonOperator.LESS_THAN_OR_EQUAL ,right = $b.max),
                            type = LogicalBinaryType.AND)->processExpression($expContext, $context);
 }
 
@@ -1147,7 +1148,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NullLiteral[1] | processCastAsCast($c, $expContext, $context),
     e:meta::external::query::sql::metamodel::Expression[1] |
       let type = getExpressionType($e, $context);
-      if ($type == String,
+      let castType = getCastType($c);
+
+      if ($type == String || $castType == String,
         | processCastAsParse($c, $expContext, $context),
         | processCastAsCast($c, $expContext, $context));
 
@@ -1354,10 +1357,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFunctionCallAsIdentifier(f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processFunctionCallAsIdentifier');
-  let name = extractNameFromExpression($f, $context);
-  let col = $context.columnByName($name, true);
 
-  createTdsColumn($col.name->toOne(), $expContext.var, $expContext, $context);
+  let name = extractNameFromExpression($f, $context);
+  let col = $context.columnByName($name, false);
+
+  if ($col->isEmpty(),
+    | processFunctionCallAsFunction($f, $expContext, $context),
+    | createTdsColumn($col.name->toOne(), $expContext.var, $expContext, $context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFunctionCallAsFunction(f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -1649,7 +1655,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let leftTypeNormalized = normalizeType($left);
       let rightTypeNormalized = normalizeType($right);
 
-      if ($leftTypeNormalized == Date || $rightTypeNormalized == Date, | Date, | Number);,    
+      if ($leftTypeNormalized == Date || $rightTypeNormalized == Date, | Date, | Number);,
     b:BetweenPredicate[1] | Boolean,
     c:Cast[1] | getCastType($c),
     c:CurrentTime[1] | DateTime,
@@ -1657,11 +1663,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     e:Extract[1] | Integer,
     f:FunctionCall[1] |
       let processor = functionProcessor($f.name);
-      if ($processor.returnType->isEmpty(), | Any, | $processor.returnType->toOne());,   
+      if ($processor.returnType->isEmpty(), | Any, | $processor.returnType->toOne());,
     i:InListExpression[1] | Boolean,
     i:InPredicate[1] | Boolean,
     n:IsNotNullPredicate[1] | Boolean,
-    n:IsNullPredicate[1] | Boolean,       
+    n:IsNullPredicate[1] | Boolean,
     l:Literal[1] | getLiteralType($l),
     l:LogicalBinaryExpression[1] | Boolean,
     n:NegativeExpression[1] | getExpressionType($n.value, $context),
@@ -1726,7 +1732,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       pair(Decimal, times_Decimal_MANY__Decimal_1_)
     ]->getValue($type, times_Number_MANY__Number_1_), iv($left->concatenate($right)))),
     pair(ArithmeticType.DIVIDE, | sfe(divide_Number_1__Number_1__Float_1_, [$left, $right])),
-    pair(ArithmeticType.MODULUS, | sfe(mod_Integer_1__Integer_1__Integer_1_, [$left, $right]))
+    pair(ArithmeticType.MODULUS, | sfe(mod_Integer_1__Integer_1__Integer_1_, [$left, $right])),
+    pair(ArithmeticType.POWER, | sfe(pow_Number_1__Number_1__Number_1_, [$left, $right]))
   ]->getValue($a.type)->eval();
 }
 
@@ -1755,7 +1762,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           | if ($a.type == ArithmeticType.MULTIPLY && $a.right->instanceOf(IntervalLiteral),
               | multiplyIntervalLiteral($a.right->cast(@IntervalLiteral), $a.left, $expContext, $context),
               | ^$a(left = $a.left->simplifyDateArithmetic($expContext, $context), right = $a.right->simplifyDateArithmetic($expContext, $context))))),
-    i:IntervalLiteral[1] | ^IntervalLiteralWrapper(ago = $i.ago, years = $i.years->ivIfNotEmpty(), months = $i.months->ivIfNotEmpty(), weeks = $i.weeks->ivIfNotEmpty(), days = $i.days->ivIfNotEmpty(), 
+    i:IntervalLiteral[1] | ^IntervalLiteralWrapper(ago = $i.ago, years = $i.years->ivIfNotEmpty(), months = $i.months->ivIfNotEmpty(), weeks = $i.weeks->ivIfNotEmpty(), days = $i.days->ivIfNotEmpty(),
                                                     hours = $i.hours->ivIfNotEmpty(), minutes = $i.minutes->ivIfNotEmpty(), seconds = $i.seconds->ivIfNotEmpty()),
     e:meta::external::query::sql::metamodel::Expression[1] | $e
   ]);

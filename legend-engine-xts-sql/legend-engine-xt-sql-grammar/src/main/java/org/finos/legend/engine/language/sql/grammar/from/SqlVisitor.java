@@ -1798,6 +1798,8 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
                 return ArithmeticType.DIVIDE;
             case SqlBaseLexer.PERCENT:
                 return ArithmeticType.MODULUS;
+            case SqlBaseLexer.CARET:
+                return ArithmeticType.POWER;
             default:
                 throw new UnsupportedOperationException("Unsupported operator: " + operator.getText());
         }
