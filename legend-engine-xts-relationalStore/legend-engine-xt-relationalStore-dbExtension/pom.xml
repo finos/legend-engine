@@ -35,6 +35,7 @@
         <module>legend-engine-xt-relationalStore-sqlserver</module>
         <module>legend-engine-xt-relationalStore-trino</module>
 
+        <module>legend-engine-xt-relationalStore-test-reports</module>
         <module>legend-engine-xt-relationalStore-test-server</module>
         <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>
