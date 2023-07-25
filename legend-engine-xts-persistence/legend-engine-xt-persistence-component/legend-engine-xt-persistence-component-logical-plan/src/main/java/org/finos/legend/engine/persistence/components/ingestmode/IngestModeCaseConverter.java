@@ -158,8 +158,12 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     @Override
     public IngestMode visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        // TODO BULK_LOAD
-        return bulkLoad;
+        return BulkLoad.builder()
+                .digestField(applyCase(bulkLoad.digestField()))
+                .digestUdfName(bulkLoad.digestUdfName())
+                .generateDigest(bulkLoad.generateDigest())
+                .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
+                .build();
     }
 
     private Optional<String> applyCase(Optional<String> field)

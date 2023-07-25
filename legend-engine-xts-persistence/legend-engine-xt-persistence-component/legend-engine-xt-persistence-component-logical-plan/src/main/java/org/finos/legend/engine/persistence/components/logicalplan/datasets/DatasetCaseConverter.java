@@ -23,7 +23,7 @@ public class DatasetCaseConverter
 {
     public Dataset applyCaseOnDataset(Dataset dataset, Function<String, String> strategy)
     {
-        String newName = strategy.apply(dataset.datasetReference().name().orElseThrow(IllegalStateException::new));
+        Optional<String> newName = dataset.datasetReference().name().map(strategy);
         Optional<String> newSchemaName = dataset.datasetReference().group().map(strategy);
         Optional<String> newDatabaseName = dataset.datasetReference().database().map(strategy);
 
@@ -83,10 +83,11 @@ public class DatasetCaseConverter
         if (dataset instanceof DatasetDefinition)
         {
             DatasetDefinition datasetDefinition = DatasetDefinition.builder()
-                    .name(newName)
+                    .name(newName.orElseThrow(IllegalStateException::new))
                     .group(newSchemaName)
                     .database(newDatabaseName)
                     .schema(schemaDefinition)
+                    .datasetAdditionalProperties(dataset.datasetAdditionalProperties())
                     .build();
 
             if (dataset.datasetReference().alias().isPresent())
@@ -99,11 +100,12 @@ public class DatasetCaseConverter
         if (dataset instanceof DerivedDataset)
         {
             DerivedDataset derivedDataset = DerivedDataset.builder()
-                    .name(newName)
+                    .name(newName.orElseThrow(IllegalStateException::new))
                     .group(newSchemaName)
                     .database(newDatabaseName)
                     .schema(schemaDefinition)
                     .addAllDatasetFilters(((DerivedDataset) dataset).datasetFilters())
+                    .datasetAdditionalProperties(dataset.datasetAdditionalProperties())
                     .build();
 
             if (dataset.datasetReference().alias().isPresent())
@@ -111,6 +113,23 @@ public class DatasetCaseConverter
                 derivedDataset = derivedDataset.withAlias(dataset.datasetReference().alias().get());
             }
             return derivedDataset;
+        }
+
+        if (dataset instanceof StagedFilesDataset)
+        {
+            StagedFilesDataset stagedFilesDataset = StagedFilesDataset.builder()
+                    .schema(schemaDefinition)
+                    .location(((StagedFilesDataset)dataset).location())
+                    .filePattern(((StagedFilesDataset)dataset).filePattern())
+                    .fileFormat(((StagedFilesDataset)dataset).fileFormat())
+                    .datasetAdditionalProperties(dataset.datasetAdditionalProperties())
+                    .build();
+
+            if (dataset.datasetReference().alias().isPresent())
+            {
+                stagedFilesDataset = stagedFilesDataset.withAlias(dataset.datasetReference().alias().get());
+            }
+            return stagedFilesDataset;
         }
 
         throw new UnsupportedOperationException("Unsupported Dataset Conversion");

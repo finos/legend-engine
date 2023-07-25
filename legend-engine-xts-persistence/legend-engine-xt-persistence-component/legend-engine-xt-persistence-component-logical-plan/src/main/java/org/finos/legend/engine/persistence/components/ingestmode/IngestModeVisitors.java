@@ -197,7 +197,6 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            // TODO BULK_LOAD
             return Collections.emptySet();
         }
     };

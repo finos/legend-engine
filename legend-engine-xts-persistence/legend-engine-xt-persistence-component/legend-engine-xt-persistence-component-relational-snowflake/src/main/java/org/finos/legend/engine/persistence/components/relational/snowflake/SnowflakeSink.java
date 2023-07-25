@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -90,6 +91,12 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
     private static final Map<DataType, Set<DataType>> EXPLICIT_DATA_TYPE_MAPPING;
+
+    private static final String LOADED = "loaded";
+    private static final String FILE = "file";
+    private static final String BULK_LOAD_STATUS = "status";
+    private static final String ROWS_LOADED = "rows_loaded";
+    private static final String ERRORS_SEEN = "errors_seen";
 
     static
     {
@@ -211,35 +218,35 @@ public class SnowflakeSink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
         List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
 
-        int totalFilesLoaded = 0;
-        int totalRowsLoaded = 0;
-        int totalRowsWithError = 0;
+        long totalFilesLoaded = 0;
+        long totalRowsLoaded = 0;
+        long totalRowsWithError = 0;
 
         for (Map<String, Object> row: resultSets)
         {
-            Object bulkLoadStatus = row.get("status");
-            Object filePath = row.get("file");
-            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals("LOADED"))
+            Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
+            Object filePath = row.get(FILE);
+            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals(LOADED))
             {
                 totalFilesLoaded++;
-                totalRowsLoaded += (Integer) row.get("rows_loaded");
+                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
             }
 
-            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals("LOADED") && Objects.nonNull(filePath))
+            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals(LOADED) && Objects.nonNull(filePath))
             {
                 dataFilePathsWithFailedBulkLoad.add(filePath.toString());
             }
 
-            Object rowsWithError = row.get("errors_seen");
+            Object rowsWithError = row.get(ERRORS_SEEN);
             if (Objects.nonNull(rowsWithError))
             {
-                totalRowsWithError += (Integer) row.get("errors_seen");
+                totalRowsWithError += (Long) row.get(ERRORS_SEEN);
             }
         }
         IngestorResult result;
@@ -249,12 +256,12 @@ public class SnowflakeSink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
             stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
             stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
-            result = IngestorResult.builder().status(IngestStatus.COMPLETED).build();
+            result = IngestorResult.builder().status(IngestStatus.COMPLETED).updatedDatasets(datasets).putAllStatisticByName(stats).build();
         }
         else
         {
             String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
-            result = IngestorResult.builder().status(IngestStatus.ERROR).message(errorMessage).build();
+            result = IngestorResult.builder().status(IngestStatus.ERROR).message(errorMessage).updatedDatasets(datasets).build();
         }
         return result;
     }

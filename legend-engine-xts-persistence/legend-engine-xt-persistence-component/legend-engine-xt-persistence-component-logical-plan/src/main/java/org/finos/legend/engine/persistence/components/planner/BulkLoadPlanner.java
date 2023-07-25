@@ -99,7 +99,7 @@ class BulkLoadPlanner extends Planner
         operations.add(Create.of(true, mainDataset()));
         if (options().createStagingDataset())
         {
-            // TODO BULK LOAD
+            // TODO: Check if Create Stage is needed
         }
         return LogicalPlan.of(operations);
     }

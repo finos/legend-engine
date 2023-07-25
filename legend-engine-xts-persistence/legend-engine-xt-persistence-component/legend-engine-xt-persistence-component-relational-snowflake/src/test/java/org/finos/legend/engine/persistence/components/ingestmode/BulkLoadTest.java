@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
@@ -53,8 +54,6 @@ public class BulkLoadTest
     private static Field col2 = Field.builder()
             .name("col_integer")
             .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
-            .nullable(false)
-            .unique(true)
             .build();
     private static Field col3 = Field.builder()
             .name("col_bigint")
@@ -88,7 +87,7 @@ public class BulkLoadTest
 
         Dataset mainDataset = DatasetDefinition.builder()
                 .database("my_db").name("my_name").alias("my_alias")
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
+                .schema(SchemaDefinition.builder().build())
                 .build();
 
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -104,7 +103,7 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER,\"append_time\" DATETIME)";
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_int\", \"col_integer\", \"append_time\") " +
                 "FROM " +
@@ -136,7 +135,7 @@ public class BulkLoadTest
 
         Dataset mainDataset = DatasetDefinition.builder()
                 .database("my_db").name("my_name").alias("my_alias")
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3, col4)).build())
+                .schema(SchemaDefinition.builder().build())
                 .build();
 
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -165,7 +164,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithDigestGeneratedColumnNumbersDerived()
+    public void testBulkLoadWithDigestGeneratedWithUpperCaseConversion()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
                 .digestField("digest")
@@ -183,7 +182,7 @@ public class BulkLoadTest
 
         Dataset mainDataset = DatasetDefinition.builder()
                 .database("my_db").name("my_name").alias("my_alias")
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
+                .schema(SchemaDefinition.builder().build())
                 .build();
 
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -191,6 +190,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -199,18 +199,22 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE)";
-        String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
-                "(\"col_int\", \"col_integer\", \"digest\", \"append_time\") " +
-                "FROM " +
-                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
-                "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-                "'2000-01-01 00:00:00' FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage) on_error = 'ABORT_STATEMENT'";
-
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"APPEND_TIME\" DATETIME)";
+        String expectedIngestSql = "COPY INTO \"MY_DB\".\"MY_NAME\" " +
+                "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"APPEND_TIME\") " +
+                "FROM (SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
+                "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
+                "'2000-01-01 00:00:00' FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage) " +
+                "on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        assertStats(statsSql, "legend_persistence_stage");
+
+        Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as \"ROWSUPDATED\"", statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
