@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-public class DataSpaceExecutableAnalysisResult
+import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
+
+import java.util.List;
+
+public class DataSpaceMultiExecutionServiceKeyedExecutableInfo
 {
-    public String title;
-    public String description;
-    public String executable;
-    public DataSpaceExecutableInfo info;
-    public DataSpaceExecutableResult result;
+    public String key;
+    public String mapping;
+    public String runtime;
+    public List<DatasetSpecification> datasets;
 }
