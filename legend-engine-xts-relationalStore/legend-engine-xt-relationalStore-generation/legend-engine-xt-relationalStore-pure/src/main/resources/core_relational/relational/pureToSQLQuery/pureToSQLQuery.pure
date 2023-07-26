@@ -43,6 +43,7 @@ import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
 import meta::relational::extension::*;
+import meta::pure::mapping::xStore::*;
 
 
 Class meta::relational::functions::RelationalDebugContext extends DebugContext
@@ -1342,7 +1343,8 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMapping(pro
                e:EmbeddedRelationalInstanceSetImplementation[*] | if(($state.inGetterFlow == true || $state.milestoningUseOtherwise == true) && $e->size() == 1 && $e->toOne()->instanceOf(OtherwiseEmbeddedRelationalInstanceSetImplementation),
                                                                      | processRelationalPropertyMapping($e->toOne()->cast(@OtherwiseEmbeddedRelationalInstanceSetImplementation).otherwisePropertyMapping->cast(@RelationalPropertyMapping), $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
                                                                      | $srcOperation;
-                                                                  )
+                                                                  ),
+               x:XStorePropertyMapping[1] | processXStorePropertyMapping($x, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)
              ]);
 
    print(if(!$context.debug, |'',
@@ -1350,6 +1352,90 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMapping(pro
               $context.space+'            '+$res->cast(@SelectWithCursor).select->printDebugQuery($context.space, $extensions)));
 
    $res;
+}
+
+function meta::relational::functions::pureToSqlQuery::processXStorePropertyMapping(xpm:XStorePropertyMapping[1], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  
+  let expressionSequence = $xpm.crossExpression.expressionSequence->cast(@SimpleFunctionExpression)->toOne()->evaluateAndDeactivate();
+  let sourceId = $xpm.sourceSetImplementationId->toOne();
+  let targetId = $xpm.targetSetImplementationId->toOne();
+  let mappings = $xpm.owner.parent->toOne()->getIncludedMappingsRecursively();
+  let classMappings = $mappings.classMappings->cast(@RootRelationalInstanceSetImplementation);
+  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias;
+
+  let join = transformExpressionSequenceIntoJoin($expressionSequence, $sourceId, $targetId, $classMappings);
+
+  let joinTreeNode = ^JoinTreeNode(
+    joinName=$join.name,
+    database=$join.database->toOne(),
+    alias=$join.target->toOne(),
+    join=$join
+  );
+
+  let ro = ^RelationalOperationElementWithJoin(joinTreeNode=$joinTreeNode);
+  let r = ^RelationalPropertyMapping(sourceSetImplementationId=$sourceId,property=$xpm.property->toOne(),relationalOperationElement=$ro,targetSetImplementationId=$targetId);
+
+  processRelationalPropertyMapping($r, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::getTableAliasColumn(propertyImplementations:SimpleFunctionExpression[*], thisOrThat:String[1], id:String[1], classMappings:RootRelationalInstanceSetImplementation[*]):TableAliasColumn[1]
+{
+  let propertyImplementation = $propertyImplementations->filter(p|$p.parametersValues->cast(@VariableExpression).name->toOne()==$thisOrThat).func->toOne();
+  let classMapping = $classMappings->filter(c| $c.id == $id)->toOne();
+  let relationalPropertyMapping = $classMapping.propertyMappings->filter(p|$p.property==$propertyImplementation)->cast(@RelationalPropertyMapping)->toOne();
+  let tableAliasColumn = $relationalPropertyMapping.relationalOperationElement->cast(@TableAliasColumn)->toOne();
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:RootRelationalInstanceSetImplementation[*]): Join[1]
+{
+  let functionOperator = $expressionSequence.functionName->toOne();
+  let joinName = $sourceId + '_' + $targetId + '_GeneratedRelationalJoin';
+  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias;
+  let targetMainTableAlias = $classMappings->filter(c| $c.id == $targetId)->toOne().mainTableAlias;
+  let sourceDatabase = $sourceMainTableAlias.database->toOne();
+  let targetDatabase = $targetMainTableAlias.database->toOne();
+  let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
+  
+  assertContains(['equal', 'not', 'and', 'or'], $functionOperator, 'Failed to translate XStore Property into Relational Property because function operator is not in standard list');
+
+  let join = if(
+    $functionOperator=='equal' || $functionOperator=='not',
+    | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression);
+
+      let sourceTableAliasColumn = getTableAliasColumn($propertyImplementations, 'this', $sourceId, $classMappings);
+      let sourceTableAlias = $sourceTableAliasColumn.alias->cast(@TableAlias);
+
+      let targetTableAliasColumn = getTableAliasColumn($propertyImplementations, 'that', $targetId, $classMappings);
+      let targetTableAlias = $targetTableAliasColumn.alias->cast(@TableAlias);
+
+      let parameters = $sourceTableAliasColumn->concatenate($targetTableAliasColumn);
+      let operation = ^DynaFunction(name=$functionOperator, parameters=$parameters);
+      ^Join(
+        name=$joinName,
+        operation=$operation, 
+        target=$targetTableAlias,
+        database=$aggregatedDatabase,
+        aliases = [^Pair<TableAlias,TableAlias>(first=$targetTableAlias,second=$sourceTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceTableAlias,second=$targetTableAlias)]
+      );, 
+    | let childJoins = $expressionSequence.parametersValues->map(p | 
+        transformExpressionSequenceIntoJoin($p->cast(@SimpleFunctionExpression)->evaluateAndDeactivate(), $sourceId, $targetId, $classMappings)
+      );
+      let operation = ^DynaFunction(name=$functionOperator, parameters=$childJoins.operation);
+      ^Join(
+        name=$joinName,
+        operation=$operation,
+        target=$targetMainTableAlias,
+        database=$aggregatedDatabase,
+        aliases = [^Pair<TableAlias,TableAlias>(first=$targetMainTableAlias,second=$sourceMainTableAlias), ^Pair<TableAlias,TableAlias>(first=$sourceMainTableAlias,second=$targetMainTableAlias)]->concatenate($childJoins.aliases)
+      );
+  );
+  
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::getIncludedMappingsRecursively(m : Mapping[1]): Mapping[*]
+{
+  $m->concatenate(if($m.includes->isEmpty(), |[], |$m.includes.included->map(i|$i->getIncludedMappingsRecursively())));
 }
 
 function meta::relational::functions::pureToSqlQuery::doJoinToClass(relationalPropertyMapping:RelationalPropertyMapping[1], c:Class<Any>[1], base:SelectWithCursor[1], joinType:JoinType[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
