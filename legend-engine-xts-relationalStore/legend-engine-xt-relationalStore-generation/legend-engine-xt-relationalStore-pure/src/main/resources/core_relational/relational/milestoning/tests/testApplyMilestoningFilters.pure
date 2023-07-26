@@ -15,6 +15,7 @@
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::join::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFilters::testMilestoningFilterApplicationOnSemiStructuredRelationalOperationElements():Any[*]
 {
@@ -37,4 +38,9 @@ function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFil
 
    let ssfo = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = ^TableAlias(name = 'ssf', relationalElement = $ssf), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::Integer())), returnType  = Integer);
    meta::relational::milestoning::applyMilestoningFilters($ssfo, {t|[]}, {t|$t}, false, $extensions);
+
+   let firstAlias = ^TableAlias(name = 'root', relationalElement = ^Table(name = 't', schema = ^Schema(name = 's', database = ^Database(name = 'd', package = ::))));
+   let secondAlias = ^TableAlias(name = 'ssf', relationalElement = $ssf);
+   let jtn = ^JoinTreeNode(alias = $secondAlias, database = ^Database(name = 'd', package = ::), joinName = 'flatten_join', join = ^Join(name = 'flatten_join', operation = ^DynaFunction(name = 'not', parameters = ^Literal(value = false)), aliases = [pair($firstAlias, $secondAlias), pair($secondAlias, $firstAlias)]));
+   meta::relational::milestoning::applyMilestoningFilters($jtn, {t|[]}, {t|$t}, false, $extensions);
 }
