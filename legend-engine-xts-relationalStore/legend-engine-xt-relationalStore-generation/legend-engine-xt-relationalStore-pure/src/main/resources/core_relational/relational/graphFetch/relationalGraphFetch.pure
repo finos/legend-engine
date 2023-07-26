@@ -603,7 +603,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    let dbConnElementPre = $runtime.connectionElementAssociations->filter(c|$c.element==$store)->toOne();
    let dbConnectionPre        = $dbConnElementPre.connection->cast(@DatabaseConnection);
 
-   let dbConnection =  if($clusteredTree.s.reprocessConnection->isEmpty(),|$dbConnectionPre,|$clusteredTree.s.reprocessConnection->toOne()->eval($dbConnectionPre))->cast(@DatabaseConnection) ;
+   let dbConnection =  if($clusteredTree.s.reprocessConnection->isEmpty(),|$dbConnectionPre,|$clusteredTree.s.reprocessConnection->toOne()->eval($dbConnElementPre))->cast(@DatabaseConnection) ;
    let dbConnElement = ^$dbConnElementPre(connection=$dbConnection);
    let oneRuntime          = ^Runtime(connectionElementAssociations= $dbConnElement);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
