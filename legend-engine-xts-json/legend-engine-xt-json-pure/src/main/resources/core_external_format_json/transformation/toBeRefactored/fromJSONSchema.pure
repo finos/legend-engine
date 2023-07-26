@@ -14,20 +14,21 @@
 
 import meta::json::*;
 import meta::json::schema::*;
-import meta::json::schema::tests::*;
-import meta::json::schema::fromSchema::tests::*;
-import meta::json::schema::fromSchema::*;
+import meta::external::format::json::schema::*;
+import meta::external::format::json::schema::tests::*;
+import meta::external::format::json::schema::fromSchema::tests::*;
+import meta::external::format::json::schema::fromSchema::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-Class meta::json::schema::fromSchema::SchemaTransformRequest
+Class meta::external::format::json::schema::fromSchema::SchemaTransformRequest
 {
    
-   jsonSchemas:meta::json::schema::fromSchema::SchemaInput[*];
+   jsonSchemas:meta::external::format::json::schema::fromSchema::SchemaInput[*];
    packagePrefix:String[0..1];
 }
 
 
-Class meta::json::schema::fromSchema::SchemaInput
+Class meta::external::format::json::schema::fromSchema::SchemaInput
 {
    fileName:String[1];
    schema:String[1];
@@ -35,7 +36,7 @@ Class meta::json::schema::fromSchema::SchemaInput
    
 }
 
-function meta::json::schema::fromSchema::JSONSchemaToPure(schemas:SchemaInput[*]):PackageableElement[*]
+function meta::external::format::json::schema::fromSchema::JSONSchemaToPure(schemas:SchemaInput[*]):PackageableElement[*]
 { 
    let processed = $schemas->map(s|$s->processSchema(false));  
    let subSchemas = $processed->map(s|$s->extractSubSchemas($processed)); 
@@ -58,13 +59,13 @@ function meta::json::schema::fromSchema::JSONSchemaToPure(schemas:SchemaInput[*]
    
 } 
 
-function <<access.protected>> {doc.doc = 'Function used by validation service'} meta::json::schema::fromSchema::JSONSchemaRemoveRef(schemas:SchemaInput[*]):SchemaInput[*]
+function <<access.protected>> {doc.doc = 'Function used by validation service'} meta::external::format::json::schema::fromSchema::JSONSchemaRemoveRef(schemas:SchemaInput[*]):SchemaInput[*]
 {
    let schemaMap =  $schemas->map(s | pair($s.fileName,$s->processSchema(false)))->newMap();
    $schemaMap->values()->filter(s|$s.schemaType!=SchemaType.fragment)->map(s |  ^SchemaInput(fileName = $s.fileName,schema =  $s.parsedSchema->  deReferenceElement($s.fileName,$schemaMap,[])->toCompactJSONString()));
 }
 
-function <<access.protected>> {doc.doc = 'Function used by validation service'} meta::json::schema::fromSchema::proccesSchemaInput(schemas:SchemaInput[*]):SchemaInput[*]
+function <<access.protected>> {doc.doc = 'Function used by validation service'} meta::external::format::json::schema::fromSchema::proccesSchemaInput(schemas:SchemaInput[*]):SchemaInput[*]
 {
      let schemaMap =  $schemas->map(s | pair($s.fileName,$s->processSchema(false)))->newMap();
      $schemaMap->values()->filter(s|$s.schemaType==SchemaType.object)->map(s |  ^SchemaInput(fileName = $s.fileName,
@@ -75,7 +76,7 @@ function <<access.protected>> {doc.doc = 'Function used by validation service'} 
 }
 
  
-function <<access.private>> meta::json::schema::fromSchema::deReferenceElement(element:JSONElement[1],parentFile:String[1], schemas:Map<String,ProcessedSchema>[1],key:String[0..1]):JSONElement[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::deReferenceElement(element:JSONElement[1],parentFile:String[1], schemas:Map<String,ProcessedSchema>[1],key:String[0..1]):JSONElement[1]
 {
    let filteredKeys = ['description','title','$schema'];
    
@@ -99,7 +100,7 @@ function <<access.private>> meta::json::schema::fromSchema::deReferenceElement(e
     
 }
 
-function <<access.private>> meta::json::schema::fromSchema::extractSubSchemas(schema:ProcessedSchema[1],allSchemas:ProcessedSchema[*]):ProcessedSchema[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::extractSubSchemas(schema:ProcessedSchema[1],allSchemas:ProcessedSchema[*]):ProcessedSchema[*]
 {  
   
    $schema.embeddedSchemas->cast(@JSONObject).keyValuePairs->map(kv | let fileName=if($schema.pathPrefix->isEmpty(),
@@ -119,7 +120,7 @@ function <<access.private>> meta::json::schema::fromSchema::extractSubSchemas(sc
                                                       );
 }
 
-function <<access.private>> meta::json::schema::fromSchema::extractEmbeddedSchema(rootSchema:JSONObject[1]):JSONObject[0..1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::extractEmbeddedSchema(rootSchema:JSONObject[1]):JSONObject[0..1]
 {   
       let definitions = $rootSchema.keyValuePairs->getValueForKey('definitions')->cast(@JSONObject);
       let defs = $rootSchema.keyValuePairs->getValueForKey('$defs')->cast(@JSONObject);
@@ -142,7 +143,7 @@ function <<access.private>> meta::json::schema::fromSchema::extractEmbeddedSchem
        }
 
 
-function <<access.private>> meta::json::schema::fromSchema::processSchema(schema:SchemaInput[1],embedded:Boolean[1]):ProcessedSchema[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(schema:SchemaInput[1],embedded:Boolean[1]):ProcessedSchema[1]
 {
   let  r=  processSchema($schema.fileName,$schema.schema->meta::json::parseJSON()->cast(@JSONObject),$schema.pathPrefix,$embedded);
    $r;
@@ -151,7 +152,7 @@ function <<access.private>> meta::json::schema::fromSchema::processSchema(schema
 
 
 
-function <<access.private>> meta::json::schema::fromSchema::processSchema(fileName:String[1],parsedSchema:JSONObject[1],prefix:String[0..1],embedded:Boolean[1]):ProcessedSchema[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::processSchema(fileName:String[1],parsedSchema:JSONObject[1],prefix:String[0..1],embedded:Boolean[1]):ProcessedSchema[1]
 {
 
    let allOf=  $parsedSchema.keyValuePairs->getValueForKey('allOf');
@@ -222,7 +223,7 @@ function <<access.private>> meta::json::schema::fromSchema::processSchema(fileNa
 
 
 
-function <<access.private>> meta::json::schema::fromSchema::getExtendedTags(object:JSONObject[1],rootKey:String[1]):JSONKeyValue[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getExtendedTags(object:JSONObject[1],rootKey:String[1]):JSONKeyValue[*]
 {
     $object.keyValuePairs->map(k |$k.value->match([o:JSONObject[1] | $o->getExtendedTags($k.key.value),
                                                    e:JSONElement[1]|if(!$k.key.value->isJSONSchemaKey() && !$k.key.value->in(legendReservedTags()) && !$rootKey->in(['properties','discriminator','mapping'])  ,|$k,|[])
@@ -231,7 +232,7 @@ function <<access.private>> meta::json::schema::fromSchema::getExtendedTags(obje
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::createProfile(values:JSONKeyValue[*],pathPrefix:String[1]):Profile[0..1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::createProfile(values:JSONKeyValue[*],pathPrefix:String[1]):Profile[0..1]
 {
    let profile =  ^Profile()->updatePackagableElementWithPackage($pathPrefix+'::profile::GeneratedProfile')->cast(@Profile);
 
@@ -245,12 +246,12 @@ function <<access.private>> meta::json::schema::fromSchema::createProfile(values
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::legendReservedTags():String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::legendReservedTags():String[*]
 {
   'x-legendTemporal';
 }
 
-function <<access.private>> meta::json::schema::fromSchema::extendedTagToPure(tag:String[1]):String[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::extendedTagToPure(tag:String[1]):String[1]
 {
 if($tag->startsWith('x-'),
    |$tag->split('-')->tail()->joinStrings('_'),
@@ -260,14 +261,14 @@ if($tag->startsWith('x-'),
 
 
 
-function <<access.private>> meta::json::schema::fromSchema::extractObjectFromColletion(array:JSONArray[1]):JSONObject[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::extractObjectFromColletion(array:JSONArray[1]):JSONObject[*]
 {
    let arrayObjectValues = $array.values->filter(v|$v->instanceOf(JSONObject))->cast(@JSONObject);
     $arrayObjectValues->filter(v|$v->JSONSchemaIsObject());         
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaIsObject(schema:JSONObject[1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaIsObject(schema:JSONObject[1]):Boolean[1]
 {
    
    let type = $schema->typeValues();
@@ -277,7 +278,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaIsObject(s
    ;
 }
 
-function <<access.private>> meta::json::schema::fromSchema::typeValues(schema:JSONObject[1]):String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::typeValues(schema:JSONObject[1]):String[*]
 {
    
    let type = $schema.keyValuePairs->getValueForKey('type');
@@ -290,7 +291,7 @@ function <<access.private>> meta::json::schema::fromSchema::typeValues(schema:JS
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaSuperTypes(schemas:ProcessedSchema[*]):ProcessedSchema[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaSuperTypes(schemas:ProcessedSchema[*]):ProcessedSchema[*]
 {
    $schemas->map(s  |   let rootTypes = $s->getRootSuperTypes($schemas,[]);  
                     ^$s(rootSuperTypes=$rootTypes );
@@ -298,7 +299,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaSuperTypes
               );
 }
 
-function <<access.private>> meta::json::schema::fromSchema::getRootSuperTypes(currentSchema:ProcessedSchema[*],schemas:ProcessedSchema[*],processed:ProcessedSchema[*]):String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getRootSuperTypes(currentSchema:ProcessedSchema[*],schemas:ProcessedSchema[*],processed:ProcessedSchema[*]):String[*]
 {
   $currentSchema.superTypes->map(s|let superSchema = $schemas->filter(sc|$sc.processedFileName==$s &&  !$sc.processedFileName->in($processed.processedFileName) );
                                          if( $superSchema->isEmpty() || $superSchema.superTypes->isEmpty(),
@@ -308,7 +309,7 @@ function <<access.private>> meta::json::schema::fromSchema::getRootSuperTypes(cu
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaIsEnum(schema:JSONObject[1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaIsEnum(schema:JSONObject[1]):Boolean[1]
 {
    
    let type = $schema.keyValuePairs->getValueForKey('enum');
@@ -316,14 +317,14 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaIsEnum(sch
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::getDescription(schema:JSONObject[1]):String[0..1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getDescription(schema:JSONObject[1]):String[0..1]
 {
    
    let description = $schema.keyValuePairs->getValueForKey('description')->cast(@JSONString).value->first();
    if($description->isNotEmpty(),|$description->toOne()->replace('\n',' '),|[]);
 }
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToEnum(path:String[1],schema:JSONObject[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1]):Enumeration<Any>[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaToEnum(path:String[1],schema:JSONObject[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1]):Enumeration<Any>[1]
 {
    
    let name = $path->refToFileName();
@@ -355,7 +356,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToEnum(pat
          ->cast(@Enumeration<Any>);
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::sanitizePackagePart(value:String[1]):String[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::sanitizePackagePart(value:String[1]):String[1]
 {
    $value->chunk(1)->map(s|if($s->matches('[A-Za-z0-9_]'),|$s,|'_'))->joinStrings();
    
@@ -363,7 +364,7 @@ function  <<access.private>> meta::json::schema::fromSchema::sanitizePackagePart
 
 
 
-function  <<access.private>> meta::json::schema::fromSchema::sanitizeValue(value:String[1]):String[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::sanitizeValue(value:String[1]):String[1]
 {
    //TODO: This may not be good enough if two different enums santize to the same value
    let alphaNumeric = $value->chunk(1)->map(s|if($s->matches('[A-Za-z0-9]'),|$s,|'_'))->joinStrings();
@@ -373,7 +374,7 @@ function  <<access.private>> meta::json::schema::fromSchema::sanitizeValue(value
 
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::createConstraintFunctionExpression(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],property:Property<Nil, Any|*>[1],JSONFragment:JSONElement[1],pathSchemas:Map<String,ProcessedSchema>[1]):SimpleFunctionExpression[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::createConstraintFunctionExpression(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],property:Property<Nil, Any|*>[1],JSONFragment:JSONElement[1],pathSchemas:Map<String,ProcessedSchema>[1]):SimpleFunctionExpression[1]
 {
    
    let propertyParam = propertyParameter($property,'this');
@@ -383,7 +384,7 @@ function  <<access.private>> meta::json::schema::fromSchema::createConstraintFun
   ^$constraintVS(functionName = $functionName)      ;
  }
 
-function <<access.private>> meta::json::schema::fromSchema::propertyParameter(property:Property<Nil, Any|*>[1],varExpressionName:String[1]):SimpleFunctionExpression[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::propertyParameter(property:Property<Nil, Any|*>[1],varExpressionName:String[1]):SimpleFunctionExpression[1]
 {
    ^SimpleFunctionExpression(func=$property,
                             genericType=$property.genericType,
@@ -395,9 +396,9 @@ function <<access.private>> meta::json::schema::fromSchema::propertyParameter(pr
 }
 
 
-function  <<access.private>> meta::json::schema::fromSchema::createConstraintFunctionDefinition(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],propertyMultiplicity:Multiplicity[1]):ConcreteFunctionDefinition<Any>[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::createConstraintFunctionDefinition(fileName:String[1],functionName:String[1],valueType:Type[1],pathPrefix:String[0..1],propertyMultiplicity:Multiplicity[1]):ConcreteFunctionDefinition<Any>[1]
 {
-     let functionDef = meta::json::schema::fromSchema::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
+     let functionDef = meta::external::format::json::schema::fromSchema::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
      let ft =$functionDef->functionType();
      let ftparam =$ft.parameters->at(0);
      let name= $functionName+'_'+ $valueType->toString()+'_$0_1$__Boolean_1_';
@@ -406,14 +407,14 @@ function  <<access.private>> meta::json::schema::fromSchema::createConstraintFun
      ^$functionDef(stereotypes=[],functionName=$functionName,name=$name,classifierGenericType=^GenericType(typeArguments=^GenericType(rawType=$updatedFT),rawType=ConcreteFunctionDefinition))-> updatePackagableElementWithPackage($fileName->packageFromPath($pathPrefix)+$name)->cast(@ConcreteFunctionDefinition<Any>);
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::isDiscriminator(functionSchema:JSONObject[0..1]):Boolean[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::isDiscriminator(functionSchema:JSONObject[0..1]):Boolean[1]
 {
   $functionSchema->isNotEmpty() && $functionSchema->toOne().keyValuePairs->getValueForKey('discriminator')->isNotEmpty();
    
 }
 
 
-function  <<access.private>> meta::json::schema::fromSchema::fragmentToFunction(fileName:String[1],functionSchema:JSONObject[1],pathPrefix:String[0..1],pathSchemas:Map<String,ProcessedSchema>[1],extendedProfile:Profile[0..1]):PackageableElement[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::fragmentToFunction(fileName:String[1],functionSchema:JSONObject[1],pathPrefix:String[0..1],pathSchemas:Map<String,ProcessedSchema>[1],extendedProfile:Profile[0..1]):PackageableElement[1]
 {  
 
   let types = $functionSchema->getTypesFromFragment();
@@ -445,7 +446,7 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToFunction(
                                |'1'));
   let name = $functionName+'_'+$rawType->toString()+ '_'+$multiplicityString+'__Boolean_1_';
   let type = ^GenericType(rawType=$rawType);
-  let functionDef = meta::json::schema::fromSchema::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
+  let functionDef = meta::external::format::json::schema::fromSchema::fragmentPlaceHolder_Any_$0_1$__Boolean_1_;
   let ft =$functionDef->functionType();
   let ftparam =$ft.parameters->at(0);
 
@@ -466,11 +467,11 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToFunction(
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::isJSONSchemaKey(tag:String[1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::isJSONSchemaKey(tag:String[1]):Boolean[1]
 {
    
  let  tags = ['format','required','allOf','title','description','$schema','properties','nullable','discriminator','default','example','const','javaInterfaces','javaType','extends','maxItems','minItems']
-   ->concatenate(meta::json::schema::fromSchema::functionConstraintMap(true)->keys())
+   ->concatenate(meta::external::format::json::schema::fromSchema::functionConstraintMap(true)->keys())
    ->concatenate(meta::json::schema::JSONSchemaGeneration->keysFromProfile())
    ->concatenate(meta::json::schema::JSONSchemaJavaExtension->keysFromProfile())
    ->concatenate(meta::json::schema::JSONSchemaOpenAPIExtension->keysFromProfile())
@@ -478,20 +479,20 @@ function <<access.private>> meta::json::schema::fromSchema::isJSONSchemaKey(tag:
   $tag->in($tags);
 }
 
-function <<access.private>> meta::json::schema::fromSchema::keysFromProfile(profile:Profile[1]):String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::keysFromProfile(profile:Profile[1]):String[*]
 {
    
  $profile.p_stereotypes.value->concatenate($profile.p_tags.value);
 }
 
-function <<access.private>> meta::json::schema::fromSchema::unsupportedKeys():String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::unsupportedKeys():String[*]
 {
  ['additionalProperties','not','$id','id','patternProperties','propertyNames','contains','additionalItems','if','else','then']; 
 
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::functionConstraintMap(addToOne:Boolean[1]):Map<String,LambdaFunction<Any>>[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::functionConstraintMap(addToOne:Boolean[1]):Map<String,LambdaFunction<Any>>[1]
 {
  let shared   =newMap(  [
                          pair('anyOf', {value:Boolean[1..*]| or($value)}),
@@ -547,7 +548,7 @@ function <<access.private>> meta::json::schema::fromSchema::functionConstraintMa
 
 
 
-function   meta::json::schema::fromSchema::wrapWithIF(vs:SimpleFunctionExpression[1..*],property:ValueSpecification[1],required:Boolean[1],addToOne:Boolean[1]):ValueSpecification[1..*]
+function   meta::external::format::json::schema::fromSchema::wrapWithIF(vs:SimpleFunctionExpression[1..*],property:ValueSpecification[1],required:Boolean[1],addToOne:Boolean[1]):ValueSpecification[1..*]
 {
   let lambdaMany =  {this :Any[*] |if($this ->isNotEmpty(),|$this,|true)};
   let lambdaOne =  {this :Any[0..1] |if($this ->isNotEmpty(),|$this,|true)};
@@ -574,7 +575,7 @@ function   meta::json::schema::fromSchema::wrapWithIF(vs:SimpleFunctionExpressio
 
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::addToOne(func:SimpleFunctionExpression[1]):SimpleFunctionExpression[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::addToOne(func:SimpleFunctionExpression[1]):SimpleFunctionExpression[1]
   {
   let lambdaToOne =  {this :Any[0..1] |$this->toOne()};
   let lambdaES = $lambdaToOne.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();
@@ -583,14 +584,14 @@ function  <<access.private>> meta::json::schema::fromSchema::addToOne(func:Simpl
      
   }
 
-function  <<access.private>> meta::json::schema::fromSchema::multiplicityFromCollection(collection:Any[*]):Multiplicity[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::multiplicityFromCollection(collection:Any[*]):Multiplicity[1]
   {
   let size = $collection->size();
    ^Multiplicity(lowerBound=^MultiplicityValue(value=$size), upperBound=^MultiplicityValue(value=$size));
 }
 
 
-function  <<access.private>> meta::json::schema::fromSchema::fragmentToValueSpecifcation(value:JSONElement[*],key:String[0..1],ownerFileName:String[1],pathPrefix:String[0..1],property:ValueSpecification[1],genInstanceOf:Boolean[0..1],format:JSONElement[0..1],rootProperty:ValueSpecification[1],pathSchemas:Map<String,ProcessedSchema>[1]):ValueSpecification[*]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::fragmentToValueSpecifcation(value:JSONElement[*],key:String[0..1],ownerFileName:String[1],pathPrefix:String[0..1],property:ValueSpecification[1],genInstanceOf:Boolean[0..1],format:JSONElement[0..1],rootProperty:ValueSpecification[1],pathSchemas:Map<String,ProcessedSchema>[1]):ValueSpecification[*]
 {  
    let generateInstance = if($genInstanceOf->isEmpty(),|$value->fragmentType()==Any  ,|$genInstanceOf->toOne());
    let  FunctionConstraintMap = functionConstraintMap($property->evaluateAndDeactivate().multiplicity.lowerBound.value==0 );
@@ -777,14 +778,14 @@ $res;
   
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::replaceSecondParameter(expression:ValueSpecification[1],instanceValue:InstanceValue[1]):ValueSpecification[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::replaceSecondParameter(expression:ValueSpecification[1],instanceValue:InstanceValue[1]):ValueSpecification[1]
 {
    $expression->match([s:SimpleFunctionExpression[1]|^$s(parametersValues=$s.parametersValues->map(p|$p->replaceSecondParameter($instanceValue))),
                            v:VariableExpression[1]|  if($v.name=='value2',|$instanceValue,|$v);,
                            a:ValueSpecification[1]|$expression->toOne() ]);
 }
 
-function  <<access.private>> meta::json::schema::fromSchema::replaceFirstParameter(expression:ValueSpecification[1],property:ValueSpecification[0..1]):ValueSpecification[1]
+function  <<access.private>> meta::external::format::json::schema::fromSchema::replaceFirstParameter(expression:ValueSpecification[1],property:ValueSpecification[0..1]):ValueSpecification[1]
 {
    if($property->isNotEmpty(),
       |$expression->match([s:SimpleFunctionExpression[1]|^$s(parametersValues=$s.parametersValues->at(0)->replaceFirstParameter($property)->concatenate($s.parametersValues->tail())),
@@ -792,12 +793,12 @@ function  <<access.private>> meta::json::schema::fromSchema::replaceFirstParamet
       |$expression);
 }
 
-function <<access.private>> meta::json::schema::fromSchema::fragmentPlaceHolder(value:Any[0..1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::fragmentPlaceHolder(value:Any[0..1]):Boolean[1]
 {
   true;   
 }
 
-function <<access.private>> meta::json::schema::fromSchema::packageFromPath(path:String[1],pathPrefix:String[0..1]):String[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::packageFromPath(path:String[1],pathPrefix:String[0..1]):String[1]
 {
   let slash ='/';
   let updatedPath = if( $path->startsWith($slash),|$path->substringAfter($slash),|if($path->startsWith('..'),|$path->substringAfter('..'+$slash),|$path));
@@ -808,7 +809,7 @@ function <<access.private>> meta::json::schema::fromSchema::packageFromPath(path
   $prefix+ if($pathParts->isNotEmpty(),|$pathParts->joinStrings('::')+'::',|'');
 }
 
-function meta::json::schema::fromSchema::typeFullPath(fileName:String[1],pathPrefix:String[0..1]):String[1]
+function meta::external::format::json::schema::fromSchema::typeFullPath(fileName:String[1],pathPrefix:String[0..1]):String[1]
 {
    let package = $fileName->packageFromPath($pathPrefix); 
    let name = $fileName->refToFileName();
@@ -816,7 +817,7 @@ function meta::json::schema::fromSchema::typeFullPath(fileName:String[1],pathPre
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToClass(fileName:String[1],processedSchema:ProcessedSchema[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1], strict:Boolean[1]):Class<Any>[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaToClass(fileName:String[1],processedSchema:ProcessedSchema[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1], strict:Boolean[1]):Class<Any>[1]
   { 
 
     let parsed = $processedSchema.parsedSchema;
@@ -884,7 +885,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToClass(fi
                                                                              ||   $f.first.value->cast(@JSONObject).keyValuePairs->getValueForKey('items')->cast(@JSONObject)->toOne().keyValuePairs->getValueForKey('format')->cast(@JSONString).value->first()->in($constraintFormats))
                                                                             )
                                                                      || (
-                                                                         $f.first->propertyObject($class,$strict)->meta::json::schema::fromSchema::propertyHasDiscriminatorRef($fileName,$pathSchemas)
+                                                                         $f.first->propertyObject($class,$strict)->meta::external::format::json::schema::fromSchema::propertyHasDiscriminatorRef($fileName,$pathSchemas)
                                                                         ) 
                                                    )
                                                 ->map(p| 
@@ -893,7 +894,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToClass(fi
                                                                                                       parameters= ^VariableExpression(name='this',multiplicity=PureOne,genericType=^GenericType(rawType=Any))
                                                                                                       )); 
                                                          let property = $p.second->propertyParameter('this');
-                                                         let isDiscriminatorRef =   $p.first.value->cast(@JSONObject)->meta::json::schema::fromSchema::propertyHasDiscriminatorRef($fileName,$pathSchemas);//->propertyObject($class)
+                                                         let isDiscriminatorRef =   $p.first.value->cast(@JSONObject)->meta::external::format::json::schema::fromSchema::propertyHasDiscriminatorRef($fileName,$pathSchemas);//->propertyObject($class)
                                                            let lambdaWithDef= ^$lambda(expressionSequence=$p.first.value-> fragmentToValueSpecifcation([],$fileName,$pathPrefix,$property,[],[],$property,$pathSchemas)->toOneMany()->cast(@SimpleFunctionExpression)->wrapWithIF($p.second->propertyParameter('this'),$p.first.key.value->in($required),$isDiscriminatorRef)->evaluateAndDeactivate()->toOneMany());
                                                          ^meta::pure::metamodel::constraint::Constraint(functionDefinition=$lambdaWithDef,
                                                                                                         name=$p.first.key.value+'_inLine' ););
@@ -909,7 +910,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToClass(fi
       $result;
 }
 
-function <<access.private>> meta::json::schema::fromSchema::propertyHasDiscriminatorRef(property:JSONObject[1],fileName:String[1],pathSchemas:Map<String,ProcessedSchema>[1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::propertyHasDiscriminatorRef(property:JSONObject[1],fileName:String[1],pathSchemas:Map<String,ProcessedSchema>[1]):Boolean[1]
 {
      
    $property.keyValuePairs->getValueForKey('$ref')->isNotEmpty() &&    $pathSchemas->get($property.keyValuePairs->getValueForKey('$ref')->cast(@JSONString).value->toOne()->refToFullPath($fileName)).parsedSchema->isDiscriminator();
@@ -918,7 +919,7 @@ function <<access.private>> meta::json::schema::fromSchema::propertyHasDiscrimin
 
 
 
-function <<access.private>> meta::json::schema::fromSchema::propertyObject(property:JSONKeyValue[1],ownerClass:Class<Any>[1],strict:Boolean[1]):JSONObject[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::propertyObject(property:JSONKeyValue[1],ownerClass:Class<Any>[1],strict:Boolean[1]):JSONObject[1]
 {
     let propertyObject = if ( $property.value->cast(@JSONObject).keyValuePairs->getValueForKey('type')->cast(@JSONString).value=='array', 
                                | let items = $property.value->cast(@JSONObject).keyValuePairs->getValueForKey('items')->first();
@@ -938,7 +939,7 @@ function <<access.private>> meta::json::schema::fromSchema::propertyObject(prope
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToProperty(property:JSONKeyValue[1],ownerClass:Class<Any>[1],ownerPath:String[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1],required:Boolean[1],discriminator:Boolean[1],extendedProfile:Profile[0..1],strict:Boolean[1]):Property<Nil,Any|*>[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONSchemaToProperty(property:JSONKeyValue[1],ownerClass:Class<Any>[1],ownerPath:String[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1],required:Boolean[1],discriminator:Boolean[1],extendedProfile:Profile[0..1],strict:Boolean[1]):Property<Nil,Any|*>[1]
 {
    let propertyName = $property.key.value;
    assert($property.value->instanceOf(JSONObject),'Found an incorrectly specified object property ' + $propertyName + ' in class' + $ownerPath + ' expecting a JSONObject found ' +  $property.value->type().name ->toOne() );
@@ -1003,7 +1004,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToProperty
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::mergeDocTags(element:AnnotatedElement[1]):AnnotatedElement[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::mergeDocTags(element:AnnotatedElement[1]):AnnotatedElement[1]
 
 {  let docs = $element->meta::pure::functions::doc::getDocs(  );
   if( $docs->size()>1,
@@ -1015,7 +1016,7 @@ function <<access.private>> meta::json::schema::fromSchema::mergeDocTags(element
     ) ;
 }
 
-function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(element:AnnotatedElement[1],objectWithTags:JSONObject[1],extendedProfile:Profile[0..1]):AnnotatedElement[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::addSchemaTagsToPure(element:AnnotatedElement[1],objectWithTags:JSONObject[1],extendedProfile:Profile[0..1]):AnnotatedElement[1]
 {
      //common tags that get go on properties and functions
     let keyValuePairs = $objectWithTags.keyValuePairs;
@@ -1023,7 +1024,7 @@ function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(
     let writeOnlyValue  = $keyValuePairs->getValueForKey('writeOnly'); 
     let exampleTags  =  $keyValuePairs->getValueForKey('example')->first()->getJSONElementAsString()->map(t|^TaggedValue(tag=tag(JSONSchemaGeneration,'example'),value=$t)) ;
     let title =  $keyValuePairs->getValueForKey('title')->first();
-    let titleTag = if($title->isNotEmpty()&& $title->first()->getJSONElementAsString()!=$element->meta::json::schema::titleValue(),
+    let titleTag = if($title->isNotEmpty()&& $title->first()->getJSONElementAsString()!=$element->meta::external::format::json::schema::titleValue(),
                       |$title->first()->getJSONElementAsString(),
                       |[]);
     let nullableTag =  $keyValuePairs->getValueForKey('nullable');
@@ -1072,7 +1073,7 @@ function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(
       ->cast(@AnnotatedElement);
 }
 
-function <<access.private>> meta::json::schema::fromSchema::getJSONElementAsString(value :JSONElement[0..1]):String[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getJSONElementAsString(value :JSONElement[0..1]):String[*]
 {
    
    if($value->isNotEmpty(),
@@ -1085,7 +1086,7 @@ function <<access.private>> meta::json::schema::fromSchema::getJSONElementAsStri
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::getJSONElementValue(value :JSONElement[0..1]):Any[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getJSONElementValue(value :JSONElement[0..1]):Any[*]
 {
    
    if($value->isNotEmpty(),
@@ -1098,27 +1099,27 @@ function <<access.private>> meta::json::schema::fromSchema::getJSONElementValue(
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::isValidFormatTag(value:JSONString[0..1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::isValidFormatTag(value:JSONString[0..1]):Boolean[1]
 {
    
  $value->isNotEmpty()  && ( $value->toOne().value->in(JSONSchemaTypeExtension.p_stereotypes.value) || $value->toOne().value ->in(['uuid','date-time','date']));
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema::getValueForKey(pairs:JSONKeyValue[*],key:String[1]):JSONElement[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getValueForKey(pairs:JSONKeyValue[*],key:String[1]):JSONElement[*]
 {
   
        $pairs->filter(k|$k.key.value==$key).value;
 }
 
-function <<access.private>> meta::json::schema::fromSchema::fragmentType(fragment:JSONElement[*]):Type[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::fragmentType(fragment:JSONElement[*]):Type[1]
 {
       let types = $fragment->getTypesFromFragment() ->distinct();
      if($types->size()>1||$types->isEmpty(),|Any,|$types->toOne());
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::fragmentIsArrayType(fragment:JSONElement[0..1]):Boolean[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::fragmentIsArrayType(fragment:JSONElement[0..1]):Boolean[1]
 {
   let res = if($fragment->isNotEmpty() && $fragment->toOne()->instanceOf(JSONObject),
                   |  let type = $fragment->toOne()->cast(@JSONObject).keyValuePairs->getValueForKey('type');  
@@ -1131,7 +1132,7 @@ function <<access.private>> meta::json::schema::fromSchema::fragmentIsArrayType(
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::getTypesFromFragment(fragment:JSONElement[*]):Type[*]
+function <<access.private>> meta::external::format::json::schema::fromSchema::getTypesFromFragment(fragment:JSONElement[*]):Type[*]
 {
  
    let res = if($fragment->isNotEmpty(),
@@ -1151,7 +1152,7 @@ function <<access.private>> meta::json::schema::fromSchema::getTypesFromFragment
 }
 
 
-function <<access.private>> meta::json::schema::fromSchema::refToPath(ref:String[1],parentPath:String[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1]):Type[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::refToPath(ref:String[1],parentPath:String[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1]):Type[1]
 { 
    let fullPath = $ref->refToFullPath($parentPath); 
 
@@ -1176,12 +1177,12 @@ function <<access.private>> meta::json::schema::fromSchema::refToPath(ref:String
    
 }
 
-function <<access.private>> meta::json::schema::fromSchema:: newClassfromReference(ref:String[1],parentPath:String[0..1],pathPrefix:String[0..1]):Type[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema:: newClassfromReference(ref:String[1],parentPath:String[0..1],pathPrefix:String[0..1]):Type[1]
 {
   newClass( $ref->refToFullPath($parentPath)->typeFullPath($pathPrefix));
 }
 
-function meta::json::schema::fromSchema::refToFileName(ref:String[1]):String[1]
+function meta::external::format::json::schema::fromSchema::refToFileName(ref:String[1]):String[1]
 { 
       $ref->split('/')->last()->toOne()->split('.')->init()->joinStrings()->toOne();
    
@@ -1189,7 +1190,7 @@ function meta::json::schema::fromSchema::refToFileName(ref:String[1]):String[1]
 
 
 function {doc.doc='This function calculates the fully qualified path from a $ref and the parent schema file'}
-meta::json::schema::fromSchema::refToFullPath(ref:String[1],parentPath:String[0..1]):String[1]
+meta::external::format::json::schema::fromSchema::refToFullPath(ref:String[1],parentPath:String[0..1]):String[1]
 {    
       //References that are a Pure Path (my::class) are taken as is and considered to already be fully qualified
       //References to an embedded  component or definition schema will use the calculated path of the file of the reference if the pure path is not specified in the reference
@@ -1238,7 +1239,7 @@ if($fullRefelments->isEmpty(),
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::updatePackagableElementWithPackage(pack:PackageableElement[1],path:String[1]):PackageableElement[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::updatePackagableElementWithPackage(pack:PackageableElement[1],path:String[1]):PackageableElement[1]
 {
    let pathParts = $path->split('::'); 
    let elementName = if($pack.name->isNotEmpty(),|' for element ' +$pack.name->toOne(),|'');
@@ -1249,7 +1250,7 @@ function <<access.private>> meta::json::schema::fromSchema::updatePackagableElem
 
 }
 
-function <<access.private>> meta::json::schema::fromSchema::JSONToPUREType(type:JSONElement[*],format:JSONElement[*]):Type[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::JSONToPUREType(type:JSONElement[*],format:JSONElement[*]):Type[1]
 {
     let typeLookup = if($format->isNotEmpty()  && $format->toOne()->cast(@JSONString)->isValidFormatTag()  ,|$format->toOne(),|$type);
     
@@ -1269,7 +1270,7 @@ function <<access.private>> meta::json::schema::fromSchema::JSONToPUREType(type:
           
 
 
-function <<access.private>> meta::json::schema::fromSchema::addTag(e:ElementWithTaggedValues[1],profile:Profile[1],tag:String[1],value:String[*]):ElementWithTaggedValues[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::addTag(e:ElementWithTaggedValues[1],profile:Profile[1],tag:String[1],value:String[*]):ElementWithTaggedValues[1]
 {
    if($value->isNotEmpty(),
       | $value-> fold({v,ele |   ^$ele(taggedValues+=^TaggedValue(tag=tag($profile,$tag),value = $v->toOne()))},$e);,
@@ -1277,7 +1278,7 @@ function <<access.private>> meta::json::schema::fromSchema::addTag(e:ElementWith
   
  }
 
-function <<access.private>> meta::json::schema::fromSchema::addTag(e:ElementWithTaggedValues[1],tags:TaggedValue[*]):ElementWithTaggedValues[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::addTag(e:ElementWithTaggedValues[1],tags:TaggedValue[*]):ElementWithTaggedValues[1]
 {
    if($tags->isNotEmpty(),
       | $tags-> fold({v,ele |   ^$ele(taggedValues+=$v)},$e);,
@@ -1285,12 +1286,12 @@ function <<access.private>> meta::json::schema::fromSchema::addTag(e:ElementWith
   
  }
 
-function <<access.private>> meta::json::schema::fromSchema::addStereoType(e:ElementWithStereotypes[1],profile:Profile[1],stereoType:String[1]):ElementWithStereotypes[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::addStereoType(e:ElementWithStereotypes[1],profile:Profile[1],stereoType:String[1]):ElementWithStereotypes[1]
 {
    ^$e(stereotypes+=stereotype($profile,$stereoType));
 }
 
-function <<access.private>> meta::json::schema::fromSchema::addStereoType(e:ElementWithStereotypes[1],st:Stereotype[*]):ElementWithStereotypes[1]
+function <<access.private>> meta::external::format::json::schema::fromSchema::addStereoType(e:ElementWithStereotypes[1],st:Stereotype[*]):ElementWithStereotypes[1]
 { 
    
      if($st->isNotEmpty(),
@@ -1299,14 +1300,14 @@ function <<access.private>> meta::json::schema::fromSchema::addStereoType(e:Elem
    
 }
 
-function meta::json::schema::fromSchema::tests::schemaInput(fileName:String[1],schema:String[1],pathPrefix:String[0..1]):SchemaInput[1]
+function meta::external::format::json::schema::fromSchema::tests::schemaInput(fileName:String[1],schema:String[1],pathPrefix:String[0..1]):SchemaInput[1]
 {
       ^SchemaInput(fileName=$fileName,schema=$schema,pathPrefix=$pathPrefix);
 }
 
 
 
-Class <<access.private>> meta::json::schema::fromSchema::ProcessedSchema
+Class <<access.private>> meta::external::format::json::schema::fromSchema::ProcessedSchema
 {
    fileName:String[1];
    pathPrefix:String[0..1];
@@ -1323,7 +1324,7 @@ Class <<access.private>> meta::json::schema::fromSchema::ProcessedSchema
 }
 
 
-Enum meta::json::schema::fromSchema::SchemaType
+Enum meta::external::format::json::schema::fromSchema::SchemaType
 {
    enum,
    object,

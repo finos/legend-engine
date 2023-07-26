@@ -12,55 +12,57 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::json::schema::tests::profile::*;
-import meta::json::schema::fromSchema::*;
-import meta::json::schema::fromSchema::tests::*;
+import meta::external::format::json::schema::tests::profile::*;
+import meta::external::format::json::schema::fromSchema::*;
+import meta::external::format::json::schema::fromSchema::tests::*;
 import meta::json::*;
 import meta::json::schema::generation::*;
-import meta::json::schema::tests::*;
-Profile meta::json::schema::tests::profile::GeneratedProfile
+import meta::external::format::json::schema::generation::*;
+import meta::external::format::json::schema::tests::*;
+
+Profile meta::external::format::json::schema::tests::profile::GeneratedProfile
 {
    stereotypes:[customStereoType1,customStereoType2];
    tags:[customTag1,customTag2,customTag3];
 
 }
 
-Class <<GeneratedProfile.customStereoType1>>  {meta::pure::profiles::doc.doc='A simple description',GeneratedProfile.customTag1='10',GeneratedProfile.customTag2='first',GeneratedProfile.customTag2='second'}meta::json::schema::tests::ClassWithCustomProfiles
+Class <<GeneratedProfile.customStereoType1>>  {meta::pure::profiles::doc.doc='A simple description',GeneratedProfile.customTag1='10',GeneratedProfile.customTag2='first',GeneratedProfile.customTag2='second'}meta::external::format::json::schema::tests::ClassWithCustomProfiles
 {
    <<GeneratedProfile.customStereoType1>> simpleString : String[0..1];
    <<GeneratedProfile.customStereoType2>> {GeneratedProfile.customTag3='false'} arrayMaxItemOne : String[0..10];
 }
 
 
-function <<meta::json::schema::JSONSchemaTypeExtension.object>> {meta::pure::profiles::doc.doc='Generate an object tag where there typically would not be any'} meta::json::schema::tests::functionForcedToObject(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
+function <<meta::json::schema::JSONSchemaTypeExtension.object>> {meta::pure::profiles::doc.doc='Generate an object tag where there typically would not be any'} meta::external::format::json::schema::tests::functionForcedToObject(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
 {
-  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::tests::Cat), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::tests::Dog)]->meta::pure::functions::collection::or()}, {|true});
+  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::external::format::json::schema::tests::Cat), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::external::format::json::schema::tests::Dog)]->meta::pure::functions::collection::or()}, {|true});
 }
 
-Class  meta::json::schema::tests::SimpleClass
+Class  meta::external::format::json::schema::tests::SimpleClass
 {
-   p:String[1]; 
+   p:String[1];
    a:SimpleClass2[0..1];
-  
+
 
 }
 
-Class  meta::json::schema::tests::SimpleClass2
+Class  meta::external::format::json::schema::tests::SimpleClass2
 {
-   p:String[1]; 
+   p:String[1];
 
 }
 
-function  meta::json::schema::tests::functionWithStringType(value: String[0..1]): Boolean[1]
+function  meta::external::format::json::schema::tests::functionWithStringType(value: String[0..1]): Boolean[1]
 {
   $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if(|$value->makeString()->matches('test') ,{|true});
 }
 
-Class {meta::json::schema::JSONSchemaGeneration.title='a custom title'} meta::json::schema::tests::ClassWithFunctionReferences
+Class {meta::json::schema::JSONSchemaGeneration.title='a custom title'} meta::external::format::json::schema::tests::ClassWithFunctionReferences
 [
-  one : $this.one->meta::json::schema::tests::functionWithStringType(),
-  optional : $this.optional->meta::json::schema::tests::functionWithStringType(),
-  many : $this.many->meta::pure::functions::collection::forAll({value|$value->meta::json::schema::tests::functionWithStringType()})
+  one : $this.one->meta::external::format::json::schema::tests::functionWithStringType(),
+  optional : $this.optional->meta::external::format::json::schema::tests::functionWithStringType(),
+  many : $this.many->meta::pure::functions::collection::forAll({value|$value->meta::external::format::json::schema::tests::functionWithStringType()})
 ]
 
 {
@@ -69,7 +71,7 @@ Class {meta::json::schema::JSONSchemaGeneration.title='a custom title'} meta::js
   many : String[*];
 }
 
-Class meta::json::schema::tests::ClassWithInLineFunctions
+Class meta::external::format::json::schema::tests::ClassWithInLineFunctions
 [
   multipleOf_inLine : $this.multipleOf->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|($this.multipleOf->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::math::rem(0.1)) == (0)}, {|true}),
   number_inLine : $this.number->meta::pure::functions::collection::in([1, 2]),
@@ -87,7 +89,7 @@ Class meta::json::schema::tests::ClassWithInLineFunctions
   numberOptional : Float[0..1];
 }
 
-Enum <<meta::json::schema::JSONSchemaTypeExtension.null>> meta::json::schema::tests::NullableEnum
+Enum <<meta::json::schema::JSONSchemaTypeExtension.null>> meta::external::format::json::schema::tests::NullableEnum
 {
    one,
    two
@@ -95,50 +97,50 @@ Enum <<meta::json::schema::JSONSchemaTypeExtension.null>> meta::json::schema::te
 }
 
 
-Class <<temporal.bitemporal>>  meta::json::schema::tests::BiTemporalPerson
+Class <<temporal.bitemporal>>  meta::external::format::json::schema::tests::BiTemporalPerson
 {
-   name:String[1]; 
-   company: meta::json::schema::tests::BiTemporalFirm[*];
+   name:String[1];
+   company: meta::external::format::json::schema::tests::BiTemporalFirm[*];
 }
 
-Class <<temporal.bitemporal>>  meta::json::schema::tests::BiTemporalFirm
+Class <<temporal.bitemporal>>  meta::external::format::json::schema::tests::BiTemporalFirm
 {
-   name:String[1]; 
-
-}
-
-Class  meta::json::schema::tests::Car extends meta::json::schema::tests::WheeledVehicle
-{
-   driver:String[1]; 
-
-}
-Class  meta::json::schema::tests::Truck extends meta::json::schema::tests::WheeledVehicle
-{
-   weight:Integer[1]; 
+   name:String[1];
 
 }
 
-
-Class  meta::json::schema::tests::WheeledVehicle extends meta::json::schema::tests::Vehicle
+Class  meta::external::format::json::schema::tests::Car extends meta::external::format::json::schema::tests::WheeledVehicle
 {
-   wheels:Integer[1]; 
+   driver:String[1];
 
 }
-Class  meta::json::schema::tests::Vehicle
+Class  meta::external::format::json::schema::tests::Truck extends meta::external::format::json::schema::tests::WheeledVehicle
 {
-   id:Integer[1]; 
-   similarVehiciles:meta::json::schema::tests::Vehicle[*];
-   
+   weight:Integer[1];
+
 }
 
-Class  meta::json::schema::tests::Road
+
+Class  meta::external::format::json::schema::tests::WheeledVehicle extends meta::external::format::json::schema::tests::Vehicle
 {
-   vehicles:meta::json::schema::tests::Vehicle[*]; 
+   wheels:Integer[1];
+
+}
+Class  meta::external::format::json::schema::tests::Vehicle
+{
+   id:Integer[1];
+   similarVehiciles:meta::external::format::json::schema::tests::Vehicle[*];
+
+}
+
+Class  meta::external::format::json::schema::tests::Road
+{
+   vehicles:meta::external::format::json::schema::tests::Vehicle[*];
  }
 
-function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::typeInclusionForConstraintFunctions():Boolean[1]
+function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::typeInclusionForConstraintFunctions():Boolean[1]
 {
-     let generatedJSON = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithFunctionReferences,meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_],
+     let generatedJSON = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::ClassWithFunctionReferences,meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
 
   let jsonschemaclass =       '{' +
@@ -162,40 +164,40 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 '  "required": [' +
 '"one"' +
 '  ]' +
-'}'; 
-      
-     
+'}';
+
+
    let jsonschemafunc=   '{' +
                      '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
                      '  "pattern": "test",' +
                      '  "type": "string",' +
-                     '  "title": "meta::json::schema::tests::functionWithStringType"' +
+                     '  "title": "meta::external::format::json::schema::tests::functionWithStringType"' +
                      '}' ;
 
-  assert(jsonEquivalent($jsonschemaclass->parseJSON(),$generatedJSON->filter(c|$c.fileName == 'meta/json/schema/tests/ClassWithFunctionReferences.json').content->toOne()->parseJSON()));
-  
-  let prefix = 'meta::json::schema::tests';
+  assert(jsonEquivalent($jsonschemaclass->parseJSON(),$generatedJSON->filter(c|$c.fileName == 'meta/external/format/json/schema/tests/ClassWithFunctionReferences.json').content->toOne()->parseJSON()));
+
+  let prefix = 'meta::external::format::json::schema::tests';
   let fileMap = [schemaInput('/ClassWithFunctionReferences.json', $jsonschemaclass,$prefix),
-                   schemaInput('/functionWithStringType.json', $jsonschemafunc,$prefix)]; 
+                   schemaInput('/functionWithStringType.json', $jsonschemafunc,$prefix)];
   let generatedClassFromJSON =  $fileMap->JSONSchemaToPure()->filter(p|$p.name=='ClassWithFunctionReferences')->toOne();
-  assert(jsonEquivalent(meta::json::schema::tests::ClassWithFunctionReferences->toSerializer()->parseJSON(),$generatedClassFromJSON->toOne()->toSerializer()->parseJSON()));
-  testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$generatedClassFromJSON);
+  assert(jsonEquivalent(meta::external::format::json::schema::tests::ClassWithFunctionReferences->toSerializer()->parseJSON(),$generatedClassFromJSON->toOne()->toSerializer()->parseJSON()));
+  testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$generatedClassFromJSON);
 
 }
 
 
 
-function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testCustomProfile():Boolean[1]
+function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testCustomProfile():Boolean[1]
 {
 
-  let generatedJSONFromClassOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithCustomProfiles,meta::json::schema::tests::profile],
+  let generatedJSONFromClassOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::ClassWithCustomProfiles,meta::external::format::json::schema::tests::profile],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 ));
 
 
    let jsonSchemaOpenAPI  = ' {\n' +
         '  "x-customStereoType1": true,\n' +
         '  "description": "A simple description",\n' +
-        '  "title": "meta::json::schema::tests::ClassWithCustomProfiles",\n' +
+        '  "title": "meta::external::format::json::schema::tests::ClassWithCustomProfiles",\n' +
         '  "x-customTag2": [\n' +
         '"first",\n' +
         '"second"\n' +
@@ -223,25 +225,25 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 
 
 
-    let prefix = 'meta::json::schema::tests';
+    let prefix = 'meta::external::format::json::schema::tests';
     let fileMap = [schemaInput('/ClassWithCustomProfiles.json', $jsonSchemaOpenAPI,$prefix)];
     let generatedClassFromJSON =  $fileMap->JSONSchemaToPure();
      //should return  a Profile the schemas
 
    let generatedClassOpenAPI  = $generatedClassFromJSON->filter(p|$p.name=='ClassWithCustomProfiles')->toOne();
    let generatedProfileOpenAPI  = $generatedClassFromJSON->filter(p|$p.name=='GeneratedProfile')->toOne();
-   testfromJSONSchema(meta::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
-    testfromJSONSchema(meta::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
+   testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
+    testfromJSONSchema(meta::external::format::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
 
 
-   let generatedJSONFromClassDraft07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithCustomProfiles,meta::json::schema::tests::profile],
+   let generatedJSONFromClassDraft07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::ClassWithCustomProfiles,meta::external::format::json::schema::tests::profile],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
 
    let jsonSchemaDraft07  = ' {\n' +
         '  "customStereoType1": true,\n' +
         '  "description": "A simple description",\n' +
         '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-        '  "title": "meta::json::schema::tests::ClassWithCustomProfiles",\n' +
+        '  "title": "meta::external::format::json::schema::tests::ClassWithCustomProfiles",\n' +
         '  "customTag2": [\n' +
         '"first",\n' +
         '"second"\n' +
@@ -271,16 +273,16 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
   let generatedClassDraft07  = $generatedClassFromJSON->filter(p|$p.name=='ClassWithCustomProfiles')->toOne();
   let generatedProfileDraft07  = $generatedClassFromJSON->filter(p|$p.name=='GeneratedProfile')->toOne();
 
-   testfromJSONSchema(meta::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
-   testfromJSONSchema(meta::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
+   testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
+   testfromJSONSchema(meta::external::format::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
 
 
 }
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testforceFunctionToObject():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testforceFunctionToObject():Boolean[1]
 {
 
-     let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_],
+     let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_],
                                                           useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
    let jsonSchema  = '{' +
 '  "anyOf": [' +
@@ -291,26 +293,26 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 '      "$ref": "Dog.json"' +
 '    }' +
 '  ],' +
-'  "title": "meta::json::schema::tests::functionForcedToObject",' +
+'  "title": "meta::external::format::json::schema::tests::functionForcedToObject",' +
 '  "type": "object",' +
 '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
 '  "description": "Generate an object tag where there typically would not be any"' +
 '}';
 
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
-    let prefix = 'meta::json::schema::tests';
+    let prefix = 'meta::external::format::json::schema::tests';
     let fileMap = [schemaInput('/functionForcedToObject.json', $jsonSchema,$prefix)];
     let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
-   testfromJSONSchema(meta::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_,$generatedElementFromJSON);
+   testfromJSONSchema(meta::external::format::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_,$generatedElementFromJSON);
 }
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testinLineFunctions():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testinLineFunctions():Boolean[1]
 {
-     let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::ClassWithInLineFunctions],
+     let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::ClassWithInLineFunctions],
                                                           useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
    let jsonSchema  = '{' +
                      '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                     '  "title": "meta::json::schema::tests::ClassWithInLineFunctions",' +
+                     '  "title": "meta::external::format::json::schema::tests::ClassWithInLineFunctions",' +
                      '  "type": "object",' +
                      '  "properties":   {' +
                      '    "number":     {' +
@@ -365,54 +367,54 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 
 
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
-   let prefix = 'meta::json::schema::tests';
+   let prefix = 'meta::external::format::json::schema::tests';
    let fileMap = [schemaInput('/ClassWithInLineFunctions.json', $jsonSchema,$prefix)];
    let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithInLineFunctions,$generatedElementFromJSON);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithInLineFunctions,$generatedElementFromJSON);
 
 }
 
 
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testComplexPaths():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testComplexPaths():Boolean[1]
 {
-    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::parent::parentClass,
-                                                                                          meta::json::schema::tests::parent2::level1::level2::childClass2,
-                                                                                          meta::json::schema::tests::parent::parent::levela::parentClass2,
-                                                                                          meta::json::schema::tests::parent::level1::childClass,
-                                                                                          meta::json::schema::tests::parent::level1::level2::childClass3,
-                                                                                          meta::json::schema::tests::parent::level1::levela::childClass4 ],
+    let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::parent::parentClass,
+                                                                                          meta::external::format::json::schema::tests::parent2::level1::level2::childClass2,
+                                                                                          meta::external::format::json::schema::tests::parent::parent::levela::parentClass2,
+                                                                                          meta::external::format::json::schema::tests::parent::level1::childClass,
+                                                                                          meta::external::format::json::schema::tests::parent::level1::level2::childClass3,
+                                                                                          meta::external::format::json::schema::tests::parent::level1::levela::childClass4 ],
                                                                            includeAllRelatedTypes = false  ));
 
     assertFalse( $jsonSchema->isEmpty() );
     assertSize($jsonSchema,6);
 
-    let expectedParentjson=  '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent::parentClass","type":"object","properties":{"childClass":{"$ref":"level1\/childClass.json"},"childClass2":{"$ref":"..\/parent2\/level1\/level2\/childClass2.json"}},"required":["childClass","childClass2"]}';
+    let expectedParentjson=  '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent::parentClass","type":"object","properties":{"childClass":{"$ref":"level1\/childClass.json"},"childClass2":{"$ref":"..\/parent2\/level1\/level2\/childClass2.json"}},"required":["childClass","childClass2"]}';
 
-    let actualParentJSON =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent/parentClass.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+    let actualParentJSON =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent/parentClass.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
 
     assertEquals($expectedParentjson->meta::json::parseJSON()->toCompactJSONString(),$actualParentJSON);
 
-    let expectedChildJSON = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent::level1::childClass","type":"object"}';
-   let actualChildJSON =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent/level1/childClass.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+    let expectedChildJSON = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent::level1::childClass","type":"object"}';
+   let actualChildJSON =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent/level1/childClass.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
    assertEquals($expectedChildJSON->meta::json::parseJSON()->toCompactJSONString(),$actualChildJSON);
 
-   let expectedParent2 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent::parent::levela::parentClass2","type":"object","properties":{"childClass3":{"$ref":"..\/..\/level1\/level2\/childClass3.json"},"childClass4":{"$ref":"..\/..\/level1\/levela\/childClass4.json"}},"required":["childClass3"]}';
-   let actualParent2JSON =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent/parent/levela/parentClass2.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+   let expectedParent2 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent::parent::levela::parentClass2","type":"object","properties":{"childClass3":{"$ref":"..\/..\/level1\/level2\/childClass3.json"},"childClass4":{"$ref":"..\/..\/level1\/levela\/childClass4.json"}},"required":["childClass3"]}';
+   let actualParent2JSON =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent/parent/levela/parentClass2.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
 
    assertEquals($expectedParent2->meta::json::parseJSON()->toCompactJSONString(),$actualParent2JSON);
 
-   let expectedchild2 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent2::level1::level2::childClass2","type":"object","properties":{"parentClass":{"$ref":"..\/..\/..\/parent\/parentClass.json"}},"required":["parentClass"]}';
-   let actualChild2 =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent2/level1/level2/childClass2.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+   let expectedchild2 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent2::level1::level2::childClass2","type":"object","properties":{"parentClass":{"$ref":"..\/..\/..\/parent\/parentClass.json"}},"required":["parentClass"]}';
+   let actualChild2 =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent2/level1/level2/childClass2.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
 
-   let expectedchild3 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent::level1::level2::childClass3","type":"object"}';
-   let actualchild3 =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent/level1/level2/childClass3.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+   let expectedchild3 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent::level1::level2::childClass3","type":"object"}';
+   let actualchild3 =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent/level1/level2/childClass3.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
 
-   let expectedchild4 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::json::schema::tests::parent::level1::levela::childClass4","type":"object"}';
-   let actualchild4 =  $jsonSchema->filter(f|$f.fileName=='meta/json/schema/tests/parent/level1/levela/childClass4.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
+   let expectedchild4 = '{"$schema":"http:\/\/json-schema.org\/draft-07\/schema#","title":"meta::external::format::json::schema::tests::parent::level1::levela::childClass4","type":"object"}';
+   let actualchild4 =  $jsonSchema->filter(f|$f.fileName=='meta/external/format/json/schema/tests/parent/level1/levela/childClass4.json').content->toOne()->meta::json::parseJSON()->toCompactJSONString();
 
 
-    let prefix = 'meta::json::schema::tests';
+    let prefix = 'meta::external::format::json::schema::tests';
 
    let fileMap = [schemaInput('/parent/parentClass.json', $expectedParentjson,$prefix),
                  schemaInput('/parent/level1/childClass.json', $expectedChildJSON,$prefix),
@@ -425,23 +427,23 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
    ];
     let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
 
-       meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent::parentClass,$generatedElementFromJSON);
-       meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent2::level1::level2::childClass2,$generatedElementFromJSON);
-       meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent::parent::levela::parentClass2,$generatedElementFromJSON);
+       meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent::parentClass,$generatedElementFromJSON);
+       meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent2::level1::level2::childClass2,$generatedElementFromJSON);
+       meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent::parent::levela::parentClass2,$generatedElementFromJSON);
 
 
 
 }
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testNullableEnum():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testNullableEnum():Boolean[1]
 
 {
-       let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::NullableEnum]));
-       let jsonSchemaOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::NullableEnum],schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3));
+       let jsonSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::NullableEnum]));
+       let jsonSchemaOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::NullableEnum],schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3));
 
        let expectedJSON =  '{' +
                            '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                           '  "title": "meta::json::schema::tests::NullableEnum",' +
+                           '  "title": "meta::external::format::json::schema::tests::NullableEnum",' +
                            '  "enum": [' +
                            '"one",' +
                            '"two",' +
@@ -454,7 +456,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                            '}' ;
 
        let expectedOpenAPIJSON = '{' +
-                                 '  "title": "meta::json::schema::tests::NullableEnum",' +
+                                 '  "title": "meta::external::format::json::schema::tests::NullableEnum",' +
                                  '  "nullable": true,' +
                                  '  "enum": [' +
                                  '"one",' +
@@ -466,64 +468,64 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 
       assert(jsonEquivalent($expectedJSON->parseJSON(),$jsonSchema.content->toOne()->parseJSON()));
       assert(jsonEquivalent($expectedOpenAPIJSON->parseJSON(),$jsonSchemaOpenAPI.content->toOne()->parseJSON()));
-      let prefix = 'meta::json::schema::tests';
+      let prefix = 'meta::external::format::json::schema::tests';
       let fileMap = [schemaInput('/NullableEnum.json', $expectedJSON,$prefix)];
       let fileMapOpenAPI = [schemaInput('/NullableEnum.json', $expectedOpenAPIJSON,$prefix)];
 
       let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
       let generatedElementFromJSONOpenAPI =  $fileMapOpenAPI->JSONSchemaToPure();
-       meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::NullableEnum,$generatedElementFromJSON);
-       meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::NullableEnum,$generatedElementFromJSONOpenAPI);
+       meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::NullableEnum,$generatedElementFromJSON);
+       meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::NullableEnum,$generatedElementFromJSONOpenAPI);
 
 }
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testSchemaCollection():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollection():Boolean[1]
 {
-     let collectWithNoRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
+     let collectWithNoRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::SimpleClass,meta::external::format::json::schema::tests::ClassWithFunctionReferences],
                                                           useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,createSchemaCollection=true ));
 
-      let collectWithRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
+      let collectWithRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::SimpleClass,meta::external::format::json::schema::tests::ClassWithFunctionReferences],
                                                           useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true ));
 
-      let collectOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
+      let collectOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::SimpleClass,meta::external::format::json::schema::tests::ClassWithFunctionReferences],
                                                           useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 ));
-      let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
+      let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::external::format::json::schema::tests::SimpleClass,meta::external::format::json::schema::tests::ClassWithFunctionReferences],
                                                           useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML ));
       let expectedOpenAPIYAML = 'components: \n' +
                                  '  schemas: \n' +
-                                 '    meta::json::schema::tests::ClassWithFunctionReferences: \n' +
+                                 '    meta::external::format::json::schema::tests::ClassWithFunctionReferences: \n' +
                                  '      title: "a custom title"\n' +
                                  '      type: "object"\n' +
                                  '      properties: \n' +
                                  '        one: \n' +
-                                 '          $ref: "#/components/schemas/meta::json::schema::tests::functionWithStringType"\n' +
+                                 '          $ref: "#/components/schemas/meta::external::format::json::schema::tests::functionWithStringType"\n' +
                                  '        optional: \n' +
-                                 '          $ref: "#/components/schemas/meta::json::schema::tests::functionWithStringType"\n' +
+                                 '          $ref: "#/components/schemas/meta::external::format::json::schema::tests::functionWithStringType"\n' +
                                  '        many: \n' +
                                  '          type: "array"\n' +
                                  '          items: \n' +
-                                 '            $ref: "#/components/schemas/meta::json::schema::tests::functionWithStringType"\n' +
+                                 '            $ref: "#/components/schemas/meta::external::format::json::schema::tests::functionWithStringType"\n' +
                                  '      required: \n' +
                                  '        - "one"\n' +
-                                 '    meta::json::schema::tests::SimpleClass: \n' +
-                                 '      title: "meta::json::schema::tests::SimpleClass"\n' +
+                                 '    meta::external::format::json::schema::tests::SimpleClass: \n' +
+                                 '      title: "meta::external::format::json::schema::tests::SimpleClass"\n' +
                                  '      type: "object"\n' +
                                  '      properties: \n' +
                                  '        p: \n' +
                                  '          type: "string"\n' +
                                  '        a: \n' +
-                                 '          $ref: "#/components/schemas/meta::json::schema::tests::SimpleClass2"\n' +
+                                 '          $ref: "#/components/schemas/meta::external::format::json::schema::tests::SimpleClass2"\n' +
                                  '      required: \n' +
                                  '        - "p"\n' +
-                                 '    meta::json::schema::tests::SimpleClass2: \n' +
-                                 '      title: "meta::json::schema::tests::SimpleClass2"\n' +
+                                 '    meta::external::format::json::schema::tests::SimpleClass2: \n' +
+                                 '      title: "meta::external::format::json::schema::tests::SimpleClass2"\n' +
                                  '      type: "object"\n' +
                                  '      properties: \n' +
                                  '        p: \n' +
                                  '          type: "string"\n' +
                                  '      required: \n' +
                                  '        - "p"\n' +
-                                 '    meta::json::schema::tests::functionWithStringType: \n' +
+                                 '    meta::external::format::json::schema::tests::functionWithStringType: \n' +
                                  '      pattern: "test"\n' +
                                  '      type: "string"';
 
@@ -533,20 +535,20 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
     let expectedOPenAPI = '{' +
                         '  "components":   {' +
                         '    "schemas":     {' +
-                        '      "meta::json::schema::tests::ClassWithFunctionReferences":       {' +
+                        '      "meta::external::format::json::schema::tests::ClassWithFunctionReferences":       {' +
                         '        "title": "a custom title",' +
                         '        "type": "object",' +
                         '        "properties":         {' +
                         '          "one":           {' +
-                        '            "$ref": "#\/components\/schemas\/meta::json::schema::tests::functionWithStringType"' +
+                        '            "$ref": "#\/components\/schemas\/meta::external::format::json::schema::tests::functionWithStringType"' +
                         '          },' +
                         '          "optional":           {' +
-                        '            "$ref": "#\/components\/schemas\/meta::json::schema::tests::functionWithStringType"' +
+                        '            "$ref": "#\/components\/schemas\/meta::external::format::json::schema::tests::functionWithStringType"' +
                         '          },' +
                         '          "many":           {' +
                         '            "type": "array",' +
                         '            "items":             {' +
-                        '              "$ref": "#\/components\/schemas\/meta::json::schema::tests::functionWithStringType"' +
+                        '              "$ref": "#\/components\/schemas\/meta::external::format::json::schema::tests::functionWithStringType"' +
                         '            }' +
                         '          }' +
                         '        },' +
@@ -554,23 +556,23 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                         '"one"' +
                         '        ]' +
                         '      },' +
-                        '      "meta::json::schema::tests::SimpleClass":       {' +
-                        '        "title": "meta::json::schema::tests::SimpleClass",' +
+                        '      "meta::external::format::json::schema::tests::SimpleClass":       {' +
+                        '        "title": "meta::external::format::json::schema::tests::SimpleClass",' +
                         '        "type": "object",' +
                         '        "properties":         {' +
                         '          "p":           {' +
                         '            "type": "string"' +
                         '          },' +
                         '          "a":           {' +
-                        '            "$ref": "#\/components\/schemas\/meta::json::schema::tests::SimpleClass2"' +
+                        '            "$ref": "#\/components\/schemas\/meta::external::format::json::schema::tests::SimpleClass2"' +
                         '          }' +
                         '        },' +
                         '        "required": [' +
                         '"p"' +
                         '        ]' +
                         '      },' +
-                        '      "meta::json::schema::tests::SimpleClass2":       {' +
-                        '        "title": "meta::json::schema::tests::SimpleClass2",' +
+                        '      "meta::external::format::json::schema::tests::SimpleClass2":       {' +
+                        '        "title": "meta::external::format::json::schema::tests::SimpleClass2",' +
                         '        "type": "object",' +
                         '        "properties":         {' +
                         '          "p":           {' +
@@ -581,7 +583,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                         '"p"' +
                         '        ]' +
                         '      },' +
-                        '      "meta::json::schema::tests::functionWithStringType":       {' +
+                        '      "meta::external::format::json::schema::tests::functionWithStringType":       {' +
                         '        "pattern": "test",' +
                         '        "type": "string"' +
                         '      }' +
@@ -593,21 +595,21 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 
    let expectedStandardJSONSchema= '{' +
                                        '  "definitions":   {' +
-                                       '    "meta::json::schema::tests::ClassWithFunctionReferences":     {' +
+                                       '    "meta::external::format::json::schema::tests::ClassWithFunctionReferences":     {' +
                                        '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
                                        '      "title": "a custom title",' +
                                        '      "type": "object",' +
                                        '      "properties":       {' +
                                        '        "one":         {' +
-                                       '          "$ref": "#\/definitions\/meta::json::schema::tests::functionWithStringType"' +
+                                       '          "$ref": "#\/definitions\/meta::external::format::json::schema::tests::functionWithStringType"' +
                                        '        },' +
                                        '        "optional":         {' +
-                                       '          "$ref": "#\/definitions\/meta::json::schema::tests::functionWithStringType"' +
+                                       '          "$ref": "#\/definitions\/meta::external::format::json::schema::tests::functionWithStringType"' +
                                        '        },' +
                                        '        "many":         {' +
                                        '          "type": "array",' +
                                        '          "items":           {' +
-                                       '            "$ref": "#\/definitions\/meta::json::schema::tests::functionWithStringType"' +
+                                       '            "$ref": "#\/definitions\/meta::external::format::json::schema::tests::functionWithStringType"' +
                                        '          }' +
                                        '        }' +
                                        '      },' +
@@ -615,25 +617,25 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                        '"one"' +
                                        '      ]' +
                                        '    },' +
-                                       '    "meta::json::schema::tests::SimpleClass":     {' +
+                                       '    "meta::external::format::json::schema::tests::SimpleClass":     {' +
                                        '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                                       '      "title": "meta::json::schema::tests::SimpleClass",' +
+                                       '      "title": "meta::external::format::json::schema::tests::SimpleClass",' +
                                        '      "type": "object",' +
                                        '      "properties":       {' +
                                        '        "p":         {' +
                                        '          "type": "string"' +
                                        '        },' +
                                        '        "a":         {' +
-                                       '          "$ref": "#\/definitions\/meta::json::schema::tests::SimpleClass2"' +
+                                       '          "$ref": "#\/definitions\/meta::external::format::json::schema::tests::SimpleClass2"' +
                                        '        }' +
                                        '      },' +
                                        '      "required": [' +
                                        '"p"' +
                                        '      ]' +
                                        '    },' +
-                                       '    "meta::json::schema::tests::SimpleClass2":     {' +
+                                       '    "meta::external::format::json::schema::tests::SimpleClass2":     {' +
                                        '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                                       '      "title": "meta::json::schema::tests::SimpleClass2",' +
+                                       '      "title": "meta::external::format::json::schema::tests::SimpleClass2",' +
                                        '      "type": "object",' +
                                        '      "properties":       {' +
                                        '        "p":         {' +
@@ -644,7 +646,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                        '"p"' +
                                        '      ]' +
                                        '    },' +
-                                       '    "meta::json::schema::tests::functionWithStringType":     {' +
+                                       '    "meta::external::format::json::schema::tests::functionWithStringType":     {' +
                                        '      "pattern": "test",' +
                                        '      "type": "string"' +
                                        '    }' +
@@ -678,7 +680,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                        '    },' +
                                        '    "SimpleClass":     {' +
                                        '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                                       '      "title": "meta::json::schema::tests::SimpleClass",' +
+                                       '      "title": "meta::external::format::json::schema::tests::SimpleClass",' +
                                        '      "type": "object",' +
                                        '      "properties":       {' +
                                        '        "p":         {' +
@@ -694,7 +696,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                        '    },' +
                                        '    "SimpleClass2":     {' +
                                        '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                                       '      "title": "meta::json::schema::tests::SimpleClass2",' +
+                                       '      "title": "meta::external::format::json::schema::tests::SimpleClass2",' +
                                        '      "type": "object",' +
                                        '      "properties":       {' +
                                        '        "p":         {' +
@@ -720,8 +722,8 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 
       assert(jsonEquivalent($expectedOPenAPI->parseJSON(),$collectOpenAPI.content->toOne()->parseJSON()));
       assertEquals($expectedOpenAPIYAML,$collectOpenAPIYAML.content->toOne());
-    let mergedPaths = [schemaInput('/schema/tests.json', $ImportedCollectionNoPath,'meta::json')]->JSONSchemaToPure();
-    let OpenAPINoPaths = [schemaInput('/tests.json', $ImportedCollectionNoPath,'meta::json::schema')]->JSONSchemaToPure();
+    let mergedPaths = [schemaInput('/schema/tests.json', $ImportedCollectionNoPath,'meta::external::format::json')]->JSONSchemaToPure();
+    let OpenAPINoPaths = [schemaInput('/tests.json', $ImportedCollectionNoPath,'meta::external::format::json::schema')]->JSONSchemaToPure();
     let standardSchema = [schemaInput('/model.json', $expectedStandardJSONSchema,[])]->JSONSchemaToPure();
     let openAPI = [schemaInput('/model.json', $expectedOPenAPI,'should::be::ignored')]->JSONSchemaToPure();
 
@@ -730,93 +732,93 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
    assert($OpenAPINoPaths->size()==4);
    assert($mergedPaths->size()==4);
 
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$standardSchema);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$standardSchema);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$standardSchema);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$standardSchema);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass2,$standardSchema);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass,$standardSchema);
 
 
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$openAPI);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$openAPI);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$openAPI);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$openAPI);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$openAPI);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$openAPI);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass2,$openAPI);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass,$openAPI);
 
 
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$OpenAPINoPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$OpenAPINoPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$OpenAPINoPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$OpenAPINoPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$OpenAPINoPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$OpenAPINoPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass2,$OpenAPINoPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass,$OpenAPINoPaths);
 
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$mergedPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$mergedPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$mergedPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$mergedPaths);
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$standardSchema,true);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$mergedPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$mergedPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass2,$mergedPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::SimpleClass,$mergedPaths);
+   meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::ClassWithFunctionReferences,$standardSchema,true);
 
 }
 
 
 
 
-function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testDefinitions():Boolean[1]
+function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testDefinitions():Boolean[1]
 {
-   let generatedJSONSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::parent::parent::levela::parentClass2]));
+   let generatedJSONSchema = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::parent::parent::levela::parentClass2]));
 
    let expectedJSON = '{' +
                   '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                  '  "title": "meta::json::schema::tests::parent::parent::levela::parentClass2",' +
+                  '  "title": "meta::external::format::json::schema::tests::parent::parent::levela::parentClass2",' +
                   '  "type": "object",' +
                   '  "properties":   {' +
                   '    "childClass4":     {' +
-                  '      "$ref": "#\/definitions\/meta::json::schema::tests::parent::level1::levela::childClass4"' +
+                  '      "$ref": "#\/definitions\/meta::external::format::json::schema::tests::parent::level1::levela::childClass4"' +
                   '    },' +
                   '    "childClass3":     {' +
-                  '      "$ref": "#\/definitions\/meta::json::schema::tests::parent::level1::level2::childClass3"' +
+                  '      "$ref": "#\/definitions\/meta::external::format::json::schema::tests::parent::level1::level2::childClass3"' +
                   '    }' +
                   '  },' +
                   '  "required": [' +
                   '"childClass3"' +
                   '  ],' +
                   '  "definitions":   {' +
-                  '    "meta::json::schema::tests::parent::level1::level2::childClass3":     {' +
+                  '    "meta::external::format::json::schema::tests::parent::level1::level2::childClass3":     {' +
                   '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                  '      "title": "meta::json::schema::tests::parent::level1::level2::childClass3",' +
+                  '      "title": "meta::external::format::json::schema::tests::parent::level1::level2::childClass3",' +
                   '      "type": "object"' +
                   '    },' +
-                  '    "meta::json::schema::tests::parent::level1::levela::childClass4":     {' +
+                  '    "meta::external::format::json::schema::tests::parent::level1::levela::childClass4":     {' +
                   '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
-                  '      "title": "meta::json::schema::tests::parent::level1::levela::childClass4",' +
+                  '      "title": "meta::external::format::json::schema::tests::parent::level1::levela::childClass4",' +
                   '      "type": "object"' +
                   '    }' +
                   '  }' +
                   '}';
       assert(jsonEquivalent($expectedJSON->parseJSON(),$generatedJSONSchema.content->toOne()->parseJSON()));
 
-      let prefix = 'meta::json::schema::tests';
+      let prefix = 'meta::external::format::json::schema::tests';
       let fileMap = [schemaInput('/parent/parent/levela/parentClass2.json', $expectedJSON,$prefix)];
      let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
-      meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent::parent::levela::parentClass2,$generatedElementFromJSON);
-      meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent::level1::levela::childClass4,$generatedElementFromJSON);
-      meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::parent::level1::level2::childClass3,$generatedElementFromJSON);
+      meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent::parent::levela::parentClass2,$generatedElementFromJSON);
+      meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent::level1::levela::childClass4,$generatedElementFromJSON);
+      meta::external::format::json::schema::fromSchema::tests::testfromJSONSchema(meta::external::format::json::schema::tests::parent::level1::level2::childClass3,$generatedElementFromJSON);
 
 }
 
 
 
 
-function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testMilestoneAnnotation():Boolean[1]
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testMilestoneAnnotation():Boolean[1]
 {
 
-   let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::BiTemporalPerson],
+   let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::BiTemporalPerson],
                                                           includeAllRelatedTypes=true ));
 
 
-   let generatedJSONFromElementWithMilestone = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::BiTemporalPerson],
+   let generatedJSONFromElementWithMilestone = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::BiTemporalPerson],
                                                           includeAllRelatedTypes=false,generateMilestoneProperties=true ));
 
 
    let jsonSchema  =         '{\n' +
                               '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-                              '  "title": "meta::json::schema::tests::BiTemporalPerson",\n' +
+                              '  "title": "meta::external::format::json::schema::tests::BiTemporalPerson",\n' +
                               '  "x-legendTemporal": "bitemporal",\n' +
                               '  "type": "object",\n' +
                               '  "properties":   {\n' +
@@ -826,7 +828,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                               '    "company":     {\n' +
                               '      "type": "array",\n' +
                               '      "items":       {\n' +
-                              '        "$ref": "#\\/definitions\\/meta::json::schema::tests::BiTemporalFirm"\n' +
+                              '        "$ref": "#\\/definitions\\/meta::external::format::json::schema::tests::BiTemporalFirm"\n' +
                               '      }\n' +
                               '    }\n' +
                               '  },\n' +
@@ -834,9 +836,9 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                               '"name"\n' +
                               '  ],\n' +
                               '  "definitions":   {\n' +
-                              '    "meta::json::schema::tests::BiTemporalFirm":     {\n' +
+                              '    "meta::external::format::json::schema::tests::BiTemporalFirm":     {\n' +
                               '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-                              '      "title": "meta::json::schema::tests::BiTemporalFirm",\n' +
+                              '      "title": "meta::external::format::json::schema::tests::BiTemporalFirm",\n' +
                               '      "x-legendTemporal": "bitemporal",\n' +
                               '      "type": "object",\n' +
                               '      "properties":       {\n' +
@@ -853,7 +855,7 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 
 let jsonSchemaWithMilestone = '        {\n' +
         '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '  "title": "meta::json::schema::tests::BiTemporalPerson",\n' +
+        '  "title": "meta::external::format::json::schema::tests::BiTemporalPerson",\n' +
         '  "x-legendTemporal": "bitemporal",\n' +
         '  "type": "object",\n' +
         '  "properties":   {\n' +
@@ -869,7 +871,7 @@ let jsonSchemaWithMilestone = '        {\n' +
         '      "format": "date-time"\n' +
         '    },\n' +
         '    "milestoning":     {\n' +
-        '      "$ref": "..\\/..\\/..\\/pure\\/milestoning\\/BiTemporalMilestoning.json"\n' +
+        '      "$ref": "..\\/..\\/..\\/..\\/..\\/pure\\/milestoning\\/BiTemporalMilestoning.json"\n' +
         '    },\n' +
         '    "companyAllVersions":     {\n' +
         '      "type": "array",\n' +
@@ -885,7 +887,6 @@ let jsonSchemaWithMilestone = '        {\n' +
         '  ]\n' +
         '}\n';
 
-
    assert(jsonEquivalent($jsonSchemaWithMilestone->parseJSON(),$generatedJSONFromElementWithMilestone.content->toOne()->parseJSON()));
 
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
@@ -893,22 +894,22 @@ let jsonSchemaWithMilestone = '        {\n' +
 
 
 
-function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testInheritenceOptions():Boolean[1]
+function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testInheritenceOptions():Boolean[1]
 {
 
 
-  let includeAny2019 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::Car],
+  let includeAny2019 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::Car],
                                                          generateAnyOfSubType=true, schemaSpecification=JSONSchemaSpecification.JSON_SCHEMA_2019_09 ));
 
-  let includeAny07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::Car],
+  let includeAny07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::Car],
                                                          generateAnyOfSubType=true, schemaSpecification=JSONSchemaSpecification.JSON_SCHEMA_DRAFT_07 ));
 
   let includeAny2019Exepected  = '{\n' +
                                 '  "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
-                                '  "title": "meta::json::schema::tests::Car",\n' +
+                                '  "title": "meta::external::format::json::schema::tests::Car",\n' +
                                 '  "allOf": [\n' +
                                 '    {\n' +
-                                '      "$ref": "#\/$defs\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                '      "$ref": "#\/$defs\/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
                                 '    }\n' +
                                 '  ],\n' +
                                 '  "type": "object",\n' +
@@ -919,7 +920,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '  },\n' +
                                 '  "anyOf": [\n' +
                                 '    {\n' +
-                                '      "title": "meta::json::schema::tests::Car",\n' +
+                                '      "title": "meta::external::format::json::schema::tests::Car",\n' +
                                 '      "type": "object",\n' +
                                 '      "properties":       {\n' +
                                 '        "driver":         {\n' +
@@ -934,7 +935,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '        "similarVehiciles":         {\n' +
                                 '          "type": "array",\n' +
                                 '          "items":           {\n' +
-                                '            "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '            "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '          }\n' +
                                 '        }\n' +
                                 '      },\n' +
@@ -950,18 +951,18 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '"driver"\n' +
                                 '  ],\n' +
                                 '  "$defs":   {\n' +
-                                '    "meta::json::schema::tests::Truck":     {\n' +
+                                '    "meta::external::format::json::schema::tests::Truck":     {\n' +
                                 '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
-                                '      "title": "meta::json::schema::tests::Truck",\n' +
+                                '      "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                 '      "allOf": [\n' +
                                 '        {\n' +
-                                '          "$ref": "#\/$defs\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                '          "$ref": "#\/$defs\/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
                                 '        }\n' +
                                 '      ],\n' +
                                 '      "type": "object",\n' +
                                 '      "anyOf": [\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "weight":             {\n' +
@@ -976,7 +977,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -992,13 +993,13 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '"weight"\n' +
                                 '      ]\n' +
                                 '    },\n' +
-                                '    "meta::json::schema::tests::Vehicle":     {\n' +
+                                '    "meta::external::format::json::schema::tests::Vehicle":     {\n' +
                                 '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
-                                '      "title": "meta::json::schema::tests::Vehicle",\n' +
+                                '      "title": "meta::external::format::json::schema::tests::Vehicle",\n' +
                                 '      "type": "object",\n' +
                                 '      "anyOf": [\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "wheels":             {\n' +
@@ -1010,7 +1011,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1021,7 +1022,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '          "unevaluatedProperties": false\n' +
                                 '        },\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Car",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Car",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "driver":             {\n' +
@@ -1036,7 +1037,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1048,7 +1049,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '          "unevaluatedProperties": false\n' +
                                 '        },\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "weight":             {\n' +
@@ -1063,7 +1064,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1075,7 +1076,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '          "unevaluatedProperties": false\n' +
                                 '        },\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Vehicle",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Vehicle",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "id":             {\n' +
@@ -1084,7 +1085,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1098,18 +1099,18 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '"id"\n' +
                                 '      ]\n' +
                                 '    },\n' +
-                                '    "meta::json::schema::tests::WheeledVehicle":     {\n' +
+                                '    "meta::external::format::json::schema::tests::WheeledVehicle":     {\n' +
                                 '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
-                                '      "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '      "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                 '      "allOf": [\n' +
                                 '        {\n' +
-                                '          "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '          "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '        }\n' +
                                 '      ],\n' +
                                 '      "type": "object",\n' +
                                 '      "anyOf": [\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Car",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Car",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "driver":             {\n' +
@@ -1124,7 +1125,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1136,7 +1137,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '          "unevaluatedProperties": false\n' +
                                 '        },\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "weight":             {\n' +
@@ -1151,7 +1152,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1163,7 +1164,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '          "unevaluatedProperties": false\n' +
                                 '        },\n' +
                                 '        {\n' +
-                                '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '          "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                 '          "type": "object",\n' +
                                 '          "properties":           {\n' +
                                 '            "wheels":             {\n' +
@@ -1175,7 +1176,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                 '            "similarVehiciles":             {\n' +
                                 '              "type": "array",\n' +
                                 '              "items":               {\n' +
-                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '                "$ref": "#\/$defs\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                 '              }\n' +
                                 '            }\n' +
                                 '          },\n' +
@@ -1196,10 +1197,10 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 
                         let includeAny07expected = '{\n' +
                                                     '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
-                                                    '  "title": "meta::json::schema::tests::Car",\n' +
+                                                    '  "title": "meta::external::format::json::schema::tests::Car",\n' +
                                                     '  "allOf": [\n' +
                                                     '    {\n' +
-                                                    '      "$ref": "#\/definitions\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                                    '      "$ref": "#\/definitions\/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
                                                     '    }\n' +
                                                     '  ],\n' +
                                                     '  "type": "object",\n' +
@@ -1210,7 +1211,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '  },\n' +
                                                     '  "anyOf": [\n' +
                                                     '    {\n' +
-                                                    '      "title": "meta::json::schema::tests::Car",\n' +
+                                                    '      "title": "meta::external::format::json::schema::tests::Car",\n' +
                                                     '      "type": "object",\n' +
                                                     '      "properties":       {\n' +
                                                     '        "driver":         {\n' +
@@ -1225,7 +1226,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '        "similarVehiciles":         {\n' +
                                                     '          "type": "array",\n' +
                                                     '          "items":           {\n' +
-                                                    '            "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '            "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '          }\n' +
                                                     '        }\n' +
                                                     '      },\n' +
@@ -1240,18 +1241,18 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '"driver"\n' +
                                                     '  ],\n' +
                                                     '  "definitions":   {\n' +
-                                                    '    "meta::json::schema::tests::Truck":     {\n' +
+                                                    '    "meta::external::format::json::schema::tests::Truck":     {\n' +
                                                     '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
-                                                    '      "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '      "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                                     '      "allOf": [\n' +
                                                     '        {\n' +
-                                                    '          "$ref": "#\/definitions\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                                    '          "$ref": "#\/definitions\/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
                                                     '        }\n' +
                                                     '      ],\n' +
                                                     '      "type": "object",\n' +
                                                     '      "anyOf": [\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "weight":             {\n' +
@@ -1266,7 +1267,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1281,13 +1282,13 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '"weight"\n' +
                                                     '      ]\n' +
                                                     '    },\n' +
-                                                    '    "meta::json::schema::tests::Vehicle":     {\n' +
+                                                    '    "meta::external::format::json::schema::tests::Vehicle":     {\n' +
                                                     '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
-                                                    '      "title": "meta::json::schema::tests::Vehicle",\n' +
+                                                    '      "title": "meta::external::format::json::schema::tests::Vehicle",\n' +
                                                     '      "type": "object",\n' +
                                                     '      "anyOf": [\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "wheels":             {\n' +
@@ -1299,7 +1300,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1309,7 +1310,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '          ]\n' +
                                                     '        },\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Car",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Car",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "driver":             {\n' +
@@ -1324,7 +1325,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1335,7 +1336,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '          ]\n' +
                                                     '        },\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "weight":             {\n' +
@@ -1350,7 +1351,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1361,7 +1362,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '          ]\n' +
                                                     '        },\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Vehicle",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Vehicle",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "id":             {\n' +
@@ -1370,7 +1371,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1383,18 +1384,18 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '"id"\n' +
                                                     '      ]\n' +
                                                     '    },\n' +
-                                                    '    "meta::json::schema::tests::WheeledVehicle":     {\n' +
+                                                    '    "meta::external::format::json::schema::tests::WheeledVehicle":     {\n' +
                                                     '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
-                                                    '      "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '      "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                                     '      "allOf": [\n' +
                                                     '        {\n' +
-                                                    '          "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '          "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '        }\n' +
                                                     '      ],\n' +
                                                     '      "type": "object",\n' +
                                                     '      "anyOf": [\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Car",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Car",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "driver":             {\n' +
@@ -1409,7 +1410,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1420,7 +1421,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '          ]\n' +
                                                     '        },\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::Truck",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "weight":             {\n' +
@@ -1435,7 +1436,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
@@ -1446,7 +1447,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '          ]\n' +
                                                     '        },\n' +
                                                     '        {\n' +
-                                                    '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '          "title": "meta::external::format::json::schema::tests::WheeledVehicle",\n' +
                                                     '          "type": "object",\n' +
                                                     '          "properties":           {\n' +
                                                     '            "wheels":             {\n' +
@@ -1458,7 +1459,7 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
                                                     '            "similarVehiciles":             {\n' +
                                                     '              "type": "array",\n' +
                                                     '              "items":               {\n' +
-                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '                "$ref": "#\/definitions\/meta::external::format::json::schema::tests::Vehicle"\n' +
                                                     '              }\n' +
                                                     '            }\n' +
                                                     '          },\n' +
