@@ -24,7 +24,7 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
    (
       _type = 'class',
       name = createValidClassName($table.name),
-      package = $packageStr->removeTrailingColonsFromPackageString(),
+      package = $packageStr + $table.schema.name,
       superTypes = ['meta::pure::metamodel::type::Any'], // Tables don't have a class hierarchy
       properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
@@ -32,17 +32,11 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
    );
 }
 
-function <<access.private>> meta::relational::transform::autogen::removeTrailingColonsFromPackageString(packageStr:String[1]):String[1]
-{
-   $packageStr->substring(0, $packageStr->length() - 2);
-}
-
 function <<access.private>> meta::relational::transform::autogen::columnToProperty(column:Column[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
 {
-   let propertyName = $column->createSQLSafeColumnName()->createValidPropertyName();
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property
    (
-      name = $propertyName,
+      name = $column.name->createSQLSafeName()->createValidPropertyName(),
       multiplicity = if($column.nullable == false, | PureOne, | ZeroOne)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
       type = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type)->toOne()->elementToPath()
    );
@@ -53,14 +47,14 @@ function <<access.private>> meta::relational::transform::autogen::createValidCla
    $tableName->replaceUnsupportedCharsWith('', [' ', '/'])->makeCamelCase(true);
 }
 
-function <<access.private>> meta::relational::transform::autogen::createSQLSafeColumnName(column:Column[1]):String[1]
+function <<access.private>> meta::relational::transform::autogen::createSQLSafeName(initialString:String[1]):String[1]
 {
-   $column.name->replaceUnsupportedCharsWith('_', [' ', '/', '@', '~', '<', '>', '.']);
+   $initialString->replaceUnsupportedCharsWith('_', [' ', '/', '@', '~', '<', '>', '.']);
 }
 
-function <<access.private>> meta::relational::transform::autogen::createValidPropertyName(columnName:String[1]):String[1]
+function <<access.private>> meta::relational::transform::autogen::createValidPropertyName(initialString:String[1]):String[1]
 {
-   $columnName->replaceUnsupportedCharsWith('', ['"'])->makeCamelCase(false);
+   $initialString->replaceUnsupportedCharsWith('', ['"'])->makeCamelCase(false);
 }
 
 function <<access.private>> meta::relational::transform::autogen::replaceUnsupportedCharsWith(initialString:String[1], replacementChar:String[1], unsupportedChars:String[*]):String[1]
@@ -71,30 +65,29 @@ function <<access.private>> meta::relational::transform::autogen::replaceUnsuppo
    }, '');
 }
 
-function meta::relational::transform::autogen::schemaToAssociationJoinPair(schema:Schema[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]
+function meta::relational::transform::autogen::databaseToAssociationJoinPair(database:Database[1], packageStr:String[1]):Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]
 {
-   $schema.database.joins->map(j | $j->joinToAssociation($packageStr)->pair($j));
+   $database.joins->map(j | $j->joinToAssociation($packageStr)->pair($j));
 }
 
 function meta::relational::transform::autogen::joinToAssociation(join:Join[1], packageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Association[1]
 {
+   let joinName = $join.name->toOne();
    let leftTableAliasColumn = getJoinOperationTableAliasColumnAtIndex($join, 0);
    let rightTableAliasColumn = getJoinOperationTableAliasColumnAtIndex($join, 1);
-   let leftTable = $leftTableAliasColumn.column.owner->cast(@Table);
-   let rightTable = $rightTableAliasColumn.column.owner->cast(@Table);
-   let leftTableName = $leftTable.name->toOne();
-   let rightTableName = $rightTable.name->toOne();
+   let leftTable = $leftTableAliasColumn.column.owner->cast(@Table)->toOne();
+   let rightTable = $rightTableAliasColumn.column.owner->cast(@Table)->toOne();
    let isP1PrimaryKey = $leftTable.primaryKey->exists(p | $p.name == $leftTableAliasColumn.columnName);
    let isP2PrimaryKey = $rightTable.primaryKey->exists(p | $p.name == $rightTableAliasColumn.columnName);
    let multPair = getAssociationMultiplicityPairFromPK($isP1PrimaryKey, $isP2PrimaryKey);
    let p1Mult = $multPair.first;
    let p2Mult = $multPair.second;
-   let p1 = generateAssociationProperty($packageStr, $leftTableName, $p1Mult);
-   let p2 = generateAssociationProperty($packageStr, $rightTableName, $p2Mult);
+   let p1 = generateAssociationProperty($joinName, $packageStr, $leftTable, $p1Mult);
+   let p2 = generateAssociationProperty($joinName, $packageStr, $rightTable, $p2Mult);
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Association
    (
      _type = 'association',
-     name = $join.name->toOne(),
+     name = $joinName,
      package = $packageStr->removeTrailingColonsFromPackageString(),
      properties = [$p1, $p2]
    );
@@ -124,28 +117,36 @@ function <<access.private>> meta::relational::transform::autogen::getAssociation
    $multiplicityMap->get(pair($isP1PrimaryKey, $isP2PrimaryKey))->toOne();
 }
 
-function <<access.private>> meta::relational::transform::autogen::generateAssociationProperty(packageStr:String[1], tableName:String[1], multiplicity:Multiplicity[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
+function <<access.private>> meta::relational::transform::autogen::generateAssociationProperty(joinName:String[1], packageStr:String[1], table:Table[1], multiplicity:Multiplicity[1]):meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]
 {
+   let schemaName = $table.schema.name;
+   let tableName = $table.name;
+   let propertyName = $joinName + '_' + $schemaName + '_' + $tableName;
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
-     name = $tableName->toLowerFirstCharacter()->toOne(),
+     name = $propertyName->createSQLSafeName()->createValidPropertyName(),
      multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-     type = $packageStr + $tableName
-   )
+     type = $packageStr + $schemaName + '::' + $tableName
+   );
 }
 
-function meta::relational::transform::autogen::schemaToClassMapping(schema:Schema[1], database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
+function <<access.private>> meta::relational::transform::autogen::removeTrailingColonsFromPackageString(packageStr:String[1]):String[1]
 {
-   schemaToClassMapping($schema, $database, $mappingPackageStr, $classPackageStr, [], columnFilterPredicate_Column_1__Boolean_1_);
+   $packageStr->substring(0, $packageStr->length() - 2);
 }
 
-function meta::relational::transform::autogen::schemaToClassMapping(schema:Schema[1], database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1], joinStrategyFunctions:Function<Any>[*], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
+function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
+{
+   databaseToMappingWithClassMappings($database, $mappingPackageStr, $classPackageStr, [], columnFilterPredicate_Column_1__Boolean_1_);
+}
+
+function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1], joinStrategyFunctions:Function<Any>[*], columnFilterFunction:Function<{Column[1]->Boolean[1]}>[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping
    (
       _type = 'mapping',
       name = $database.name->toOne() + 'Mapping',
       package = $mappingPackageStr->removeTrailingColonsFromPackageString(),
-      classMappings = $schema.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction))
+      classMappings = $database.schemas->map(s | $s.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction)))
    )
 }
 
@@ -153,11 +154,12 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassMa
 {
    let tableName = $table.name;
    let schemaName = $table.schema.name;
-   let classPath = $classPackageStr + createValidClassName($tableName);
+   let classPath = $classPackageStr + $schemaName + '::' + createValidClassName($tableName);
+   let databasePath = $database->elementToPath();
    let tableAlias = ^TableAlias(name=$tableName, relationalElement=$table, database=$database, schema=$schemaName);
 
    let propertyMappings = $table.columns->cast(@Column)->filter(c|$columnFilterFunction->eval($c))
-                                                       ->map(c | let columnName = $c->createSQLSafeColumnName();
+                                                       ->map(c | let columnName = $c.name->createSQLSafeName();
                                                                  let propertyName = $columnName->createValidPropertyName();
                                                                  let propertyRawReturnType = meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($c.type);
                                                              
@@ -215,16 +217,16 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassMa
       mainTable = ^meta::protocols::pure::vX_X_X::metamodel::store::relational::element::TablePtr(
          _type = 'table',
          table = $namedRelation.name,
-         mainTableDb = if($storeFromTableAlias->isNotEmpty(),|if($database->elementToPath() == $storeFromTableAlias->toOne()->elementToPath(),| $database ,| $storeFromTableAlias->toOne()), | $database)->elementToPath(),
-         database = $database->elementToPath(),
+         mainTableDb = if($storeFromTableAlias->isNotEmpty(),|if($databasePath == $storeFromTableAlias->toOne()->elementToPath(),| $database ,| $storeFromTableAlias->toOne()), | $database)->elementToPath(),
+         database = $databasePath,
          schema = $schemaName),
       distinct = false,
-      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c->createSQLSafeColumnName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
+      primaryKey = $primaryKey->map(c | ^TableAliasColumn(columnName=$c.name->createSQLSafeName(), alias=$tableAlias, column=$c))->map(c|$c->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($database)),
       propertyMappings = $propertyMappings
    );
 }
 
-function meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings(schema:Schema[1], store:Database[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], associationJoinPairs:Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*]
+function meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings(store:Database[1], mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], associationJoinPairs:Pair<meta::protocols::pure::vX_X_X::metamodel::domain::Association, Join>[*]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*]
 {
    $associationJoinPairs->map(p |
      let association = $p.first;
@@ -245,29 +247,35 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
 {
    let p1 = $association.properties->at(0);
    let p2 = $association.properties->at(1);
-   let p1TableName = $p2.name;
-   let p2TableName = $p1.name;
-   let p1ClassName = $p1TableName->toUpperFirstCharacter();
-   let p2ClassName = $p2TableName->toUpperFirstCharacter();
+   let p1ClassPath = $p2.type;
+   let p2ClassPath = $p1.type;
+   let p1ClassName = getClassNameFromClassPath($p1ClassPath);
+   let p2ClassName = getClassNameFromClassPath($p2ClassPath);
    let associationAlias = $join.aliases->at(0);
    let p1TableAlias = if($associationAlias.first.name == $p1ClassName, |$associationAlias.first, |$associationAlias.second);
    let p2TableAlias = if($associationAlias.first.name == $p2ClassName, |$associationAlias.first, |$associationAlias.second);
-   let p1ClassID = findMatchingClassID($mapping, $p1TableName->toOne());
-   let p2ClassID = findMatchingClassID($mapping, $p2TableName->toOne());
-   [generateRelationalPropertyMapping($p2.type, $p1ClassID, $p2ClassID, $p1TableAlias, $p2TableName, $join, $store, true), generateRelationalPropertyMapping($p1.type, $p1ClassID, $p2ClassID, $p2TableAlias, $p1TableName, $join, $store, false)];
+   let p1ClassID = findMatchingClassID($mapping, $p1ClassPath);
+   let p2ClassID = findMatchingClassID($mapping, $p2ClassPath);
+   [generateRelationalPropertyMapping($p1ClassPath, $p1ClassID, $p2ClassID, $p1TableAlias, $p1.name, $join, $store, true), generateRelationalPropertyMapping($p2ClassPath, $p1ClassID, $p2ClassID, $p2TableAlias, $p2.name, $join, $store, false)];
 }
 
-function <<access.private>> meta::relational::transform::autogen::findMatchingClassID(mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], className:String[1]):String[1]
+function <<access.private>> meta::relational::transform::autogen::findMatchingClassID(mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classPath:String[1]):String[1]
 {
-   $mapping.classMappings->filter(cm | $cm->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping).class == $mapping.package->toOne() + '::' + $className->createValidClassName()).id->toOne();
+   $mapping.classMappings->filter(cm | $cm->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping).class == $classPath).id->toOne();
 }
 
-function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMapping(fullClassPath:String[1], p1ClassID:String[1], p2ClassID:String[1], propertyTableAlias:TableAlias[1], tableName:String[1], join:Join[1], store:Database[1], isFirstProperty:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[1]
+function <<access.private>> meta::relational::transform::autogen::getClassNameFromClassPath(classPath:String[1]):String[1]
+{
+   let lastColonIndex = lastIndexOf($classPath,':');
+   $classPath->substring($lastColonIndex + 1, $classPath->length())->toUpperFirstCharacter()->toOne();
+}
+
+function <<access.private>> meta::relational::transform::autogen::generateRelationalPropertyMapping(classPath:String[1], p1ClassID:String[1], p2ClassID:String[1], propertyTableAlias:TableAlias[1], propertyName:String[1], join:Join[1], store:Database[1], isFirstProperty:Boolean[1]):meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalPropertyMapping
      (
        _type = 'relationalPropertyMapping',
-       property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$fullClassPath, property=$tableName),
+       property = ^meta::protocols::pure::vX_X_X::metamodel::domain::PropertyPtr(class=$classPath, property=$propertyName),
        source = if($isFirstProperty, |$p1ClassID, |$p2ClassID),
        target = if($isFirstProperty, |$p2ClassID, |$p1ClassID),
        relationalOperation = ^RelationalOperationElementWithJoin(
@@ -279,36 +287,31 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
      )
 }
 
-function meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping(
-   mapping: meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1],
-   associationMapping: meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RelationalAssociationMapping[*],
-   classes: meta::protocols::pure::vX_X_X::metamodel::domain::Class[*],
-   associations: meta::protocols::pure::vX_X_X::metamodel::domain::Association[*],
-   extensions: meta::pure::extension::Extension[*]
-): meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
+function meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping(mapping: meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classes: meta::protocols::pure::vX_X_X::metamodel::domain::Class[*], associations: meta::protocols::pure::vX_X_X::metamodel::domain::Association[*]):meta::protocols::pure::vX_X_X::metamodel::PureModelContextData[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
    (
      _type = 'data',
      serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
-     elements = ^$mapping(associationMappings = $associationMapping)
+     elements = $mapping
                    ->concatenate($classes)
                    ->concatenate($associations)
    );
 }
 
-function meta::relational::transform::autogen::classesAssociationsAndMappingFromSchema(schema:Schema[1], targetPackage:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(database:Database[1], targetPackage:String[1]):String[1]
 {
-   meta::relational::transform::autogen::classesAssociationsAndMappingFromSchema($schema, $targetPackage, $targetPackage, $targetPackage, $extensions);
+   meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase($database, $targetPackage, $targetPackage, $targetPackage);
 }
 
-function meta::relational::transform::autogen::classesAssociationsAndMappingFromSchema(schema:Schema[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):String[1]
 {
-   let classes = meta::relational::transform::autogen::schemaToModel($schema->toOne(), $classesPackage);
-   let associationJoinPairs = meta::relational::transform::autogen::schemaToAssociationJoinPair($schema->toOne(), $associationsPackage);
-   let associations = $associationJoinPairs->map(p | $p.first);
-   let classMapping = meta::relational::transform::autogen::schemaToClassMapping($schema->toOne(), $schema.database->toOne(), $mappingPackage, $classesPackage);
-   let associationMapping = meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings($schema->toOne(), $schema.database->toOne(), $classMapping, $associationJoinPairs);
-   let pmcd = meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping($classMapping, $associationMapping, $classes, $associations, $extensions);
+   let allClasses = $database.schemas->map(schema | $schema->meta::relational::transform::autogen::schemaToModel($classesPackage));
+   let allAssociationJoinPairs = meta::relational::transform::autogen::databaseToAssociationJoinPair($database, $associationsPackage);
+   let allAssociations = $allAssociationJoinPairs.first;
+   let mappingWithClassMappings = meta::relational::transform::autogen::databaseToMappingWithClassMappings($database, $mappingPackage, $classesPackage);
+   let associationMappings = meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings($database, $mappingWithClassMappings, $allAssociationJoinPairs);
+   let mapping = ^$mappingWithClassMappings(associationMappings = $associationMappings);
+   let pmcd = meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping($mapping, $allClasses, $allAssociations);
    $pmcd->meta::alloy::metadataServer::alloyToJSON();
 }
