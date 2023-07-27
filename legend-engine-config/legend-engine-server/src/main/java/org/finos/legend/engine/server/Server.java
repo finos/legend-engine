@@ -78,6 +78,7 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
+import org.finos.legend.engine.plan.execution.api.concurrent.ParallelGraphFetchExecutionExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
@@ -263,13 +264,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         MongoDBStoreExecutor mongoDBStoreExecutor = (MongoDBStoreExecutor) new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
 
         PlanExecutor planExecutor;
+        ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = null;
         if (serverConfiguration.graphFetchExecutionConfiguration != null)
         {
             GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = serverConfiguration.graphFetchExecutionConfiguration;
             planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
             if (graphFetchExecutionConfiguration.canExecuteInParallel())
             {
-                ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
+                parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
                 planExecutor.injectGraphFetchExecutionNodeExecutorPool(parallelGraphFetchExecutionExecutorPool);
             }
         }
@@ -301,6 +303,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new Memory());
         environment.jersey().register(new RelationalExecutorInformation());
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
+        environment.jersey().register(new ParallelGraphFetchExecutionExecutorPoolInfo(parallelGraphFetchExecutionExecutorPool));
 
         // Protocol
         environment.jersey().register(new PureProtocol());

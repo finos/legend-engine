@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.concurrent;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.opentracing.util.GlobalTracer;
 import org.finos.legend.engine.plan.execution.graphFetch.ParallelGraphFetchExecutionConfig;
 import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetchResult;
 
+import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
-
+@JsonSerialize(using = ParallelGraphFetchExecutionExecutorPoolSerializer.class)
 public final class ParallelGraphFetchExecutionExecutorPool implements AutoCloseable
 {
     private final String poolDescription;
@@ -86,5 +89,19 @@ public final class ParallelGraphFetchExecutionExecutorPool implements AutoClosea
             return false;
         }
         return true;
+    }
+
+    public void serialize(JsonGenerator jsonGenerator) throws IOException
+    {
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeFieldName("poolDescription");
+        jsonGenerator.writeString(this.poolDescription);
+        jsonGenerator.writeFieldName("poolConfiguration");
+        jsonGenerator.writeObject(this.parallelGraphFetchExecutionConfig);
+        jsonGenerator.writeFieldName("executor");
+        jsonGenerator.writeString(this.delegatedExecutor.toString());
+        jsonGenerator.writeFieldName("availableThreads");
+        jsonGenerator.writeNumber(this.availableThreads.availablePermits());
+        jsonGenerator.writeEndObject();
     }
 }
