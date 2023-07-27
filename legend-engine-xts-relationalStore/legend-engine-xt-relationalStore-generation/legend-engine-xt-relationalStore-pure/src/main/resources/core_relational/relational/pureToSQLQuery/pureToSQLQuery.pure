@@ -1391,8 +1391,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::transfo
 {
   let functionOperator = $expressionSequence.functionName->toOne();
   let joinName = $sourceId + '_' + $targetId + '_GeneratedRelationalJoin';
-  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias;
-  let targetMainTableAlias = $classMappings->filter(c| $c.id == $targetId)->toOne().mainTableAlias;
+  let sourceMainTableAlias = $classMappings->filter(c| $c.id == $sourceId)->toOne().mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
+  let targetMainTableAlias = $classMappings->filter(c| $c.id == $targetId)->toOne().mainTableAlias->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
   let sourceDatabase = $sourceMainTableAlias.database->toOne();
   let targetDatabase = $targetMainTableAlias.database->toOne();
   let aggregatedDatabase = ^Database(includes=[$sourceDatabase, $targetDatabase]);
@@ -1401,13 +1401,13 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::transfo
 
   let join = if(
     $functionOperator=='equal' || $functionOperator=='not',
-    | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression);
+    | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
 
       let sourceTableAliasColumn = getTableAliasColumn($propertyImplementations, 'this', $sourceId, $classMappings);
-      let sourceTableAlias = $sourceTableAliasColumn.alias->cast(@TableAlias);
+      let sourceTableAlias = $sourceTableAliasColumn.alias->cast(@TableAlias)->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
 
       let targetTableAliasColumn = getTableAliasColumn($propertyImplementations, 'that', $targetId, $classMappings);
-      let targetTableAlias = $targetTableAliasColumn.alias->cast(@TableAlias);
+      let targetTableAlias = $targetTableAliasColumn.alias->cast(@TableAlias)->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
 
       let parameters = $sourceTableAliasColumn->concatenate($targetTableAliasColumn);
       let operation = ^DynaFunction(name=$functionOperator, parameters=$parameters);
@@ -1421,7 +1421,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::transfo
     | let childJoins = $expressionSequence.parametersValues->map(p | 
         transformExpressionSequenceIntoJoin($p->cast(@SimpleFunctionExpression)->evaluateAndDeactivate(), $sourceId, $targetId, $classMappings)
       );
-      let operation = ^DynaFunction(name=$functionOperator, parameters=$childJoins.operation);
+      let operation = ^DynaFunction(name=$functionOperator, parameters=$childJoins.operation->evaluateAndDeactivate());
       ^Join(
         name=$joinName,
         operation=$operation,
