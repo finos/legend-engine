@@ -146,7 +146,7 @@ public class GraphObjectsBatch
     public ExecutionCache<GraphFetchCacheKey, List<Object>> getXStorePropertyCacheForNodeIndex(int index)
     {
         ExecutionCache<GraphFetchCacheKey, List<Object>> cache = this.xStorePropertyCaches.get(index);
-        if (cache != null && cache.equals(nullCache))
+        if (nullCache.equals(cache))
         {
             return null;
         }

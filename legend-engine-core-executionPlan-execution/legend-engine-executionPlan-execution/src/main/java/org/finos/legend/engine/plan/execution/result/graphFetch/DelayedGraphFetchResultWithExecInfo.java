@@ -18,13 +18,13 @@ import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecu
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 public class DelayedGraphFetchResultWithExecInfo extends Result
 {
-    public final Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture;
-    public final boolean executedInNewThread;
-
+    private final Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture;
+    private final boolean executedInNewThread;
     private final String threadConnectionKey;
 
     public DelayedGraphFetchResultWithExecInfo(Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture, boolean executedInNewThread, String threadConnectionKey)
@@ -38,7 +38,7 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
     @Override
     public <T> T accept(ResultVisitor<T> resultVisitor)
     {
-        return null;
+        throw new UnsupportedOperationException("no visitors");
     }
 
     public void possiblyReleaseThread(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
@@ -56,5 +56,11 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
             this.delayedGraphFetchResultFuture.cancel(true);
             graphFetchExecutionNodeExecutorPool.releaseThreads(threadConnectionKey, 1);
         }
+    }
+
+    public List<DelayedGraphFetchResultWithExecInfo> consume() throws Exception {
+        DelayedGraphFetchResult result = delayedGraphFetchResultFuture.get();
+        result.addNodeToParent();
+        return result.executeChildren();
     }
 }

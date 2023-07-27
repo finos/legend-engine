@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.graphFetch;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 
 public class GraphFetchExecutionConfiguration
 {
@@ -37,7 +36,7 @@ public class GraphFetchExecutionConfiguration
     @JsonProperty
     private final long defaultBatchSize;
     @JsonProperty
-    private final boolean parallelizeGraphfetchQueries;
+    private final boolean parallelizeGraphFetchQueries;
     @JsonProperty
     private ParallelGraphFetchExecutionConfig parallelGraphFetchExecutionConfig;
 
@@ -47,7 +46,7 @@ public class GraphFetchExecutionConfiguration
         this.softMemoryLimitPercentage = DEFAULT_SOFT_MEMORY_LIMIT_PERCENTAGE;
         this.useAdaptiveBatching = DEFAULT_USE_ADAPTIVE_BATCHING;
         this.defaultBatchSize = DEFAULT_BATCH_SIZE;
-        this.parallelizeGraphfetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
+        this.parallelizeGraphFetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
         this.parallelGraphFetchExecutionConfig = new ParallelGraphFetchExecutionConfig();
     }
 
@@ -57,7 +56,7 @@ public class GraphFetchExecutionConfiguration
         this.softMemoryLimitPercentage = DEFAULT_SOFT_MEMORY_LIMIT_PERCENTAGE;
         this.useAdaptiveBatching = DEFAULT_USE_ADAPTIVE_BATCHING;
         this.defaultBatchSize = DEFAULT_BATCH_SIZE;
-        this.parallelizeGraphfetchQueries = true;
+        this.parallelizeGraphFetchQueries = true;
         this.parallelGraphFetchExecutionConfig = parallelGraphFetchExecutionConfig;
     }
 
@@ -67,7 +66,7 @@ public class GraphFetchExecutionConfiguration
         this.softMemoryLimitPercentage = graphFetchSoftMemoryLimitPercentage;
         this.useAdaptiveBatching = useAdaptiveBatching;
         this.defaultBatchSize = graphFetchDefaultBatchSize;
-        this.parallelizeGraphfetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
+        this.parallelizeGraphFetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
         this.parallelGraphFetchExecutionConfig = new ParallelGraphFetchExecutionConfig();
     }
 
@@ -77,7 +76,7 @@ public class GraphFetchExecutionConfiguration
         this.softMemoryLimitPercentage = SOFT_MEMORY_TO_USE_FULL_MEMORY_PERCENTAGE;
         this.useAdaptiveBatching = DEFAULT_USE_ADAPTIVE_BATCHING;
         this.defaultBatchSize = DEFAULT_BATCH_SIZE;
-        this.parallelizeGraphfetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
+        this.parallelizeGraphFetchQueries = DEFAULT_PARALLELIZE_GRAPHFETCH_QUERIES;
         this.parallelGraphFetchExecutionConfig = new ParallelGraphFetchExecutionConfig();
     }
 
@@ -113,6 +112,6 @@ public class GraphFetchExecutionConfiguration
 
     public boolean canExecuteInParallel()
     {
-        return parallelizeGraphfetchQueries;
+        return parallelizeGraphFetchQueries;
     }
 }

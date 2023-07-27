@@ -82,7 +82,7 @@
     "enabled": true
   },
   "graphFetchExecutionConfiguration": {
-    "parallelizeGraphfetchQueries": true,
+    "parallelizeGraphFetchQueries": true,
     "parallelGraphFetchExecutionConfig": {
       "parallelExecutionPoolSize": 10,
       "defaultMaxConnectionsPerDatabase": 3,

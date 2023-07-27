@@ -121,7 +121,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::getTupl
    if($dbType == DatabaseType.DB2,
     | 100,
     | if($dbType == DatabaseType.Snowflake,
-      | 2000,
+      | 1000,
       | 100;
       );
     );

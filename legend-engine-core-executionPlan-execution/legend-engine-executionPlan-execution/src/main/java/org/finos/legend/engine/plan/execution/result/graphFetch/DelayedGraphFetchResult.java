@@ -19,24 +19,23 @@ import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 public class DelayedGraphFetchResult extends Result
 {
     private final Runnable parentAdder;
-    private final Callable<List<DelayedGraphFetchResultWithExecInfo>> childVisitor;
+    private final Callable<List<DelayedGraphFetchResultWithExecInfo>> childExecutor;
 
     public DelayedGraphFetchResult(Runnable parentAdder, Callable<List<DelayedGraphFetchResultWithExecInfo>> executeTempTableChild)
     {
         super("success");
         this.parentAdder = parentAdder;
-        this.childVisitor = executeTempTableChild;
+        this.childExecutor = executeTempTableChild;
     }
 
     @Override
     public <T> T accept(ResultVisitor<T> resultVisitor)
     {
-        return null;
+        throw new UnsupportedOperationException("no visitors");
     }
 
     public void addNodeToParent()
@@ -44,9 +43,9 @@ public class DelayedGraphFetchResult extends Result
         parentAdder.run();
     }
 
-    public List<DelayedGraphFetchResultWithExecInfo> visitChildren() throws Exception
+    public List<DelayedGraphFetchResultWithExecInfo> executeChildren() throws Exception
     {
-        return childVisitor.call();
+        return childExecutor.call();
     }
 }
 
