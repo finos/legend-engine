@@ -132,7 +132,7 @@ public class MetricsHandler
 
     public static void setConnectionMetrics(String poolName, double activeCount, double totalCount, double idleCount)
     {
-        if (!poolName.contains("DefaultH2"))
+        if (!poolName.contains("DefaultH2") && !poolName.contains("LocalH2"))
         {
             setActiveConnections(poolName, activeCount);
             setTotalConnections(poolName, totalCount);
