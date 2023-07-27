@@ -2032,8 +2032,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         {
             while (!jobs.isEmpty())
             {
-                DelayedGraphFetchResultWithExecInfo currentResultWrapped = jobs.poll();
-                List<DelayedGraphFetchResultWithExecInfo> childResults = currentResultWrapped.consume();
+                DelayedGraphFetchResultWithExecInfo currentResult = jobs.poll();
+                currentResult.possiblyReleaseThread(graphFetchExecutionNodeExecutorPool);
+                List<DelayedGraphFetchResultWithExecInfo> childResults = currentResult.consume();
                 jobs.addAll(childResults);
             }
         }
