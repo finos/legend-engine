@@ -61,7 +61,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 public class ExternalFormats
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ExternalFormats.class);
     static final Map<String, ExternalFormatExtension<?>> extensions = ExternalFormatExtensionLoader.extensions();
 
     private final ModelManager modelManager;

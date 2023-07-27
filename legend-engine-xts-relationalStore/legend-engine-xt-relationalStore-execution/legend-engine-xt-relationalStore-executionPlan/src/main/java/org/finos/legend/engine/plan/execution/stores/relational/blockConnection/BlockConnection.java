@@ -41,7 +41,7 @@ import java.util.concurrent.Executor;
 
 public class BlockConnection implements Connection
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(BlockConnection.class);
 
     private Connection conn;
     private List<String> rollbackQueries;

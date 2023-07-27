@@ -88,7 +88,7 @@ import org.slf4j.Logger;
 
 public class RelationalResult extends StreamingResult implements IRelationalResult, StoreExecutable
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalResult.class);
     private static final ImmutableList<String> TEMPORAL_DATE_ALIASES = Lists.immutable.of("k_businessDate", "k_processingDate");
 
     public final List<String> sqlColumns;

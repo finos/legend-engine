@@ -30,7 +30,7 @@ import java.sql.Statement;
 
 public class VoidRelationalResult extends Result
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(VoidRelationalResult.class);
 
     private Connection connection;
     private Statement statement;

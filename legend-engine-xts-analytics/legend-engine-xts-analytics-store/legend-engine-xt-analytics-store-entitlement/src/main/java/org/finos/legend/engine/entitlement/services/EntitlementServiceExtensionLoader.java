@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class EntitlementServiceExtensionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Engine Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(EntitlementServiceExtensionLoader.class);
     private static final AtomicReference<List<EntitlementServiceExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
