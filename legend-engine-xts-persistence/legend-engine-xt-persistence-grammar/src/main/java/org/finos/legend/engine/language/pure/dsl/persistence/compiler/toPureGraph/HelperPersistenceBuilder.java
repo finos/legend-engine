@@ -582,6 +582,10 @@ public class HelperPersistenceBuilder
         Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
         purePersistenceTest._id(test.id);
         purePersistenceTest._isTestDataFromServiceOutput(test.isTestDataFromServiceOutput);
+        if (test.graphFetchPath != null)
+        {
+            purePersistenceTest._graphFetchPath((buildPath(test.graphFetchPath, context)));
+        }
         purePersistenceTest._testable(purePersistence);
         if (test.testBatches != null)
         {

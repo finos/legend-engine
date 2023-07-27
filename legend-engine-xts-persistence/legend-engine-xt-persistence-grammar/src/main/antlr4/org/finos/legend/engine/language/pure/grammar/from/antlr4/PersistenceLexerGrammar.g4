@@ -48,6 +48,7 @@ NOTIFYEE_PAGER_DUTY_URL:                    'url';
 // TEST
 //TODO: ledav -- reorganize these
 PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT:  'isTestDataFromServiceOutput';
+PERSISTENCE_TEST_DATA_GRAPH_FETCH_PATH:     'graphFetchPath';
 PERSISTENCE_TEST_BATCHES:                   'testBatches';
 PERSISTENCE_TEST_DATA:                      'data';
 PERSISTENCE_TEST_CONNECTION_DATA:           'connection';
