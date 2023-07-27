@@ -57,7 +57,7 @@ public class ArtifactGenerationExtensionApi
 
 
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ArtifactGenerationExtensionApi.class);
 
     private final ModelManager modelManager;
 

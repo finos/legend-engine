@@ -55,7 +55,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Singleton
 public class JSONSchemaGenerationService
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(JSONSchemaGenerationService.class);
     private final ModelManager modelManager;
 
     @Inject

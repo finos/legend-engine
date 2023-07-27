@@ -75,7 +75,7 @@ import java.util.stream.Collectors;
 
 public class RelationalExecutor
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalExecutor.class);
 
     public static final String DEFAULT_DB_TIME_ZONE = "GMT";
 

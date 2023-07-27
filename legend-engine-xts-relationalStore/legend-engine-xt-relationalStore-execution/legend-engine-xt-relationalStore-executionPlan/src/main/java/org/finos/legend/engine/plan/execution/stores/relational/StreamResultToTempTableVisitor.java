@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
 
 public class StreamResultToTempTableVisitor implements RelationalDatabaseCommandsVisitor<Boolean>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StreamResultToTempTableVisitor.class);
 
     public RelationalExecutionConfiguration config;
     public Connection connection;

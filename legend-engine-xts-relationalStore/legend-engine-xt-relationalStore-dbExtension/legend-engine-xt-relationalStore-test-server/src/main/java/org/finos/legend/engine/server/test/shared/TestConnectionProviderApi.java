@@ -51,7 +51,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class TestConnectionProviderApi
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestConnectionProviderApi.class);
     private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
 
     Map<DatabaseType, RelationalDatabaseConnection> testConnectionByDatabaseType = new HashMap<DatabaseType, RelationalDatabaseConnection>();

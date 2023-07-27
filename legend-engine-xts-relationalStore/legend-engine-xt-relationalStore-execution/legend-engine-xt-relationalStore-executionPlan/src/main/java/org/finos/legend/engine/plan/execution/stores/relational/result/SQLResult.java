@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 public abstract class SQLResult extends Result implements StoreExecutable
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLResult.class);
 
     private final String databaseType;
     private final List<String> temporaryTables;

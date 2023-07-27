@@ -40,7 +40,7 @@ import java.util.TimeZone;
 
 public class SQLExecutionResult extends SQLResult
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutionResult.class);
 
     private final org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode SQLExecutionNode;
     private final String databaseTimeZone;
