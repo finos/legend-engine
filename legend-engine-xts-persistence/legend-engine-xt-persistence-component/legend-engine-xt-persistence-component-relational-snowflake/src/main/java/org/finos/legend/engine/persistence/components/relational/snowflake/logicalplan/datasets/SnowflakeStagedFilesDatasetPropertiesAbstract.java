@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+package org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets;
+
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
+
+import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
@@ -25,16 +29,11 @@ import java.util.Optional;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public interface StagedFilesDatasetReferenceAbstract extends DatasetReference
+public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFilesDatasetProperties
 {
     String location();
 
+    List<String> files();
+
     Optional<String> fileFormat();
-
-    Optional<String> filePattern();
-
-    default StagedFilesDatasetReferenceAbstract datasetReference()
-    {
-        return this;
-    }
 }

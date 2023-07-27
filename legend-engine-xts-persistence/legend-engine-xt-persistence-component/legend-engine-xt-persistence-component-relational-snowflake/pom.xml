@@ -44,6 +44,12 @@
             <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
         </dependency>
 
+        <!-- IMMUTABLES -->
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+        </dependency>
+
         <!-- SNOWFLAKE -->
         <dependency>
             <groupId>net.snowflake</groupId>

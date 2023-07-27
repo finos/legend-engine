@@ -321,6 +321,7 @@ public abstract class RelationalIngestorAbstract
                     .dataSplitRange(dataSplitRange)
                     .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
                     .status(IngestStatus.COMPLETED)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
                     .build();
                 results.add(result);
                 dataSplitIndex++;
@@ -372,7 +373,9 @@ public abstract class RelationalIngestorAbstract
             Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
             // Execute ingest SqlPlan
-            IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues);
+            IngestorResult result = relationalSink()
+                    .performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues)
+                    .withIngestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN));
 
             // Execute metadata ingest SqlPlan
             if (generatorResult.metadataIngestSqlPlan().isPresent())

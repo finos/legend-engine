@@ -30,11 +30,7 @@ import java.util.stream.Collectors;
 )
 public interface StagedFilesDatasetAbstract extends Dataset
 {
-    String location();
-
-    Optional<String> fileFormat();
-
-    Optional<String> filePattern();
+    StagedFilesDatasetProperties stagedFilesDatasetProperties();
 
     SchemaDefinition schema();
 
@@ -64,11 +60,6 @@ public interface StagedFilesDatasetAbstract extends Dataset
     @Value.Derived
     default DatasetReference datasetReference()
     {
-        return StagedFilesDatasetReference.builder()
-                .location(location())
-                .fileFormat(fileFormat())
-                .filePattern(filePattern())
-                .alias(alias())
-                .build();
+        return this.stagedFilesDatasetProperties().withAlias(alias());
     }
 }

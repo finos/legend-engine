@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
@@ -66,6 +67,8 @@ public class BulkLoadTest
             .columnNumber(5)
             .build();
 
+    private List filesList = Arrays.asList("/path/xyz/file1.csv", "/path/xyz/file2.csv");
+
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
 
@@ -79,9 +82,11 @@ public class BulkLoadTest
                 .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
-                .location("my_location")
-                .fileFormat("my_file_format")
-                .filePattern("my_file_pattern")
+                .stagedFilesDatasetProperties(
+                        SnowflakeStagedFilesDatasetProperties.builder()
+                           .location("my_location")
+                           .fileFormat("my_file_format")
+                           .addAllFiles(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
                 .build();
 
@@ -108,7 +113,7 @@ public class BulkLoadTest
                 "(\"col_int\", \"col_integer\", \"append_time\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",'2000-01-01 00:00:00' " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage)" +
+                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage)" +
                 " on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -131,9 +136,11 @@ public class BulkLoadTest
                 .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
-                .location("my_location")
-                .fileFormat("my_file_format")
-                .filePattern("my_file_pattern")
+                .stagedFilesDatasetProperties(
+                        SnowflakeStagedFilesDatasetProperties.builder()
+                                .location("my_location")
+                                .fileFormat("my_file_format")
+                                .addAllFiles(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3, col4)).build())
                 .alias("t")
                 .build();
@@ -160,7 +167,7 @@ public class BulkLoadTest
                 "(\"col_bigint\", \"col_variant\") " +
                 "FROM " +
                 "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\" " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as t) " +
+                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as t) " +
                 "on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -182,9 +189,11 @@ public class BulkLoadTest
                 .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
-                .location("my_location")
-                .fileFormat("my_file_format")
-                .filePattern("my_file_pattern")
+                .stagedFilesDatasetProperties(
+                        SnowflakeStagedFilesDatasetProperties.builder()
+                                .location("my_location")
+                                .fileFormat("my_file_format")
+                                .addAllFiles(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
                 .build();
 
@@ -212,7 +221,7 @@ public class BulkLoadTest
                 "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"APPEND_TIME\") " +
                 "FROM (SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "'2000-01-01 00:00:00' FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => 'my_file_pattern') as legend_persistence_stage) " +
+                "'2000-01-01 00:00:00' FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));

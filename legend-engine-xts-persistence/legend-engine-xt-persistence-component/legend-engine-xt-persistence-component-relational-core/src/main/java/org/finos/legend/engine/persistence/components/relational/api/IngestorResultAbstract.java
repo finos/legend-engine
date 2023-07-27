@@ -46,4 +46,6 @@ public abstract class IngestorResultAbstract
     public abstract IngestStatus status();
 
     public abstract Optional<String> message();
+
+    public abstract String ingestionTimestampUTC();
 }

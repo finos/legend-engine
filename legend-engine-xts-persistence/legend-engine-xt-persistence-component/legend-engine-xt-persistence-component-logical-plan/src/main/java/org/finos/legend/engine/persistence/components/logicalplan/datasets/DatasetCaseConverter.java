@@ -119,9 +119,7 @@ public class DatasetCaseConverter
         {
             StagedFilesDataset stagedFilesDataset = StagedFilesDataset.builder()
                     .schema(schemaDefinition)
-                    .location(((StagedFilesDataset)dataset).location())
-                    .filePattern(((StagedFilesDataset)dataset).filePattern())
-                    .fileFormat(((StagedFilesDataset)dataset).fileFormat())
+                    .stagedFilesDatasetProperties(((StagedFilesDataset) dataset).stagedFilesDatasetProperties())
                     .datasetAdditionalProperties(dataset.datasetAdditionalProperties())
                     .build();
 
