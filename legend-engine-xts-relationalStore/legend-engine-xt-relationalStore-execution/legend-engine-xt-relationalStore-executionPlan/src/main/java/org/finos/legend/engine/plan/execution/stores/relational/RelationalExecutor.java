@@ -28,6 +28,8 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
+import org.finos.legend.engine.plan.execution.graphFetch.IParallelGraphFetchExecution;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
@@ -57,6 +59,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -70,10 +73,13 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class RelationalExecutor
+public class RelationalExecutor implements IParallelGraphFetchExecution
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalExecutor.class);
 
@@ -82,6 +88,7 @@ public class RelationalExecutor
     private final ConnectionManagerSelector connectionManager;
     private final RelationalExecutionConfiguration relationalExecutionConfiguration;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
+    private final ConcurrentMap<String, Semaphore> openThreadsCountPerThreadConnectionKey = new ConcurrentHashMap<>();
 
     private static final MutableMap<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = Maps.mutable.empty();
 
@@ -418,5 +425,32 @@ public class RelationalExecutor
     public static String getRelationalTypeFromDataType(String dataType)
     {
         return DATA_TYPE_RELATIONAL_TYPE_MAP.get(dataType);
+    }
+
+    public synchronized boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String dbConnectionKeyWithIdentity, int threadsToAcquire, Object... dbType)
+    {
+        boolean test1 = graphFetchExecutionNodeExecutorPool.acquireThreads(threadsToAcquire);
+        if (!test1)
+        {
+            return false;
+        }
+
+        openThreadsCountPerThreadConnectionKey.putIfAbsent(
+                dbConnectionKeyWithIdentity, new Semaphore(relationalExecutionConfiguration.getMaxConnectionsPerDatabaseForDatabase((DatabaseType) dbType[0])));
+
+        boolean test2 = openThreadsCountPerThreadConnectionKey.get(dbConnectionKeyWithIdentity).tryAcquire(threadsToAcquire);
+        if (!test2)
+        {
+            graphFetchExecutionNodeExecutorPool.releaseThreads(threadsToAcquire);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public synchronized void releaseThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String dbConnectionKeyWithIdentity, int threadsToRelease)
+    {
+        graphFetchExecutionNodeExecutorPool.releaseThreads(threadsToRelease);
+        openThreadsCountPerThreadConnectionKey.get(dbConnectionKeyWithIdentity).release(threadsToRelease);
     }
 }

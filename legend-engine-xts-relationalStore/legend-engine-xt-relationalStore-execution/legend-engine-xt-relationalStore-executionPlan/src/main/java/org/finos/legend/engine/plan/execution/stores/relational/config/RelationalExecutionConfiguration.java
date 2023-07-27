@@ -21,6 +21,7 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     private DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
     private Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass;
     private CredentialProviderProvider credentialProviderProvider;
+    private RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig;
 
     @Override
     public StoreType getStoreType()
@@ -88,6 +90,11 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         return new Builder();
     }
 
+    public int getMaxConnectionsPerDatabaseForDatabase(DatabaseType databaseType)
+    {
+        return relationalGraphFetchParallelExecutionConfig.getMaxConnectionsPerDatabaseForDatabase(databaseType.name());
+    }
+
     public static class Builder
     {
         public String tempPath;
@@ -96,6 +103,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         private DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
         private TemporaryTestDbConfiguration temporaryTestDbConfiguration;
         private CredentialProviderProvider credentialProviderProvider;
+        private RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig;
 
         public Builder withTempPath(String tempPath)
         {
@@ -136,6 +144,12 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             return this;
         }
 
+        public Builder withRelationalGraphFetchParallelExecutionConfig(RelationalGraphFetchParallelExecutionConfig config)
+        {
+            this.relationalGraphFetchParallelExecutionConfig = config;
+            return this;
+        }
+
         public RelationalExecutionConfiguration build()
         {
             RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration();
@@ -145,6 +159,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             relationalExecutionConfiguration.flowProviderConfiguration = this.flowProviderConfiguration;
             relationalExecutionConfiguration.temporarytestdb = this.temporaryTestDbConfiguration;
             relationalExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
+            relationalExecutionConfiguration.relationalGraphFetchParallelExecutionConfig = relationalGraphFetchParallelExecutionConfig;
             return relationalExecutionConfiguration;
         }
     }

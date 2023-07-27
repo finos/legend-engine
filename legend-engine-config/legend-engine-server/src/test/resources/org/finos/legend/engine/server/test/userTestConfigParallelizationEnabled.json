@@ -76,6 +76,13 @@
     "tempPath": "/tmp/",
     "temporarytestdb": {
       "port": 9092
+    },
+    "relationalGraphFetchParallelExecutionConfig": {
+      "defaultMaxConnectionsPerDatabase": 3,
+      "maxConnectionsPerDatabaseTypeOverrides": {
+        "H2": 10,
+        "Snowflake": 1000
+      }
     }
   },
   "errorhandlingconfiguration": {
@@ -84,12 +91,7 @@
   "graphFetchExecutionConfiguration": {
     "parallelizeGraphFetchQueries": true,
     "parallelGraphFetchExecutionConfig": {
-      "parallelExecutionPoolSize": 10,
-      "defaultMaxConnectionsPerDatabase": 3,
-      "maxConnectionsPerDatabaseTypeOverrides": {
-        "H2": 10,
-        "Snowflake": 1000
-      }
+      "parallelExecutionPoolSize": 10
     }
   }
 }

@@ -14,21 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.graphFetch;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 
-import java.util.HashMap;
-import java.util.Map;
-
-
-public class ParallelGraphFetchExecutionConfig
+public interface IParallelGraphFetchExecution
 {
-    public final long DEFAULT_PARALLEL_EXECUTION_POOL_SIZE = 100;
-
-    @JsonProperty
-    public final long parallelExecutionPoolSize;
-
-    public ParallelGraphFetchExecutionConfig()
-    {
-        this.parallelExecutionPoolSize = DEFAULT_PARALLEL_EXECUTION_POOL_SIZE;
-    }
+    public boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToAcquire, Object... extra);
+    public void releaseThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToRelease);
 }

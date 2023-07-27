@@ -23,8 +23,6 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetc
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -40,8 +38,6 @@ public final class ParallelGraphFetchExecutionExecutorPool implements AutoClosea
     private final ExecutorService delegatedExecutor;
 
     private final Semaphore availableThreads;
-    private final ConcurrentMap<String, Semaphore> openThreadsCountPerThreadConnectionKey;
-
 
     public ParallelGraphFetchExecutionExecutorPool(ParallelGraphFetchExecutionConfig poolConfig, String poolDescription)
     {
@@ -53,7 +49,6 @@ public final class ParallelGraphFetchExecutionExecutorPool implements AutoClosea
         this.executor = new TracedExecutorService(this.delegatedExecutor, GlobalTracer.get());
 
         this.availableThreads = new Semaphore(poolSize);
-        this.openThreadsCountPerThreadConnectionKey = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -67,29 +62,14 @@ public final class ParallelGraphFetchExecutionExecutorPool implements AutoClosea
         return this.executor.submit(task);
     }
 
-    public synchronized void releaseThreads(String threadConnectionKey, int threadsToRelease)
+    public void releaseThreads(int threadsToRelease)
     {
         availableThreads.release(threadsToRelease);
-        openThreadsCountPerThreadConnectionKey.get(threadConnectionKey).release(threadsToRelease);
     }
 
-    public synchronized boolean acquireThreads(String threadConnectionKey, String databaseType, int threadsToAcquire)
+    public boolean acquireThreads(int threadsToAcquire)
     {
-        openThreadsCountPerThreadConnectionKey.putIfAbsent(
-                threadConnectionKey, new Semaphore(parallelGraphFetchExecutionConfig.getMaxConnectionsPerDatabaseForDatabase(databaseType)));
-
-        boolean test1 = availableThreads.tryAcquire(threadsToAcquire);
-        if (!test1)
-        {
-            return false;
-        }
-        boolean test2 = openThreadsCountPerThreadConnectionKey.get(threadConnectionKey).tryAcquire(threadsToAcquire);
-        if (!test2)
-        {
-            availableThreads.release(threadsToAcquire);
-            return false;
-        }
-        return true;
+        return availableThreads.tryAcquire(threadsToAcquire);
     }
 
     public void serialize(JsonGenerator jsonGenerator) throws IOException

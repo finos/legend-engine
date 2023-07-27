@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
+import org.finos.legend.engine.plan.execution.graphFetch.IParallelGraphFetchExecution;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
@@ -25,12 +26,12 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
 {
     private final Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture;
     private final boolean executedInNewThread;
-    private final String threadConnectionKey;
+    private final String threadIdentifierKey;
 
-    public DelayedGraphFetchResultWithExecInfo(Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture, boolean executedInNewThread, String threadConnectionKey)
+    public DelayedGraphFetchResultWithExecInfo(Future<DelayedGraphFetchResult> delayedGraphFetchResultFuture, boolean executedInNewThread, String threadIdentifierKey)
     {
         super("success");
-        this.threadConnectionKey = threadConnectionKey;
+        this.threadIdentifierKey = threadIdentifierKey;
         this.delayedGraphFetchResultFuture = delayedGraphFetchResultFuture;
         this.executedInNewThread = executedInNewThread;
     }
@@ -41,20 +42,20 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
         throw new UnsupportedOperationException("no visitors");
     }
 
-    public void possiblyReleaseThread(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    public void possiblyReleaseThread(IParallelGraphFetchExecution executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
     {
         if (executedInNewThread)
         {
-            graphFetchExecutionNodeExecutorPool.releaseThreads(threadConnectionKey, 1);
+            executor.releaseThreads(graphFetchExecutionNodeExecutorPool, threadIdentifierKey, 1);
         }
     }
 
-    public void cancel(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    public void cancel(IParallelGraphFetchExecution executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
     {
         if (this.executedInNewThread)
         {
             this.delayedGraphFetchResultFuture.cancel(true);
-            graphFetchExecutionNodeExecutorPool.releaseThreads(threadConnectionKey, 1);
+            executor.releaseThreads(graphFetchExecutionNodeExecutorPool, threadIdentifierKey, 1);
         }
     }
 
