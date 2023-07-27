@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
+
 @JsonSerialize(using = ParallelGraphFetchExecutionExecutorPoolSerializer.class)
 public final class ParallelGraphFetchExecutionExecutorPool implements AutoCloseable
 {

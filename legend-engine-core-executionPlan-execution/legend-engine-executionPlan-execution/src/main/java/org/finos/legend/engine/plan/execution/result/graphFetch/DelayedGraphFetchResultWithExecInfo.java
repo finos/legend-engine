@@ -58,7 +58,8 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
         }
     }
 
-    public List<DelayedGraphFetchResultWithExecInfo> consume() throws Exception {
+    public List<DelayedGraphFetchResultWithExecInfo> consume() throws Exception
+    {
         DelayedGraphFetchResult result = delayedGraphFetchResultFuture.get();
         result.addNodeToParent();
         return result.executeChildren();
