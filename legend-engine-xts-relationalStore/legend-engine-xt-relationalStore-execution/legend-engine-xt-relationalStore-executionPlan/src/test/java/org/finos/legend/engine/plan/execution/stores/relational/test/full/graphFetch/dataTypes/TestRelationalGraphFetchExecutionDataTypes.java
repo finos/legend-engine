@@ -192,6 +192,46 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
         Assert.assertEquals(expected, new ObjectMapper().writeValueAsString(stream.iterator()));
     }
 
+    @Test
+    public void testGraphFetchDataTypeErrorMessage()
+    {
+        String invalidMapping = "###Mapping\n" +
+                "Mapping test::Map\n" +
+                "(\n" +
+                "    test::DataTypesClass: Relational\n" +
+                "    {\n" +
+                "       scope([test::DataTypesDB] dataTable)\n" +
+                "       (\n" +
+                "          integer: vc\n" +
+                "       )\n" +
+                "    }\n" +
+                ")\n\n";
+
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[*]\n" +
+                "{\n" +
+                "  |test::DataTypesClass.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::DataTypesClass {\n" +
+                "         integer\n" +
+                "      }\n" +
+                "   }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::DataTypesClass {\n" +
+                "         integer\n" +
+                "      }\n" +
+                "   }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + STORE_MODEL + invalidMapping + RUNTIME + fetchFunction);
+        RuntimeException e = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            JsonStreamingResult res  = (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, null);
+            res.flush(new JsonStreamToPureFormatSerializer(res));
+        });
+        Assert.assertEquals("Error reading in property 'integer' of type Integer from SQL column of type 'VARCHAR'.", e.getMessage());
+    }
+
     private JsonStreamingResult getJsonStreamingResultForAllDataTypes(String storeModel)
     {
         String fetchFunction = "###Pure\n" +

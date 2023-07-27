@@ -214,6 +214,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
       ->imports(javaResultSet())
       ->imports(javaClass('java.sql.ResultSetMetaData'))
       ->imports(javaClass('java.sql.Types'))
+      ->imports(javaClass('java.sql.JDBCType'))
       ->imports(javaClass('org.eclipse.collections.impl.tuple.Tuples'))
       ->imports(javaClass('org.eclipse.collections.api.tuple.Pair'))
       ->imports($conventions->className(IExecutionNodeContext))
