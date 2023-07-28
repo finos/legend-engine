@@ -18,6 +18,7 @@ import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecu
 
 public interface IParallelGraphFetchExecution
 {
-    public boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToAcquire, Object... extra);
-    public void releaseThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToRelease);
+    boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToAcquire, Object... extra);
+
+    void releaseThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToRelease);
 }

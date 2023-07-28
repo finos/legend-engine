@@ -1760,7 +1760,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             for (ExecutionNode child: node.children)
             {
-                if (parallelizationEnabled && relationalExecutor.acquireThreads(graphFetchExecutionNodeExecutorPool, dbConnectionKeyWithIdentity, 1))
+                if (parallelizationEnabled && relationalExecutor.acquireThreads(graphFetchExecutionNodeExecutorPool, dbConnectionKeyWithIdentity, 1, databaseConnection.type))
                 {
                     Callable<DelayedGraphFetchResult> task = () -> executeTempTableChildInNewConnection(node, child, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, relationalGraphObjectsBatch, currentActiveSpan);
                     submittedTasks.add(new DelayedGraphFetchResultWithExecInfo(graphFetchExecutionNodeExecutorPool.submit(task), true, dbConnectionKeyWithIdentity));
