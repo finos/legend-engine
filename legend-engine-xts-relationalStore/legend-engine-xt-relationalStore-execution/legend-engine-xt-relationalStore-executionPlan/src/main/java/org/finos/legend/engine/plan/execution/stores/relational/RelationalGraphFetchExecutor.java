@@ -31,6 +31,7 @@ public class RelationalGraphFetchExecutor implements IParallelGraphFetchExecutor
     {
         this.relationalGraphFetchParallelExecutionConfig = new RelationalGraphFetchParallelExecutionConfig();
     }
+
     public RelationalGraphFetchExecutor(RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig)
     {
         this.relationalGraphFetchParallelExecutionConfig = relationalGraphFetchParallelExecutionConfig;
