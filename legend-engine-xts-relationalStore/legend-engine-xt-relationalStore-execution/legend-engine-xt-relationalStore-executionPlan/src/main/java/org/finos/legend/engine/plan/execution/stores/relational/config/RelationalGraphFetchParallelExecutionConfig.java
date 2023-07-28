@@ -28,7 +28,6 @@ public class RelationalGraphFetchParallelExecutionConfig
     @JsonProperty
     private final Map<String, Integer> maxConnectionsPerDatabaseTypeOverrides;
 
-
     public RelationalGraphFetchParallelExecutionConfig()
     {
         this.defaultMaxConnectionsPerDatabase = DEFAULT_DEFAULT_MAX_CONNECTIONS_PER_DATABASE;

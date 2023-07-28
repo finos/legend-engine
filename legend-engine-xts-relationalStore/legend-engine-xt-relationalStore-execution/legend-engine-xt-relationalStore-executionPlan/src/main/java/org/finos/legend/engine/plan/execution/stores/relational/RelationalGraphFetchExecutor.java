@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.StoreGraphFetchExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalGraphFetchExecutionConfig;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalGraphFetchParallelExecutionConfig;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,17 +25,22 @@ import java.util.concurrent.Semaphore;
 
 public class RelationalGraphFetchExecutor implements StoreGraphFetchExecutor
 {
-    private final RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig;
+    private final RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig;
     private final ConcurrentMap<String, Semaphore> openThreadsCountPerThreadConnectionKey = new ConcurrentHashMap<>();
 
     public RelationalGraphFetchExecutor()
     {
-        this.relationalGraphFetchParallelExecutionConfig = new RelationalGraphFetchParallelExecutionConfig();
+        this.relationalGraphFetchExecutionConfig = new RelationalGraphFetchExecutionConfig();
     }
 
-    public RelationalGraphFetchExecutor(RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig)
+    public RelationalGraphFetchExecutor(RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig)
     {
-        this.relationalGraphFetchParallelExecutionConfig = relationalGraphFetchParallelExecutionConfig;
+        this.relationalGraphFetchExecutionConfig = relationalGraphFetchExecutionConfig;
+    }
+
+    public boolean canExecuteInParallel()
+    {
+        return relationalGraphFetchExecutionConfig.canExecuteInParallel();
     }
 
     public synchronized boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String dbConnectionKeyWithIdentity, int threadsToAcquire, Object... dbType)
@@ -44,6 +50,8 @@ public class RelationalGraphFetchExecutor implements StoreGraphFetchExecutor
         {
             return false;
         }
+
+        RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig = relationalGraphFetchExecutionConfig.getRelationalGraphFetchParallelExecutionConfig();
 
         openThreadsCountPerThreadConnectionKey.putIfAbsent(
                 dbConnectionKeyWithIdentity, new Semaphore(relationalGraphFetchParallelExecutionConfig.getMaxConnectionsPerDatabaseForDatabase((String) dbType[0])));

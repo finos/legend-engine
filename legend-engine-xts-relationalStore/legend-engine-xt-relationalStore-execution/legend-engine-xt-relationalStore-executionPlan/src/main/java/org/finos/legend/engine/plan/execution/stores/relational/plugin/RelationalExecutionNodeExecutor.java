@@ -1746,7 +1746,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private List<DelayedGraphFetchResultWithExecInfo> submitTasksToExecutorIfPossible(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, RelationalGraphObjectsBatch relationalGraphObjectsBatch)
     {
         List<DelayedGraphFetchResultWithExecInfo> submittedTasks = FastList.newList();
-        boolean parallelizationEnabled = this.executionState.getGraphFetchExecutionConfiguration().canExecuteInParallel();
         ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool = this.executionState.getGraphFetchExecutionNodeExecutorPool();
         RelationalExecutor relationalExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalExecutor();
@@ -1756,6 +1755,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
         RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
                 .getRelationalGraphFetchExecutor();
+
+        boolean parallelizationEnabled = this.executionState.getGraphFetchExecutionConfiguration().canExecuteInParallel() && relationalGraphFetchExecutor.canExecuteInParallel();
 
         try
         {
