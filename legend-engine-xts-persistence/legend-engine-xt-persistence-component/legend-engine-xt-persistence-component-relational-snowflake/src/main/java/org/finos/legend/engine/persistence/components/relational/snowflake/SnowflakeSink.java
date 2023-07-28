@@ -84,6 +84,8 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.ArrayList;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+
 public class SnowflakeSink extends AnsiSqlSink
 {
     private static final RelationalSink INSTANCE;
@@ -258,12 +260,22 @@ public class SnowflakeSink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
             stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
             stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
-            result = IngestorResult.builder().status(IngestStatus.COMPLETED).updatedDatasets(datasets).putAllStatisticByName(stats).build();
+            result = IngestorResult.builder()
+                    .status(IngestStatus.COMPLETED)
+                    .updatedDatasets(datasets)
+                    .putAllStatisticByName(stats)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                    .build();
         }
         else
         {
             String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
-            result = IngestorResult.builder().status(IngestStatus.ERROR).message(errorMessage).updatedDatasets(datasets).build();
+            result = IngestorResult.builder()
+                    .status(IngestStatus.ERROR)
+                    .message(errorMessage)
+                    .updatedDatasets(datasets)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                    .build();
         }
         return result;
     }

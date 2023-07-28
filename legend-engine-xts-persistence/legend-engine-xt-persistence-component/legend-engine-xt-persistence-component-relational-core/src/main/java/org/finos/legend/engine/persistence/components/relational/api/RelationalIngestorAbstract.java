@@ -95,7 +95,7 @@ public abstract class RelationalIngestorAbstract
     private static final String SINGLE_QUOTE = "'";
     private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
 
-    private static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
+    public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
     private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
 
     //---------- FLAGS ----------
@@ -373,10 +373,7 @@ public abstract class RelationalIngestorAbstract
             Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
             // Execute ingest SqlPlan
-            IngestorResult result = relationalSink()
-                    .performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues)
-                    .withIngestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN));
-
+            IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues);
             // Execute metadata ingest SqlPlan
             if (generatorResult.metadataIngestSqlPlan().isPresent())
             {
