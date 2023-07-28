@@ -38,31 +38,6 @@ function meta::pure::milestoning::temporalStrategyToPropertyName(t:SingleDateTem
                b:BusinessTemporal[1]| 'businessDate']);
 }
 
-
-function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
-{
-   $p->map(p|$p->reverseMilestoningTransforms());
-}
-
-function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[1]):AbstractProperty<Any>[0..1]
-{
-   if($p->meta::pure::milestoning::isEdgePointProperty(),| let originalPropertyName = $p->meta::pure::milestoning::originalPropertyNameForEdgePointProperty();
-                                                           let originalMilestonedProperties = $p.owner->match([c:Class<Any>[1]| $c.originalMilestonedProperties, 
-                                                                                                               a:Association[1]|$a.originalMilestonedProperties]);
-                                                           let milestonedProperties = $originalMilestonedProperties->filter(mp|$mp.name == $originalPropertyName);
-                                                           if($milestonedProperties->size() > 1,
-                                                              | let owningTypeClass = $p.classifierGenericType.typeArguments->at(1).rawType.name;
-                                                                $milestonedProperties->filter(mp | $mp.genericType.rawType.name == $owningTypeClass)->at(0);,
-                                                              | $milestonedProperties->at(0));
-                                                        ,| if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),|[],|$p));
-}
-
-function meta::pure::milestoning::reverseMilestoningTransforms(f:FunctionExpression[1]): FunctionExpression[1]
-{
-    if(!$f.originalMilestonedPropertyParametersValues->isEmpty(),| ^$f(parametersValues = $f.originalMilestonedPropertyParametersValues, originalMilestonedPropertyParametersValues = [], originalMilestonedProperty = []);
-                                                                 ,| $f);
-}
-
 function meta::pure::milestoning::excludeRangeMilestoningPropertyMapping(p:PropertyMapping[*]):PropertyMapping[*]
 {
    $p->filter(p|!$p.property->isRangeMilestoningProperty());

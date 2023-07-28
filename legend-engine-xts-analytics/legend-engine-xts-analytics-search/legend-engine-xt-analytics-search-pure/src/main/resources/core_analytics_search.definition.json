@@ -7,6 +7,7 @@
     "platform_dsl_mapping",
     "platform_functions_json",
     "platform_store_relational",
+    "core_functions",
     "core",
     "core_relational",
     "core_service",

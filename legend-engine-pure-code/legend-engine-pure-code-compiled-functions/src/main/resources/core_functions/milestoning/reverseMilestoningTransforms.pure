@@ -1,0 +1,81 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::milestoning::tests::reverseMilestoningTransforms::*;
+
+function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
+{
+   $p->map(p|$p->reverseMilestoningTransforms());
+}
+
+function meta::pure::milestoning::reverseMilestoningTransforms(p:AbstractProperty<Any>[1]):AbstractProperty<Any>[0..1]
+{
+   if($p->meta::pure::milestoning::isEdgePointProperty(),| let originalPropertyName = $p->meta::pure::milestoning::originalPropertyNameForEdgePointProperty();
+                                                           let originalMilestonedProperties = $p.owner->match([c:Class<Any>[1]| $c.originalMilestonedProperties,
+                                                                                                               a:Association[1]|$a.originalMilestonedProperties]);
+                                                           let milestonedProperties = $originalMilestonedProperties->filter(mp|$mp.name == $originalPropertyName);
+                                                           if($milestonedProperties->size() > 1,
+                                                              | let owningTypeClass = $p.classifierGenericType.typeArguments->at(1).rawType.name;
+                                                                $milestonedProperties->filter(mp | $mp.genericType.rawType.name == $owningTypeClass)->at(0);,
+                                                              | $milestonedProperties->at(0));
+                                                        ,| if($p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),|[],|$p));
+}
+
+function meta::pure::milestoning::reverseMilestoningTransforms(f:FunctionExpression[1]): FunctionExpression[1]
+{
+    if(!$f.originalMilestonedPropertyParametersValues->isEmpty(),| ^$f(parametersValues = $f.originalMilestonedPropertyParametersValues, originalMilestonedPropertyParametersValues = [], originalMilestonedProperty = []);
+                                                                 ,| $f);
+}
+
+
+
+
+
+
+
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::reverseMilestoningTransforms::BusinessTemporalClassA
+{
+   b : BusinessTemporalClassB[0..1];
+   c : NonTemporalClassC[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::reverseMilestoningTransforms::BusinessTemporalClassB
+{
+
+}
+
+Class meta::pure::milestoning::tests::reverseMilestoningTransforms::NonTemporalClassC
+{
+
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::reverseMilestoningTransforms::BusinessTemporalClassD
+{
+
+}
+
+Association meta::pure::milestoning::tests::reverseMilestoningTransforms::DuplicatePropAssociation
+{
+   propertyB: BusinessTemporalClassB[0..*];
+   propertyB: BusinessTemporalClassD[0..1];
+}
+
+
+function <<test.Test>> meta::pure::milestoning::tests::reverseMilestoningTransforms::testReverseMilestoning(): Boolean[1]
+{
+   let prop =  BusinessTemporalClassB.propertiesFromAssociations->map(p | $p->meta::pure::milestoning::reverseMilestoningTransforms());
+   assertSameElements([BusinessTemporalClassB.propertiesFromAssociations->cast(@AbstractProperty<Any>)->toOne()->meta::pure::milestoning::originalPropertyNameForEdgePointProperty()], $prop.name);
+}

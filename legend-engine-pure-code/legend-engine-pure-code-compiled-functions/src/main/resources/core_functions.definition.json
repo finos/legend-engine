@@ -1,6 +1,6 @@
 {
   "name": "core_functions",
-  "pattern": "(meta::pure::functions)(::.*)?",
+  "pattern": "(meta::pure::milestoning|meta::pure::functions)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions"

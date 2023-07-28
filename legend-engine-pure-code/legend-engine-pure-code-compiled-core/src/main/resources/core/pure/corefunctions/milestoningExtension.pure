@@ -19,43 +19,9 @@ function meta::pure::milestoning::isTemporal(type:Type[1]):Boolean[1]
    ['processingtemporal','businesstemporal','bitemporal']->exists(s| $type->hasStereotype($s, temporal))
 }
 
-function meta::pure::milestoning::hasGeneratedMilestoningDatePropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
-{
-   $f->hasStereotype('generatedmilestoningdateproperty',meta::pure::profiles::milestoning)
-}
-
-function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:Function<Any>[1]):Boolean[1]
-{
-    $f->cast(@ElementWithStereotypes)->hasGeneratedMilestoningPropertyStereotype();
-}
-
-function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
-{
-   $f->hasStereotype('generatedmilestoningproperty',meta::pure::profiles::milestoning) || $f->hasGeneratedMilestoningDatePropertyStereotype()
-}
-
 function meta::pure::milestoning::isGeneratedMilestoningPropertyStereotype(s:Stereotype[1]):Boolean[1]
 {
    $s == meta::pure::profiles::milestoning->stereotype('generatedmilestoningproperty') || $s == meta::pure::profiles::milestoning->stereotype('generatedmilestoningdateproperty')
-}
-
-function meta::pure::milestoning::edgePointPropertyName(p:AbstractProperty<Any>[1]):String[0..1]{
-   if (!$p.name->isEmpty(),|$p.name->toOne()+'AllVersions',|[])
-}
-
-function meta::pure::milestoning::originalPropertyNameForEdgePointProperty(p:AbstractProperty<Any>[1]):String[0..1]{
-   if (!$p.name->isEmpty() && isEdgePointProperty($p) ,|$p.name->toOne()->substring(0,$p.name->toOne()->length()-11),|$p.name)
-}
-
-function meta::pure::milestoning::isEdgePointProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
-   $p->instanceOf(Property) && !$p.name->isEmpty() && $p.name->toOne()->endsWith('AllVersions') && hasGeneratedMilestoningPropertyStereotype($p)
-}
-
-function meta::pure::milestoning::getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty(p:AbstractProperty<Any>[1]):QualifiedProperty<Any>[*]{
-   if($p->isEdgePointProperty(),|let clazz = $p.classifierGenericType.typeArguments->at(0).rawType->toOne()->cast(@Class<Any>);
-                                 $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)
-                                 ->filter(q|$q->hasGeneratedMilestoningPropertyStereotype() && $q.name==$p->originalPropertyNameForEdgePointProperty());,
-                                |[]);
 }
 
 function meta::pure::milestoning::undoMilestoningTransform(p:AbstractProperty<Any>[*]):AbstractProperty<Any>[*]
