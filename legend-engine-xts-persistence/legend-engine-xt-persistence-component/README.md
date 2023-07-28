@@ -371,3 +371,26 @@ There are two variants of this scheme:
 | deduplicationStrategy | Choose either one of these two: <br> 1. AllowDuplicates: allows duplicates to be processed, this is the default <br> 2. FilterDuplicates: Filter out the duplicates before processing                                                                                                                                                                                                                                                                                                                                                              | No         | 
 
 
+
+### BulkLoad
+
+This scheme is used to bulk load the data from staged files in object storage like S3 or GCS to a target table.
+It supports adding an auditing field and digest generation as well.
+
+#### Object creation
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+                .digestField("digest")
+                .generateDigest(true)
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .digestUdfName("LAKEHOUSE_MD5")
+                .build();
+
+#### Parameter information
+
+| Field Name     | Description                                         | Mandatory? |
+|----------------|-----------------------------------------------------|------------|
+| generateDigest | Option specifying whether to generate digest or not | Yes        | 
+| digestField | Name of the digest field                            | No         |
+| digestUdfName | Name of the UDF to be used for digest generation    | No         |
+| auditing | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row | Yes        |
