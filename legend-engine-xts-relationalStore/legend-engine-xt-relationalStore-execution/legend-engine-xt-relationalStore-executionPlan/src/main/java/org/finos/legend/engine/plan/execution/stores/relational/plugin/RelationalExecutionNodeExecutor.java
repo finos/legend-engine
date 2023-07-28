@@ -1757,11 +1757,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 .getRelationalGraphFetchExecutor();
 
         boolean parallelizationEnabled = this.executionState.getGraphFetchExecutionConfiguration().canExecuteInParallel() && relationalGraphFetchExecutor.canExecuteInParallel();
-
+        boolean tempTableCreatedInParentConnection = false;
         try
         {
             Span currentActiveSpan = GlobalTracer.get().activeSpan();
-            boolean tempTableCreatedInParentConnection = false;
 
             for (ExecutionNode child: node.children)
             {
@@ -1792,6 +1791,17 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             throw new RuntimeException(e);
         }
+        finally
+        {
+            if (tempTableCreatedInParentConnection)
+            {
+                RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational);
+                relationalStoreExecutionState.getBlockConnectionContext().unlockAllBlockConnections();
+                relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync();
+                relationalStoreExecutionState.setBlockConnectionContext(new BlockConnectionContext());
+            }
+        }
+
     }
 
     private Result executeRelationalCrossRootQueryTempTableGraphFetchExecutionNode(RelationalCrossRootQueryTempTableGraphFetchExecutionNode node)

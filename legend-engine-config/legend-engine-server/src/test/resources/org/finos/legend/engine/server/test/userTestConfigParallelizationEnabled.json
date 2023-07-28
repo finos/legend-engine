@@ -82,7 +82,7 @@
       "relationalGraphFetchParallelExecutionConfig": {
         "defaultMaxConnectionsPerDatabase": 3,
         "maxConnectionsPerDatabaseTypeOverrides": {
-          "H2": 2,
+          "H2": 10,
           "Snowflake": 10
         }
       }
