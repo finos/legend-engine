@@ -261,7 +261,7 @@ public class SnowflakeSink extends AnsiSqlSink
             stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
             stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
             result = IngestorResult.builder()
-                    .status(IngestStatus.COMPLETED)
+                    .status(IngestStatus.SUCCEEDED)
                     .updatedDatasets(datasets)
                     .putAllStatisticByName(stats)
                     .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))

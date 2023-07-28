@@ -197,7 +197,9 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return Collections.emptySet();
+            Set<String> metaFields = new HashSet<>();
+            bulkLoad.digestField().ifPresent(metaFields::add);
+            return metaFields;
         }
     };
 

@@ -320,7 +320,7 @@ public abstract class RelationalIngestorAbstract
                     .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
                     .dataSplitRange(dataSplitRange)
                     .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
-                    .status(IngestStatus.COMPLETED)
+                    .status(IngestStatus.SUCCEEDED)
                     .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
                     .build();
                 results.add(result);
