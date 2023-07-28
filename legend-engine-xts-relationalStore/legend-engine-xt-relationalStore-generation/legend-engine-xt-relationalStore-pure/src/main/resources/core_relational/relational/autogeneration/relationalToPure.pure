@@ -125,7 +125,7 @@ function <<access.private>> meta::relational::transform::autogen::generateAssoci
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
      name = $propertyName->createSQLSafeName()->createValidPropertyName(),
      multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-     type = $packageStr + $schemaName + '::' + $tableName
+     type = $packageStr + $schemaName + '::' + createValidClassName($tableName)
    );
 }
 
