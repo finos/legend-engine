@@ -15,7 +15,7 @@
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
-import org.finos.legend.engine.plan.execution.graphFetch.IParallelGraphFetchExecution;
+import org.finos.legend.engine.plan.execution.graphFetch.IParallelGraphFetchExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 
@@ -42,7 +42,7 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
         throw new UnsupportedOperationException("no visitors");
     }
 
-    public void possiblyReleaseThread(IParallelGraphFetchExecution executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    public void possiblyReleaseThread(IParallelGraphFetchExecutor executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
     {
         if (executedInNewThread)
         {
@@ -50,7 +50,7 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
         }
     }
 
-    public void cancel(IParallelGraphFetchExecution executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    public void cancel(IParallelGraphFetchExecutor executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
     {
         if (this.executedInNewThread)
         {
@@ -59,7 +59,7 @@ public class DelayedGraphFetchResultWithExecInfo extends Result
         }
     }
 
-    public List<DelayedGraphFetchResultWithExecInfo> consume(IParallelGraphFetchExecution executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool) throws Exception
+    public List<DelayedGraphFetchResultWithExecInfo> consume(IParallelGraphFetchExecutor executor, ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool) throws Exception
     {
         DelayedGraphFetchResult result = delayedGraphFetchResultFuture.get();
         possiblyReleaseThread(executor, graphFetchExecutionNodeExecutorPool);

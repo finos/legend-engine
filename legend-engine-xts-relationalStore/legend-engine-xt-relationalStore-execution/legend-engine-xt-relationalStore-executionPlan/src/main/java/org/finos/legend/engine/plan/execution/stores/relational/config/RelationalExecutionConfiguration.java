@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
@@ -33,6 +34,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     private DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
     private Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass;
     private CredentialProviderProvider credentialProviderProvider;
+    @JsonProperty
     private RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig;
 
     @Override
@@ -90,9 +92,9 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         return new Builder();
     }
 
-    public int getMaxConnectionsPerDatabaseForDatabase(DatabaseType databaseType)
+    public RelationalGraphFetchParallelExecutionConfig getRelationalGraphFetchParallelExecutionConfig()
     {
-        return relationalGraphFetchParallelExecutionConfig.getMaxConnectionsPerDatabaseForDatabase(databaseType.name());
+        return this.relationalGraphFetchParallelExecutionConfig;
     }
 
     public static class Builder

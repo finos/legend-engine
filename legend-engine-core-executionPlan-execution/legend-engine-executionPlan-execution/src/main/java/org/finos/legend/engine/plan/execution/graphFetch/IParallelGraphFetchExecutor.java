@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.graphFetch;
 
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 
-public interface IParallelGraphFetchExecution
+public interface IParallelGraphFetchExecutor
 {
     boolean acquireThreads(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool, String threadIdentifierKey, int threadsToAcquire, Object... extra);
 

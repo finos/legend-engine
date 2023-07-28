@@ -70,6 +70,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalGraphFetchExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
@@ -1753,6 +1754,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         String dbConnectionKeyWithIdentity = dbConnectionKey + "_" + identity.getName();
 
+        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
+                .getRelationalGraphFetchExecutor();
+
         try
         {
             Span currentActiveSpan = GlobalTracer.get().activeSpan();
@@ -1760,7 +1764,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
             for (ExecutionNode child: node.children)
             {
-                if (parallelizationEnabled && relationalExecutor.acquireThreads(graphFetchExecutionNodeExecutorPool, dbConnectionKeyWithIdentity, 1, databaseConnection.type))
+                if (parallelizationEnabled && relationalGraphFetchExecutor.acquireThreads(graphFetchExecutionNodeExecutorPool, dbConnectionKeyWithIdentity, 1, databaseConnection.type))
                 {
                     Callable<DelayedGraphFetchResult> task = () -> executeTempTableChildInNewConnection(node, child, realizedRelationalResult, databaseConnection, databaseType, databaseTimeZone, relationalGraphObjectsBatch, currentActiveSpan);
                     submittedTasks.add(new DelayedGraphFetchResultWithExecInfo(graphFetchExecutionNodeExecutorPool.submit(task), true, dbConnectionKeyWithIdentity));
@@ -1783,7 +1787,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             // orchestrator is unaware of these tasks.
             if (parallelizationEnabled && graphFetchExecutionNodeExecutorPool != null)
             {
-                submittedTasks.forEach(task -> task.cancel(relationalExecutor, graphFetchExecutionNodeExecutorPool));
+                submittedTasks.forEach(task -> task.cancel(relationalGraphFetchExecutor, graphFetchExecutionNodeExecutorPool));
             }
             throw new RuntimeException(e);
         }
@@ -2030,15 +2034,15 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private void orchestrate(Queue<DelayedGraphFetchResultWithExecInfo> jobs)
     {
         ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool = this.executionState.getGraphFetchExecutionNodeExecutorPool();
-        RelationalExecutor relationalExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
-                .getRelationalExecutor();
+        RelationalGraphFetchExecutor relationalGraphFetchExecutor = ((RelationalStoreExecutionState)this.executionState.getStoreExecutionState(StoreType.Relational))
+                .getRelationalGraphFetchExecutor();
 
         try
         {
             while (!jobs.isEmpty())
             {
                 DelayedGraphFetchResultWithExecInfo currentResult = jobs.poll();
-                List<DelayedGraphFetchResultWithExecInfo> childResults = currentResult.consume(relationalExecutor, graphFetchExecutionNodeExecutorPool);
+                List<DelayedGraphFetchResultWithExecInfo> childResults = currentResult.consume(relationalGraphFetchExecutor, graphFetchExecutionNodeExecutorPool);
                 jobs.addAll(childResults);
             }
         }
@@ -2051,7 +2055,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             while (!jobs.isEmpty())
             {
                 DelayedGraphFetchResultWithExecInfo currentResult = jobs.poll();
-                currentResult.cancel(relationalExecutor, graphFetchExecutionNodeExecutorPool);
+                currentResult.cancel(relationalGraphFetchExecutor, graphFetchExecutionNodeExecutorPool);
             }
         }
     }
