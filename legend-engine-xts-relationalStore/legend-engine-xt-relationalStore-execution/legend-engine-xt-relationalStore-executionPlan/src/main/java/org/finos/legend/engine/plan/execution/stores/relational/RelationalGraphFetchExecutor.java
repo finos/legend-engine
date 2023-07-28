@@ -15,14 +15,14 @@
 package org.finos.legend.engine.plan.execution.stores.relational;
 
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
-import org.finos.legend.engine.plan.execution.graphFetch.IParallelGraphFetchExecutor;
+import org.finos.legend.engine.plan.execution.graphFetch.StoreGraphFetchExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalGraphFetchParallelExecutionConfig;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 
-public class RelationalGraphFetchExecutor implements IParallelGraphFetchExecutor
+public class RelationalGraphFetchExecutor implements StoreGraphFetchExecutor
 {
     private final RelationalGraphFetchParallelExecutionConfig relationalGraphFetchParallelExecutionConfig;
     private final ConcurrentMap<String, Semaphore> openThreadsCountPerThreadConnectionKey = new ConcurrentHashMap<>();
