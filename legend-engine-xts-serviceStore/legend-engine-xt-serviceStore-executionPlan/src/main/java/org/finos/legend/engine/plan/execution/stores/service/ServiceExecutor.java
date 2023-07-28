@@ -85,11 +85,10 @@ public class ServiceExecutor
             throw new RuntimeException(errMsg, e);
         }
 
-        InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, authenticationSchemeRequirements, profiles);
-        return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(url)));
+        return executeRequest(httpMethod, url, uri, headers, requestBodyEntity, mimeType, securitySchemes, authenticationSchemeRequirements, profiles);
     }
 
-    public InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, MutableList<CommonProfile> profiles)
+    public InputStreamResult executeRequest(HttpMethod httpMethod, String url, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -119,10 +118,12 @@ public class ServiceExecutor
                 {
                     span.setTag("Failure message", explanation);
                 }
+
+                httpResponse.close();
                 throw new RuntimeException("HTTP request [" + httpMethod.toString() + " " + uri.toString() + "] failed with error - " + explanation);
             }
 
-            return httpResponse.getEntity().getContent();
+            return new InputStreamResult(httpResponse.getEntity().getContent(), Lists.mutable.with(new ServiceStoreExecutionActivity(url)), Collections.singletonList(httpResponse));
         }
         catch (RuntimeException e)
         {
