@@ -63,6 +63,9 @@
         <module>legend-engine-xts-json</module>
         <module>legend-engine-xts-avro</module>
 
+        <!-- Table Formats -->
+        <module>legend-engine-xts-iceberg</module>
+
         <!-- Languages -->
         <module>legend-engine-xts-rosetta</module>
         <module>legend-engine-xts-haskell</module>
