@@ -51,13 +51,6 @@
         </dependency>
         <!-- Shared Drop Wizard Bundles -->
 
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
-        </dependency>
-        <!-- Store support -->
-
         <!-- JSON -->
         <!--
         <dependency>
