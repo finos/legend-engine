@@ -51,11 +51,6 @@
         </dependency>
         <!-- Shared Drop Wizard Bundles -->
 
-        <!-- Store support -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-store-support-core</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
