@@ -112,7 +112,15 @@ public class PureTestHelper
     private static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
     {
         int metadataServerPort = DynamicPortGenerator.generatePort();
-        int relationalDBPort = DynamicPortGenerator.generatePort();
+        int relationalDBPort;
+        if (System.getProperty("legend.test.h2.port") == null)
+        {
+            relationalDBPort = DynamicPortGenerator.generatePort();
+        }
+        else
+        {
+            relationalDBPort = Integer.parseInt(System.getProperty("legend.test.h2.port"));
+        }
 
         org.h2.tools.Server h2Server = null;
 
