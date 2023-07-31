@@ -24,6 +24,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
+import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -74,6 +75,7 @@ public class PlanExecutor
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
+    private ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool;
     private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
@@ -330,6 +332,15 @@ public class PlanExecutor
         this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
     }
 
+    public void injectGraphFetchExecutionNodeExecutorPool(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    {
+        if (this.graphFetchExecutionNodeExecutorPool != null)
+        {
+            throw new IllegalStateException("PlanExecutor already contains a graphFetchExecutionNodeExecutorPool");
+        }
+        this.graphFetchExecutionNodeExecutorPool = graphFetchExecutionNodeExecutorPool;
+    }
+
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         if (state.isJavaCompilationForbidden())
@@ -380,6 +391,11 @@ public class PlanExecutor
         if (this.concurrentExecutionNodeExecutorPool != null)
         {
             executionState.setConcurrentExecutionNodeExecutorPool(this.concurrentExecutionNodeExecutorPool);
+        }
+
+        if (this.graphFetchExecutionNodeExecutorPool != null)
+        {
+            executionState.setGraphFetchExecutionNodeExecutorPool(this.graphFetchExecutionNodeExecutorPool);
         }
 
         return executionState;
