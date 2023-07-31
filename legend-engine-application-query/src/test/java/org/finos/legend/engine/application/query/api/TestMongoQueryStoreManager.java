@@ -24,6 +24,7 @@ import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QueryParameterValue;
 import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.application.query.store.MongoQueryStoreManager;
 import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
