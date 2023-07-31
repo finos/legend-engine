@@ -192,6 +192,8 @@ function meta::pure::mapping::modelToModel::modelToModelConnectionToString(c:Con
 // Strategic in memory graph fetch flow
 
 ###Pure
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::router::platform::metamodel::clustering::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
@@ -497,7 +499,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
                     );
    let routed     = $newFunction->routeFunction($mcc.mappings->at(0), $newRuntime, $exeCtx, $extensions, $debug);
    let routedFn   = $routed->evaluateAndDeactivate();
-   let clusters   = $routedFn.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification)->map(c | $c->updateClusterWithChainProcessingInfo($ext, $setsProcessed));
+   let clusters   = $routedFn.expressionSequence->evaluateAndDeactivate()->match([
+     sm: StoreMappingClusteredValueSpecification[*] | $sm->map(c | $c->updateClusterWithChainProcessingInfo($ext, $setsProcessed)),
+     p : PlatformClusteredValueSpecification[1]     | $p,
+     c : ClusteredValueSpecification[*]             | fail('Unsupported model chain connection element %s in graph fetch execution', [$c->type()->elementToPath()]); $c;
+   ]);
 
    let fnParams   = $newFunction->stubFuncParameters();
    let varsFromXStoreProperties = $populatedXStorePropertiesInScope->map(prop | let varName = $prop->propertyToVarName();
