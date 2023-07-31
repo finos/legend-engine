@@ -23,9 +23,9 @@ public class SnowflakeDeploymentResult extends DeploymentResult
 
     public MutableList<FunctionActivatorError> errors;
 
-    public SnowflakeDeploymentResult()
+    public SnowflakeDeploymentResult(boolean result)
     {
-
+      this.successful = false;
     }
 
     public SnowflakeDeploymentResult(MutableList<FunctionActivatorError> errors)

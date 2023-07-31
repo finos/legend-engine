@@ -36,7 +36,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         try
         {
             this.snowflakeAppDeploymentTool.deploy(deploymentConfiguration.datasourceSpecification, deploymentConfiguration.authenticationStrategy, deploymentConfiguration.applicationName);
-            return new SnowflakeDeploymentResult();
+            return new SnowflakeDeploymentResult(true);
         }
         catch (Exception e)
         {
