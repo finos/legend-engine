@@ -502,7 +502,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
    let clusters   = $routedFn.expressionSequence->evaluateAndDeactivate()->match([
      sm: StoreMappingClusteredValueSpecification[*] | $sm->map(c | $c->updateClusterWithChainProcessingInfo($ext, $setsProcessed)),
      p : PlatformClusteredValueSpecification[1]     | $p,
-     c : ClusteredValueSpecification[*]             | fail('Unsupported model chain connection element %s in graph fetch execution', [$c]); $c;
+     c : ClusteredValueSpecification[*]             | fail('Unsupported model chain connection element %s in graph fetch execution', [$c->type()->elementToPath()]); $c;
    ]);
 
    let fnParams   = $newFunction->stubFuncParameters();
