@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.application.query.api;
+package org.finos.legend.engine.application.query.store;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.factory.SortedSets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.sorted.MutableSortedSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.application.query.api.ApplicationQueryException;
 import org.finos.legend.engine.application.query.model.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
@@ -36,7 +36,6 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 
-import javax.lang.model.SourceVersion;
 import javax.ws.rs.core.Response;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -44,26 +43,13 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 
-public class RedisQueryStoreManager implements QueryStoreManager
+public class RedisQueryStoreManager extends BaseQueryStoreManager
 {
-    private static final String COLLECTION_QUERY = "query";
-    private static final String COLLECTION_QUERY_EVENT = "query-event";
-
-    private static final Pattern VALID_ARTIFACT_ID_PATTERN = Pattern.compile("^[a-z][a-z0-9_]*+(-[a-z][a-z0-9_]*+)*+$");
-
-    private static final int MAX_NUMBER_OF_QUERIES = 100;
-    private static final int MAX_NUMBER_OF_EVENTS = 1000;
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    // NOTE: these are non-compilable profile and tag that we come up with for query
-    // so that it records the dataSpace it is created from
-    private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
-    private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final int GET_QUERIES_LIMIT = 50;
-
     private final UnifiedJedis redisClient;
     private final JsonSetParams jsonSetOnlyIfNotExistParam = JsonSetParams.jsonSetParams().nx();
+
+    private static final String COLLECTION_QUERY = "query";
+    private static final String COLLECTION_QUERY_EVENT = "query-event";
 
     private static final String REDIS_JSON_ROOT = "$";
     private static final String REDIS_QUERY_FIELD_MOD_PREFIX = "@";
@@ -138,63 +124,9 @@ public class RedisQueryStoreManager implements QueryStoreManager
         buildIndex(redisClient, COLLECTION_QUERY_EVENT, queryEventSchema);
     }
 
-    private static Query documentToQuery(Document document)
-    {
-        return convertPropertiesMapToQuery(convertDocumentToPropertiesMap(document));
-    }
-
-    private static QueryEvent documentToQueryEvent(Document document)
-    {
-        return convertPropertiesMapToQueryEvent(convertDocumentToPropertiesMap(document));
-    }
-
-    private static String getStringValue(Object value)
-    {
-        return value instanceof byte[] ? new String((byte[]) value, StandardCharsets.UTF_8) : String.valueOf(value);
-    }
-
-    private static QueryEvent createEvent(String queryId, QueryEvent.QueryEventType eventType)
-    {
-        QueryEvent event = new QueryEvent();
-        event.queryId = queryId;
-        event.timestamp = Instant.now().toEpochMilli();
-        event.eventType = eventType;
-        return event;
-    }
-
-    private static void validate(boolean predicate, String message)
-    {
-        if (!predicate)
-        {
-            throw new ApplicationQueryException(message, Response.Status.BAD_REQUEST);
-        }
-    }
-
-    private static void validateNonEmptyQueryField(String fieldValue, String message)
-    {
-        validate(fieldValue != null && !fieldValue.isEmpty(), message);
-    }
-
-    public static void validateQuery(Query query)
-    {
-        validateNonEmptyQueryField(query.id, "Query ID is missing or empty");
-        validateNonEmptyQueryField(query.name, "Query name is missing or empty");
-        validateNonEmptyQueryField(query.groupId, "Query project group ID is missing or empty");
-        validateNonEmptyQueryField(query.artifactId, "Query project artifact ID is missing or empty");
-        validateNonEmptyQueryField(query.versionId, "Query project version is missing or empty");
-        validateNonEmptyQueryField(query.mapping, "Query mapping is missing or empty");
-        validateNonEmptyQueryField(query.runtime, "Query runtime is missing or empty");
-        validateNonEmptyQueryField(query.content, "Query content is missing or empty");
-
-        validate(SourceVersion.isName(query.groupId), "Query project group ID is invalid");
-        validate(VALID_ARTIFACT_ID_PATTERN.matcher(query.artifactId).matches(), "Query project artifact ID is invalid");
-        // TODO: we can potentially create a pattern check for version
-    }
-
     public List<Query> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
     {
         StringBuffer redisQuery = new StringBuffer();
-
         List<String> searchSpecificationNameMatchAndOwnerList = new ArrayList<>();
 
         if (searchSpecification.searchTerm != null)
@@ -205,8 +137,9 @@ public class RedisQueryStoreManager implements QueryStoreManager
             }
             else if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
             {
-                AggregationBuilder aggregation = new AggregationBuilder(REDIS_QUERY_WILDCARD)
-                        .load(ID_TAG, NAME_TAG, OWNER_TAG)
+                // Aggregate only those documents that are owned by the currentUser OR have no ownership attribute at all
+                AggregationBuilder aggregation = new AggregationBuilder(REDIS_QUERY_WILDCARD) // search all indexed documents
+                        .load(ID_TAG, NAME_TAG, OWNER_TAG) // projection to reduce overhead
                         .filter("!exists(" + OWNER_TAG + ") || " + OWNER_TAG + " == '" + currentUser + "'");
 
                 AggregationResult resultSet = redisClient.ftAggregate(COLLECTION_QUERY + REDIS_QUERY_INDEX_SUFFIX, aggregation);
@@ -214,6 +147,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
                 {
                     for (Map<String, Object> propertiesMap : resultSet.getResults())
                     {
+                        // Regex is not yet supported so perform the filter in the application layer
                         Pattern pattern = Pattern.compile(Pattern.quote(searchSpecification.searchTerm), Pattern.CASE_INSENSITIVE);
                         String queryId = getStringValue(propertiesMap.get(ID));
                         if (pattern.matcher(getStringValue(propertiesMap.get(NAME))).find() || searchSpecification.searchTerm.equals(queryId))
@@ -226,10 +160,12 @@ public class RedisQueryStoreManager implements QueryStoreManager
             else
             {
                 SearchResult resultSet = redisClient.ftSearch(COLLECTION_QUERY + REDIS_QUERY_INDEX_SUFFIX,
-                        new redis.clients.jedis.search.Query(REDIS_QUERY_WILDCARD).returnFields(ID, NAME));
+                        new redis.clients.jedis.search.Query(REDIS_QUERY_WILDCARD) // search all indexed documents
+                                .returnFields(ID, NAME));  // projection to reduce overhead
 
                 if (resultSet != null)
                 {
+                    // Regex is not yet supported so perform the filter in the application layer
                     Pattern pattern = Pattern.compile(Pattern.quote(searchSpecification.searchTerm), Pattern.CASE_INSENSITIVE);
                     for (Document document : resultSet.getDocuments())
                     {
@@ -246,8 +182,9 @@ public class RedisQueryStoreManager implements QueryStoreManager
         if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly &&
             searchSpecificationNameMatchAndOwnerList.isEmpty())
         {
-            AggregationBuilder aggregation = new AggregationBuilder(REDIS_QUERY_WILDCARD)
-                    .load(ID_TAG, OWNER_TAG)
+            // Aggregate only those documents that are owned by the currentUser OR have no ownership attribute at all
+            AggregationBuilder aggregation = new AggregationBuilder(REDIS_QUERY_WILDCARD)  // search all indexed documents
+                    .load(ID_TAG, OWNER_TAG) // projection to reduce overhead
                     .filter("!exists(" + OWNER_TAG + ") || " + OWNER_TAG + " == '" + currentUser + "'");
 
             AggregationResult resultSet = redisClient.ftAggregate(COLLECTION_QUERY + REDIS_QUERY_INDEX_SUFFIX, aggregation);
@@ -267,10 +204,10 @@ public class RedisQueryStoreManager implements QueryStoreManager
 
         if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
-            redisQuery.append("(");
+            redisQuery.append("("); // Open Outer AND Scope
             for (QueryProjectCoordinates projectCoordinate : searchSpecification.projectCoordinates)
             {
-                redisQuery.append(" ( ");
+                redisQuery.append(" ( "); // Open Inner OR Scope
                 appendQueryTagEqualCondition(redisQuery, GROUP_ID_TAG, projectCoordinate.groupId);
                 appendQueryTagEqualCondition(redisQuery, ARTIFACT_ID_TAG, projectCoordinate.artifactId);
 
@@ -278,22 +215,22 @@ public class RedisQueryStoreManager implements QueryStoreManager
                 {
                     appendQueryTagEqualCondition(redisQuery, VERSION_ID_TAG, projectCoordinate.version);
                 }
-                redisQuery.append(") |");
+                redisQuery.append(") |"); // Close Inner OR Scope
             }
             redisQuery.setLength(redisQuery.length() - 1); // Removes the "|" after the last iteration
-            redisQuery.append(") ");
+            redisQuery.append(") "); // Close Outer AND Scope
         }
 
         if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
         {
-            redisQuery.append("("); // Open Scope
+            redisQuery.append("("); // Open Outer AND Scope
             for (TaggedValue taggedValue : searchSpecification.taggedValues)
             {
-                redisQuery.append(" ( "); // Open Scope
+                redisQuery.append(" ( "); // Open Inner OR Scope
                 appendQueryTagEqualCondition(redisQuery, TAGGED_VALUES_TAG_PROFILE_TAG, taggedValue.tag.profile);
                 appendQueryTagEqualCondition(redisQuery, TAGGED_VALUES_TAG_VALUE_TAG, taggedValue.tag.value);
                 appendQueryTagEqualCondition(redisQuery, TAGGED_VALUES_VALUE_TAG, taggedValue.value);
-                redisQuery.append(") "); //Close Scope
+                redisQuery.append(") "); // Close Inner OR Scope
 
                 if (searchSpecification.combineTaggedValuesCondition == null || !searchSpecification.combineTaggedValuesCondition)
                 {
@@ -304,36 +241,36 @@ public class RedisQueryStoreManager implements QueryStoreManager
             {
                 redisQuery.setLength(redisQuery.length() - 1); // Removes the OR Condition after the last iteration
             }
-            redisQuery.append(") "); //Close Scope
+            redisQuery.append(") "); // Close Outer AND Scope
         }
 
         if (searchSpecification.stereotypes != null && !searchSpecification.stereotypes.isEmpty())
         {
-            redisQuery.append("("); // Open Scope
+            redisQuery.append("("); // Open Outer AND Scope
             for (StereotypePtr stereotype : searchSpecification.stereotypes)
             {
-                redisQuery.append(" ( "); // Open Scope
+                redisQuery.append(" ( "); // Open Inner OR Scope
                 appendQueryTagEqualCondition(redisQuery, STEREOTYPE_PROFILE_TAG, stereotype.profile);
                 appendQueryTagEqualCondition(redisQuery, STEREOTYPE_VALUE_TAG, stereotype.value);
-                redisQuery.append(") |"); //Close Scope
+                redisQuery.append(") |"); // Close Inner OR Scope
             }
             redisQuery.setLength(redisQuery.length() - 1); // Removes the OR Condition after the last iteration
-            redisQuery.append(") "); //Close Scope
+            redisQuery.append(") "); // Close Outer AND Scope
         }
 
         int limit = Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit);
 
         AggregationBuilder aggregation = new AggregationBuilder(redisQuery.length() == 0 ? REDIS_QUERY_WILDCARD : redisQuery.toString())
                 .load(ID_TAG, NAME_TAG, VERSION_ID_TAG, GROUP_ID_TAG, ARTIFACT_ID_TAG, OWNER_TAG, CREATED_TAG, UPDATED_TAG)
-                //.apply(OWNER_TAG + " == '" + currentUser + "'", "isCurrentUser") //TODO in conflict with ownership NULL logic
-                //.sortByDesc("@isCurrentUser")
+                //.apply(OWNER_TAG + " == '" + currentUser + "'", "isCurrentUser") // TODO cannot handle NULL owner tag so performed manually
+                //.sortByDesc("@isCurrentUser") // TODO coupled to isCurrentUser alias
                 .limit(limit);
 
         AggregationResult resultSet = redisClient.ftAggregate(COLLECTION_QUERY + REDIS_QUERY_INDEX_SUFFIX, aggregation);
 
-        Map<Integer, Query> sortedMap = new TreeMap();
+        Map<Integer, Query> sortedMap = new TreeMap(); // TODO manually sorted since we couldn't use isCurrentUser alias
         int nonOwnersCounter = 0;
-        int ownersCounter = limit + 1;
+        int ownersCounter = limit + 1; // safe way to avoid a conflict and maintain order
 
         List<Map<String, Object>> results = resultSet.getResults();
         if (results != null && !results.isEmpty())
@@ -342,7 +279,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
             {
                 if (result != null)
                 {
-                    //result.remove("isCurrentUser"); //TODO in conflict with ownership NULL logic
+                    //result.remove("isCurrentUser"); //TODO coupled to isCurrentUser alias
 
                     Query query = convertPropertiesMapToQuery(result);
                     if (currentUser.equals(query.owner))
@@ -370,7 +307,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         redisQuery.limit(0, GET_QUERIES_LIMIT);
 
         MutableList<Query> matchingQueries = LazyIterate.collect(find(COLLECTION_QUERY, redisQuery),
-                RedisQueryStoreManager::documentToQuery).toList();
+                RedisQueryStoreManager::convertDocumentToQuery).toList();
 
         // validate
         MutableSortedSet<String> notFoundQueries = SortedSets.mutable.empty();
@@ -403,7 +340,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         StringBuffer query = appendQueryTagEqualCondition(new StringBuffer(), ID_TAG, queryId);
 
         List<Query> matchingQueries = LazyIterate.collect(find(COLLECTION_QUERY, new redis.clients.jedis.search.Query(query.toString())),
-                RedisQueryStoreManager::documentToQuery).toList();
+                RedisQueryStoreManager::convertDocumentToQuery).toList();
 
         if (matchingQueries.size() > 1)
         {
@@ -439,7 +376,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         StringBuffer redisQuery = appendQueryTagEqualCondition(new StringBuffer(), ID_TAG, query.id);
 
         List<Query> matchingQueries = LazyIterate.collect(find(COLLECTION_QUERY, new redis.clients.jedis.search.Query(redisQuery.toString())),
-                RedisQueryStoreManager::documentToQuery).toList();
+                RedisQueryStoreManager::convertDocumentToQuery).toList();
 
         if (matchingQueries.size() >= 1)
         {
@@ -465,7 +402,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         StringBuffer redisQuery = appendQueryTagEqualCondition(new StringBuffer(), ID_TAG, query.id);
 
         List<Query> matchingQueries = LazyIterate.collect(find(COLLECTION_QUERY, new redis.clients.jedis.search.Query(redisQuery.toString())),
-                RedisQueryStoreManager::documentToQuery).toList();
+                RedisQueryStoreManager::convertDocumentToQuery).toList();
 
         if (!queryId.equals(query.id))
         {
@@ -506,7 +443,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         StringBuffer redisQuery = appendQueryTagEqualCondition(new StringBuffer(), ID_TAG, queryId);
 
         List<Query> matchingQueries = LazyIterate.collect(find(COLLECTION_QUERY, new redis.clients.jedis.search.Query(redisQuery.toString())),
-                RedisQueryStoreManager::documentToQuery).toList();
+                RedisQueryStoreManager::convertDocumentToQuery).toList();
 
         if (matchingQueries.size() > 1)
         {
@@ -554,7 +491,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         redis.clients.jedis.search.Query query = new redis.clients.jedis.search.Query(redisQuery.length() > 0 ? redisQuery.toString() : REDIS_QUERY_WILDCARD);
         query.limit(0, Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit));
 
-        return LazyIterate.collect(find(COLLECTION_QUERY_EVENT, query), RedisQueryStoreManager::documentToQueryEvent).toList();
+        return LazyIterate.collect(find(COLLECTION_QUERY_EVENT, query), RedisQueryStoreManager::convertDocumentToQueryEvent).toList();
     }
 
     private StringBuffer appendQueryTagEqualCondition(StringBuffer query, String fieldModifier, Object fieldValue)
@@ -610,7 +547,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         try
         {
             redisClient.ftInfo(indexName);
-            return;
+            return; // if index does not exist this cannot be reached
         }
         catch (Exception e)
         {
@@ -631,7 +568,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         }
 
         String jsonString = String.valueOf(document.get(REDIS_JSON_ROOT));
-        if (jsonString == null || jsonString.isEmpty())
+        if (StringUtils.isEmpty(jsonString))
         {
             return null;
         }
@@ -646,8 +583,23 @@ public class RedisQueryStoreManager implements QueryStoreManager
         }
     }
 
+    private static Query convertDocumentToQuery(Document document)
+    {
+        return convertPropertiesMapToQuery(convertDocumentToPropertiesMap(document));
+    }
+
+    private static QueryEvent convertDocumentToQueryEvent(Document document)
+    {
+        return convertPropertiesMapToQueryEvent(convertDocumentToPropertiesMap(document));
+    }
+
     private static Query convertPropertiesMapToQuery(Map<String, Object> propertiesMap)
     {
+        if (propertiesMap == null)
+        {
+            return new Query();
+        }
+
         Query query = new Query();
 
         query.id = propertiesMap.containsKey(ID) ? getStringValue(propertiesMap.get(ID)) : query.id;
@@ -725,8 +677,12 @@ public class RedisQueryStoreManager implements QueryStoreManager
 
     private static QueryEvent convertPropertiesMapToQueryEvent(Map<String, Object> propertiesMap)
     {
-        QueryEvent event = new QueryEvent();
+        if (propertiesMap == null)
+        {
+            return new QueryEvent();
+        }
 
+        QueryEvent event = new QueryEvent();
         event.queryId = getStringValue(propertiesMap.get(QUERY_ID));
         event.timestamp = Long.parseLong(getStringValue(propertiesMap.get(TIMESTAMP)));
         event.eventType = QueryEvent.QueryEventType.valueOf(getStringValue(propertiesMap.get(EVENT_TYPE)));
@@ -772,6 +728,11 @@ public class RedisQueryStoreManager implements QueryStoreManager
         return redisClient.unlink(key);
     }
 
+    private static String getStringValue(Object value)
+    {
+        return value instanceof byte[] ? new String((byte[]) value, StandardCharsets.UTF_8) : String.valueOf(value);
+    }
+
     private String handleSpecialCharacters(String input)
     {
         return REDIS_QUERY_SPECIAL_CHARACTERS_PATTERN.matcher(input).replaceAll("\\\\$0");
@@ -787,7 +748,7 @@ public class RedisQueryStoreManager implements QueryStoreManager
         return new ArrayList<>();
     }
 
-    private  void upsert(String key, boolean isIndexUnique, boolean isIdRequired, Map<String, Object> propertiesMap)
+    private void upsert(String key, boolean isIndexUnique, boolean isIdRequired, Map<String, Object> propertiesMap)
     {
         String status;
 
