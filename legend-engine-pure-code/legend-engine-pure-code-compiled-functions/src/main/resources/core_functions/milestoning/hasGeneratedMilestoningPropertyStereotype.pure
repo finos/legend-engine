@@ -1,0 +1,74 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::milestoning::*;
+import meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::*;
+
+function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:Function<Any>[1]):Boolean[1]
+{
+    $f->cast(@ElementWithStereotypes)->hasGeneratedMilestoningPropertyStereotype();
+}
+
+function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
+{
+   $f->hasStereotype('generatedmilestoningproperty',meta::pure::profiles::milestoning) || $f->hasGeneratedMilestoningDatePropertyStereotype()
+}
+
+
+
+
+
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::BusinessTemporalClassA
+{
+   b : BusinessTemporalClassB[0..1];
+   c : NonTemporalClassC[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::BusinessTemporalClassB
+{
+
+}
+
+Class meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::NonTemporalClassC
+{
+
+}
+
+Class <<temporal.businesstemporal>> meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::BusinessTemporalClassD
+{
+
+}
+
+Association meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::DuplicatePropAssociation
+{
+   propertyB: BusinessTemporalClassB[0..*];
+   propertyB: BusinessTemporalClassD[0..1];
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::hasGeneratedMilestoningPropertyStereotype::testHasGeneratedMilestoningPropertyStereotype():Boolean[1]
+{
+  let milestonedGeneratedPropertyNames = BusinessTemporalClassA.properties->filter(p|$p->hasGeneratedMilestoningPropertyStereotype()).name;
+  let milestonedGeneratedQualifiedPropertyFunctionNames = BusinessTemporalClassA.qualifiedProperties->filter(p|$p->hasGeneratedMilestoningPropertyStereotype()).functionName;
+
+  assertEquals(['businessDate','milestoning','bAllVersions'],$milestonedGeneratedPropertyNames);
+  assertEquals(['b','b','bAllVersionsInRange'],$milestonedGeneratedQualifiedPropertyFunctionNames);
+}
+
+function <<test.Test>> meta::pure::milestoning::tests::testedgePointPropertyName():Boolean[1]
+{
+   let nonTemporalProperty = BusinessTemporalClassA.properties->filter(p|!$p->hasGeneratedMilestoningPropertyStereotype())->toOne();
+   assertEquals('c',$nonTemporalProperty.name);
+   assertEquals('cAllVersions',edgePointPropertyName($nonTemporalProperty));
+}

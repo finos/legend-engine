@@ -597,22 +597,6 @@ function meta::pure::functions::meta::multiplicitySubsumes(subsuming:Multiplicit
       ));
 }
 
-function meta::pure::functions::meta::hasStereotype(f:ElementWithStereotypes[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
-{
-    let st = $profile->stereotype($stereotype);
-    $f.stereotypes->exists(s | $s == $st);
-}
-
-function meta::pure::functions::meta::hasStereotype(f:Type[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
-{
-    $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
-}
-
-function meta::pure::functions::meta::hasStereotype(f:Function<Any>[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
-{
-    $f->instanceOf(ElementWithStereotypes) && $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
-}
-
 
 
 
