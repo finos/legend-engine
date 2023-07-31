@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2022 Goldman Sachs
+ Copyright 2023 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -30,9 +30,11 @@
 
     <properties>
         <top.project>${project.basedir}/../</top.project>
+        <iceberg.version>1.3.0</iceberg.version>
     </properties>
 
     <modules>
         <module>legend-engine-xt-iceberg-pure</module>
+        <module>legend-engine-xt-iceberg-test-support</module>
     </modules>
 </project>
