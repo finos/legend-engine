@@ -157,6 +157,40 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         assertEquals(expected, outputStream.toString());
     }
 
+    @Test
+    public void executePlanWithTempTableStrategy_CaseSensitivity() throws Exception
+    {
+        Properties properties = new Properties();
+        properties.put("PK_VAULT_REFERENCE", "invalid");
+        properties.put("PASSPHRASE_VAULT_REFERENCE", "invalid");
+        PropertiesVaultImplementation propertiesVaultImplementation = new PropertiesVaultImplementation(properties);
+        Vault.INSTANCE.registerImplementation(propertiesVaultImplementation);
+
+        RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        testConnection(connection, "ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = true");
+
+        String planJSON = new String(Files.readAllBytes(Paths.get(ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake.class.getResource("/snowflake-graph-fetch-plan-quotedIdentifiersIgnoreCase.json").toURI())));
+
+        RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
+                .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(9078))
+                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .build();
+        StoreExecutor storeExecutor = Relational.build(relationalExecutionConfiguration);
+
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(storeExecutor);
+
+        Result result = planExecutor.execute(planJSON);
+        JsonStreamToJsonDefaultSerializer jsonStreamToJsonDefaultSerializer = new JsonStreamToJsonDefaultSerializer(((JsonStreamingResult) result));
+        OutputStream outputStream = new ByteArrayOutputStream();
+        jsonStreamToJsonDefaultSerializer.stream(outputStream);
+
+        String expected = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"defects\":[],\"value\":{\"legalName\":\"firm1\",\"employees\":[{\"firstName\":\"pf1\",\"lastName\":\"pl1\"},{\"firstName\":\"pf2\",\"lastName\":\"pl2\"},{\"firstName\":\"pf3\",\"lastName\":\"pl3\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm2\",\"employees\":[{\"firstName\":\"pf4\",\"lastName\":\"pl4\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm3\",\"employees\":[{\"firstName\":\"pf5\",\"lastName\":\"pl5\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm4\",\"employees\":[{\"firstName\":\"pf6\",\"lastName\":\"pl6\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm5\",\"employees\":[]}}]}";
+        assertEquals(expected, outputStream.toString());
+
+        testConnection(connection, "ALTER USER UNSET QUOTED_IDENTIFIERS_IGNORE_CASE");
+    }
+
     @Ignore
     public void testTempTableHandlingWithRawJDBC() throws Exception
     {

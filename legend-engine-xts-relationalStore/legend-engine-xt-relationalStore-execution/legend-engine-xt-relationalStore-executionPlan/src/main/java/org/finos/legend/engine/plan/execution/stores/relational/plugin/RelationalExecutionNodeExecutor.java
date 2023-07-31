@@ -76,6 +76,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.result.DatabaseIdentifiersCaseSensitiveVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
@@ -1624,6 +1625,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             databaseType = childSqlResult.getDatabaseType();
             databaseTimeZone = childSqlResult.getDatabaseTimeZone();
             ResultSet childResultSet = childSqlResult.getResultSet();
+            
+            boolean isDatabaseIdentifiersCaseSensitive = databaseConnection.accept(new DatabaseIdentifiersCaseSensitiveVisitor());
 
             nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles); // nodeSpecifics deal with how to create and manage the java impls.
 
@@ -1636,7 +1639,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             RelationalGraphObjectsBatch relationalGraphObjectsBatch = (RelationalGraphObjectsBatch) this.executionState.graphObjectsBatch;
             DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = switchedParentHashMapPerChildResult(
                     relationalGraphObjectsBatch, node.parentIndex, childResultSet,
-                    () -> nodeSpecifics.parentPrimaryKeyColumns(childSqlResult.getResultColumns().stream().map(ResultColumn::getNonQuotedLabel).collect(Collectors.toList()))
+                    () -> nodeSpecifics.parentPrimaryKeyColumns(childSqlResult.getResultColumns().stream().map(ResultColumn::getNonQuotedLabel).collect(Collectors.toList())),
+                    isDatabaseIdentifiersCaseSensitive
             ); // child to parent map.
 
             List<Method> primaryKeyGetters = nodeSpecifics.primaryKeyGetters();
@@ -2150,6 +2154,20 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private static DoubleStrategyHashMap<Object, Object, SQLExecutionResult> switchedParentHashMapPerChildResult(RelationalGraphObjectsBatch relationalGraphObjectsBatch, int parentIndex, ResultSet childResultSet, Supplier<List<String>> parentPrimaryKeyColumnsSupplier)
     {
         List<Integer> parentPrimaryKeyIndices = parentPrimaryKeyColumnsSupplier.get().stream().map(FunctionHelper.unchecked(childResultSet::findColumn)).collect(Collectors.toList());
+        DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = relationalGraphObjectsBatch.getNodeObjectsHashMap(parentIndex);
+        RelationalGraphFetchUtils.switchSecondKeyHashingStrategy(parentMap, relationalGraphObjectsBatch.getNodePrimaryKeyGetters(parentIndex), parentPrimaryKeyIndices);
+        return parentMap;
+    }
+
+    private static DoubleStrategyHashMap<Object, Object, SQLExecutionResult> switchedParentHashMapPerChildResult(RelationalGraphObjectsBatch relationalGraphObjectsBatch, int parentIndex, ResultSet childResultSet, Supplier<List<String>> parentPrimaryKeyColumnsSupplier, boolean isDatabaseIdentifiersCaseSensitive)
+    {
+        List<String> parentPrimaryKeyColumnNames = parentPrimaryKeyColumnsSupplier.get();
+        List<Integer> parentPrimaryKeyIndices;
+        if (!isDatabaseIdentifiersCaseSensitive)
+        {
+            parentPrimaryKeyColumnNames = parentPrimaryKeyColumnNames.stream().map(key -> key.toUpperCase()).collect(Collectors.toList());
+        }
+        parentPrimaryKeyIndices = parentPrimaryKeyColumnNames.stream().map(FunctionHelper.unchecked(childResultSet::findColumn)).collect(Collectors.toList());
         DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = relationalGraphObjectsBatch.getNodeObjectsHashMap(parentIndex);
         RelationalGraphFetchUtils.switchSecondKeyHashingStrategy(parentMap, relationalGraphObjectsBatch.getNodePrimaryKeyGetters(parentIndex), parentPrimaryKeyIndices);
         return parentMap;
