@@ -45,7 +45,7 @@ public class DataPushResource extends BaseResource
     {
         return executeWithLogging(
                 "pushing data\"",
-                () -> Response.ok().entity(this.pushData( location, datastore, dataset)).build()
+                () -> Response.ok().entity(this.pushData(location, datastore, dataset)).build()
         );
     }
 
