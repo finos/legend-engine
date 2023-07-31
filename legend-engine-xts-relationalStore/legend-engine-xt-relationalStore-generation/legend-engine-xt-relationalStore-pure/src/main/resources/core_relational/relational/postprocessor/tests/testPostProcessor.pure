@@ -48,11 +48,14 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableM
 
    let runtime = ^meta::pure::runtime::Runtime
    (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+      connectionElementAssociations = 
+      ^meta::pure::runtime::ConnectionElementAssociation(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | replaceTables($query, pair($oldTable, $newTable)) }, {query:SelectSQLQuery[1] | replaceTables($query, pair($newTable, $oldTable))}]
                     )
+      )
    );
 
    let result = execute(|Person.all(), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -100,11 +103,13 @@ function meta::relational::tests::postProcessor::runtimeWithTableReplace(oldToNe
    
    let runtime = ^meta::pure::runtime::Runtime
    (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+      connectionElementAssociations = 
+      ^meta::pure::runtime::ConnectionElementAssociation(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessorsConnectionAware = [{query:SelectSQLQuery[1],conn:DatabaseConnection[1] | replaceTables($query, $oldToNewPairs) }]
-                    )
+                    ))
    );
 }
 
@@ -125,12 +130,14 @@ function meta::relational::tests::postProcessor::nonExecutable::runtimeWithNonEx
 {
    
    let runtime = ^meta::pure::runtime::Runtime
-   (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+   (      
+    connectionElementAssociations = 
+      ^meta::pure::runtime::ConnectionElementAssociation(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | nonExecutable($query, meta::relational::extension::relationalExtensions()) }]
-                    )
+                    ))
    );
 }
 
@@ -237,28 +244,28 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSQLRealiasCas
 function <<test.Test>> meta::relational::tests::postProcessor::testReAliasWindowColumn(): Boolean[1]
 {
    let func = {|Order.all()->project([col(o|$o.id, 'id'), col(window([o|$o.zeroPnl,o|$o.id]), sortAsc(o|$o.quantity), y|$y->rank(), 'testCol')]) };
-   let databaseConnection = testRuntime().connections->toOne()->cast(@TestDatabaseConnection);
+   let databaseConnection = testRuntime().connectionElementAssociations.connection->toOne()->cast(@TestDatabaseConnection);
    let result =  meta::relational::functions::sqlstring::toSQL($func, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.SybaseIQ, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "id", rank() OVER (Partition By case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end,"root".ID Order By "root".quantity ASC) as "testCol" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::testDb2ColumnRename():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::mapping::union::myDB, type = DatabaseType.DB2));
+   let runtime = ^meta::pure::runtime::Runtime(connectionElementAssociations = ^meta::pure::runtime::ConnectionElementAssociation(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.DB2)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DB2, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::testSnowflakeColumnRename():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::mapping::union::myDB, type = DatabaseType.Snowflake));
+   let runtime = ^meta::pure::runtime::Runtime(connectionElementAssociations = ^meta::pure::runtime::ConnectionElementAssociation(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.Snowflake)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::testSybaseColumnRename():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::mapping::union::myDB, type = DatabaseType.SybaseIQ));
+   let runtime = ^meta::pure::runtime::Runtime(connectionElementAssociations = ^meta::pure::runtime::ConnectionElementAssociation(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.SybaseIQ)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.SybaseIQ, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", \'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' + \'ForTestPurposesOnly\' + "root".lastName_s1 as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", \'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' + \'ForTestPurposesOnly\' + "root".lastName_s2 as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
@@ -266,8 +273,9 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSybaseColumnR
 function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessTransformJoinOp():Boolean[1]
 {
    let runtime = testRuntime();
-   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
-   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel->match([t:TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Integer), | ^Literal(value=2), |$t ) , r:RelationalOperationElement[1] |$r])}) }]));
+   let connEl = $runtime.connectionElementAssociations->at(0);
+   let conn = $connEl.connection->cast(@TestDatabaseConnection);
+   let runtimeWithPostProcessor = ^$runtime(connectionElementAssociations = ^$connEl(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel->match([t:TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Integer), | ^Literal(value=2), |$t ) , r:RelationalOperationElement[1] |$r])}) }])));
    
    let result = meta::relational::functions::sqlstring::toSQL(|Trade.all()->project([x|$x.id, x|$x.initiator.name], ['TradeID', 'Initiator']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select 2 as "TradeID", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "Initiator" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on (2 = 2 and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on (2 = 2)', $result);
@@ -277,14 +285,15 @@ function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessTr
 function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessingOfGroupByAndHavingOp():Boolean[1]
 {
    let runtime = testRuntime();
-   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
+   let connEl = $runtime.connectionElementAssociations->at(0);
+   let conn = $connEl.connection->cast(@TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |
       $rel->match([
          t: TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar), | ^DynaFunction(name = 'toUpper', parameters = ^$t(column = $t.column->map(c | ^$c(type = ^meta::relational::metamodel::datatype::DataType())))), | $t),
          r: RelationalOperationElement[1] | $r
       ])
    };
-   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess($postProcessFunction)}]));
+   let runtimeWithPostProcessor = ^$runtime(connectionElementAssociations = ^$connEl(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess($postProcessFunction)}])));
    
    let result = meta::relational::functions::sqlstring::toSQL(
       {|Trade.all()->groupBy([x|$x.product.name], [agg(x|$x.quantity, y|$y->sum())], ['ProductName', 'QuantitySum'])->filter(r | $r.getString('ProductName')->in(['ABC', 'DEF']))->sort(['ProductName'])},
@@ -299,14 +308,15 @@ function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessin
 function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessingOfGroupByAndHavingOpCachedTransform():Boolean[1]
 {
    let runtime = testRuntime();
-   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
+   let connEl = $runtime.connectionElementAssociations->at(0);
+   let conn = $connEl.connection->cast(@TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |
       $rel->match([
          t: TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar), | ^DynaFunction(name = 'toUpper', parameters = ^$t(column = $t.column->map(c | ^$c(type = ^meta::relational::metamodel::datatype::DataType())))), | $t),
          r: RelationalOperationElement[1] | $r
       ])
    };
-   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | ^meta::pure::mapping::Result<SelectSQLQuery|1>(values=$query->transform($postProcessFunction)->cast(@SelectSQLQuery))}]));
+   let runtimeWithPostProcessor = ^$runtime(connectionElementAssociations = ^$connEl(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | ^meta::pure::mapping::Result<SelectSQLQuery|1>(values=$query->transform($postProcessFunction)->cast(@SelectSQLQuery))}])));
    
    let result = meta::relational::functions::sqlstring::toSQL(
       {|Trade.all()->groupBy([x|$x.product.name], [agg(x|$x.quantity, y|$y->sum())], ['ProductName', 'QuantitySum'])->filter(r | $r.getString('ProductName')->in(['ABC', 'DEF']))->sort(['ProductName'])},

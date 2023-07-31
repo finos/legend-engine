@@ -33,7 +33,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all(),
             simpleModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -42,7 +42,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleAsserts($res);
@@ -61,7 +61,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->filter(p|$p.lastName == 'Yo'),
             simpleModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -70,7 +70,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleFilterAsserts($res);
@@ -90,14 +90,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all(),
             simpleModelMappingWithAssociation,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                pair(_Firm , list([
                                                                                                               ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
                                                                                                                  ])
                                                                                                )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleAssociationAsserts($res);
@@ -119,13 +119,13 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','lastName']),
             simpleModelMappingWithAssociation,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_Firm , list([
                                                                                                                         ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
                                                                                                                     ]))
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleProjectAssoAsserts($res);
@@ -152,8 +152,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->project([p|$p.firstName, p|$p.lastName], ['firstName','lastName']),
             meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
-            ^Runtime(connections = [
-                                       ^ModelConnection(element = ^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations= [
+                                       ^ConnectionElementAssociation(element = ^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -162,7 +162,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                        )
-                                   ]
+            )]
              ),
              meta::pure::extension::defaultExtensions()
           );

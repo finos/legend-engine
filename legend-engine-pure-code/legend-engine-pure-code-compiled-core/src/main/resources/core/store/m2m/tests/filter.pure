@@ -27,14 +27,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all(),
             filterMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
                                                                                                       pair(_Firm , list([
                                                                                                                         ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),
                                                                                                                                                        ^_Person(fullName='A. Only One')] )
                                                                                                                     ]))
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testTypeFilterThoughGetterAsserts($res);
@@ -51,14 +51,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName],['legalName','employeeNames']),
             filterMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
                                                                                                       pair(_Firm , list([
                                                                                                                         ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),
                                                                                                                                                        ^_Person(fullName='A. Only One')] )
                                                                                                                     ]))
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testTypeFilterThoughProjectAsserts($res);
@@ -77,14 +77,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->project([f|$f.lastName],['lastName']),
             filterMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
                                                                                                       pair(_Person , list([^_Person(fullName='Pierre Doe', firm=^_Firm(name='X')),
                                                                                                                            ^_Person(fullName='A. Only One', firm=^_Firm(name='X'))]
                                                                                                                           )
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testTypeFilterAsserts($res);

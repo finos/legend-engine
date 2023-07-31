@@ -54,7 +54,7 @@ function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], 
 {
    if ($extensions.executionPlan_execution_buildVariableTemplateString->isEmpty(),
        | '',
-       | $runtime.connections->at(0)->match(
+       | $runtime.connectionElementAssociations->at(0)->match(
              $extensions.executionPlan_execution_buildVariableTemplateString->map(e|$e->eval($name, $parameterVal, $type))->toOneMany()
          )
     )

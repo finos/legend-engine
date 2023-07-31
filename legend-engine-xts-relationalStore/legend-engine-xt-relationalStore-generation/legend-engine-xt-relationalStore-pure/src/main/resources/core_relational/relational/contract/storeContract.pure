@@ -80,14 +80,14 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
             }
       ),
      supportsNativeJoinAmongElements = true,
-     reprocessConnection = {connection:Connection[1] |
-                              $connection->match(
+     reprocessConnection = {c:ConnectionElementAssociation[1] |
+                              $c.connection->match(
                                   [
                                     t:meta::relational::runtime::TestDatabaseConnection[1] |
-                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$t.element->instanceOf(meta::relational::metamodel::Database),
+                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
                                                             | [];,
                                                             | if ($t.testDataSetupSqls->isEmpty(),
-                                                                  | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($t.element->cast(@meta::relational::metamodel::Database)),
+                                                                  | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database)),
                                                                   | $t.testDataSetupSqls))),
                                     r:meta::pure::alloy::connections::RelationalDatabaseConnection[1] |
                                           ^$r(
@@ -97,9 +97,9 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                   (
                                                         testDataSetupSqls =
                                                             $l.testDataSetupSqls->concatenate(
-                                                                if ($l.testDataSetupCsv->isEmpty() || !$r.element->instanceOf(meta::relational::metamodel::Database),
+                                                                if ($l.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
                                                                     | [];,
-                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($r.element->cast(@meta::relational::metamodel::Database))
+                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database))
                                                                 )
                                                             )
                                                   ),
@@ -197,12 +197,13 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
             $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
            |
              // Normal Flow
-            let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+            let connections = $runtime.connectionElementAssociations->filter(c | $c.connection->instanceOf(DatabaseConnection));
             let storeRuntime = if($connections->size() <= 1,
                                | $runtime->toOne(),
                                | let oldRuntime = $runtime->toOne();
                                  let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
-                                 ^$oldRuntime(connections = $dbConn);
+                                 let dbConnEl = $oldRuntime.connectionElementAssociations->filter(c|$c.connection==$dbConn);
+                                 ^$oldRuntime(connectionElementAssociations = $dbConnEl);
                             );
 
             let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);

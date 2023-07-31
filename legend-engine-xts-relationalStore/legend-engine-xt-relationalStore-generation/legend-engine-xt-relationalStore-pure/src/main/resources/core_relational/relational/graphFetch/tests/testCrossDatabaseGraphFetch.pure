@@ -106,7 +106,7 @@ import meta::relational::runtime::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDatabase::setUpDBs():Any[*]
 {
    let runtime1 = meta::relational::tests::testRuntime(EmployeeDB);
-   let connection1 = $runtime1.connections->toOne()->cast(@DatabaseConnection);
+   let connection1 = $runtime1.connectionElementAssociations.connection->toOne()->cast(@DatabaseConnection);
 
    executeInDb('Drop table if exists employee;', $connection1);
    executeInDb('Create Table employee(name VARCHAR(100), id INT, ceoName VARCHAR(100));', $connection1);
@@ -121,7 +121,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDataba
 
 
    let runtime2 = meta::relational::tests::testRuntime(FirmDB);
-   let connection2 = $runtime2.connections->toOne()->cast(@DatabaseConnection);
+   let connection2 = $runtime2.connectionElementAssociations.connection->toOne()->cast(@DatabaseConnection);
 
    executeInDb('Drop table if exists firm;', $connection2);
    executeInDb('Create Table firm(id INT, legalName VARCHAR(100), ceoIdentifier INT);', $connection2);
@@ -144,7 +144,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    
    
-   let runtime = ^Runtime(connections = meta::relational::tests::testRuntime(EmployeeDB)->concatenate(meta::relational::tests::testRuntime(FirmDB)).connections);
+   let runtime = ^Runtime(connectionElementAssociations= meta::relational::tests::testRuntime(EmployeeDB)->concatenate(meta::relational::tests::testRuntime(FirmDB)).connectionElementAssociations);
    
    let result = execute(
       {|Firm.all()->graphFetch($tree)->serialize($tree)},

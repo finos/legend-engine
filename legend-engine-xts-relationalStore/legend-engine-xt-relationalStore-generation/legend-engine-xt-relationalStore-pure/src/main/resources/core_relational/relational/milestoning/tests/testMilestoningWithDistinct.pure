@@ -22,7 +22,7 @@ import meta::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::distinct::setUp():Any[0..1]
 {
-   let connection = meta::relational::tests::testRuntime(milestoningdistinctdb).connections->toOne()->cast(@TestDatabaseConnection);
+   let connection = meta::relational::tests::testRuntime(milestoningdistinctdb).connectionElementAssociations.connection->toOne()->cast(@TestDatabaseConnection);
    
    executeInDb('drop table if exists ProductTable;',$connection);
    executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);

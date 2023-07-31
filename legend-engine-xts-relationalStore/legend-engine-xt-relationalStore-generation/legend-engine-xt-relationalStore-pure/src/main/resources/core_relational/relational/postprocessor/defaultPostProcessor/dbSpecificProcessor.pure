@@ -26,7 +26,8 @@ import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
-   let conn = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection);
+   let connEl = $runtime.connectionElementAssociations->filter(c|$c.connection->instanceOf(DatabaseConnection));
+   let conn = $connEl.connection->cast(@DatabaseConnection);
    let postProcessorQuery = if($conn->isNotEmpty(),
                                 | let type = $conn.type;
                                   assert(type->size()==1, 'found not enough or too many DB types');

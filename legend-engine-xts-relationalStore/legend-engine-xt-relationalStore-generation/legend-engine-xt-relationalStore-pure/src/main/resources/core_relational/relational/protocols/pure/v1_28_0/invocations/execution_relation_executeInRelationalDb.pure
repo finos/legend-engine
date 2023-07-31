@@ -17,10 +17,10 @@ import meta::alloy::metadataServer::*;
 import meta::pure::functions::io::http::*;
 import meta::protocols::pure::v1_28_0::invocation::execution::executeInRelationalDb::*;
 
-function meta::protocols::pure::v1_28_0::invocation::execution::executeInRelationalDb::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+function meta::protocols::pure::v1_28_0::invocation::execution::executeInRelationalDb::executeInRelationalDb(sqls:String[*], conn:meta::pure::runtime::ConnectionElementAssociation[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-  let conn1= $conn->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
-                  ->cast(@meta::protocols::pure::v1_28_0::metamodel::store::relational::connection::RelationalDatabaseConnection);
+  let conn1= $conn->map(connEl|$connEl.connection->cast(@meta::relational::runtime::DatabaseConnection)->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                  ->cast(@meta::protocols::pure::v1_28_0::metamodel::store::relational::connection::RelationalDatabaseConnection)->map(c|^$c(element=$connEl.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s]))));
   
   let input= ^ExecuteInRelationalDbInput(sqls=$sqls, connection = $conn1)->alloyToJSON();
   

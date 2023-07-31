@@ -274,12 +274,13 @@ function meta::relational::mapping::execution(store: Database[1], f:FunctionExpr
    let originalQuery = $f->toSQLQuery($m, $inScopeVars, $relationalExecutionContext, $debug, $extensions);
    let toSqlQueryDurationMilliseconds = ($toSqlQueryStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
-   let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+   let connections = $runtime.connectionElementAssociations->filter(c | $c.connection->instanceOf(DatabaseConnection));
    let storeRuntime = if($connections->size() <= 1,
                          | $runtime->toOne(),
                          | let oldRuntime = $runtime->toOne();
                            let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
-                           ^$oldRuntime(connections = $dbConn);
+                           let dbConnEl = $oldRuntime.connectionElementAssociations->filter(c|$c.connection==$dbConn);
+                           ^$oldRuntime(connectionElementAssociations = $dbConnEl);
                       );
 
    let postProcessorResult = postProcessQuery($exeCtx, $originalQuery, $storeRuntime, $store, $extensions);
@@ -585,8 +586,8 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
 
            let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false, processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
 
-           let sourceDb = $keyInformation.sourceConnection->cast(@DatabaseConnection).element;
-           let db = if ($sourceDb->instanceOf(Database),|$sourceDb,|[])->cast(@Database);
+           let sourceDb = $keyInformation.static.runtime.connectionElementAssociations->filter(c|$c.connection==$keyInformation.sourceConnection).element;
+           let db = $sourceDb->map(s|if ($s->instanceOf(Database),|$s,|[])->cast(@Database))->toOne();
 
            let sqlQueryToStringStart = now();
            let targetImplSqlQueryPair = generatePropertySql($setImplementation, $property, JoinType.INNER, $keyInformation.pk, $mapping, $keyInformation.static.runtime, $db, $keyInformation.static.exeCtx, $extensions);

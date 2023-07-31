@@ -43,7 +43,11 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAl
    let res = execute(
             |Person.all(),
             meta::pure::mapping::modelToModel::test::merge::MergeModelMappingSource,
-            ^Runtime( connections = ^ModelConnection(element=^ModelStore(), instances=$instances)),
+            ^Runtime(
+              connectionElementAssociations = [
+                ^ConnectionElementAssociation(
+                  element=^ModelStore(),
+                  connection=^ModelConnection(instances=$instances))]),
             meta::pure::extension::defaultExtensions()
             );
        assertEquals(1, $res.values->size());

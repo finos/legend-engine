@@ -540,6 +540,7 @@ function <<access.private>> meta::protocols::generation::java::conventionsCorePr
 {
   $c->addProvidedType(meta::pure::store::Store, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store')
     ->addProvidedType(meta::pure::runtime::Connection, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection')
+    ->addProvidedType(meta::pure::runtime::ConnectionElementAssociation, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.ConnectionElementAssociation')
     ->addProvidedType(meta::pure::mapping::PropertyMapping, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping')
     ->addProvidedType(meta::pure::executionPlan::ExecutionNode, 'org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode')
     ->addProvidedType(meta::pure::runtime::ExecutionContext, 'org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext')

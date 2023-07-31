@@ -40,11 +40,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Person, 
                                 url='data:application/json,{"fullName":"Pierre Doe"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -65,11 +69,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       simpleModelMappingWithSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Firm, 
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );      
@@ -91,11 +99,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Firm.all()->graphFetchChecked($tree)->serialize($tree),
       simpleModelMappingWithSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Firm, 
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );      
@@ -116,11 +128,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Firm.all()->graphFetchChecked($tree)->serialize($tree),
       simpleModelMappingWithSubTypeWithNestedAssociation,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Firm, 
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den T", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}, {"fullName" : "Den T", "address":  {"name" : "n", "street" : "Test"}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );      
@@ -141,11 +157,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfMultipl
    let result = execute(
       |Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Person, 
                                 url='data:application/json,[{"fullName":"Pierre Doe"},{"fullName":"Dave Miles"}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -166,11 +186,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOneObject
    let result = execute(
       |_S_Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMappingReverse,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=Person, 
                                 url='data:application/json,{"firstName":"Pierre","lastName":"Doe"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -189,11 +213,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeMissingPr
    let result = execute(
       |_S_Person.all()->graphFetch($tree)->serialize($tree),
       simpleModelMappingMissingProperty,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=Person, 
                                 url='data:application/json,{"lastName":"Doe"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -214,11 +242,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForPrimitivesAndE
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_SomeData,
                                 url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.000", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -241,11 +273,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForPrimitivesAndE
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_SomeData,
                                 url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.000", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -268,11 +304,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForEmptyValues() 
    let result = execute(
       |SomeData.all()->graphFetch($tree)->serialize($tree),
       simpleDataMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_SomeData,
                                 url='data:application/json,{"i":null, "f": 2.5, "d": [], "b": [false, true], "c":"ROUGE"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -297,11 +337,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target.all()->graphFetch($tree)->serialize($tree),
       meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person, 
                                 url='data:application/json,[{"address": [{"zipCode" : "10282", "coordinates" : "1", "street": "200 west", "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );      
@@ -327,11 +371,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target.all()->graphFetch($tree)->serialize($tree),
       meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithMultipleSubTypes,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person, 
                                 url='data:application/json,[{"address": [{"zipCode" : "10282", "coordinates" : "1", "road": "200 west", "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );      
@@ -447,11 +495,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::unmappedOptionalProperti
    let result = execute(
       |SomeOptionalData.all()->graphFetch($tree)->serialize($tree),
       sparseDataMapping,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_AString,
                                 url='data:application/json,{"s":"Hello"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -480,11 +532,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testM2MQueryWithMappingU
    let result = execute(
       |meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster.all()->graphFetch($tree)->serialize($tree),
        meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSuperTypeProperties,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster, 
                                 url='data:application/json,[{"streetCluster": [{"coordinates":"22.22.22.22","zipCode":"123456","street":"Oxford"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -531,11 +587,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       simpleModelMappingWithSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Firm,
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"_S_PersonB"}, {"fullName" : "Den T", "@type":"_S_Person"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -556,11 +616,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |Firm.all()->graphFetchChecked($tree)->serialize($tree),
       simpleModelMappingWithSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Firm,
                                 url='data:application/json,[{"name":"GS","employees": [{"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}, {"fullName" : "Den T", "aName" : "B", "@type":"_S_PersonB"}, {"fullName" : "Den T", "@type":"_S_Person"}]}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -582,11 +646,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::Friendship.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simpleModelMappingWithMultipleSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship,
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"_S_PersonA"}}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -608,11 +676,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::Friendship.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simpleModelMappingWithMultipleSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship,
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA"}}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -634,11 +706,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    let result = execute(
       |meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::Friendship.all()->graphFetch($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simpleModelMappingWithMultipleSubType,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship,
                                 url='data:application/json,[{"friendA" : {"fullName" : "Robert T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, "friendB" : {"fullName" : "John T", "aName" : "A", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA"}, "friendC" : {"friendC" : {"fullName" : "John T", "aName" : "A", "bName" : "B", "@type":"meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonB"}}}]'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -657,11 +733,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingUsingExp
    let result = execute(
       | Name.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::simpleModelMappingWithExplicitAssert,
-      ^Runtime(connections = ^JsonModelConnection(
-                              element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                               class = meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_AString,
                               url = 'data:application/json,{"s":"test string data"}'
                              )
+          )]
          ),
       meta::pure::extension::defaultExtensions()
    );
@@ -680,11 +760,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingUsingImp
    let result = execute(
       | Name.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::simpleModelMappingWithImplicitAssert,
-      ^Runtime(connections = ^JsonModelConnection(
-                              element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                               class = meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_AString,
                               url = 'data:application/json,{"s":"test string data"}'
                              )
+          )]
          ),
       meta::pure::extension::defaultExtensions()
    );
@@ -703,11 +787,15 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingEpochDat
    let result = execute(
       | meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::FromEpochDate.all()->graphFetchChecked($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::simple::simpleEpochToDate,
-      ^Runtime(connections = ^JsonModelConnection(
-                              element=^ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                               class = meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::EpochDate,
                               url = 'data:application/json,{"epochDate":1624268257499000000}'
                              )
+          )]
          ),
       meta::pure::extension::defaultExtensions()
    );
@@ -725,11 +813,15 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    let res = meta::pure::executionPlan::executionPlan(
       |meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->graphFetch($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
-      ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                element=^meta::pure::mapping::modelToModel::ModelStore(),
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Person,
                                 url='data:application/json,[{"fullName":"John Doe"},{"fullName":"Pierre XE"},{"fullName":"_Hey Yo"}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -782,14 +874,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
    let tree    = #{Person {firstName,lastName,type,description} }#;
    let mapping = mappingWithTypeName;
-   let runtime = ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+   let runtime = ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_S_Person, 
                                 url='data:application/json,[{"fullName":"Pierre Doe"},' +
                                                            '{"fullName":"John DoeA", "aName":"aName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"},' +
                                                            '{"fullName":"John DoeB", "bName":"bName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"},' +
                                                            '{"fullName":"John DoeC", "cName":"cName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonC"}]'
-                             ));
+                             ))]);
 
    let result = meta::legend::executeLegendQuery(|Person.all()->graphFetch($tree)->meta::pure::mapping::from($mapping, $runtime)->serialize($tree), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
    
@@ -805,11 +900,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
    let tree    = #{ConsumerModel{taxonomy}}#;
    let mapping = mappingWithTypeName;
-   let runtime = ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+   let runtime = ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=ContractualTrade, 
                                 url='data:application/json,{"executionTimestamp":"2022-10-11T01:30:51+0100","product":{"@type":"FxForward","currencyPair":"EUR/USD","valueDate":"2022-12-31"},"accountId":123456}'
-                             ));
+                             ))]);
 
    let result = meta::legend::executeLegendQuery(|ConsumerModel.all()->graphFetch($tree)->meta::pure::mapping::from($mapping, $runtime)->serialize($tree), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
    
@@ -822,11 +920,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
    let tree    = #{TradeExtended {side, productName, productRegion} }#;
    let mapping = mappingWithTypeName;
-   let runtime = ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+   let runtime = ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=TradeExtended, 
                                 url='data:application/json,[{"side":"Buy", "productName":"Product A", "productRegion": "Product A region"}]'
-                             ));
+                             ))]);
 
    let result = meta::legend::executeLegendQuery(|TradeExtended.all()->graphFetch(#{TradeExtended {side, productName, productRegion} }#)->meta::pure::mapping::from($mapping, $runtime)->serialize(#{TradeExtended {side, sideDescription, productName, productRegion} }#), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
    
@@ -841,11 +942,15 @@ function meta::pure::mapping::modelToModel::test::alloy::simple::testUnionMappin
   let res = meta::pure::executionPlan::executionPlan(
       |meta::pure::mapping::modelToModel::test::shared::dest::UnionTarget.all()->meta::pure::graphFetch::execution::graphFetchChecked($tree)->meta::pure::graphFetch::execution::serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::M,
-      ^meta::pure::runtime::Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                element=^meta::pure::mapping::modelToModel::ModelStore(),
+      ^meta::pure::runtime::Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionSource,
                                 url='data:application/json,{a : {id : "a"}, { b : { id : "b"}}}'
                              )
+          )]
       ),
       meta::pure::extension::defaultExtensions()
    );

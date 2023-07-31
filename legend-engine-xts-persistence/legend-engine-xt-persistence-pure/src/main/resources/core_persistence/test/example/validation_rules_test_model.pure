@@ -138,7 +138,6 @@ import meta::relational::runtime::*;
 function meta::pure::persistence::test::example::RelationalConnection(): Connection[1]
 {
   ^RelationalDatabaseConnection(
-    element = meta::pure::persistence::test::example::RelationalDatabase,
     type = DatabaseType.H2,
     authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
     datasourceSpecification = ^LocalH2DatasourceSpecification()

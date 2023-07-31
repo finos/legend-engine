@@ -122,8 +122,8 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::tr
 {
   ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection(
     _type = 'elasticsearch7StoreConnection',
-    element = $conn.element->cast(@PackageableElement)->elementToPath(),
-    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(            
+    element = '',
+    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(
             url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), $conn.sourceSpec.url.host, $conn.sourceSpec.url.port, $conn.sourceSpec.url.path])
           ),
     authSpec = $conn.authSpec->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)

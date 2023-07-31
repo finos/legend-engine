@@ -1062,18 +1062,19 @@ function meta::relational::tests::testRuntime(db:Database[1]):Runtime[1]
    testRuntime(testDatabaseConnection($db, []))
 }
 
-function <<access.private>> meta::relational::tests::testRuntime(testConnection:TestDatabaseConnection[1]):Runtime[1]
+function <<access.private>> meta::relational::tests::testRuntime(testConnection:ConnectionElementAssociation[1]):Runtime[1]
 {
-   ^Runtime(connections = $testConnection)
+   ^Runtime(connectionElementAssociations= $testConnection)
 }
 
-function <<access.private>> meta::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):TestDatabaseConnection[1]
+function <<access.private>> meta::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):ConnectionElementAssociation[1]
 {
-    ^TestDatabaseConnection(
-        element = $db,
+  ^ConnectionElementAssociation(
+    connection=^TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
-    );
+    ),
+    element = $db);
 }
 
 

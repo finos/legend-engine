@@ -20,7 +20,8 @@ import meta::pure::runtime::*;
 
 function meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns():Any[0..1]
 {
-   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+   let connEl = meta::relational::tests::testRuntime(db).connectionElementAssociations->toOne();
+   let connection = $connEl.connection->cast(@TestDatabaseConnection);
 
    executeInDb('Drop schema if exists productSchema cascade;', $connection);
    executeInDb('Create schema productSchema;', $connection);
@@ -42,7 +43,8 @@ function meta::relational::tests::milestoning::initSimpleRelationalDbWithMilesto
 
 function meta::relational::tests::milestoning::initDatabase():Runtime[1]
 {
-   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+   let connEl = meta::relational::tests::testRuntime(db).connectionElementAssociations->toOne();
+   let connection = $connEl.connection->cast(@TestDatabaseConnection);
   
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
@@ -321,7 +323,7 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('drop table if exists intermediateTwo;', $connection);
    executeInDb('Create Table intermediateTwo(joinId INT NOT NULL,linkToProduct INT NULL,type VARCHAR(200) NULL, PRIMARY KEY(joinId));', $connection);
    
-   ^Runtime(connections=$connection);
+   ^Runtime(connectionElementAssociations=$connEl);
    
 }
 

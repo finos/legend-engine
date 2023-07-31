@@ -41,7 +41,7 @@ public class TestValidation
     {
         String val =
                         "Class a::Person {name : String[1];}\n" +
-                        "function a::f():a::Person[*]{a::Person.all()->from(a::m, ^meta::pure::runtime::Runtime(connections=^meta::relational::runtime::TestDatabaseConnection(element=a::db, type=meta::relational::runtime::DatabaseType.H2)))}\n" +
+                        "function a::f():a::Person[*]{a::Person.all()->from(a::m, ^meta::pure::runtime::Runtime(connectionElementAssociations=^meta::pure::runtime::ConnectionElementAssociation(element=a::db, connection=^meta::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
                         "###Mapping\n" +
                         "Mapping a::m(a::Person:Relational{name : [a::db]tb.name})\n" +
                         "###Relational\n" +
@@ -62,7 +62,7 @@ public class TestValidation
         String val =
                 "Class a::Person {name : String[1]; address : a::Address[1];}\n" +
                         "Class a::Address{zip:String[1];}\n" +
-                        "function a::f():a::Person[*]{a::Person.all()->graphFetch(#{a::Person{name,address{zip}}}#)->from(a::m, ^meta::pure::runtime::Runtime(connections=^meta::relational::runtime::TestDatabaseConnection(element=a::db, type=meta::relational::runtime::DatabaseType.H2)))}\n" +
+                        "function a::f():a::Person[*]{a::Person.all()->graphFetch(#{a::Person{name,address{zip}}}#)->from(a::m, ^meta::pure::runtime::Runtime(connectionElementAssociations=^meta::pure::runtime::ConnectionElementAssociation(element=a::db, connection=^meta::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
                         "###Mapping\n" +
                         "Mapping a::m(a::Person:Relational{name : [a::db]tb.name, address : [a::db]@j} a::Address:Relational{zip : [a::db]addr.zip})\n" +
                         "###Relational\n" +

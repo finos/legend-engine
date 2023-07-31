@@ -128,9 +128,8 @@ function meta::pure::executionPlan::toString::connectionToString(connection:Conn
    $connection->class() ->toString() + '('+
    $connection->match(
                $extensions.executionPlanExtensions().printConnectionToString->map(x|$x->eval($extensions))->concatenate(
-               [
-                   connection:Connection[1] | $connection.element ->toString()
-               ])->toOneMany()
+               [connection:Connection[1] | '']
+               )->toOneMany()
             )
    + ')'
 }

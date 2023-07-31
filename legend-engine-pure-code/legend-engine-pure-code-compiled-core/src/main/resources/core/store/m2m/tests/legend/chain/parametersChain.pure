@@ -42,9 +42,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+        connectionElementAssociations =[
+          ^ConnectionElementAssociation(
+            connection=^ModelChainConnection(
+              mappings = [SrcToBridgeMapping]
+              ),
+            element=^ModelStore()),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element=^ModelStore())
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -178,9 +184,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
       },
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+        connectionElementAssociations =[
+          ^ConnectionElementAssociation(
+            connection=^ModelChainConnection(
+              mappings = [SrcToBridgeMapping]
+              ),
+            element=^ModelStore()),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element=^ModelStore())
          ]
       ),
       meta::pure::extension::defaultExtensions()

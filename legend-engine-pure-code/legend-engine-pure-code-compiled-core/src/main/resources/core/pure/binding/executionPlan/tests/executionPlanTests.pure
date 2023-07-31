@@ -449,7 +449,14 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let tree       = #{TargetPerson{fullName}}#;
-  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
+  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes(
+    [
+      ^Runtime(
+        connectionElementAssociations = ^ConnectionElementAssociation(
+          element=^ModelStore(), 
+          connection=^ModelChainConnection(mappings = M2MMapping1))
+      ),
+      getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
 
   let expected =
         'Sequence\n' +

@@ -266,8 +266,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictHa
 function <<test.Test>> meta::relational::tests::tds::tdsRestrict::testRestrictWithPostProcessor():Boolean[1]
 {
    let runtime = testRuntime();
-   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
-   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }]));
+   let connEl = $runtime.connectionElementAssociations->at(0);
+   let conn = $connEl.connection->cast(@TestDatabaseConnection);
+   let runtimeWithPostProcessor = ^$runtime(connectionElementAssociations = ^$connEl(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }])));
    let result = execute(|Person.all()->project([col(p|$p.firstName,'firstName'), col(p|'Hello','Hello')])->sort([asc('Hello'), asc('firstName')])->restrict(['firstName']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions());
    
    assertEquals('select "persontable_0"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "Hello" from personTable as "root" order by "Hello","firstName") as "persontable_0"', $result->sqlRemoveFormatting());

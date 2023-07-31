@@ -378,7 +378,7 @@ function meta::relational::tests::functions::objectReferenceIn::testObjectRefere
                  let sourceGraph = meta::pure::graphFetch::calculateSourceTree($targetGraph, simpleModelMapping, relationalExtensions());
                  let sourceFirms = _Firm.all()->filter(f | $f->objectReferenceIn($firmObjectRef) ||
                                                            $f.employees->exists(p | $p->objectReferenceIn($personObjectRef) || $p.addresses->exists(a| $a->objectReferenceIn($addressObjectRef))))
-                                              ->graphFetch($sourceGraph)->from(relationalMapping, ^Runtime(connections = getConnection()));
+                                              ->graphFetch($sourceGraph)->from(relationalMapping, ^Runtime(connectionElementAssociations= getConnection()));
                  Firm.all()->graphFetch($targetGraph)->serialize($targetGraph)->from(simpleModelMapping, getRuntimeWithModelConnection(_Firm, $sourceFirms));
                };
 }

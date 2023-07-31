@@ -23,7 +23,7 @@ import meta::relational::metamodel::*;
 
 function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
-   let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connectionElementAssociations.connection->at(0));
    let connectionAwarePostProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);
    let connectionAwarePostProcessorOutput = $connectionAwarePostProcessors->fold({pp,q|$pp->eval($q, $connection->cast(@DatabaseConnection)).values->toOne()}, $query->cast(@SelectSQLQuery));
    ^PostProcessorResult(query = $connectionAwarePostProcessorOutput,resultPostProcessor = { result:Result<Any|*>[1] | $result});

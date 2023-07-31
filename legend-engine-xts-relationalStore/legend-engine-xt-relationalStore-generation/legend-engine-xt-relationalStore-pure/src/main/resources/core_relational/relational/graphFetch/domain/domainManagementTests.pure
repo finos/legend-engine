@@ -181,8 +181,11 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
 function meta::relational::graphFetch::domain::tests::testRuntime():meta::pure::runtime::Runtime[1]
 {
    ^meta::pure::runtime::Runtime(
-     connections = ^meta::relational::runtime::TestDatabaseConnection(
+     connectionElementAssociations = 
+     ^meta::pure::runtime::ConnectionElementAssociation(
                       element = TestStore,
+                      connection=
+     ^meta::relational::runtime::TestDatabaseConnection(
                       type = meta::relational::runtime::DatabaseType.H2,
                       timeZone = 'GMT',
                       testDataSetupSqls =
@@ -195,7 +198,7 @@ function meta::relational::graphFetch::domain::tests::testRuntime():meta::pure::
                           'insert into Person (id, firm_id, first_name, last_name) values (1, 1, \'John\', \'Doe\');\n'+
                           'insert into Person (id, firm_id, first_name, last_name) values (2, 1, \'Jane\', \'Smith\');\n'+
                           'insert into Person (id, firm_id, first_name, last_name) values (3, 2, \'Mark\', \'Moe\');\n'
-                   )
+                  ))
     );
 }
 

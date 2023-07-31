@@ -25,14 +25,21 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'efgh')),
             createInstancesModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
-                                                                                                      pair(_Firm , list([
-                                                                                                                        ^_Firm (name='A')
-                                                                                                                    ])
-                                                                                                      )
-                                                                                            )
-                                                   )
-             ),
+            ^Runtime(
+              connectionElementAssociations = [
+                ^ConnectionElementAssociation(
+                  element=^ModelStore(),
+                  connection = ^ModelConnection(
+                    instances= newMap(
+                                  pair(_Firm , list([
+                                                    ^_Firm (name='A')
+                                                ])
+                                  )
+                    )
+                  )
+                )
+              ]
+            ),
              meta::pure::extension::defaultExtensions()
           );
    assertSameElements(['abcd','efgh'], $res.values->at(0).employees.lastName);
@@ -45,13 +52,20 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |FirmEmployee.all() ,
             createInstancesModelMappingOneMany,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
-                                                                                               pair(_Firm , list([
-                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1'),^_Person(fullName='Person 2')] )
-                                                                                                                 ])
-                                                                                               )
-                                                                                            )
-                                                   )
+            ^Runtime(
+              connectionElementAssociations = [
+                ^ConnectionElementAssociation(
+                  element=^ModelStore(),
+                  connection = ^ModelConnection(
+                    instances= newMap(
+                        pair(_Firm , list([
+                                      ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1'),^_Person(fullName='Person 2')] )
+                                          ])
+                        )
+                    )
+                  )
+                )
+              ]
              ),
              meta::pure::extension::defaultExtensions()
           );
@@ -64,13 +78,20 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |FirmEmployee.all() ,
             createInstancesModelMappingOneManyMultiProperty,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
-                                                                                               pair(_Firm , list([
-                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1',addresses=^Address(street='first')),^_Person(fullName='Person 2',addresses=^Address(street='second'))] )
-                                                                                                                 ])
-                                                                                               )
-                                                                                            )
-                                                   )
+            ^Runtime(
+              connectionElementAssociations = [
+                ^ConnectionElementAssociation(
+                  element=^ModelStore(),
+                  connection = ^ModelConnection(
+                    instances= newMap(
+                        pair(_Firm , list([
+                                      ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1',addresses=^Address(street='first')),^_Person(fullName='Person 2',addresses=^Address(street='second'))] )
+                                          ])
+                        )
+                    )
+                  )
+                )
+              ]
              ),
              meta::pure::extension::defaultExtensions()
           );
@@ -85,13 +106,18 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |FirmEmployee.all() ,
             createInstancesModelMappingOneManyMultiProperty,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
-                                                                                               pair(_Firm , list([
-                                                                                                              ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1', addresses=^Address(street='first')),^_Person(fullName='Person 2')] )
-                                                                                                                 ])
-                                                                                               )
-                                                                                            )
-                                                   )
+            ^Runtime(
+              connectionElementAssociations = [
+                ^ConnectionElementAssociation(
+                  element=^ModelStore(),
+                  connection = ^ModelConnection(
+                    instances= newMap(
+                        pair(_Firm , list([
+                                      ^_Firm (name='Firm Name', employees = [^_Person(fullName='Person 1', addresses=^Address(street='first')),^_Person(fullName='Person 2')] )
+                                          ])
+                        )
+                    )
+              ))]
              ),
              meta::pure::extension::defaultExtensions()
           );

@@ -13,9 +13,6 @@
 // limitations under the License.
 
 Class meta::external::store::elasticsearch::v7::metamodel::runtime::Elasticsearch7StoreConnection extends meta::pure::runtime::Connection
-[
-   needsElasticStore: $this.element->instanceOf(meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store)
-]
 {
    sourceSpec: meta::external::store::elasticsearch::v7::metamodel::runtime::Elasticsearch7StoreURLSourceSpecification[1]; // todo generalize
    authSpec:  meta::pure::runtime::connection::authentication::AuthenticationSpecification[1];

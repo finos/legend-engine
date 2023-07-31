@@ -65,7 +65,7 @@ Class meta::external::shared::format::executionPlan::UrlStreamExternalSource ext
 // Connections - Deprecated to be replaced by internalize
 // ------------------------------------------------------------------------------------------------------------------------
 
-Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends Connection
+Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends ConnectionElementAssociation
 [
    $this.element->instanceOf(Binding)
 ]

@@ -345,5 +345,5 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::union::sqlQuer
    executeInDb('insert into dTable2 values(1111, 8);', $connection);
    executeInDb('insert into dTable2 values(2222, 9);', $connection);
    
-   ^Runtime(connections = $connection);
+   ^Runtime(connectionElementAssociations=^ConnectionElementAssociation(connection=$connection, element=database));
 }

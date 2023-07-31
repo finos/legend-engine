@@ -24,7 +24,7 @@ import meta::pure::metamodel::tds::*;
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testValidateTdsGroupByWithIsNotEmpty():Boolean[1]
 {
    let runtime = testRuntime();
-   let connection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionElementAssociations.connection->at(0)->cast(@DatabaseConnection);
    meta::relational::metamodel::execute::executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 22:00:00\');', $connection);
    
    let result = validate(|AccountWithConstraints.all(), simpleRelationalMappingWithConstraints, testRuntime(), meta::relational::extension::relationalExtensions());

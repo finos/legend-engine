@@ -209,7 +209,8 @@ import meta::pure::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::partialForeignKeyUsage::initDatabase():Runtime[1]
 {
-   let connection = meta::relational::tests::testRuntime(relationalStore).connections->toOne()->cast(@TestDatabaseConnection);
+   let connEl = meta::relational::tests::testRuntime(relationalStore).connectionElementAssociations->toOne();
+   let connection = $connEl.connection->cast(@TestDatabaseConnection);
   
    executeInDb('drop table if exists A1;', $connection);
    executeInDb('create table A1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
@@ -243,7 +244,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::union::partial
    executeInDb('create table D2 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);
    executeInDb('insert into D2 values(202, 2, 22);', $connection);
    
-   ^Runtime(connections=$connection);
+   ^Runtime(connectionElementAssociations=$connEl);
 }
 
 ###Pure

@@ -149,7 +149,7 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
     )->newMap();
 
   let mainTable = $rootMapping.mainTableAlias.relationalElement->cast(@Table);
-  let dbConnection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+  let dbConnection = $runtime.connectionElementAssociations.connection->at(0)->cast(@DatabaseConnection);
   
   let upsertQuery = 
     ^UpsertSQLQuery(

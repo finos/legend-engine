@@ -62,7 +62,6 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
         HelperConnectionBuilder.verifyModelConnectionStore(modelConnection.element, modelConnection.elementSourceInformation);
         MutableMap<Class<?>, List<Root_meta_pure_metamodel_type_Any_Impl>> pureInstancesMap = HelperConnectionBuilder.processModelInput((ModelStringInput) modelConnection.input, this.context, false, null);
         return new Root_meta_pure_mapping_modelToModel_ModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
                 ._instances(new PureMap(pureInstancesMap));
     }
 
@@ -71,7 +70,6 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     {
         HelperConnectionBuilder.verifyModelConnectionStore(jsonModelConnection.element, jsonModelConnection.elementSourceInformation);
         return new Root_meta_pure_mapping_modelToModel_JsonModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::JsonModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
                 ._class(this.context.resolveClass(jsonModelConnection._class, jsonModelConnection.classSourceInformation))
                 ._url(jsonModelConnection.url);
     }
@@ -81,7 +79,6 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     {
         HelperConnectionBuilder.verifyModelConnectionStore(xmlModelConnection.element, xmlModelConnection.elementSourceInformation);
         return new Root_meta_pure_mapping_modelToModel_XmlModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::XmlModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
                 ._class(this.context.resolveClass(xmlModelConnection._class, xmlModelConnection.classSourceInformation))
                 ._url(xmlModelConnection.url);
     }
@@ -91,7 +88,6 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     {
         HelperConnectionBuilder.verifyModelConnectionStore(modelChainConnection.element, modelChainConnection.elementSourceInformation);
         return new Root_meta_pure_mapping_modelToModel_ModelChainConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelChainConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
                 ._mappings(ListIterate.collect(modelChainConnection.mappings, m -> this.context.resolveMapping(m, modelChainConnection.mappingsSourceInformation)));
     }
 }

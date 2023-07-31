@@ -34,12 +34,14 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canNavigateSourceAssocia
    let result = execute(
       |NameList.all()->graphFetch($tree)->serialize($tree),
       employeeNames,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^JsonModelConnection(
                                 class=Firm, 
                                 url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
                              )
-      ),meta::pure::extension::defaultExtensions()
+      )),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"names":"Pierre,Dave"}'->parseJSON(), $result.values->toOne()->parseJSON()));
