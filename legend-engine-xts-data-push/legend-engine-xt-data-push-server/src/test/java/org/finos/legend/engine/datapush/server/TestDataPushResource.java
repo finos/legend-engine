@@ -38,6 +38,6 @@ public class TestDataPushResource extends AbstractDataPushServerResourceTest
             throw new HttpResponseException(response.getStatus(), "Error during http call with status: " + response.getStatus() + " , entity: " + responseText);
         }
 
-        assertEquals("{\"ok\"}", responseText);
+        assertEquals("ok", responseText);
     }
 }
