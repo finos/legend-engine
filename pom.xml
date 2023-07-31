@@ -63,6 +63,9 @@
         <module>legend-engine-xts-json</module>
         <module>legend-engine-xts-avro</module>
 
+        <!-- Table Formats -->
+        <module>legend-engine-xts-iceberg</module>
+
         <!-- Languages -->
         <module>legend-engine-xts-rosetta</module>
         <module>legend-engine-xts-haskell</module>
@@ -234,9 +237,8 @@
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
-        <testcontainers.version>1.17.6</testcontainers.version>
-
         <depgraph-maven-plugin.version>4.0.2</depgraph-maven-plugin.version>
+        <testcontainers.version>1.18.3</testcontainers.version>
     </properties>
 
     <scm>
@@ -2682,23 +2684,20 @@
             <!-- Test Containers -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
                 <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>jdbc</artifactId>
-                <version>${testcontainers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>mssqlserver</artifactId>
-                <version>${testcontainers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${testcontainers.version}</version>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-api</artifactId>
+                <version>3.3.0</version>
             </dependency>
             <!-- Test Containers -->
 
