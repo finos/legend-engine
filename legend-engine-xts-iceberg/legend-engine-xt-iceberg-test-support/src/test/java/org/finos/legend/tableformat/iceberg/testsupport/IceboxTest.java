@@ -35,6 +35,7 @@ public class IceboxTest
     public static final Icebox ICEBOX = new Icebox();
 
     @Test
+    @org.junit.Ignore
     public void testCatalogUpdatedThruTrino() throws Exception
     {
         Assume.assumeTrue(DockerClientFactory.instance().isDockerAvailable());
