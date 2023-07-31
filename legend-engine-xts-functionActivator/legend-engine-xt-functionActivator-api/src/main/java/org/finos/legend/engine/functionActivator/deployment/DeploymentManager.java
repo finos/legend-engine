@@ -12,24 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.api;
+package org.finos.legend.engine.functionActivator.deployment;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorArtifact;
 
-public class SnowflakeAppArtifact extends FunctionActivatorArtifact
+public interface DeploymentManager<T extends FunctionActivatorArtifact, U extends DeploymentConfiguration, V extends DeploymentResult>
 {
-    RichIterable<String> sqlExpressions = Lists.mutable.empty();
 
-    public SnowflakeAppArtifact()
-    {
-        //empty artifact
-    }
+    public V deploy(T artifact, U configuration);
 
-    public SnowflakeAppArtifact(RichIterable<String> sqlExpressions)
-    {
-        this.sqlExpressions = sqlExpressions;
-    }
 }
