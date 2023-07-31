@@ -276,19 +276,19 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
 
    let connection = if ($sq.store->instanceOf(ModelStore),
                         | let sourceClass = $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass->toOne();
-                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match([
+                          $runtime.connectionElementAssociations->filter(c|$c.element->instanceOf(ModelStore) && $c.connection->match([
                              j : JsonModelConnection[1]  | $j.class == $sourceClass,
                              x : XmlModelConnection[1]   | $x.class ==  $sourceClass,
                              m : ModelConnection[1]      | $m.instances->get($sourceClass)->isNotEmpty(),
                              m : ModelQueryConnection[1] | $m.instancesProvider->get($sourceClass)->isNotEmpty(),
                              m : ModelChainConnection[1] | false
-                          ]));,
-                        | $runtime->connectionByElement($store)
+                          ])).connection;,
+                        | $runtime.connectionElementAssociations->filter(c|$c.element == $store).connection
                     );
    assert($connection->size() <= 1, | 'Multiple connections available for source class - ' + $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass.name->toOne());
 
    let chainConnection = if ($sq.store->instanceOf(ModelStore),
-                             | $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->instanceOf(ModelChainConnection));,
+                             | $runtime.connectionElementAssociations->filter(c|$c.element->instanceOf(ModelStore) && $c.connection->instanceOf(ModelChainConnection)).connection;,
                              | []
                          );
    assert($chainConnection->size() <= 1, | 'Multiple ModelChainConnection\'s not supported yet! Please merge your ModelChainConnection\'s.');
@@ -384,19 +384,19 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
 
    let connection = if ($store->instanceOf(ModelStore),
                         | let sourceClass = $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass->toOne();
-                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match([
+                          $runtime.connectionElementAssociations->filter(c|$c.element->instanceOf(ModelStore) && $c.connection->match([
                              j : JsonModelConnection[1]  | $j.class == $sourceClass,
                              x : XmlModelConnection[1]   | $x.class ==  $sourceClass,
                              m : ModelConnection[1]      | $m.instances->get($sourceClass)->isNotEmpty(),
                              m : ModelQueryConnection[1] | $m.instancesProvider->get($sourceClass)->isNotEmpty(),
                              m : ModelChainConnection[1] | false
-                          ]));,
-                        | $runtime->connectionByElement($store)
+                          ])).connection;,
+                        | $runtime.connectionElementAssociations->filter(c|$c.element==$store).connection
                     );
    assert($connection->size() <= 1, | 'Multiple connections available for source class - ' + $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass.name->toOne());
 
    let chainConnection = if ($store->instanceOf(ModelStore),
-                             | $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->instanceOf(ModelChainConnection));,
+                             | $runtime.connectionElementAssociations->filter(c|$c.element->instanceOf(ModelStore) && $c.connection->instanceOf(ModelChainConnection)).connection;,
                              | []
                          );
    assert($chainConnection->size() <= 1, | 'Multiple ModelChainConnection\'s not supported yet! Please merge your ModelChainConnection\'s.');
@@ -487,11 +487,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
    let newFunction       = ^LambdaFunction<{->Any[*]}>(expressionSequence = $newGraphFetchExpr);
 
 
-   let nonMCCs    = $runtime.connections->filter(x | !$x->instanceOf(ModelChainConnection));
+   let nonMCCs    = $runtime.connectionElementAssociations->filter(x | !$x.connection->instanceOf(ModelChainConnection));
    let newRuntime = ^$runtime
                     (
-                       connections = if ($mcc.mappings->size() >= 2,
-                                         | ^$mcc(mappings = $mcc.mappings->tail())->concatenate($nonMCCs),
+                       connectionElementAssociations = if ($mcc.mappings->size() >= 2,
+                                         | $runtime.connectionElementAssociations->filter(c|$c.connection==$mcc)->map(c|^$c(connection=^$mcc(mappings = $mcc.mappings->tail())))->concatenate($nonMCCs),
                                          | $nonMCCs
                                       )
                     );

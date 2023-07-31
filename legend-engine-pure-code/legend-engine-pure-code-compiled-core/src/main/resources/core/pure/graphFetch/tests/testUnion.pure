@@ -55,14 +55,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::unio
    
    let plan = executionPlan(|meta::pure::graphFetch::tests::union::Target.all()->graphFetch($m2mTree)->serialize($m2mTree),
                     meta::pure::graphFetch::tests::union::MyMapping,
-                    ^Runtime(
-                      connections = [
-                        ^JsonModelConnection(
+                    ^Runtime(connectionElementAssociations= [
+                        ^ConnectionElementAssociation(
                           element = ^ModelStore(),
+                          connection=^JsonModelConnection(
                           class = meta::pure::graphFetch::tests::union::A,
                           url = 'data:application/json,\n{"b1":{"c":{"d": {"s": "blah"}}},"b2": {"d": {"s": "foo"}}}\n'
                         )
-                      ]
+                      )]
                     ),
                     ^ExecutionContext(),
                     meta::pure::extension::defaultExtensions());

@@ -140,8 +140,7 @@ function meta::analytics::search::transformation::test::getTestDataSpaceWithoutD
     defaultRuntime = ^meta::pure::runtime::PackageableRuntime(
       name = 'meta::analytics::search::transformation::test::TestRuntime',
       runtimeValue = ^meta::pure::runtime::EngineRuntime(
-        mappings = [meta::analytics::search::transformation::test::sampleRelationalMapping],
-        connections = []
+        mappings = [meta::analytics::search::transformation::test::sampleRelationalMapping]
       )
     )
   );

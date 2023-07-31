@@ -189,7 +189,7 @@ import meta::relational::runtime::*;
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::rootLevel::createTablesInDb():Boolean[1]
 {
   // dbUnion
-   let dbConn  = ^TestDatabaseConnection(element=dbUnion, type=DatabaseType.H2);
+   let dbConn  = ^TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);
@@ -214,7 +214,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::root
    executeInDb('insert into productTable2 (productId, productname, description) values (41, \'Prod_4\', \'Product 4 description\');', $dbConn);
 
    //dbUnionXStore
-   let dbConn_XStore  = ^TestDatabaseConnection(element=dbUnion_XStore, type=DatabaseType.H2);
+   let dbConn_XStore  = ^TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion_XStore, 'tradeTable_XStore', $dbConn_XStore);
    dropAndCreateTableInDb(dbUnion_XStore, 'productTable_XStore', $dbConn_XStore);

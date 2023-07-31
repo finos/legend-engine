@@ -39,9 +39,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetch($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -66,9 +72,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -121,9 +133,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetch($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -151,9 +169,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -230,9 +254,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetch($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -281,9 +311,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -404,10 +440,16 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::testJsonModelConn
 
    let sourceFirms = '{"name":"Firm1"}';
    let runtime = ^Runtime(
-                          connections = [
-                             ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-                             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
-                          ]
+                        connectionElementAssociations = [
+                          ^ConnectionElementAssociation(
+                            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+                            element = ^ModelStore()
+                          ),
+                          ^ConnectionElementAssociation(
+                            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+                            element = ^ModelStore()
+                          )
+                        ]
                        );
 
    let simpleQueryResult = execute($simpleQuery, SrcToBridgeMapping, $runtime, meta::pure::extension::defaultExtensions()).values;
@@ -441,9 +483,15 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::chainWithFilter()
    let result = meta::legend::executeLegendQuery(
       {|Firm.all()->filter(f|$f.name=='Firm1')->graphFetch($tree)->from(BridgeToDestMapping,
       ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            connection= ^ModelChainConnection(mappings = [SrcToBridgeMapping]),
+            element = ^ModelStore()
+          ),
+          ^ConnectionElementAssociation(
+            connection=^JsonModelConnection(class = __Firm, url = 'data:application/json,' + $sourceFirms),
+            element = ^ModelStore()
+          )
          ]
       )) ->serialize($tree)},[], ^ExecutionContext(),
       meta::pure::extension::defaultExtensions()

@@ -75,10 +75,13 @@ function meta::pure::persistence::test::example::NestedM2mRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = meta::pure::persistence::test::example::NestedM2mMapping,
-    connections = ^JsonModelConnection(
+    connectionElementAssociations =
+    ^ConnectionElementAssociation(
       element=^ModelStore(),
-      class = meta::pure::persistence::test::example::WrapperInput,
-      url = 'executor:default'));
+      connection=
+        ^JsonModelConnection(
+          class = meta::pure::persistence::test::example::WrapperInput,
+          url = 'executor:default')));
 }
 
 function meta::pure::persistence::test::example::NestedM2mService(): Service[1]

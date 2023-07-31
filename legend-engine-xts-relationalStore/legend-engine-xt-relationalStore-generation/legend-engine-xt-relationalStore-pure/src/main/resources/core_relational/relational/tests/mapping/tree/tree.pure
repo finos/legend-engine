@@ -230,13 +230,12 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::tre
    let oldTable = myDB->schema('default')->toOne()->table('orgTable')->toOne();
    let newTable = myDB->schema('default')->toOne()->table('otherOrgTable')->toOne();
    
-   let runtime = ^Runtime
-   (
-      connections = ^TestDatabaseConnection(
-                        element = myDB,
+   let runtime = ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
+    element = myDB,
+    connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | meta::relational::postProcessor::replaceTables($query, pair($oldTable, $newTable)) }]
-                    )
+                    ))
    );
 
    let result = execute(|Account.all()->project([ a | $a.number,
@@ -295,12 +294,11 @@ Class meta::relational::tests::mapping::tree::model::domain::Org
 
 function meta::relational::tests::mapping::tree::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   ^Runtime
-   (
-      connections = ^TestDatabaseConnection(
-                        element = myDB,
+   ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(
+    element = myDB,
+    connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    )   
+                    ))
    );
 }
 

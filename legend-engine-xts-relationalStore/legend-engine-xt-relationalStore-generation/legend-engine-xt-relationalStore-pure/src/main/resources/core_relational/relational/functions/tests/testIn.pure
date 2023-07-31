@@ -335,9 +335,9 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_19_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableAndQueryChainingAndChainConnection():Boolean[1]
 { 
-  let modelChainConnection       = ^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
+  let modelChainConnection       = ^meta::pure::mapping::modelToModel::ModelChainConnection(
                                                                                             mappings = [meta::relational::tests::simpleRelationalMapping]);
-  let runtimeWithChainConnection = testRuntime()->map(r | ^$r(connections += $modelChainConnection));
+  let runtimeWithChainConnection = testRuntime()->map(r | ^$r(connectionElementAssociations += ^meta::pure::runtime::ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=$modelChainConnection)));
 
   let query   = {| let validFirstNames = ValidPerson.all().firstName->distinct();
                    meta::relational::tests::query::filter::in::Target_Person.all()->filter(p|$p.firstName->in($validFirstNames))

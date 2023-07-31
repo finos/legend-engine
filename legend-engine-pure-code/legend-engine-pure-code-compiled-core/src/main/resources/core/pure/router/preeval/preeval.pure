@@ -840,6 +840,7 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : meta::pure::runtime::PackageableRuntime[1]| true,
             p : meta::pure::runtime::Runtime[1]| true,
             p : meta::pure::runtime::Connection[1] | true,
+            p : meta::pure::runtime::ConnectionElementAssociation[1] | true,
             p : meta::pure::runtime::ExecutionContext[1]| true,
             p : meta::pure::tds::TDSColumn[*]| true,
             p : TdsOlapRank<Any>[*]| true,

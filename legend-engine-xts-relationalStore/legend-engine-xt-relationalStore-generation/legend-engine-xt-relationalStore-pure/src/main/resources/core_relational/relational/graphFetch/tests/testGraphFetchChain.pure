@@ -35,11 +35,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let query = {|Target_Firm.all()->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
    let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
    let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+      connectionElementAssociations = 
+      meta::relational::tests::testRuntime().connectionElementAssociations->concatenate(^meta::pure::runtime::ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -71,11 +71,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let query = {|Target_Firm.all()->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
    let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
    let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+      connectionElementAssociations = 
+      meta::relational::tests::testRuntime().connectionElementAssociations->concatenate(^meta::pure::runtime::ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -151,11 +151,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let query = {|Target_Firm.all()->filter(x | $x.firmName == 'FIRM X')->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
    let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
    let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+      connectionElementAssociations = 
+      meta::relational::tests::testRuntime().connectionElementAssociations->concatenate(^meta::pure::runtime::ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -178,11 +178,11 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    };
    let mapping = M2M_Mapping;
    let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
    let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+      connectionElementAssociations = 
+      meta::relational::tests::testRuntime().connectionElementAssociations->concatenate(^meta::pure::runtime::ConnectionElementAssociation(element = ^meta::pure::mapping::modelToModel::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;

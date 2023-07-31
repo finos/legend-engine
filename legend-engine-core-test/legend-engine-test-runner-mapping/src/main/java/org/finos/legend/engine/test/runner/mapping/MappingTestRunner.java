@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -50,9 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
 import java.io.ByteArrayOutputStream;
@@ -105,7 +104,16 @@ public class MappingTestRunner
     public void setupTestData()
     {
         ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
-        this.buildTestConnection(conn -> this.runtime._connectionsAdd(conn.accept(connectionVisitor)));
+        this.buildTestConnection(conn ->
+        {
+            CompileContext context = this.pureModel.getContext();
+            Root_meta_pure_runtime_ConnectionElementAssociation connectionElementAssociation = new Root_meta_pure_runtime_ConnectionElementAssociation_Impl("")
+                    ._connection(conn.accept(connectionVisitor))
+                    ._element(conn.element.equals("ModelStore") ?
+                            new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))
+                            : context.resolveStore(conn.element, conn.elementSourceInformation));
+            this.runtime._connectionElementAssociationsAdd(connectionElementAssociation);
+        });
     }
 
     private void buildTestConnection(Consumer<? super Connection> connectionRegistrar)
@@ -121,6 +129,7 @@ public class MappingTestRunner
             if (ObjectInputType.JSON.equals(objectInputData.inputType))
             {
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
+                jsonModelConnection.element = "ModelStore";
                 jsonModelConnection._class = objectInputData.sourceClass;
                 jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(jsonModelConnection);
@@ -129,6 +138,7 @@ public class MappingTestRunner
             {
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
+                xmlModelConnection.element = "ModelStore";
                 xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }

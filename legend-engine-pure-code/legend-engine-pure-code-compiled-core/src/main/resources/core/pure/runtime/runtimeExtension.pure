@@ -45,20 +45,20 @@ function meta::pure::runtime::runtimeEquality(a:Runtime[0..1], b:Runtime[0..1], 
    if($a->isEmpty() && $b->isEmpty(), 
        |true,
        |if($a->isNotEmpty() && $b->isNotEmpty(),
-           | let r = $a.connections->removeAll($b.connections, { connA,connB | connectionEquality($connA, $connB, $extensions)});
-             let r2 = $a.connections->removeAll($r, { connA,connB | connectionEquality($connA, $connB, $extensions)});
-             $r2->size() == $a.connections->size();,
+           | let r = $a.connectionElementAssociations->removeAll($b.connectionElementAssociations, { connA,connB | connectionEquality($connA, $connB, $extensions)});
+             let r2 = $a.connectionElementAssociations->removeAll($r, { connA,connB | connectionEquality($connA, $connB, $extensions)});
+             $r2->size() == $a.connectionElementAssociations->size();,
            |false));
 }
 
-function meta::pure::runtime::connectionEquality(a:Connection[1], b:Connection[1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
+function meta::pure::runtime::connectionEquality(a:ConnectionElementAssociation[1], b:ConnectionElementAssociation[1], extensions : meta::pure::extension::Extension[*]):Boolean[1]
 {
    //TODO  post processors are currently ignored in the equality
    
    if( $a->type() == $b->type(),
       |$a->match(
             $extensions.routerExtensions().connectionEquality->map(e | $e->eval($b))->concatenate([
-                a:Connection[1]  | true
+                a:ConnectionElementAssociation[1]  | true
             ])->toOneMany()
        ),   
       |false
@@ -78,15 +78,15 @@ function meta::pure::runtime::getConstraintsManager(exeCtx:ExecutionContext[1]):
 
 function meta::pure::runtime::connectionByElement(runtime:Runtime[1], store:Store[1]):Connection[1]
 {
-   assert($runtime.connections->size() >= 1, | 'No connections were found in runtime.');
+   assert($runtime.connectionElementAssociations->size() >= 1, | 'No connections were found in runtime.');
 
    if ($store->instanceOf(ModelStore),
-       |let connections = $runtime.connections->filter(c|$c.element->instanceOf(ModelStore));
+       |let connections = $runtime.connectionElementAssociations->filter(c|$c.element->instanceOf(ModelStore)).connection;
         $connections->toOne($connections->size()->toString()+' connection(s) for "ModelStore" were found in the runtime. Expected 1 connection.');,
-       |let connections = $runtime.connections->filter(c|$c.element == $store);
+       |let connections = $runtime.connectionElementAssociations->filter(c|$c.element == $store).connection;
         //meta::pure::functions::asserts::assertSize($connection, 1, |$connection->size()->toString()+' connection(s) for store "'+$store.name->toOne()+'" were found in the runtime');
         if ($connections->size() == 0,
-            | $runtime.connections->at(0),
+            | $runtime.connectionElementAssociations.connection->at(0),
             | $connections->toOne($connections->size()->toString()+' connection(s) for store "'+$store.name->toOne()+'" were found in the runtime. Expected 1 connection.')
         );
    );
@@ -94,32 +94,48 @@ function meta::pure::runtime::connectionByElement(runtime:Runtime[1], store:Stor
 
 function meta::pure::runtime::getMappingsFromRuntime(runtime:Runtime[0..1]):Mapping[*]
 {
-   if($runtime->isNotEmpty(),|$runtime.connections->filter(c | $c->instanceOf(ModelChainConnection))->cast(@ModelChainConnection).mappings,|[]);
+   if($runtime->isNotEmpty(),|$runtime.connectionElementAssociations->filter(c | $c.connection->instanceOf(ModelChainConnection)).connection->cast(@ModelChainConnection).mappings,|[]);
 }
 
 function meta::pure::runtime::getRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]
 {
-   ^Runtime(connections=^ModelConnection(element = ^ModelStore(), instances=newMap(pair($sourceClass, list($inputs)))));
+   ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^ModelConnection(instances=newMap(pair($sourceClass, list($inputs))))));
 }
 
 function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], binding:meta::external::shared::format::binding::Binding[1], input:Byte[*]):Runtime[1]
 {
-  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+  ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^ModelQueryConnection(
+                                instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)})))));
 }
 
 function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], binding:meta::external::shared::format::binding::Binding[1], input:String[1]):Runtime[1]
 {
-  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+  ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^ModelQueryConnection(instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($binding, $input)->meta::pure::graphFetch::execution::graphFetch($tree)})))));
 }
 
 function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], contentType:String[1], input:Byte[*]):Runtime[1]
 {
-  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+  ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^ModelQueryConnection(instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)})))));
 }
 
 function meta::pure::runtime::getRuntimeWithModelQueryConnection(sourceClass:Class<Any>[1], contentType:String[1], input:String[1]):Runtime[1]
 {
-  ^Runtime(connections = ^ModelQueryConnection(element = ^ModelStore(), instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)}))));
+  ^Runtime(
+                            connectionElementAssociations = ^ConnectionElementAssociation(
+                              element=^ModelStore(), 
+                              connection= ^ModelQueryConnection(instancesProvider=newMap(pair($sourceClass, {tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $sourceClass->meta::external::shared::format::functions::internalize($contentType, $input)->meta::pure::graphFetch::execution::graphFetch($tree)})))));
 }
 
 // Function signature takes Any to incorporate both Runtime & PackageableRuntime
@@ -127,5 +143,5 @@ function meta::pure::runtime::mergeRuntimes(runtimes:Any[1..*]):Runtime[1]
 {
   $runtimes->forAll(r | $r->instanceOf(PackageableRuntime) || $r->instanceOf(Runtime));
   let updatedRuntimes = $runtimes->filter(r | $r->instanceOf(Runtime))->concatenate($runtimes->filter(r | $r->instanceOf(PackageableRuntime))->cast(@PackageableRuntime).runtimeValue)->cast(@Runtime);
-  ^Runtime(connections = $updatedRuntimes.connections);
+  ^Runtime(connectionElementAssociations = $updatedRuntimes.connectionElementAssociations);
 }

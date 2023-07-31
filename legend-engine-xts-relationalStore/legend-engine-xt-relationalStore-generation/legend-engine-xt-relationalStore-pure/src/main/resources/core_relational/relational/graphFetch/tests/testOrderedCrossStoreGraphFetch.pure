@@ -268,8 +268,8 @@ import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::createTablesInDb():Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=DB1, type=DatabaseType.H2)]);
-   let dbConn1 = $runtime.connections->at(0)->cast(@DatabaseConnection);   
+   let runtime =  ^Runtime(connectionElementAssociations= [^ConnectionElementAssociation(element=DB1,connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let dbConn1 = $runtime.connectionElementAssociations.connection->at(0)->cast(@DatabaseConnection);   
 
    dropAndCreateTableInDb(DB1, 'productTable', $dbConn1);
    dropAndCreateTableInDb(DB1, 'synonymTable', $dbConn1);
@@ -305,7 +305,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -317,7 +316,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -347,7 +346,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -359,7 +357,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -389,7 +387,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -401,7 +398,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -428,7 +425,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -440,7 +436,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping2;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -467,7 +463,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -479,7 +474,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping3;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -508,7 +503,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
                             class   = S_Trade, 
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
@@ -520,7 +514,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
 
    let query = {|TradeWrapper.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionElementAssociations = $dbRuntime.connectionElementAssociations->concatenate(^ConnectionElementAssociation(connection=$jsonConnection,element = ^meta::pure::mapping::modelToModel::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 

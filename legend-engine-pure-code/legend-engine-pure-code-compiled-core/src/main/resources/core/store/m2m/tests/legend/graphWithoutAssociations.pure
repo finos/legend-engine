@@ -35,11 +35,13 @@ meta::pure::mapping::modelToModel::test::alloy::simple::serializeGraphWithoutAss
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       firmMappings,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
-                                url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
-                             )
+      ^Runtime(
+        connectionElementAssociations = ^ConnectionElementAssociation(
+                                element=^ModelStore(),
+                                connection=^JsonModelConnection(
+                                  class=_Firm, 
+                                  url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
+                              ))
       ),
       meta::pure::extension::defaultExtensions()
    );

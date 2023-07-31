@@ -100,15 +100,15 @@ function meta::relational::tests::m2m2r::runtimeSimple():meta::pure::runtime::Ru
 function meta::relational::tests::m2m2r::runtime():Runtime[1]
 {
  ^meta::pure::runtime::Runtime(
-      connections=[
-         ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+      connectionElementAssociations=[
+        ^ConnectionElementAssociation(
           element = meta::relational::tests::m2m2r::SourceDB,
-          type = DatabaseType.H2,
-          authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
-          datasourceSpecification = ^LocalH2DatasourceSpecification()
-        ),
-        ^ModelChainConnection(element = ^ModelStore(), mappings = [meta::relational::tests::m2m2r::AxionToModelMapping])
-
+          connection = ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+            type = DatabaseType.H2,
+            authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+            datasourceSpecification = ^LocalH2DatasourceSpecification()
+        )),
+        ^ConnectionElementAssociation(element = ^ModelStore(),connection=^ModelChainConnection( mappings = [meta::relational::tests::m2m2r::AxionToModelMapping]))
       ]
   )
 }

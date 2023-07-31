@@ -25,9 +25,9 @@ import meta::relational::metamodel::*;
 import meta::pure::functions::collection::*;
 import meta::relational::functions::sqlQueryToString::*;
 
-function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],connection:DatabaseConnection[1]):Result<SelectSQLQuery|1>[1]
+function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],connection:ConnectionElementAssociation[1]):Result<SelectSQLQuery|1>[1]
 {
-   trimColumnName($query, ^Runtime(connections = $connection));
+   trimColumnName($query, ^Runtime(connectionElementAssociations= $connection));
 }
 
 function meta::relational::postProcessor::reAliasColumnName::trimColumnName(query:SelectSQLQuery[1],runtime:Runtime[1]):Result<SelectSQLQuery|1>[1]
@@ -50,7 +50,7 @@ function meta::relational::postProcessor::reAliasColumnName::trimColumnName(quer
 
 function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtime: Runtime[1]):Integer[1]
 {
-  let type =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+  let type =  $runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
 
   let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),

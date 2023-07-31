@@ -58,17 +58,17 @@ function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors
 }
 
 //Execution
-function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[0..1], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[*], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
 {
    let defaultPostProcessors = sqlQueryDefaultPostProcessors();
    let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));
-   let c = if($store->isNotEmpty(),|$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let c = if($store->isNotEmpty(),|$store->map(s|$runtime->connectionByElement($s))->removeDuplicates()->toOne(),|$runtime.connectionElementAssociations.connection->at(0));
    let postProcessors1 = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
    let newQuery1 = if($postProcessors1->isEmpty(), | $postProcesedQuery, | $postProcessors1->fold({pp,q|$pp->eval($q).values->toOne()}, $postProcesedQuery->cast(@SelectSQLQuery)));
    let postProcessors = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);
    let newQuery = if($postProcessors->isEmpty(), | $newQuery1, | $postProcessors->fold({pp,q|$pp->eval($q, $c->cast(@DatabaseConnection)).values->toOne()}, $newQuery1->cast(@SelectSQLQuery)));
-   let newQueryAfterTrimColumnNameProcessing = if($runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
-                                   | let type = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+   let newQueryAfterTrimColumnNameProcessing = if($runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
+                                   | let type = $runtime.connectionElementAssociations.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
                                      if ($type->isNotEmpty() && $type->toOne()->createDbConfig([]).dbExtension.aliasLimit->isNotEmpty() && $type != DatabaseType.H2,
                                           | trimColumnNamePostProcessors()->eval($newQuery->cast(@SelectSQLQuery),$runtime).values->cast(@SelectSQLQuery);,
                                           | $newQuery);,
@@ -366,8 +366,8 @@ function meta::relational::postProcessor::replaceTablesInJoin(r:RelationalTreeNo
 
 function meta::relational::runtime::addPostProcessors(r:Runtime[1], store:Store[0..1], pps : meta::pure::metamodel::function::Function<{SelectSQLQuery[1]->meta::pure::mapping::Result<SelectSQLQuery|1>[1]}>[*]):Runtime[1]
 {
-  let connection = if($store->isNotEmpty(),| let conn = $r->connectionByElement($store->toOne()),|$r.connections->at(0)); 
-  $connection->match([d:DatabaseConnection[1]| let updatedConnections = $r.connections->remove($d)->add(^$d(sqlQueryPostProcessors+=$pps)); 
-                                               ^$r(connections=$updatedConnections);,
+  let connection = if($store->isNotEmpty(),| let conn = $r.connectionElementAssociations->filter(c|$c.element==$store->toOne()),|$r.connectionElementAssociations->at(0)); 
+  $connection.connection->match([d:DatabaseConnection[1]| let updatedConnections = $r.connectionElementAssociations->map(c|if($c.connection!=$d,|$c,|^$c(connection=^$d(sqlQueryPostProcessors+=$pps)))); 
+                                               ^$r(connectionElementAssociations=$updatedConnections);,
                                      a:Any[1]| fail('Connection must be of type DatabaseConnection'); $r;]);   
 }

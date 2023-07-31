@@ -269,7 +269,7 @@ function meta::relational::functions::database::testDatabaseDefinitionForRuntime
 {
 
    $database.schemas->map(s | $s.tables->map(t | let sql = createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
-                                                 executeInDb($sql, $runtime.connections->at(0)->cast(@DatabaseConnection));
+                                                 executeInDb($sql, $runtime.connectionElementAssociations->at(0).connection->cast(@DatabaseConnection));
                                              )
                       );
 }

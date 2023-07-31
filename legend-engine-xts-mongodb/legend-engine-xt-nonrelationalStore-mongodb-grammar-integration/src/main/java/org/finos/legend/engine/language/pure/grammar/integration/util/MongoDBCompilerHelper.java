@@ -343,7 +343,6 @@ public class MongoDBCompilerHelper
         Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection conn = new Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection_Impl("MongoDBConnection", sourceInformation, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection"))
                 ._authenticationSpecification(authSpec)
                 ._dataSourceSpecification(dbDatasourceSpecification)
-                ._element(context.pureModel.getStore(connectionValue.element, connectionValue.elementSourceInformation))
                 ._type(context.pureModel.getEnumValue("meta::external::store::mongodb::metamodel::runtime::DatabaseType", connectionValue.type.toString()));
 
         return conn._validate(true, sourceInformation, context.getExecutionSupport());

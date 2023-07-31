@@ -35,7 +35,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
    let sourceData = '[{"sName": "S1", "sEmployees": [{"sFirstName": "F1", "sLastName": "L1"}, {"sFirstName": "F2", "sLastName": "L2"}]},' +
                     '{"sName": "S2", "sEmployees": [{"sFirstName": "F3", "sLastName": "L3"}, {"sFirstName": "F4", "sLastName": "L4"}]}]';
    
-   let sourceRuntime = ^Runtime(connections = ^JsonModelConnection(element = ^ModelStore(), class = SourceFirm,  url = 'data:application/json,' + $sourceData));
+   let sourceRuntime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(class = SourceFirm,  url = 'data:application/json,' + $sourceData)));
    
    let bridgeTree = #{
       BridgeFirm {
@@ -87,7 +87,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
    let sourceData = '[{"sName": "S1", "sEmployees": [{"sFirstName": "F1", "sLastName": "L1"}, {"sFirstName": "F2", "sLastName": "L2"}]},' +
                     '{"sName": "S2", "sEmployees": [{"sFirstName": "F3", "sLastName": "L3"}, {"sFirstName": "F4", "sLastName": "L4"}]}]';
    
-   let sourceRuntime = ^Runtime(connections = ^JsonModelConnection(element = ^ModelStore(), class = SourceFirm,  url = 'data:application/json,' + $sourceData));
+   let sourceRuntime = ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(class = SourceFirm,  url = 'data:application/json,' + $sourceData)));
    
    let bridgeTree = #{
       BridgeFirm {

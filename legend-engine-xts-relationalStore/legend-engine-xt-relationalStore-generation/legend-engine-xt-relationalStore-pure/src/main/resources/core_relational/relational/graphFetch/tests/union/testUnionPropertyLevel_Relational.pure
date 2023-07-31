@@ -31,8 +31,8 @@ import meta::relational::tests::model::simple::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::propertyLevel::setup(): Boolean[1]
 {
-  let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=meta::relational::tests::mapping::union::myDB, type=DatabaseType.H2)]);
-  let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
+  let runtime =  ^Runtime(connectionElementAssociations = [^ConnectionElementAssociation(element=meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+  let connection  = $runtime.connectionElementAssociations.connection->at(0)->cast(@DatabaseConnection);
    
   executeInDb('Drop table if exists PersonSet1;', $connection);    
   executeInDb('Create Table PersonSet1 (ID INT, lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);    

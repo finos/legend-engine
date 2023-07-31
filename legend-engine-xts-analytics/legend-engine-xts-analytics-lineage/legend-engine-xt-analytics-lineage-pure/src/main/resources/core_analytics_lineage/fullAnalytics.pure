@@ -177,7 +177,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
 function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefinition<Any>[1], mappings:Mapping[*], propertyTree:PropertyPathTree[1], runtime:Runtime[0..1]):Flow[1]
 {
    let databaseConnection = if($runtime->isNotEmpty(),
-                          | let connections = $runtime->toOne().connections->filter(c | $c->instanceOf(DatabaseConnection));
+                          | let connections = $runtime->toOne().connectionElementAssociations.connection->filter(c | $c->instanceOf(DatabaseConnection));
                             if($connections->size() == 1,
                                | $connections->toOne()->cast(@DatabaseConnection),
                                | []);,

@@ -39,11 +39,6 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
-    public static void addDatabaseConnectionProperties(Root_meta_relational_runtime_DatabaseConnection pureConnection, String element, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
-    {
-        addDatabaseConnectionProperties(pureConnection, element, null, connectionType, timeZone, quoteIdentifiers, context);
-    }
-
     public static void addDatabaseConnectionProperties(Root_meta_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
     {
         Root_meta_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
@@ -52,11 +47,11 @@ public class HelperRelationalDatabaseConnectionBuilder
 
         try
         {
-            connection._element(HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context));
+            HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context);
         }
         catch (RuntimeException e)
         {
-            connection._element(new Root_meta_relational_metamodel_Database_Impl(element)._name(element));
+            new Root_meta_relational_metamodel_Database_Impl(element)._name(element);
         }
     }
 

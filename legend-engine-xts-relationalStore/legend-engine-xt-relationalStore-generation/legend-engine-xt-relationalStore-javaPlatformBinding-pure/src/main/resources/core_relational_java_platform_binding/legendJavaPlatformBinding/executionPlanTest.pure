@@ -137,12 +137,13 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    
    let query = {|meta::relational::graphFetch::tests::chain::Target_Firm.all()->graphFetch($tree)->serialize($tree)};
   
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+   let modelChainConnection = ^meta::pure::runtime::ConnectionElementAssociation(
+    element = ^meta::pure::mapping::modelToModel::ModelStore(),
+    connection=^meta::pure::mapping::modelToModel::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
-   );
+   ));
    let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+      connectionElementAssociations = meta::relational::tests::testRuntime().connectionElementAssociations->concatenate($modelChainConnection)
    );
 
    let res = meta::pure::executionPlan::executionPlan($query, meta::relational::graphFetch::tests::chain::M2M_Mapping, $runtime, meta::relational::extension::relationalExtensions());

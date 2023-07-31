@@ -29,11 +29,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = executeGraphFetchWithParameters(
       |Firm.all()->filter(f|$f.employees->exists(p|$p.lastName=='T'))->graphFetchChecked($tree)->meta::pure::mapping::from(
       simpleModelMappingWithAssociation,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_Firm, 
                                 url='data:application/json,[{"name":"CORP"},{"name":"FINOS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den B", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}  ]}]'
-                             )
+                             ))]
       ))->serialize($tree),
    []);      
 
@@ -48,11 +51,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = executeGraphFetchWithParameters(
       |Firm.all()->filter(f|$f.employees->exists(p|$p.lastName=='T'))->graphFetch($tree)->meta::pure::mapping::from(
       simpleModelMappingWithAssociation,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_Firm, 
                                 url='data:application/json,[{"name":"CORP"},{"name":"FINOS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den B", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}  ]}]'
-                             )
+                             ))]
       ))->serialize($tree),
    []);      
 
@@ -65,11 +71,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = executeGraphFetchWithParameters(
       |Person.all()->filter(f|$f.lastName=='B')->graphFetch($tree)->from(
       simpleModelMappingWithAssociation,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Person, 
-                                url='data:application/json,[{"fullName" : "Robert T"},{"fullName" : "Robert B"}]'
-                             )
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
+              class=Person,
+              url='data:application/json,[{"fullName" : "Robert T"},{"fullName" : "Robert B"}]'
+            ))]
       ))->serialize($tree),
       []
    );   
@@ -86,11 +95,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
    let result = executeGraphFetchWithParameters(
       |meta::pure::mapping::modelToModel::test::shared::dest::Trade.all()->filter(f|$f.side==Side.Sell)->graphFetch($tree)->from(
       meta::pure::mapping::modelToModel::test::simple::ModelMappingWithJoinToExtendedProperty,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
                                 class=_Trade, 
                                 url='data:application/json,[{  "side":1, "product":{"name": "FINOS", "region":"NewYork"}} ,{  "side":0, "product":{"name": "ACME", "region":"NewYork"} }]'
-                             )
+                             ))]
       ))->serialize($tree),
       []
    );     
@@ -105,11 +117,14 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
    let tree = #{Firm {legalName }}#;
    let result = executeGraphFetchWithParameters(
-      name:String[1]|Firm.all()->filter(f|$f.employees->exists(p|$p.lastName==$name))->graphFetch($tree)->meta::pure::mapping::from(simpleModelMappingWithAssociation,^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
-                                url='data:application/json,[{"name":"CORP"},{"name":"FINOS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den B", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}  ]}]'
-                             )))->serialize($tree),
+      name:String[1]|Firm.all()->filter(f|$f.employees->exists(p|$p.lastName==$name))->graphFetch($tree)->meta::pure::mapping::from(simpleModelMappingWithAssociation,^Runtime(
+        connectionElementAssociations = [
+          ^ConnectionElementAssociation(
+            element=^ModelStore(), 
+            connection= ^JsonModelConnection(
+                              class=_Firm, 
+                              url='data:application/json,[{"name":"CORP"},{"name":"FINOS","employees": [{"fullName" : "Robert T", "address":  {"name" : "n", "street" : "Digby"}, "aName" : "A", "vehicle": {"wheelCount" : 5}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "John T", "address":  {"name" : "n", "street" : "HighBury"}, "aName" : "A", "vehicle": {"wheelCount" : 7}, "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"}, {"fullName" : "Den B", "address":  {"name" : "n", "street" : "Cresent"}, "aName" : "B", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"}  ]}]'
+                            ))]))->serialize($tree),
  
     
         pair('name','T')

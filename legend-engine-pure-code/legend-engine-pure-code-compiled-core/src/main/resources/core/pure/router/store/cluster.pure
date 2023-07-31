@@ -212,7 +212,7 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
           let params = $childClustersResponse.cluster->evaluateAndDeactivate();
 
           let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->cast(@Runtime)->toOne();
-          let store = $runtime.connections.element->cast(@meta::pure::store::Store)->toOne();
+          let store = $runtime.connectionElementAssociations.element->cast(@meta::pure::store::Store)->toOne();
           ^ClusterResponse(
             cluster = ^StoreMappingClusteredValueSpecification(
                         openVars = $openVariables,

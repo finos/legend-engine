@@ -46,7 +46,7 @@ function meta::relational::mapping::postProcessorList():meta::pure::metamodel::f
 
 function meta::relational::mapping::defaultProcessors(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
-   let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connectionElementAssociations.connection->at(0));
    let connectionProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
 
    let defaultPostProcessorOutput = sqlQueryDefaultPostProcessors()->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery));

@@ -23,14 +23,14 @@ import meta::relational::runtime::*;
 
 function <<access.private>> meta::relational::graphFetch::tests::isolation::getRuntime(db: Database[1]):Runtime[1]
 {
-   ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2))
+   ^Runtime(connectionElementAssociations= ^ConnectionElementAssociation(element=$db,connection=^TestDatabaseConnection(type=DatabaseType.H2)))
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::isolation::testIsolationOfPropertyTargetFilter(): Boolean[1]
 {
    let runtime = getRuntime(IsolationTestDB1);
 
-   let connection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionElementAssociations.connection->at(0)->cast(@DatabaseConnection);
    dropAndCreateTableInDb(IsolationTestDB1, 'firmTable', $connection);
    dropAndCreateTableInDb(IsolationTestDB1, 'personTable', $connection);
    dropAndCreateTableInDb(IsolationTestDB1, 'personFirmBridgeTable', $connection);

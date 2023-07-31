@@ -35,12 +35,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::mapSourceToTargetBasedOn
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       firmMappings,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=_Firm, 
                                 url='data:application/json,{"name":"Acme Corp", "employees":[{"firstName":"Fred","lastName":"Bloggs", "age":37}, {"firstName":"John","lastName":"Doe", "age": 43}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 

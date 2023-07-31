@@ -29,14 +29,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType;
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+            class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+            url = 'data:application/json,\n'+ 
+                    '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                    '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
+          )
+      )]);
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -57,15 +60,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -86,15 +92,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "20000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+ 
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "20000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -116,15 +125,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match_functionCall;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+            class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+            url = 'data:application/json,\n'+ 
+                    '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                    '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                    '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+          )
+        )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -146,14 +158,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType;
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+ 
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                  '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
+        )
+      )]);
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
   let expected=    '[\n' + 
@@ -207,15 +222,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+ 
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
 
@@ -294,15 +312,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnStringValue;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+ 
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -325,15 +346,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnBooleanValue;
   let query   = {|Target2.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -355,15 +379,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -385,15 +412,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match_functionCall;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
     assertJsonStringsEqual(
@@ -416,15 +446,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnStringValue;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
   let expected=    '[\n' + 
@@ -497,15 +530,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match_functionCall;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionElementAssociations = [
+      ^ConnectionElementAssociation(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
                                                   url = 'data:application/json,\n'+ 
                                                           '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
   let expected=    '[\n' + 

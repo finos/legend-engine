@@ -49,7 +49,7 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
           //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
           //the only place where sql is generated for this case.
           let rt = $sc.runtime->match([
-            r:Runtime[1] | ^$r(connections = $r.connections->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|$sc.s.reprocessConnection->toOne()->eval($c)))),
+            r:Runtime[1] | ^$r(connectionElementAssociations = $r.connectionElementAssociations->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|^$c(connection=$sc.s.reprocessConnection->toOne()->eval($c))))),
             r:Runtime[0..1] | $r
           ]);
 

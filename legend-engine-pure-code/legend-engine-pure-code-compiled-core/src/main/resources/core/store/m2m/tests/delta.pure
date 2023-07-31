@@ -22,7 +22,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |meta::pure::mapping::modelToModel::test::delta::v2::Firm.all()->filter(f|$f.newLegalName == 'GS'),
             simpleDeltaMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
                                                                                                       pair(meta::pure::mapping::modelToModel::test::delta::v1::Firm , list([
                                                                                                                         ^meta::pure::mapping::modelToModel::test::delta::v1::Firm (legalName='GS',
                                                                                                                                                                                    region = meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString.NewYork,
@@ -42,7 +42,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    

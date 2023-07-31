@@ -64,10 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_relational_runtime_DatabaseConnection;
-import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -150,7 +147,7 @@ public class ServiceTestGenerationHelper
         }
         if (runtime instanceof RuntimePointer)
         {
-            RichIterable<? extends Root_meta_pure_runtime_Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections();
+            RichIterable<? extends Root_meta_pure_runtime_ConnectionElementAssociation> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connectionElementAssociations();
             return (connections != null) && connections.size() > 1;
         }
         throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
@@ -330,8 +327,8 @@ public class ServiceTestGenerationHelper
         }
         if (runtime instanceof RuntimePointer)
         {
-            List<? extends Root_meta_pure_runtime_Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections().toList();
-            return (connections != null) && (connections.size() == 1) && !(connections.get(0) instanceof Root_meta_relational_runtime_DatabaseConnection);
+            List<? extends Root_meta_pure_runtime_ConnectionElementAssociation> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connectionElementAssociations().toList();
+            return (connections != null) && (connections.size() == 1) && !(connections.get(0)._connection() instanceof Root_meta_relational_runtime_DatabaseConnection);
         }
         throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
     }

@@ -35,12 +35,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetOnes.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetOnes,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -60,12 +59,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetZeroOnes.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetZeroOnes,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -85,12 +83,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetOneManys.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetOneManys,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionElementAssociations = ^ConnectionElementAssociation(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 

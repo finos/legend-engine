@@ -25,10 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -78,7 +75,39 @@ public class RuntimeParseTreeWalker
         // connections (optional)
         RuntimeParserGrammar.ConnectionsContext connectionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connections(), "connections", runtime.sourceInformation);
         this.addConnectionsByStore(connectionsContext, runtime.runtimeValue);
+
+        // connectionPointerStores (optional)
+        RuntimeParserGrammar.ConnectionStoresListContext connectionStoresListContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionStoresList(), "connectionPointerStores", runtime.sourceInformation);
+        this.addStoresByConnection(connectionStoresListContext, runtime.runtimeValue);
         return runtime;
+    }
+
+    private void addStoresByConnection(RuntimeParserGrammar.ConnectionStoresListContext connectionStoresListContext, EngineRuntime runtimeValue)
+    {
+        if (connectionStoresListContext == null)
+        {
+            return;
+        }
+        ListIterate.forEach(connectionStoresListContext.connectionStores(), connectionStoresContext ->
+        {
+            ConnectionStores connectionStores = new ConnectionStores();
+
+            connectionStores.connectionPointer = new ConnectionPointer();
+            connectionStores.connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(connectionStoresContext.connection().packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : connectionStoresContext.connection().packageableElementPointer().qualifiedName().packagePath().identifier(), connectionStoresContext.connection().packageableElementPointer().qualifiedName().identifier());
+            connectionStores.connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext.connection().packageableElementPointer());
+
+            connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext);
+            connectionStores.storePointers = connectionStoresContext.packageableElementPointer() == null ? Collections.emptyList() : ListIterate.collect(connectionStoresContext.packageableElementPointer(), packageableElementPointerContext ->
+            {
+                String store = packageableElementPointerContext.qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(packageableElementPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : packageableElementPointerContext.qualifiedName().packagePath().identifier(), packageableElementPointerContext.qualifiedName().identifier());
+                PackageableElementPointer storePointer = new PackageableElementPointer();
+                storePointer.type = PackageableElementType.STORE;
+                storePointer.path = store;
+                storePointer.sourceInformation = walkerSourceInformation.getSourceInformation(packageableElementPointerContext.qualifiedName());
+                return storePointer;
+            });
+            runtimeValue.connectionStores.add(connectionStores);
+        });
     }
 
     private void addConnectionsByStore(RuntimeParserGrammar.ConnectionsContext connectionsContext, EngineRuntime engineRuntime)
@@ -106,9 +135,9 @@ public class RuntimeParseTreeWalker
                     IdentifiedConnection identifiedConnection = new IdentifiedConnection();
                     identifiedConnection.sourceInformation = walkerSourceInformation.getSourceInformation(identifiedConnectionContext);
                     identifiedConnection.id = PureGrammarParserUtility.fromIdentifier(identifiedConnectionContext.identifier());
-                    if (identifiedConnectionContext.connectionPointer() != null)
+                    if (identifiedConnectionContext.packageableElementPointer() != null)
                     {
-                        RuntimeParserGrammar.ConnectionPointerContext connectionPointerContext = identifiedConnectionContext.connectionPointer();
+                        RuntimeParserGrammar.PackageableElementPointerContext connectionPointerContext = identifiedConnectionContext.packageableElementPointer();
                         ConnectionPointer connectionPointer = new ConnectionPointer();
                         connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(connectionPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionPointerContext.qualifiedName().packagePath().identifier(), connectionPointerContext.qualifiedName().identifier());
                         connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionPointerContext.qualifiedName());
