@@ -25,20 +25,17 @@ public class ApplicationQueryConfiguration
 {
     public static Object getQueryStoreClient()
     {
-
-        if (Vault.INSTANCE.hasValue("redis.host"))
+        if (Vault.INSTANCE.hasValue("query.redis.host") && Vault.INSTANCE.hasValue("query.redis.port"))
         {
-            return new JedisPooled(new HostAndPort(Vault.INSTANCE.getValue("redis.host"),
-                                                   Integer.parseInt(Vault.INSTANCE.getValue("redis.port"))),
-                    DefaultJedisClientConfig.builder().build());
+            return createRedisClient();
         }
         else
         {
-            return getMongoClient();
+            return createMongoClient();
         }
     }
 
-    public static MongoClient getMongoClient()
+    public static MongoClient createMongoClient()
     {
         String mongoConnectionString = Vault.INSTANCE.hasValue("query.mongo.connectionString") ? Vault.INSTANCE.getValue("query.mongo.connectionString") : null;
         if (mongoConnectionString != null)
@@ -46,5 +43,12 @@ public class ApplicationQueryConfiguration
             return MongoClients.create(mongoConnectionString);
         }
         return MongoClients.create();
+    }
+
+    public static JedisPooled createRedisClient()
+    {
+        return new JedisPooled(new HostAndPort(Vault.INSTANCE.getValue("query.redis.host"),
+                Integer.parseInt(Vault.INSTANCE.getValue("query.redis.port"))),
+                DefaultJedisClientConfig.builder().build());
     }
 }
