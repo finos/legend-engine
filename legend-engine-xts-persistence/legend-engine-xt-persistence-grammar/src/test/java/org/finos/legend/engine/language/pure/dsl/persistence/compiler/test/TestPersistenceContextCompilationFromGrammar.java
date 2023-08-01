@@ -313,7 +313,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "RelationalDatabaseConnection test::ServiceConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: Snowflake;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -323,7 +323,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "RelationalDatabaseConnection test::SinkConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: MemSQL;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -429,7 +429,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         Object o3 = values3.get(0);
         assertTrue(o3 instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection con1 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) o3;
-        assertEquals("Snowflake", con1._type()._name());
+        assertEquals("H2", con1._type()._name());
 
         Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter4 = serviceParameters.get(3);
         assertEquals("con2", serviceParameter4._name());
@@ -444,7 +444,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         assertNotNull(connection);
         assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;
-        assertEquals("MemSQL", sinkConnection._type()._name());
+        assertEquals("H2", sinkConnection._type()._name());
     }
 
     @Test
@@ -514,7 +514,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "RelationalDatabaseConnection test::TestConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: Snowflake;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -550,7 +550,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "    RelationalDatabaseConnection\n" +
                 "    {\n" +
                 "      store: test::TestDatabase;\n" +
-                "      type: MemSQL;\n" +
+                "      type: H2;\n" +
                 "      specification: LocalH2\n" +
                 "      {\n" +
                 "      };\n" +
@@ -604,6 +604,6 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         assertNotNull(connection);
         assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;
-        assertEquals("MemSQL", sinkConnection._type()._name());
+        assertEquals("H2", sinkConnection._type()._name());
     }
 }

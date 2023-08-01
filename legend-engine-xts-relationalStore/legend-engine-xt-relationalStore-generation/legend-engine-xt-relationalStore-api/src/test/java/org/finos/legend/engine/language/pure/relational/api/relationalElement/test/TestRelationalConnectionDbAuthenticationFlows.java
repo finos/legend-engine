@@ -17,14 +17,19 @@ package org.finos.legend.engine.language.pure.relational.api.relationalElement.t
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.IRelationalCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.DbTypeDataSourceAuth;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalConnectionDbAuthenticationFlows;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestRelationalConnectionDbAuthenticationFlows
 {
@@ -33,10 +38,24 @@ public class TestRelationalConnectionDbAuthenticationFlows
     private static final LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
 
     @Test
-    public void testValidDbTYpeDataSourceAuthCombinations()
+    public void testValidDbTypeDataSourceAuthCombinations()
     {
         flowProvider.configure(flowProviderConfiguration);
         Set<DbTypeDataSourceAuth> dbTypeDataSourceAuthCombinations = new HashSet<>(dbDatasourceAuth.getDbTypeDataSourceAndAuthCombos(flowProvider.getFlows()));
         Assert.assertTrue(dbTypeDataSourceAuthCombinations.containsAll(new HashSet<>(Arrays.asList(new DbTypeDataSourceAuth("Postgres", "static", "middleTierUserNamePassword"), new DbTypeDataSourceAuth("Trino", "Trino", "TrinoDelegatedKerberosAuth"), new DbTypeDataSourceAuth("BigQuery", "bigQuery", "gcpWorkloadIdentityFederation"), new DbTypeDataSourceAuth("Spanner", "spanner", "gcpApplicationDefaultCredentials")))));
+    }
+
+    @Test
+    public void testDbTypeDataSourceAuthCombinationsMatchValidFlowKeys()
+    {
+        flowProvider.configure(flowProviderConfiguration);
+        Set<DbTypeDataSourceAuth> dbTypeDataSourceAuthCombinations = new HashSet<>(dbDatasourceAuth.getDbTypeDataSourceAndAuthCombos(flowProvider.getFlows()));
+        Set<DatabaseAuthenticationFlowKey> flowKeys = CompilerExtensions.fromAvailableExtensions().getExtensions().stream().filter(ext -> ext instanceof IRelationalCompilerExtension).map(ext -> ((IRelationalCompilerExtension) ext).getFlowKeys()).flatMap(Collection::stream).collect(Collectors.toSet());
+        Set<DbTypeDataSourceAuth> validAuthenticationFlows = new HashSet<>();
+        for (DatabaseAuthenticationFlowKey flowKey : flowKeys)
+        {
+            validAuthenticationFlows.add(new DbTypeDataSourceAuth(flowKey.getDatabaseType().name(), RelationalConnectionDbAuthenticationFlows.getNameFromClass(flowKey.getDatasourceProtocolSpecClass()), RelationalConnectionDbAuthenticationFlows.getNameFromClass(flowKey.getAuthStrategyProtocolSpecClass())));
+        }
+        Assert.assertTrue(dbTypeDataSourceAuthCombinations.containsAll(validAuthenticationFlows));
     }
 }
