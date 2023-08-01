@@ -2793,6 +2793,11 @@
                 <artifactId>netty-codec</artifactId>
                 <version>${io.netty.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http</artifactId>
+                <version>${io.netty.version}</version>
+            </dependency>
 
             <!-- Open CSV -->
             <dependency>
