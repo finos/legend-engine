@@ -35,7 +35,6 @@ public class IceboxTest
     public static final Icebox ICEBOX = new Icebox();
 
     @Test
-    @org.junit.Ignore
     public void testCatalogUpdatedThruTrino() throws Exception
     {
         Assume.assumeTrue(DockerClientFactory.instance().isDockerAvailable());
@@ -64,12 +63,12 @@ public class IceboxTest
             statement.execute("CREATE SCHEMA " + ICEBOX.getTrinoConnectorName() + "." + namespace + " WITH (location = '" + ICEBOX.getBucketLocation() + "example_s3_schema/')");
 
             // create an Iceberg table inside namespace
-            statement.execute("CREATE TABLE "  + ICEBOX.getTrinoConnectorName() +  "." + table1 + " (c1 INTEGER)");
-            statement.execute("insert into "   + ICEBOX.getTrinoConnectorName() +  "." + table1 + " values (1), (2), (3)");
+            statement.execute("CREATE TABLE " + ICEBOX.getTrinoConnectorName() + "." + table1 + " (c1 INTEGER)");
+            statement.execute("insert into " + ICEBOX.getTrinoConnectorName() + "." + table1 + " values (1), (2), (3)");
 
             // create an Iceberg table inside namespace
-            statement.execute("CREATE TABLE "  + ICEBOX.getTrinoConnectorName() +  "." + table2 + " (c1 VARCHAR(10))");
-            statement.execute("insert into "   + ICEBOX.getTrinoConnectorName() +  "." + table2 + " values ('hello'), ('world'), ('!')");
+            statement.execute("CREATE TABLE " + ICEBOX.getTrinoConnectorName() + "." + table2 + " (c1 VARCHAR(10))");
+            statement.execute("insert into " + ICEBOX.getTrinoConnectorName() + "." + table2 + " values ('hello'), ('world'), ('!')");
         }
 
         Assert.assertTrue("Namespace should have been created", supportsNamespaces.namespaceExists(namespace));
