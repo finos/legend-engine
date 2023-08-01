@@ -1,8 +1,8 @@
 # Step by step tutorial for adding a new relational connector
 
 **Pre-requisite**: The dbType for which you are planning to add connector, should be included in the following DatabaseType enums
-[here](https://github.com/finos/legend-pure/blob/master/legend-pure-m2-store-relational/src/main/resources/platform/relational/relationalRuntime.pure)
-and [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/DatabaseType.java)
+[here](https://github.com/finos/legend-pure/blob/master/legend-pure-m2-store-relational-pure/src/main/resources/platform_store_relational/relationalRuntime.pure)
+and [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/DatabaseType.java)
 and released. This is a temporary requirement till we replace these enums with a class instance.
 
 1. **Archetype Generation**: Use the maven archetype org.finos.legend.engine:legend-engine-xt-relationalStore-dbExtension-archetype in interactive mode to generate the base project for adding the connector.
@@ -39,10 +39,10 @@ You will also need to add the following driver dependency to the pom.xml of sqls
     ~~~
 
 3. **Datasource and Authentication Specification**: See if one of the existing common DatasourceSpecification and AuthenticationStrategy subtypes work for connecting to databases within your use cases.
-Check the listing [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/RelationalProtocolExtension.java).
+Check the listing [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/RelationalProtocolExtension.java).
 If yes, then choose the appropriate ones. Else go to the section on [Adding a new Datasource or AuthenticationStrategy Specification](#adding-a-new-datasource-or-authenticationstrategy-specification).
 
-    For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our database.
+    For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our database.
 
 4. **Authentication Flow**: Now we will add an authentication flow for SqlServer using StaticDatasourceSpecification with UsernamePasswordAuthenticationStrategy.
 Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-execution module.
@@ -275,7 +275,7 @@ If your database supports it, we can alternatively launch a test instance at run
 
     This file allows SqlServerUsingTestContainer to be discoverable at runtime.
     
-    Alternatively, If you have a static test connection, you can define it in sqlServerRelationalDatabaseConnections.json. Look at [RelationalDatabaseConnection](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/RelationalDatabaseConnection.java) to understand the structure.
+    Alternatively, If you have a static test connection, you can define it in sqlServerRelationalDatabaseConnections.json. Look at [RelationalDatabaseConnection](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/RelationalDatabaseConnection.java) to understand the structure.
 
 7. **Connection Acquisition Test**: Now we will fix the ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer test. When it passes, it will verify that we are able to connect to the test database instance.
 
@@ -364,7 +364,7 @@ If your database supports it, we can alternatively launch a test instance at run
 The framework is set in a way that as you incrementally implement more features, more tests will start passing, instead of being ignored.
 You don't need to implement all the features before you can deploy and use the connector.
 
-10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. For full list, look at enum DynaFunctionRegistry in this [file](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-pure/src/main/resources/core_relational/relational/sqlQueryToString/dbExtension.pure).
+10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. For full list, look at enum DynaFunctionRegistry in this [file](https://github.com/finos/legend-engine/blob/master/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/src/main/resources/core_relational/relational/sqlQueryToString/dbExtension.pure).
 Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure with the following
 
     ~~~java
