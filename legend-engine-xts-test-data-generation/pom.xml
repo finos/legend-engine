@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>legend-engine</artifactId>
+        <groupId>org.finos.legend.engine</groupId>
+        <version>4.21.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-xts-test-data-generation</artifactId>
+    <packaging>pom</packaging>
+    <name>Legend Engine - XTS - Test - Data - Generation</name>
+
+    <modules>
+        <module>legend-engine-xt-test-data-generation</module>
+        <module>legend-engine-xt-test-data-generation-relationalCSV</module>
+        <module>legend-engine-xt-test-data-generation-api</module>
+    </modules>
+
+</project>

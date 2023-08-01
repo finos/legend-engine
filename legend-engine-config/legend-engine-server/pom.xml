@@ -462,6 +462,11 @@
             <artifactId>legend-engine-xt-relationalStore-trino-execution</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-data-generation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

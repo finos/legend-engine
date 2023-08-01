@@ -728,6 +728,13 @@ function meta::relational::testDataGeneration::getMilestoningFilter(table: Table
    )
 }
 
+function meta::relational::testDataGeneration::getTableFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1]):Table[*]
+{
+   let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries;
+   $sql->map(q | $q->meta::relational::validation::functions::getTables())
+      ->removeDuplicates()
+      ->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+}
 
 /*** Plan Generation ***/
 

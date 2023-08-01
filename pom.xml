@@ -103,10 +103,8 @@
         <!-- Analytics -->
         <module>legend-engine-xts-analytics</module>
 
-
-
-
-
+        <!-- Test Data Generation -->
+        <module>legend-engine-xts-test-data-generation</module>
 
         <module>legend-engine-external-format-jsonSchema</module>
 
@@ -1599,6 +1597,22 @@
                 <artifactId>legend-engine-testable</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-test-data-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-test-data-generation-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-test-data-generation-relationalCSV</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
