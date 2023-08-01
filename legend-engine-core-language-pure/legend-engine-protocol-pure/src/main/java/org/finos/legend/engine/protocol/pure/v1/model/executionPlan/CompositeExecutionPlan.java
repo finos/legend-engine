@@ -15,7 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.junit.Assert;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.impl.list.mutable.FastList;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,10 +45,23 @@ public class CompositeExecutionPlan extends ExecutionPlan
     }
 
     @Override
-    public SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor)
+    public SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor, Map<String, ?> params)
     {
-        Object planKey = parameterValueAccessor.apply(this.executionKeyName);
-        SingleExecutionPlan singleExecutionPlan = this.executionPlans.get(planKey);
+        SingleExecutionPlan singleExecutionPlan;
+        Object planKey;
+        try
+        {
+             planKey = parameterValueAccessor.apply(this.executionKeyName);
+        }
+        catch (IllegalArgumentException e)
+        {
+            Object pk = params.get(this.executionKeyName);
+            Assert.assertNotNull("No key was passed to service pattern for execution. Please ensure you are providing " + this.executionKeyName + " and its value as part of a query parameter or path parameter to service pattern", pk);
+            planKey = ((FastList) pk).get(0).toString();
+        }
+
+        singleExecutionPlan = this.executionPlans.get(planKey);
+
         if (singleExecutionPlan == null)
         {
             throw new RuntimeException("No plan exists for key: " + planKey + ". Available keys are : " + this.executionPlans.keySet().stream().sorted().collect(Collectors.joining(", ")) + ".");
