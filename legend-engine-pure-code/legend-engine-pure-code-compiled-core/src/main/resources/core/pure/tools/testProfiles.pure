@@ -39,5 +39,5 @@ function meta::alloy::isMetaAlloyTestDependencyForGeneration(pe:Function<Any>[1]
 function meta::alloy::isMetaAlloyTestDependencyForGeneration(pe:PackageableElement[1]):Boolean[1]
 {
    let path = $pe->elementToPath();
-   $path->startsWith('meta::json::schema::fromSchema::tests') ||  $path->startsWith('meta::json::schema::tests') || $path->startsWith('meta::pure::mapping::modelToModel::test::createInstances') || $path->startsWith('meta::pure::tests::model::simple');  
+   $path->startsWith('meta::external::format::json::schema::fromSchema::tests') ||  $path->startsWith('meta::external::format::json::schema::tests') || $path->startsWith('meta::pure::mapping::modelToModel::test::createInstances') || $path->startsWith('meta::pure::tests::model::simple');  
 }
