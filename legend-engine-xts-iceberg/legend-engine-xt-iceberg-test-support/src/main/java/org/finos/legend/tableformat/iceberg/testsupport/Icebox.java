@@ -146,7 +146,7 @@ public class Icebox extends FailureDetectingExternalResource implements AutoClos
         this.prepareTrinoIcebergCatalog();
 
         this.trino = new TrinoContainer(TRINO_DOCKER_IMAGE)
-                .withCopyFileToContainer(MountableFile.forHostPath(this.trinoFile), "/etc/trino/catalog/iceberg.properties")
+                .withCopyFileToContainer(MountableFile.forHostPath(this.trinoFile, 0100666), "/etc/trino/catalog/iceberg.properties")
                 .withNetwork(this.network)
                 .withNetworkAliases("trino");
     }
