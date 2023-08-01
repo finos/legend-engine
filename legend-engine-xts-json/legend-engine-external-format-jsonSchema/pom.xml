@@ -18,7 +18,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-xts-json</artifactId>
         <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -27,21 +27,8 @@
     <name>Legend Engine - External - Format - JSON Schema</name>
 
 
-
     <dependencies>
         <!-- PURE -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-json-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-java</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
@@ -49,6 +36,18 @@
         <!-- PURE -->
 
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-pure</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared</artifactId>
@@ -88,7 +87,6 @@
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
-
         <!-- ANNOTATIONS -->
 
         <!-- JACKSON -->

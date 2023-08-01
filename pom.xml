@@ -104,12 +104,6 @@
         <module>legend-engine-xts-analytics</module>
 
 
-
-
-
-
-        <module>legend-engine-external-format-jsonSchema</module>
-
         <module>legend-engine-external-shared</module>
         <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-external-shared-format-runtime</module>
@@ -496,7 +490,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -590,7 +584,6 @@
                 <artifactId>legend-engine-xt-functionActivator-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
 
 
             <!-- ENGINE -->
