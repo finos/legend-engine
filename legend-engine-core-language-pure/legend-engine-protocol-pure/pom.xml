@@ -94,6 +94,10 @@
             <artifactId>json-unit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>
