@@ -43,9 +43,9 @@ Class meta::external::store::service::extension::ServiceStoreExtension extends M
    executionPlan_print_securitySchemeToString : Function<{Nil[1] -> String[1]}>[*];
 }
 
-function meta::external::store::service::extension::serviceStoreExtensions()  : meta::pure::extension::Extension[1]
+function meta::external::store::service::extension::serviceStoreExtensions() : meta::pure::extension::Extension[1]
 {
-   serviceStoreExtension('serviceStore')
+   serviceStoreExtension()
 }
 
 function meta::external::store::service::extension::serviceStoreSerializerExtension(version:String[1]):String[1]
@@ -53,11 +53,11 @@ function meta::external::store::service::extension::serviceStoreSerializerExtens
    'meta::protocols::pure::'+$version+'::extension::store::service::getServiceStoreExtension_String_1__SerializerExtension_1_';
 }
 
-function <<access.private>> meta::external::store::service::extension::serviceStoreExtension(type:String[1]) : meta::pure::extension::Extension[1]
+function meta::external::store::service::extension::serviceStoreExtension() : meta::pure::extension::Extension[1]
 {
    ^Extension
    (
-      type = $type,
+      type = 'serviceStore',
       availableStores = [meta::external::store::service::contract::serviceStoreStoreContract()],
       serializerExtension =  meta::external::store::service::extension::serviceStoreSerializerExtension_String_1__String_1_,
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] |

@@ -19,11 +19,8 @@ function meta::pure::extension::configuration::coreExtensions(): Extension[*]
 {
    [
       meta::pure::extension::defaultExtensions()->toOne(),
-      meta::relational::extension::relationalExtension('relational'),
-      //meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
-      meta::external::store::service::extension::serviceStoreExtensions(),
+
       meta::external::shared::format::externalFormatExtension(),
-      meta::legend::service::serviceExtension(),
       meta::external::format::flatdata::extension::flatDataFormatExtension(),
       meta::external::format::json::extension::jsonSchemaFormatExtension(),
       meta::external::format::xml::extension::xsdFormatExtension(),
@@ -44,13 +41,6 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): PlatformBinding[1]
 {
    legendJavaPlatformBinding([
-
-      // Stores
-      meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
-      meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
-      meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
-      //meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
-
       // Bindings
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
          meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor(),
@@ -88,7 +78,17 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configur
       
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
          
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([coreLegendJavaPlatformBinding()]));
+         let extensionsWithPlatformBindings =
+         $extensions->concatenate(
+            platformBindingExtension(
+                legendJavaPlatformBinding(
+                    [
+                        meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+                        meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
+                    ]
+                )
+            )
+         );
 
          // Using LegendJava as the default for local platform binding
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);

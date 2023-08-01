@@ -26,10 +26,9 @@
     <packaging>pom</packaging>
     <name>Legend Engine - Pure - Code</name>
 
-
-
     <modules>
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-code-compiled-functions</module>
+        <module>legend-engine-pure-code-core-extension</module>
     </modules>
 </project>
