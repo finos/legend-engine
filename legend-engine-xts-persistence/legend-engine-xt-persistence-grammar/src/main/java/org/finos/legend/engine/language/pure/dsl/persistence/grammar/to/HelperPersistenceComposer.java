@@ -274,7 +274,7 @@ public class HelperPersistenceComposer
             getTabString(indentLevel + 1);
             str.append("graphFetchPath")
                     .append(": ")
-                    .append(persistenceTest.graphFetchPath)
+                    .append(ServiceOutputComposer.renderPath(persistenceTest.graphFetchPath))
                     .append(";\n");
         }
 
