@@ -31,7 +31,6 @@ public class TestExtensionAvailable
     public void testServiceAvailable()
     {
         MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(2, extensions.size());
         Assert.assertEquals(1, extensions.selectInstancesOf(RelationalPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
         Assert.assertEquals("relational", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
     }

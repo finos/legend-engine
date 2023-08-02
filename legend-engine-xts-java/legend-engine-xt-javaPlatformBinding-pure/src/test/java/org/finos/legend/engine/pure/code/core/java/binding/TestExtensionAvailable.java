@@ -13,22 +13,23 @@
 //  limitations under the License.
 
 
-package org.finos.legend.engine.pure.code.core;
+package org.finos.legend.engine.pure.code.core.java.binding;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.pure.code.core.M2MJavaBindingPureCoreExtension;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
 
 public class TestExtensionAvailable
 {
     @Test
     public void testServiceAvailable()
     {
-        List<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(1, extensions.size());
-        Assert.assertEquals(1, extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
-        Assert.assertEquals("Service", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
+        MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
+        Assert.assertEquals(1, extensions.selectInstancesOf(M2MJavaBindingPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
+        Assert.assertEquals("PlatformBindingExtension", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
     }
 }

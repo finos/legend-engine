@@ -12,49 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::extension::*;
-import meta::pure::extension::configuration::*;
-
-function meta::pure::extension::configuration::coreExtensions(): Extension[*]
-{
-   [
-      meta::pure::extension::defaultExtensions()->toOne(),
-
-      meta::external::shared::format::externalFormatExtension(),
-      meta::external::format::flatdata::extension::flatDataFormatExtension(),
-      meta::external::format::json::extension::jsonSchemaFormatExtension(),
-      meta::external::format::xml::extension::xsdFormatExtension(),
-
-      meta::pure::executionPlan::platformBinding::platformBindingExtension([
-         coreLegendJavaPlatformBinding() // LegendJava
-      ])
-   ]
-}
-
-
-// Legend Java ---------------------------------------------------------------
-
-###Pure
-import meta::pure::executionPlan::platformBinding::*;
-import meta::pure::executionPlan::platformBinding::legendJava::*;
-
-function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): PlatformBinding[1]
-{
-   legendJavaPlatformBinding([
-      // Bindings
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
-         meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor(),
-         meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor(),
-         meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor()
-      ])
-
-   ])
-}
-
-// --------------------------------------------------------------- Legend Java
-
-
-
 // Local Binding -------------------------------------------------------------
 
 ###Pure
@@ -75,29 +32,37 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configur
       overrides = [
          meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform__LocalPlatformBinder_1_
       ],
-      
+
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-         
-         let extensionsWithPlatformBindings =
-         $extensions->concatenate(
-            platformBindingExtension(
-                legendJavaPlatformBinding(
-                    [
-                        meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
-                        meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
-                    ]
-                )
-            )
-         );
+
+         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding()]));
 
          // Using LegendJava as the default for local platform binding
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-      
+
       }
    ) 
 }
 
-// ------------------------------------------------------------- Local Binding
+function <<access.private>> meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding(): PlatformBinding[1]
+{
+   legendJavaPlatformBinding([
+
+      // Stores
+      meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+      meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
+      meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
+
+      // Bindings
+      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+         meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor(),
+         meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor(),
+         meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor()
+      ])
+
+   ])
+}
+
 
 function <<test.Test>> meta::pure::extension::configuration::localPlatformBinding::testLocalBindingOfPlanToPlatform(): Boolean[1]
 {

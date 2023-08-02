@@ -22,8 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code</artifactId>
-        <version>4.20.4-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>4.21.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-core-extension</artifactId>
@@ -53,6 +52,15 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 </project>

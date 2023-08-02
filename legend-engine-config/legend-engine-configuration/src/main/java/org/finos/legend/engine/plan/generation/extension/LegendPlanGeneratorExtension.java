@@ -23,7 +23,6 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_configuration_coreExtensions;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
@@ -36,8 +35,6 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
     @Override
     public RichIterable<? extends Root_meta_pure_extension_Extension> getExtraExtensions(PureModel pureModel)
     {
-        MutableList<Root_meta_pure_extension_Extension> ext = Lists.mutable.withAll(PureCoreExtensionLoader.extensions().flatCollect(c -> c.extraPureCoreExtensions(pureModel.getExecutionSupport())));
-        ext.addAll(Lists.mutable.withAll(core_configuration_coreExtensions.Root_meta_pure_extension_configuration_coreExtensions__Extension_MANY_(pureModel.getExecutionSupport())));
-        return ext;
+        return PureCoreExtensionLoader.extensions().flatCollect(c -> c.extraPureCoreExtensions(pureModel.getExecutionSupport()));
     }
 }

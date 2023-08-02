@@ -29,3 +29,15 @@ function meta::external::format::xml::executionPlan::platformBinding::legendJava
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
   )
 }
+
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdDataExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
+{
+     meta::pure::executionPlan::platformBinding::platformBindingExtension([
+            meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+               // Bindings
+               meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+                  meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor()
+               ])
+            ])
+      ])
+}
