@@ -32,8 +32,6 @@ import java.util.function.Consumer;
 public class ExternalFormatGrammarParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "ExternalFormat";
-    public static final String URL_CONNECTION_TYPE = "UrlConnection";
-    public static final String EXTERNAL_FORMAT_CONNECTION_TYPE = "ExternalFormatConnection";
 
     public List<SectionParser> getExtraSectionParsers()
     {
