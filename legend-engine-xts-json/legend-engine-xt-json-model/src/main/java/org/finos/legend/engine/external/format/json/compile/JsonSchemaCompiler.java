@@ -23,9 +23,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema_Impl;
-import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput;
-import org.finos.legend.pure.generated.Root_meta_json_schema_fromSchema_SchemaInput_Impl;
-import org.finos.legend.pure.generated.core_external_format_json_fromJSONSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_schema_fromSchema_SchemaInput;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_schema_fromSchema_SchemaInput_Impl;
+import org.finos.legend.pure.generated.core_external_format_json_transformation_toBeRefactored_fromJSONSchema;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,11 +38,11 @@ public class JsonSchemaCompiler implements CompilerExtension
         String location = context.getLocation();
 
         // validation step
-        Root_meta_json_schema_fromSchema_SchemaInput schemaInput =
-                new Root_meta_json_schema_fromSchema_SchemaInput_Impl("", null, context.getPureModel().getClass("meta::json::schema::fromSchema::SchemaInput"))
+        Root_meta_external_format_json_schema_fromSchema_SchemaInput schemaInput =
+                new Root_meta_external_format_json_schema_fromSchema_SchemaInput_Impl("", null, context.getPureModel().getClass("meta::external::format::json::schema::fromSchema::SchemaInput"))
                         ._fileName(location)
                         ._schema(content);
-        core_external_format_json_fromJSONSchema.Root_meta_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
+        core_external_format_json_transformation_toBeRefactored_fromJSONSchema.Root_meta_external_format_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
 
         return new Root_meta_external_format_json_metamodel_JsonSchema_Impl("", null, context.getPureModel().getClass("meta::external::format::json::metamodel::JsonSchema"))
                 ._content(content);
@@ -53,6 +53,12 @@ public class JsonSchemaCompiler implements CompilerExtension
     {
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", false, ps -> handlers.res("meta::external::format::json::schema::DiscriminatorMapping", "one"), ps -> ps.size() == 2))
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 4))
+                        ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.h("meta::external::format::json::functions::toJson_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
                         ),

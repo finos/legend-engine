@@ -1,0 +1,71 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Press F9 to execute the 'go' function...
+// Press F10 to run the full test suite
+
+
+// ====================================================================================
+// This file contains models which are referenced in user projects. 
+// This should be moved to meta::external::format::json package
+// ===================================================================================
+
+import meta::external::format::json::schema::*;
+
+Profile meta::json::schema::JSONSchemaGeneration
+{
+    stereotypes:[noAdditionalProperties,readOnly,writeOnly];
+    tags:[defaultValue,name,example,title];
+}
+
+//Stereotypes to support schema generation of types that do not exist in Pure or to force generation of a specific schema type
+Profile meta::json::schema::JSONSchemaTypeExtension
+{
+  stereotypes:[int64,int32,byte,double,binary,array,null,object];
+}
+
+//Profile to support schema generation of commonly used tags not officially part of JSON Specifications
+Profile meta::json::schema::JSONSchemaJavaExtension
+{
+  tags:[javaType,javaInterface];
+}
+
+Profile meta::json::schema::JSONSchemaOpenAPIExtension
+{
+  stereotypes:[discriminatorProperty];
+  tags:[discriminatorName];
+}
+
+Enum {doc.doc='The versions of schema generation supported by the generator'}
+meta::json::schema::generation::JSONSchemaSpecification
+{
+   OPEN_API_V3_0_3,
+   JSON_SCHEMA_DRAFT_07,
+   JSON_SCHEMA_2019_09,
+   OPEN_API_V3_0_3_YAML,
+   OPEN_API_V3_0_3_YAML_PLAIN
+}
+
+// Functions
+
+function meta::json::schema::mapSchema(value:String[1],class:Type[1]):DiscriminatorMapping[1]
+{
+  ^DiscriminatorMapping(value=$value,class=$class);
+}
+
+function meta::json::schema::discriminateOneOf(sourceInstance:Any[1],propertyValue:Any[1],classSelection:Type[*],mapping:DiscriminatorMapping[*] ):Boolean[1]
+{
+  let PropertyValue = if($propertyValue->instanceOf(Enum),|$propertyValue->cast(@Enum).name,|$propertyValue->toString());
+  oneOf($classSelection->map(t| $t.name==$propertyValue ))  || $propertyValue->in($mapping.value);
+}

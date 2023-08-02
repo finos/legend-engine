@@ -22,7 +22,6 @@ import meta::pure::runtime::*;
 
 Class meta::legend::service::metamodel::Service extends PackageableElement, meta::pure::test::Testable
 [
-   multiExecutionKeyMustBePartOfPattern: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution) && $this.execution->cast(@meta::legend::service::metamodel::PureMultiExecution).executionParameters->isNotEmpty() ,|$this.pattern->contains('{'+ $this.execution->cast(@PureMultiExecution).executionKey+'}'),|true),
 
    executionAndTestTypesMatch: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution),
                                   |assert($this.test->isEmpty() || ($this.test->isNotEmpty() && $this.test->toOne()->instanceOf(MultiExecutionTest)),'Service with multiple executions requires a MultiExecution test'),

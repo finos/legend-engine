@@ -95,7 +95,6 @@ public class RelationalExecutor
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("DateTime", "TIMESTAMP");
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("StrictDate", "DATE");
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("Boolean", "BIT");
-
     }
 
     private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;

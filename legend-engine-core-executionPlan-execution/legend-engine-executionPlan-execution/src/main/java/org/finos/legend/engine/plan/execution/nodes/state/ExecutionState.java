@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
@@ -68,6 +69,7 @@ public class ExecutionState
     private EngineJavaCompiler javaCompiler;
 
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
+    private ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool;
 
     private final Map<String, Result> res;
     private final List<? extends String> templateFunctions;
@@ -100,6 +102,7 @@ public class ExecutionState
         this.adaptiveGraphBatchStats = state.adaptiveGraphBatchStats;
         this.graphFetchCaches = state.graphFetchCaches;
         this.concurrentExecutionNodeExecutorPool = state.concurrentExecutionNodeExecutorPool;
+        this.graphFetchExecutionNodeExecutorPool = state.graphFetchExecutionNodeExecutorPool;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
@@ -182,6 +185,7 @@ public class ExecutionState
         copy.allocationNodeName = this.allocationNodeName;
         copy.authId = this.authId;
         copy.concurrentExecutionNodeExecutorPool = this.concurrentExecutionNodeExecutorPool;
+        copy.graphFetchExecutionNodeExecutorPool = this.graphFetchExecutionNodeExecutorPool;
         copy.inAllocation = this.inAllocation;
         copy.inLake = this.inLake;
         copy.realizeAllocationResults = this.realizeAllocationResults;
@@ -265,6 +269,16 @@ public class ExecutionState
     public void setConcurrentExecutionNodeExecutorPool(ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool)
     {
         this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
+    }
+
+    public ParallelGraphFetchExecutionExecutorPool getGraphFetchExecutionNodeExecutorPool()
+    {
+        return this.graphFetchExecutionNodeExecutorPool;
+    }
+
+    public void setGraphFetchExecutionNodeExecutorPool(ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool)
+    {
+        this.graphFetchExecutionNodeExecutorPool = graphFetchExecutionNodeExecutorPool;
     }
 
     @Deprecated

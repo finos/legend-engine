@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.eclipse.collections.api.factory.Maps;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -32,5 +33,11 @@ public abstract class ExecutionPlan
         return getSingleExecutionPlan(params::get);
     }
 
-    public abstract SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor);
+    public  SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor)
+    {
+        return getSingleExecutionPlan(parameterValueAccessor, Maps.mutable.empty());
+    }
+
+
+    public abstract SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor, Map<String, ?> params);
 }

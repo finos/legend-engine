@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-analytics-search</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.20.4-SNAPSHOT</version>
+        <version>4.21.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -264,6 +264,10 @@
         </dependency>
 
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>

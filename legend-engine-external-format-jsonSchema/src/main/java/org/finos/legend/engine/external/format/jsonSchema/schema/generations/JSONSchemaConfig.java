@@ -19,8 +19,8 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.generations.GenerationConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.Root_meta_json_schema_generation_JSONSchemaConfig;
-import org.finos.legend.pure.generated.core_external_format_json_jsonSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_schema_generation_JSONSchemaConfig;
+import org.finos.legend.pure.generated.core_external_format_json_transformation_toBeRefactored_jsonSchema;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.List;
@@ -42,9 +42,9 @@ public class JSONSchemaConfig extends GenerationConfiguration
     @JsonProperty(value = "generateAnyOfSubType")
     public Boolean generateAnyOfSubType;
 
-    public Root_meta_json_schema_generation_JSONSchemaConfig process(PureModel pureModel)
+    public Root_meta_external_format_json_schema_generation_JSONSchemaConfig process(PureModel pureModel)
     {
-        Root_meta_json_schema_generation_JSONSchemaConfig generationConfiguration = core_external_format_json_jsonSchema.Root_meta_json_schema_generation_defaultConfig__JSONSchemaConfig_1_(pureModel.getExecutionSupport());
+        Root_meta_external_format_json_schema_generation_JSONSchemaConfig generationConfiguration = core_external_format_json_transformation_toBeRefactored_jsonSchema.Root_meta_external_format_json_schema_generation_defaultConfig__JSONSchemaConfig_1_(pureModel.getExecutionSupport());
         List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
 
         if (useConstraints != null)

@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalGraphFetchExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
@@ -77,6 +78,11 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     public RelationalExecutor getRelationalExecutor()
     {
         return this.state.getRelationalExecutor();
+    }
+
+    public RelationalGraphFetchExecutor getRelationalGraphFetchExecutor()
+    {
+        return this.state.getRelationalGraphFetchExecutor();
     }
 
     public boolean retainConnection()
