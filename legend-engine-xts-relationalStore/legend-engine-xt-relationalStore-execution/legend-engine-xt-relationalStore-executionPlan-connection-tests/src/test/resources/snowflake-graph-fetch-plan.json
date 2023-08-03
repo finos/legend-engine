@@ -120,9 +120,9 @@
                     "_type": "RelationalDatabaseConnection",
                     "authenticationStrategy": {
                       "_type": "snowflakePublic",
-                      "privateKeyVaultReference": "PK_VAULT_REFERENCE",
-                      "passPhraseVaultReference": "PASSPHRASE_VAULT_REFERENCE",
-                      "publicUserName": "GITHUB_EPSSTAN"
+                      "privateKeyVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY",
+                      "passPhraseVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PASSWORD",
+                      "publicUserName": "INTEGRATION_USER1"
                     },
                     "datasourceSpecification": {
                       "_type": "snowflake",
@@ -237,9 +237,9 @@
                 "_type": "RelationalDatabaseConnection",
                 "authenticationStrategy": {
                   "_type": "snowflakePublic",
-                  "privateKeyVaultReference": "PK_VAULT_REFERENCE",
-                  "passPhraseVaultReference": "PASSPHRASE_VAULT_REFERENCE",
-                  "publicUserName": "GITHUB_EPSSTAN"
+                  "privateKeyVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY",
+                  "passPhraseVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PASSWORD",
+                  "publicUserName": "INTEGRATION_USER1"
                 },
                 "datasourceSpecification": {
                   "_type": "snowflake",

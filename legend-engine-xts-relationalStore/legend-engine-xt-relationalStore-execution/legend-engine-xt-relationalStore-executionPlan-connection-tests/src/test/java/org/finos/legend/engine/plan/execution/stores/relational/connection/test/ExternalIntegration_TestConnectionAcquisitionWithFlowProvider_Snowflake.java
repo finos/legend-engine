@@ -132,12 +132,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     @Test
     public void executePlan() throws Exception
     {
-        Properties properties = new Properties();
-        properties.put("PK_VAULT_REFERENCE", "invalid");
-        properties.put("PASSPHRASE_VAULT_REFERENCE", "invalid");
-        PropertiesVaultImplementation propertiesVaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(propertiesVaultImplementation);
-
         String planJSON = new String(Files.readAllBytes(Paths.get(ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake.class.getResource("/snowflake-graph-fetch-plan.json").toURI())));
 
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
@@ -160,12 +154,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     @Test
     public void executePlanWithTempTableStrategy_CaseSensitivity() throws Exception
     {
-        Properties properties = new Properties();
-        properties.put("PK_VAULT_REFERENCE", "invalid");
-        properties.put("PASSPHRASE_VAULT_REFERENCE", "invalid");
-        PropertiesVaultImplementation propertiesVaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(propertiesVaultImplementation);
-
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, "ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = true");
