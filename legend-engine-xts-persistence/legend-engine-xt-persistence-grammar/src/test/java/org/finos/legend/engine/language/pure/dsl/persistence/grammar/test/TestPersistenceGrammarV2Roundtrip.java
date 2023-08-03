@@ -225,6 +225,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
             "        }\n" +
             "      ]\n" +
             "      isTestDataFromServiceOutput: false;\n" +
+            "      graphFetchPath: #/test::example::MyType/hello#;\n" +
             "    }\n" +
             "  ]\n" +
             "}\n");
