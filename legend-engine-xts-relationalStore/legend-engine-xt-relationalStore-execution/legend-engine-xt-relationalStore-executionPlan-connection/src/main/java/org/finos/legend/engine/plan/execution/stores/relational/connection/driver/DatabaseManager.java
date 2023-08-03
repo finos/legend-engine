@@ -21,7 +21,6 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
@@ -52,7 +51,6 @@ public abstract class DatabaseManager
                     long start = System.currentTimeMillis();
                     register(new H2Manager());
                     register(new SnowflakeManager());
-                    register(new DatabricksManager());
                     register(new PostgresManager());
                     register(new RedshiftManager());
 

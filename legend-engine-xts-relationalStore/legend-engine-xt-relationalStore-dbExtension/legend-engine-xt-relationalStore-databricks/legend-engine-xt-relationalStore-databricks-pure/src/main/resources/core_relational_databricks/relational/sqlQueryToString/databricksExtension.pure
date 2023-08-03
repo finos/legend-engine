@@ -1,0 +1,55 @@
+import meta::relational::functions::sqlQueryToString::databricks::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::databricks::dbExtensionLoaderForDatabricks():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Databricks, loader = createDbExtensionForDatabricks__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::createDbExtensionForDatabricks():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForDatabricks());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName)->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getLiteralProcessorsForDatabricks():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+   ]->cast(@Pair<Type,LiteralProcessor>))
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForDatabricks($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  fail('[unsupported-api] select queries not supported'); '';
+}

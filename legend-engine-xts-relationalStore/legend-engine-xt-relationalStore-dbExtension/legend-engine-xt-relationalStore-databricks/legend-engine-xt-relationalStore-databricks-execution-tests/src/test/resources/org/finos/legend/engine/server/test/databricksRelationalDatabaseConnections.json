@@ -1,0 +1,12 @@
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+    },
+    "authenticationStrategy": {
+    },
+    "databaseType": "Databricks",
+    "type": "Databricks",
+    "element": "firstConn"
+  }
+]
