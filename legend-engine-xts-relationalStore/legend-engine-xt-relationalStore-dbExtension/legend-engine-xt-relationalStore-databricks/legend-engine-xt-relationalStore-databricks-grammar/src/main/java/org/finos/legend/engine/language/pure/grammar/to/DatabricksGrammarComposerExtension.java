@@ -17,9 +17,13 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 import java.util.List;
+
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class DatabricksGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
@@ -32,6 +36,21 @@ public class DatabricksGrammarComposerExtension implements IRelationalGrammarCom
     @Override
     public List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers()
     {
-        return Lists.mutable.with((_spec, context) -> null);
+        return Lists.mutable.with((_spec, context) ->
+        {
+            if (_spec instanceof DatabricksDatasourceSpecification)
+            {
+                DatabricksDatasourceSpecification spec = (DatabricksDatasourceSpecification) _spec;
+                int baseIndentation = 1;
+                return "Databricks\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "hostname: " + convertString(spec.hostname, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + convertString(spec.port, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "protocol: " + convertString(spec.protocol, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "}";
+            }
+            return null;
+        });
     }
 }

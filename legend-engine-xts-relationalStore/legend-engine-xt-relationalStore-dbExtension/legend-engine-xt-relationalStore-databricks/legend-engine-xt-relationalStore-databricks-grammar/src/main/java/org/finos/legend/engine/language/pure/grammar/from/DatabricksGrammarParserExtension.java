@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.DatabricksLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.DatabricksParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 import java.util.Collections;
@@ -34,6 +37,34 @@ public class DatabricksGrammarParserExtension implements IRelationalGrammarParse
     @Override
     public List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> getExtraDataSourceSpecificationParsers()
     {
-        return Collections.singletonList(code -> null);
+        return Collections.singletonList(code ->
+        {
+            if ("Databricks".equals(code.getType()))
+            {
+                return IRelationalGrammarParserExtension.parse(code, DatabricksLexerGrammar::new, DatabricksParserGrammar::new,
+                        p -> visitDatabricksDatasourceSpecification(code, p.databricksDatasourceSpecification()));
+            }
+            return null;
+        });
+    }
+
+    public DatabricksDatasourceSpecification visitDatabricksDatasourceSpecification(DataSourceSpecificationSourceCode code, DatabricksParserGrammar.DatabricksDatasourceSpecificationContext dbSpecCtx)
+    {
+        DatabricksDatasourceSpecification dsSpec = new DatabricksDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+
+        DatabricksParserGrammar.HostnameContext hostnameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.hostname(), "hostname", dsSpec.sourceInformation);
+        dsSpec.hostname = PureGrammarParserUtility.fromGrammarString(hostnameCtx.STRING().getText(), true);
+
+        DatabricksParserGrammar.PortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.port(), "port", dsSpec.sourceInformation);
+        dsSpec.port = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true);
+
+        DatabricksParserGrammar.ProtocolContext protocolCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.protocol(), "protocol", dsSpec.sourceInformation);
+        dsSpec.protocol = PureGrammarParserUtility.fromGrammarString(protocolCtx.STRING().getText(), true);
+
+        DatabricksParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
+        dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
+
+        return dsSpec;
     }
 }

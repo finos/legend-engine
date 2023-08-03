@@ -76,16 +76,6 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._databaseName(staticDatasourceSpecification.databaseName);
             return _static;
         }
-        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
-        {
-            DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification"));
-            _static._hostname(staticDatasourceSpecification.hostname);
-            _static._port(staticDatasourceSpecification.port);
-            _static._protocol(staticDatasourceSpecification.protocol);
-            _static._httpPath(staticDatasourceSpecification.httpPath);
-            return _static;
-        }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;

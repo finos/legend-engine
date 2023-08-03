@@ -17,8 +17,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 
 import java.util.List;
@@ -34,6 +37,19 @@ public class DatabricksCompilerExtension implements IRelationalCompilerExtension
     @Override
     public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors()
     {
-        return Lists.mutable.with((datasourceSpecification, context) -> null);
+        return Lists.mutable.with((datasourceSpecification, context) ->
+        {
+            if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+            {
+                DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
+                Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification"));
+                _static._hostname(staticDatasourceSpecification.hostname);
+                _static._port(staticDatasourceSpecification.port);
+                _static._protocol(staticDatasourceSpecification.protocol);
+                _static._httpPath(staticDatasourceSpecification.httpPath);
+                return _static;
+            }
+            return null;
+        });
     }
 }
