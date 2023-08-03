@@ -26,7 +26,12 @@ import static org.finos.legend.engine.persistence.components.relational.sqldom.u
 public class Function extends Value
 {
     private FunctionName name;
-    private List<Value> values;
+    protected List<Value> values;
+
+    public Function(String quoteIdentifier)
+    {
+        super(quoteIdentifier);
+    }
 
     public Function(FunctionName name, List<Value> values, String quoteIdentifier)
     {
@@ -52,7 +57,7 @@ public class Function extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        builder.append(name.get());
+        builder.append(getFunctionName());
         builder.append(OPEN_PARENTHESIS);
         if (values != null)
         {
@@ -79,5 +84,10 @@ public class Function extends Value
         {
             values.add((Value) node);
         }
+    }
+
+    public String getFunctionName()
+    {
+        return name.get();
     }
 }

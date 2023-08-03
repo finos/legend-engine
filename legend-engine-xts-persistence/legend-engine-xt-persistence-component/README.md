@@ -56,6 +56,14 @@ the latest version from Maven Central.
       <version>[PICK THE LATEST VERSION FROM MAVEN CENTRAL]</version>
     </dependency>
 
+#### Using the BigQuery executor
+
+    <dependency>
+      <groupId>org.finos.legend.engine</groupId>
+      <artifactId>legend-engine-xt-persistence-component-relational-bigquery</artifactId>
+      <version>[PICK THE LATEST VERSION FROM MAVEN CENTRAL]</version>
+    </dependency>
+
 **Step 2:** Create the Ingest mode object based on ingestion scheme (Details and examples for each scheme [below](#ingest-modes))
 
     UnitemporalDelta ingestMode = UnitemporalDelta.builder()
@@ -102,16 +110,20 @@ Mandatory Params:
 
 Optional Params:
 
-| parameters          | Description                                                         | Default Value |
-|--------------------|---------------------------------------------------------------------|----------------|
-| cleanupStagingData | clean staging table after completion of ingestion  | true |
-| collectStatistics | Collect Statistics from ingestion  | false |
-| enableSchemaEvolution | Enable Schema Evolution to happen  | false |
-| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE  | NONE |
-| executionTimestampClock | Clock to use to derive the time  | Clock.systemUTC() |
-| batchStartTimestampPattern | Pattern for batchStartTimestamp. If this pattern is provided, it will replace the batchStartTimestamp values | None |
-| batchEndTimestampPattern | Pattern for batchEndTimestamp. If this pattern is provided, it will replace the batchEndTimestamp values  | None |
-| batchIdPattern | Pattern for batch id. If this pattern is provided, it will replace the next batch id | None |
+| parameters          | Description                                                                                                                                        | Default Value     |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| cleanupStagingData | clean staging table after completion of ingestion                                                                                                  | true              |
+| collectStatistics | Collect Statistics from ingestion                                                                                                                  | false             |
+| enableSchemaEvolution | Enable Schema Evolution to happen                                                                                                                  | false             |
+| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE                           | NONE              |
+| executionTimestampClock | Clock to use to derive the time                                                                                                                    | Clock.systemUTC() |
+| batchStartTimestampPattern | Pattern for batchStartTimestamp. If this pattern is provided, it will replace the batchStartTimestamp values                                       | None              |
+| batchEndTimestampPattern | Pattern for batchEndTimestamp. If this pattern is provided, it will replace the batchEndTimestamp values                                           | None              |
+| batchIdPattern | Pattern for batch id. If this pattern is provided, it will replace the next batch id                                                               | None              |
+| createStagingDataset | Enables creation of staging Dataset                                                                                                                | false             |
+| schemaEvolutionCapabilitySet | A set that enables fine grained schema evolution capabilities - ADD_COLUMN, DATA_TYPE_CONVERSION, DATA_TYPE_SIZE_CHANGE, COLUMN_NULLABILITY_CHANGE | Empty set         |
+| infiniteBatchIdValue | Value to be used for Infinite batch id                                                                                                             | 999999999         |
+
 
 **Step 4.2:** Use the generator object to extract the queries
 
@@ -160,13 +172,16 @@ Mandatory Params:
 
 Optional Params:
 
-| parameters          | Description                                                         | Default Value |
-|--------------------|---------------------------------------------------------------------|----------------|
-| cleanupStagingData | clean staging table after completion of ingestion  | true |
-| collectStatistics | Collect Statistics from ingestion  | true |
-| enableSchemaEvolution | Enable Schema Evolution to happen  | false |
-| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE  | NONE |
-| executionTimestampClock | Clock to use to derive the time  | Clock.systemUTC() |
+| parameters          | Description                                                                                                              | Default Value     |
+|--------------------|--------------------------------------------------------------------------------------------------------------------------|-------------------|
+| cleanupStagingData | clean staging table after completion of ingestion                                                                        | true              |
+| collectStatistics | Collect Statistics from ingestion                                                                                        | true              |
+| enableSchemaEvolution | Enable Schema Evolution to happen                                                                                        | false             |
+| caseConversion | Convert SQL objects like table, db, column names to upper or lower case.<br> Values supported - TO_UPPER, TO_LOWER, NONE | NONE              |
+| executionTimestampClock | Clock to use to derive the time                                                                                          | Clock.systemUTC() |
+| createDatasets | A flag to enable or disable dataset creation in Executor mode                                                            | true              |
+| createStagingDataset | Enables creation of staging Dataset                                                                                                                | false             |
+| schemaEvolutionCapabilitySet | A set that enables fine grained schema evolution capabilities - ADD_COLUMN, DATA_TYPE_CONVERSION, DATA_TYPE_SIZE_CHANGE, COLUMN_NULLABILITY_CHANGE | Empty set         |
 
 **Step 5.2:** Invoke the ingestion and get the stats
 
@@ -189,7 +204,8 @@ This is used to load data that is a complete refresh with each load. All rows fr
 
 | Field Name     | Description                                            | Mandatory? |
 |----------------|--------------------------------------------------------|------------|
-| auditing | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row     | Yes        |
+| auditing | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row | Yes        |
+| dataSplitField | Name of the field which contains the data split number | No.        |
 
 ### Append-only
 
@@ -226,10 +242,14 @@ This is used to load data incrementally. New rows are simply appended, where-as 
 
 #### Parameter information
 
-| Field Name     | Description                                                              | Mandatory?                          |
-|----------------|--------------------------------------------------------------------------|-------------------------------------|
-| digestField | Name of the digest field                                                    | Yes                                 | 
-| auditing | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row     | Yes        |
+| Field Name          | Description                                                                                                                                                                                                                                                                                                          | Mandatory?                          |
+|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| digestField         | Name of the digest field                                                                                                                                                                                                                                                                                             | Yes                                 | 
+| auditing            | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row                                                                                                                                                                                  | Yes        |
+| dataSplitField      | Name of the field which contains the data split number                                                                                                                                                                                                                                                               | No                               |
+| mergeStrategy       | Choose either one of these two: <br>1. NoDeletesMergeStrategy: Default mode, this is without delete indicator mode. <br>2 DeleteIndicatorMergeStrategy: This is the delete indicator mode. User must provide deleteField and deleteValues in this case.                                                              | No        |                                                  |
+| versioningStrategy  | Choose either one of these two: <br>1. NoVersioningStrategy: Default mode, this does not perform any versioning. <br>2 MaxVersionStrategy: This strategy picks up the row with max version based on a versioningField and a versioningComparator. If there are rows with duplicate versions, one of them is selected | No        |                                                  |
+
 
 ### Unitemporal Snapshot
 
@@ -292,12 +312,14 @@ There are two variants of this scheme:
 
 #### Parameter information
 
-| Field Name     | Description                                                              | Mandatory?                          |
-|----------------|--------------------------------------------------------------------------|-------------------------------------|
-| digestField | Name of the digest field                                                    | Yes                                 | 
-| dataSplitField | Name of the field which contains the data split number                                                    | No                               |
-| transactionMilestoning | Choose either one of these three: <br>1. BatchId : Batch id based milestoning. It will populate batch_id_in and batch_id_out fields <br>2. TransactionDateTime: Transaction time based milestoning. It will populate batch_time_in and batch_time_out fields <br>3. BatchIdAndDateTime:  Batch id and time based milestoning. It will populate batch_id_in, batch_id_out, batch_time_in and batch_time_out fields | Yes |
-| mergeStrategy | Choose either one of these two: <br>1. NoDeletesMergeStrategy: Default mode, this is without delete indicator mode. <br>2 DeleteIndicatorMergeStrategy: This is the delete indicator mode. User must provide deleteField and deleteValues in this case. | No                                                          |
+| Field Name     | Description                                                                                                                                                                                                                                                                                                                                                                                                                     | Mandatory?                          |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| digestField | Name of the digest field                                                                                                                                                                                                                                                                                                                                                                                                        | Yes                                 | 
+| dataSplitField | Name of the field which contains the data split number                                                                                                                                                                                                                                                                                                                                                                          | No                               |
+| transactionMilestoning | Choose either one of these three: <br>1. BatchId : Batch id based milestoning. It will populate batch_id_in and batch_id_out fields <br>2. TransactionDateTime: Transaction time based milestoning. It will populate batch_time_in and batch_time_out fields <br>3. BatchIdAndDateTime:  Batch id and time based milestoning. It will populate batch_id_in, batch_id_out, batch_time_in and batch_time_out fields               | Yes |
+| mergeStrategy | Choose either one of these two: <br>1. NoDeletesMergeStrategy: Default mode, this is without delete indicator mode. <br>2 DeleteIndicatorMergeStrategy: This is the delete indicator mode. User must provide deleteField and deleteValues in this case.                                                                                                                                                                         | No                                                          |
+| versioningStrategy  | Choose either one of these two: <br>1. NoVersioningStrategy: Default mode, this does not perform any versioning. <br>2 MaxVersionStrategy: This strategy picks up the row with max version based on a versioningField and a versioningComparator. If there are rows with duplicate versions, one of them is selected                                                                                                            | No        |                                                  |
+| optimizationFilters  | Users can provide a List of optimization filters - a field with lower and upper bound values. These filters will be pushed down at query time to improve the query performance. The executor mode derives these filters automatically, so the user does not need to provide this in executor mode. Note that the optimization filter fields must be a Primary key and a Comparable field (Numeric or Date/Time/Datetime types). | No        |                                                  |
 
 ### Bitemporal Snapshot
 
@@ -339,12 +361,36 @@ There are two variants of this scheme:
 
 #### Parameter information
 
-| Field Name     | Description                                                              | Mandatory?                          |
-|----------------|--------------------------------------------------------------------------|-------------------------------------|
-| digestField | Name of the digest field                                                    | Yes                                 | 
-| dataSplitField | Name of the field which contains the data split number                                                    | No                               |
-| transactionMilestoning | Choose either one of these three: <br>1. BatchId : Batch id based milestoning. It will populate batch_id_in and batch_id_out fields <br>2. TransactionDateTime: Transaction time based milestoning. It will populate batch_time_in and batch_time_out fields <br>3. BatchIdAndDateTime:  Batch id and time based milestoning. It will populate batch_id_in, batch_id_out, batch_time_in and batch_time_out fields | Yes |
-| validityMilestoning | For the ValidityDerivation object, choose either one of these two: <br>1. SourceSpecifiesFromAndThruDateTime : choose this when source data contains both validity from field and validity through field. <br>2. SourceSpecifiesFromDateTime: choose this when source data contains only validity from field. The dateTimeFromName species the column in the main dataset which will be populated with the validity from time; the dateTimeThruName species the column in the main dataset which will be populated with the validity through time.   | Yes |
-| mergeStrategy | Choose either one of these two: <br>1. NoDeletesMergeStrategy: Default mode, this is without delete indicator mode. <br>2 DeleteIndicatorMergeStrategy: This is the delete indicator mode. User must provide deleteField and deleteValues in this case. | No                                                          |
+| Field Name     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Mandatory? |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| digestField | Name of the digest field                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Yes        | 
+| dataSplitField | Name of the field which contains the data split number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | No         |
+| transactionMilestoning | Choose either one of these three: <br>1. BatchId : Batch id based milestoning. It will populate batch_id_in and batch_id_out fields <br>2. TransactionDateTime: Transaction time based milestoning. It will populate batch_time_in and batch_time_out fields <br>3. BatchIdAndDateTime:  Batch id and time based milestoning. It will populate batch_id_in, batch_id_out, batch_time_in and batch_time_out fields                                                                                                                                  | Yes        |
+| validityMilestoning | For the ValidityDerivation object, choose either one of these two: <br>1. SourceSpecifiesFromAndThruDateTime : choose this when source data contains both validity from field and validity through field. <br>2. SourceSpecifiesFromDateTime: choose this when source data contains only validity from field. The dateTimeFromName species the column in the main dataset which will be populated with the validity from time; the dateTimeThruName species the column in the main dataset which will be populated with the validity through time. | Yes        |
+| mergeStrategy | Choose either one of these two: <br>1. NoDeletesMergeStrategy: Default mode, this is without delete indicator mode. <br>2 DeleteIndicatorMergeStrategy: This is the delete indicator mode. User must provide deleteField and deleteValues in this case.                                                                                                                                                                                                                                                                                            | No         |
+| deduplicationStrategy | Choose either one of these two: <br> 1. AllowDuplicates: allows duplicates to be processed, this is the default <br> 2. FilterDuplicates: Filter out the duplicates before processing                                                                                                                                                                                                                                                                                                                                                              | No         | 
 
 
+
+### BulkLoad
+
+This scheme is used to bulk load the data from staged files in object storage like S3 or GCS to a target table.
+It supports adding an auditing field and digest generation as well.
+
+#### Object creation
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+                .digestField("digest")
+                .generateDigest(true)
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .digestUdfName("LAKEHOUSE_MD5")
+                .build();
+
+#### Parameter information
+
+| Field Name     | Description                                         | Mandatory? |
+|----------------|-----------------------------------------------------|------------|
+| generateDigest | Option specifying whether to generate digest or not | Yes        | 
+| digestField | Name of the digest field                            | No         |
+| digestUdfName | Name of the UDF to be used for digest generation    | No         |
+| auditing | Choose either one of these two: <br> 1. NoAuditing: no auditing <br> 2. DateTimeAuditing: A dateTimeField will be added to each row | Yes        |

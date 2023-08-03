@@ -84,6 +84,12 @@ public class IngestModeOptimizationColumnHandler implements IngestModeVisitor<In
         return bitemporalDelta;
     }
 
+    @Override
+    public IngestMode visitBulkLoad(BulkLoadAbstract bulkLoad)
+    {
+        return bulkLoad;
+    }
+
 
     private List<OptimizationFilter> deriveOptimizationFilters(UnitemporalDeltaAbstract unitemporalDelta)
     {

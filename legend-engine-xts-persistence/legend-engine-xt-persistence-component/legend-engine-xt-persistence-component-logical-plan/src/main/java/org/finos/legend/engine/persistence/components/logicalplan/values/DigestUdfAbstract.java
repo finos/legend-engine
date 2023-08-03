@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum StatisticName
+import java.util.List;
+
+@org.immutables.value.Value.Immutable
+@org.immutables.value.Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface DigestUdfAbstract extends Value
 {
-    INCOMING_RECORD_COUNT("incomingRecordCount"),
-    ROWS_TERMINATED("rowsTerminated"),
-    ROWS_INSERTED("rowsInserted"),
-    ROWS_UPDATED("rowsUpdated"),
-    ROWS_DELETED("rowsDeleted"),
-    FILES_LOADED("filesLoaded"),
-    ROWS_WITH_ERRORS("rowsWithErrors");
 
-    String value;
+    String udfName();
 
-    StatisticName(String value)
-    {
-        this.value = value;
-    }
+    List<String> fieldNames();
 
-    public String get()
-    {
-        return value;
-    }
+    List<Value> values();
 }

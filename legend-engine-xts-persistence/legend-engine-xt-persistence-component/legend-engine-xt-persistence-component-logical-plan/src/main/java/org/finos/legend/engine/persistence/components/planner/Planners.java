@@ -31,6 +31,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 
 public class Planners
 {
@@ -99,6 +101,12 @@ public class Planners
         public Planner visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
             return new BitemporalDeltaPlanner(datasets, (BitemporalDelta) bitemporalDelta, plannerOptions);
+        }
+
+        @Override
+        public Planner visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return new BulkLoadPlanner(datasets, (BulkLoad) bulkLoad, plannerOptions);
         }
     }
 }

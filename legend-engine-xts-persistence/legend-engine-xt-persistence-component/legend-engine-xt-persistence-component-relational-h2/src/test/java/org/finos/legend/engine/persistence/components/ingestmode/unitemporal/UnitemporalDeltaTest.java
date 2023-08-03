@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
@@ -501,7 +503,9 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        IngestorResult result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        Assertions.assertEquals(Optional.of(1), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
 
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -516,7 +520,9 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
-        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+        Assertions.assertEquals(Optional.of(2), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass3.csv";
@@ -525,7 +531,9 @@ class UnitemporalDeltaTest extends BaseTest
         loadStagingDataWithFilter(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
-        executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+        result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+        Assertions.assertEquals(Optional.of(3), result.batchId());
+        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
     }
 
     @Test

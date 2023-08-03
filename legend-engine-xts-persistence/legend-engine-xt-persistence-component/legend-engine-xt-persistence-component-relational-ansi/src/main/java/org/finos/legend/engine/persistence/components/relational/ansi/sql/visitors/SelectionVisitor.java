@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Con
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -28,7 +29,6 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class SelectionVisitor implements LogicalPlanVisitor<Selection>
 {
@@ -59,6 +59,11 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
                 Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
                 conditions.add(filterCondition);
                 logicalPlanNodeList.add(derivedDataset.datasetReference());
+            }
+            else if (dataset instanceof StagedFilesDataset)
+            {
+                StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) dataset;
+                logicalPlanNodeList.add(stagedFilesDataset.datasetReference());
             }
             else
             {

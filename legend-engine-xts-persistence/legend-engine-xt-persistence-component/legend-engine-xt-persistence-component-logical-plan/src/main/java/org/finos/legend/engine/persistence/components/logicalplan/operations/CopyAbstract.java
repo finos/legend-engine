@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.datasets;
+package org.finos.legend.engine.persistence.components.logicalplan.operations;
 
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
-import org.immutables.value.Value.Immutable;
-import org.immutables.value.Value.Style;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Parameter;
+import static org.immutables.value.Value.Style;
 
 @Immutable
 @Style(
@@ -29,13 +30,14 @@ import java.util.Optional;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
+public interface CopyAbstract extends Operation
 {
-    Optional<TableType> tableType();
+    @Parameter(order = 0)
+    Dataset targetDataset();
 
-    Optional<TableOrigin> tableOrigin();
+    @Parameter(order = 1)
+    Dataset sourceDataset();
 
-    Optional<String> externalVolume();
-
-    Map<String, String> tags();
+    @Parameter(order = 2)
+    List<Value> fields();
 }

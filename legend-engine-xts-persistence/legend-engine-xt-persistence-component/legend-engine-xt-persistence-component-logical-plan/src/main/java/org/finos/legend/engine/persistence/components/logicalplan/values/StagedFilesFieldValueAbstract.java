@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.datasets;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
-import org.immutables.value.Value.Immutable;
-import org.immutables.value.Value.Style;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 
-import java.util.Map;
 import java.util.Optional;
+
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
 
 @Immutable
 @Style(
@@ -29,13 +29,11 @@ import java.util.Optional;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
+public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
 {
-    Optional<TableType> tableType();
+    Integer columnNumber();
 
-    Optional<TableOrigin> tableOrigin();
+    Optional<String> elementPath();
 
-    Optional<String> externalVolume();
-
-    Map<String, String> tags();
+    DataType dataType();
 }
