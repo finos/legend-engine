@@ -27,9 +27,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 
 import java.util.List;
@@ -68,12 +71,35 @@ public class DatabricksConnectionExtension implements RelationalConnectionExtens
     @Override
     public Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>> getExtraDataSourceSpecificationKeyGenerators(int testDbPort)
     {
-        return connection -> datasourceSpecification -> null;
+        return connection -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+            {
+                DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
+                return new DatabricksDataSourceSpecificationKey(
+                        databricksSpecification.hostname,
+                        databricksSpecification.port,
+                        databricksSpecification.protocol,
+                        databricksSpecification.httpPath);
+            }
+            return null;
+        };
     }
 
     @Override
     public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
     {
-        return (connection, connectionKey) -> datasourceSpecification -> null;
+        return (connection, connectionKey) -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
+            {
+                return new DatabricksDataSourceSpecificationRuntime(
+                        (DatabricksDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
+                        new DatabricksManager(),
+                        authenticationStrategyProvider.apply(connection)
+                );
+            }
+            return null;
+        };
     }
 }

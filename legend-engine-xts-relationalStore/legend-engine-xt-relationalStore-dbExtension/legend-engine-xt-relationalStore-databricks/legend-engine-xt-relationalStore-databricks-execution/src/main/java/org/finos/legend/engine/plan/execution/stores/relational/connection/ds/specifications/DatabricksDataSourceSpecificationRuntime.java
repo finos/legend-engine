@@ -21,7 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 
 import java.util.Properties;
 
-public class DatabricksDataSourceSpecification extends DataSourceSpecification
+public class DatabricksDataSourceSpecificationRuntime extends DataSourceSpecification
 {
 
     public static String DATABRICKS_HOSTNAME = "legend_databricks_hostname";
@@ -29,7 +29,7 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
 
-    public DatabricksDataSourceSpecification(
+    public DatabricksDataSourceSpecificationRuntime(
             DatabricksDataSourceSpecificationKey key,
             DatabaseManager databaseManager,
             AuthenticationStrategy authenticationStrategy,
@@ -48,7 +48,7 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
     }
 
-    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public DatabricksDataSourceSpecificationRuntime(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
     {
         this(key, databaseManager, authenticationStrategy, new Properties());
     }
