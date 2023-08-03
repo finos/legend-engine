@@ -14,15 +14,11 @@
 
 package org.finos.legend.engine.plan.generation.extension;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
-import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
@@ -30,11 +26,5 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
     public MutableList<PlanTransformer> getExtraPlanTransformers()
     {
         return Lists.mutable.withAll(LegendPlanTransformers.transformers).with(new VersionPlanTransformer());
-    }
-
-    @Override
-    public RichIterable<? extends Root_meta_pure_extension_Extension> getExtraExtensions(PureModel pureModel)
-    {
-        return PureCoreExtensionLoader.extensions().flatCollect(c -> c.extraPureCoreExtensions(pureModel.getExecutionSupport()));
     }
 }

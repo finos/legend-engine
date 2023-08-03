@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
@@ -91,7 +92,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
         Assert.assertNotNull("Test function not found on model: " + funcName, concreteFxn);
 
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = extensions.flatCollect(e -> e.getExtraExtensions(PURE_MODEL));
+        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(PURE_MODEL.getExecutionSupport()));
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, LegendPlanTransformers.transformers);
         return PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(plan);
     }
