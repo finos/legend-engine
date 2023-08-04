@@ -30,7 +30,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
@@ -83,10 +82,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         if (databaseCommands instanceof SnowflakeCommands)
         {
             return visitSnowflake((SnowflakeCommands) databaseCommands);
-        }
-        if (databaseCommands instanceof DatabricksCommands)
-        {
-            return visitDatabricks((DatabricksCommands) databaseCommands);
         }
         if (databaseCommands instanceof H2Commands)
         {
@@ -189,15 +184,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             throw new RuntimeException("Ingestion method " + ingestionMethod.name() + " not supported");
         }
         return true;
-    }
-
-    private Boolean visitDatabricks(DatabricksCommands databricksCommands)
-    {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = databricksCommands.getDefaultIngestionMethod();
-        }
-        throw new UnsupportedOperationException("not yet implemented");
     }
 
     private Boolean visitH2(H2Commands h2Commands)
