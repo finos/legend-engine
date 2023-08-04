@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
@@ -144,9 +145,12 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(OperationDefinition operationDefinition)
             {
-                return (operationDefinition.type == null ? "" : operationDefinition.type.name()) + " " + operationDefinition.name + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")") + " {\n" +
-                        renderSelectionSet(operationDefinition.selectionSet, "  ") +
-                        "\n}";
+                return (operationDefinition.type == null ? "" : operationDefinition.type.name()) + " " + operationDefinition.name
+                        + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")")
+                        + (operationDefinition.directives.isEmpty() ? "" : " " + ListIterate.collect(operationDefinition.directives, v -> render(v)).makeString(" "))
+                        + " {\n" +
+                                renderSelectionSet(operationDefinition.selectionSet, "  ") +
+                            "\n}";
             }
 
             @Override
@@ -178,6 +182,11 @@ public class GraphQLGrammarComposer
         return v.name + ": " + renderType(v.type) + (v.defaultValue == null ? "" : " = " + renderValue(v.defaultValue));
     }
 
+    private Object render(Directive v)
+    {
+        return "@" + v.name;
+    }
+
     public String renderSelectionSet(List<Selection> selectionSet, String space)
     {
         return ListIterate.collect(selectionSet, a -> space + a.accept(new SelectionVisitor<String>()
@@ -204,7 +213,9 @@ public class GraphQLGrammarComposer
 
     public String renderField(Field field, String space)
     {
-        return field.name + (field.arguments.isEmpty() ? "" : "(" + ListIterate.collect(field.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")");
+        return field.name
+                + (field.arguments.isEmpty() ? "" : "(" + ListIterate.collect(field.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")")
+                + (field.directives.isEmpty() ? "" : " " + ListIterate.collect(field.directives, this::render).makeString(" "));
     }
 
     public String renderField(FieldDefinition fieldDefinition)

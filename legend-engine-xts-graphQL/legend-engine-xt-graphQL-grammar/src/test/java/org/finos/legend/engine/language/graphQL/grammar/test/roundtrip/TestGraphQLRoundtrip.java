@@ -148,6 +148,23 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testQueryWithDirectiveRoundtrip()
+    {
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(id: 2) @totalCount {\n" +
+                "    firstname(x: null, x: $ok)\n" +
+                "    lastname(test: true)\n" +
+                "    projects(other: \"oo\") {\n" +
+                "      name\n" +
+                "      tasks(val: en) {\n" +
+                "        description(p: 3.2, z: [1, 2, \"ok\"])\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
     public void testMutationRoundtrip()
     {
         check("mutation setUserWithProjects($a: INT) {\n" +

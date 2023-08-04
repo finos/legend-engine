@@ -40,7 +40,9 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
@@ -92,6 +94,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -277,6 +282,8 @@ public class GraphQLExecute extends GraphQL
         {
             return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+        Future<Map<String, ?>> extensionsObject = executor.submit(() -> computeExtensionsField(graphQLQuery));
         List<SerializedNamedPlans> finalPlanWithSerialized = planWithSerialized;
         return Response.ok(
                 (StreamingOutput) outputStream ->
@@ -315,7 +322,14 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
+                        generator.writeFieldName("extensions");
+                        generator.writeObject(extensionsObject.get());
                         generator.writeEndObject();
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }).build();
     }
@@ -340,6 +354,22 @@ public class GraphQLExecute extends GraphQL
 
 
         return plans;
+    }
+
+    private Map<String, ?> computeExtensionsField(OperationDefinition operationDefinition)
+    {
+        List<Directive> directives = ((Field)(operationDefinition.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
+        String fieldName = ((Field)(operationDefinition.selectionSet.get(0))).name;
+        Map<String, Map<String,Object>> m = new HashMap<>();
+        m.put(fieldName, new HashMap<>());
+        directives.forEach(directive ->
+        {
+            if (directive.name.equals("echo"))
+            {
+                m.get(fieldName).put("echo",true);
+            }
+        });
+        return m;
     }
 
 
