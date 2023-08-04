@@ -48,6 +48,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -483,8 +484,7 @@ public class HelperModelBuilder
             {
                 return property;
             }
-
-            property = type._qualifiedProperties().detect(parameters.isPresent() ? p -> isCompatibleDerivedProperty(p, name, parameters.get()) : p -> name.equals(p._name()));
+            property = getCompatibleDerivedProperty(type._qualifiedProperties(), name, parameters);
             if (property != null)
             {
                 return property;
@@ -498,10 +498,33 @@ public class HelperModelBuilder
         throw new EngineException("Can't find property '" + name + "' in [" + org.finos.legend.pure.m3.navigation.type.Type.getGeneralizationResolutionOrder(_class, context.pureModel.getExecutionSupport().getProcessorSupport()).makeString(", ") + "]", sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, String name, List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> params)
+    public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters)
     {
-        Root_meta_pure_metamodel_type_FunctionType_Impl rawType = (Root_meta_pure_metamodel_type_FunctionType_Impl) o._classifierGenericType()._typeArguments().getFirst()._rawType();
-        return name.equals(o._name()) && rawType._parameters().size() == params.size();
+        RichIterable<? extends QualifiedProperty<?>> propertiesWithSameName = qualifiedProperties.select(p -> name.equals(p._name()));
+        RichIterable<? extends QualifiedProperty<?>> milestoningProperties = propertiesWithSameName.select(p -> Milestoning.isDateArgGeneratedMilestoningQualifiedProperty(p));                             //dont pick NoArg Milestoned Property
+
+        if (!milestoningProperties.isEmpty())
+        {
+            return milestoningProperties.getFirst();
+        }
+        else
+        {
+            if (parameters.isPresent())
+            {
+                RichIterable<? extends QualifiedProperty<?>> compatibleProperties = propertiesWithSameName.select(p -> isCompatibleDerivedPropertyWithParameters(p, parameters.get()));
+                return compatibleProperties.getFirst();
+            }
+            else
+            {
+                return propertiesWithSameName.getFirst();
+            }
+        }
+    }
+
+    public static boolean isCompatibleDerivedPropertyWithParameters(QualifiedProperty<?> o, List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> params)
+    {
+        FunctionType  rawType = (FunctionType) o._classifierGenericType()._typeArguments().getFirst()._rawType();
+        return rawType._parameters().size() == params.size();
 //                && rawType._parameters().zip(params).allSatisfy(v1 -> v1.getOne()._name().equals(((Variable) v1.getTwo()).name));
 //        FIXME: we might need to be smarter about which property to choose (use types for example)
 //        Line 105 won't work for buildLambda (but will work when deserializing and instantiating PureModel).
@@ -511,7 +534,7 @@ public class HelperModelBuilder
 
     public static boolean isCompatibleDerivedProperty(QualifiedProperty<?> o, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty p)
     {
-        return isCompatibleDerivedProperty(o, p.name, Lists.mutable.of(new Variable()).withAll(p.parameters));
+        return o._name() == p.name && isCompatibleDerivedPropertyWithParameters(o, Lists.mutable.of(new Variable()).withAll(p.parameters));
     }
 
     public static String getElementFullPath(PackageableElement element, CompiledExecutionSupport executionSupport)
