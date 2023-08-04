@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.generation;
 
+import org.finos.legend.engine.generation.extension.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;

@@ -1,0 +1,472 @@
+{
+  "clientVersion": "string",
+  "model": {
+    "_type": "json",
+    "elements": [
+      {
+        "_type": "service",
+        "autoActivateUpdates": true,
+        "documentation": "",
+        "execution": {
+          "_type": "pureSingleExecution",
+          "func": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "project",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "getAll",
+                    "parameters": [
+                      {
+                        "_type": "packageableElementPtr",
+                        "fullPath": "demo::model::Person"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x"
+                              }
+                            ],
+                            "property": "firstName"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x"
+                              }
+                            ],
+                            "property": "lastName"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "string",
+                        "value": "First Name"
+                      },
+                      {
+                        "_type": "string",
+                        "value": "Last Name"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "mapping": "demo::DemoMapping",
+          "runtime": {
+            "_type": "runtimePointer",
+            "runtime": "demo::DemoRuntime"
+          }
+        },
+        "name": "DemoService",
+        "owners": [
+          "anonymous",
+          "kranthikiran01"
+        ],
+        "package": "demo",
+        "pattern": "/testAPI/demo",
+        "postValidations": [],
+        "stereotypes": [],
+        "taggedValues": [],
+        "testSuites": [
+          {
+            "_type": "serviceTestSuite",
+            "id": "testSuite_1",
+            "testData": {
+              "connectionsTestData": [
+                {
+                  "data": {
+                    "_type": "relationalCSVData",
+                    "tables": [
+                      {
+                        "schema": "DEMODB",
+                        "table": "PERSON_TABLE",
+                        "values": "ID,FIRSTNAME,LASTNAME\n1,JOHN,DOE\n"
+                      }
+                    ]
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            },
+            "tests": [
+              {
+                "_type": "serviceTest",
+                "assertions": [
+                  {
+                    "_type": "equalToJson",
+                    "expected": {
+                      "_type": "externalFormat",
+                      "contentType": "application/json",
+                      "data": "{\r\n  \"columns\" : [ {\r\n    \"name\" : \"First Name\",\r\n    \"type\" : \"String\"\r\n  }, {\r\n    \"name\" : \"Last Name\",\r\n    \"type\" : \"String\"\r\n  } ],\r\n  \"rows\" : [ {\r\n    \"values\" : [ \"JOHN\", \"DOE\" ]\r\n  } ]\r\n}"
+                    },
+                    "id": "assertion_1"
+                  }
+                ],
+                "id": "test_1",
+                "keys": [],
+                "serializationFormat": "PURE"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_type": "relational",
+        "filters": [],
+        "includedStores": [],
+        "joins": [],
+        "name": "DemoDb",
+        "package": "demo",
+        "schemas": [
+          {
+            "name": "DEMODB",
+            "tables": [
+              {
+                "columns": [
+                  {
+                    "name": "ID",
+                    "nullable": false,
+                    "type": {
+                      "_type": "Double"
+                    }
+                  },
+                  {
+                    "name": "FIRSTNAME",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 2147483647
+                    }
+                  },
+                  {
+                    "name": "LASTNAME",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 2147483647
+                    }
+                  }
+                ],
+                "milestoning": [],
+                "name": "PERSON_TABLE",
+                "primaryKey": [
+                  "ID"
+                ]
+              }
+            ],
+            "views": []
+          }
+        ]
+      },
+      {
+        "_type": "mapping",
+        "associationMappings": [],
+        "classMappings": [
+          {
+            "_type": "relational",
+            "class": "demo::model::Person",
+            "distinct": false,
+            "groupBy": [],
+            "mainTable": {
+              "_type": "Table",
+              "database": "demo::DemoDb",
+              "mainTableDb": "demo::DemoDb",
+              "schema": "DEMODB",
+              "table": "PERSON_TABLE"
+            },
+            "primaryKey": [
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "demo::DemoDb",
+                  "mainTableDb": "demo::DemoDb",
+                  "schema": "DEMODB",
+                  "table": "PERSON_TABLE"
+                },
+                "tableAlias": "PERSON_TABLE"
+              }
+            ],
+            "propertyMappings": [
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "demo::model::Person",
+                  "property": "firstName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "FIRSTNAME",
+                  "table": {
+                    "_type": "Table",
+                    "database": "demo::DemoDb",
+                    "mainTableDb": "demo::DemoDb",
+                    "schema": "DEMODB",
+                    "table": "PERSON_TABLE"
+                  },
+                  "tableAlias": "PERSON_TABLE"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "demo::model::Person",
+                  "property": "lastName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "LASTNAME",
+                  "table": {
+                    "_type": "Table",
+                    "database": "demo::DemoDb",
+                    "mainTableDb": "demo::DemoDb",
+                    "schema": "DEMODB",
+                    "table": "PERSON_TABLE"
+                  },
+                  "tableAlias": "PERSON_TABLE"
+                }
+              }
+            ],
+            "root": true
+          }
+        ],
+        "enumerationMappings": [],
+        "includedMappings": [],
+        "name": "DemoMapping",
+        "package": "demo",
+        "tests": [
+          {
+            "assert": {
+              "_type": "expectedOutputMappingTestAssert",
+              "expectedOutput": "[{\"values\":[\"John\",\"Doe\"]}]"
+            },
+            "inputData": [
+              {
+                "_type": "relational",
+                "data": "create schema if not exists demoDb;\ncreate table if not exists demoDb.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from demoDb.PERSON_TABLE;\ninsert into demoDb.PERSON_TABLE values(1,'John','Doe');\n",
+                "database": "demo::DemoDb",
+                "inputType": "SQL"
+              }
+            ],
+            "name": "test_1",
+            "query": {
+              "_type": "lambda",
+              "body": [
+                {
+                  "_type": "func",
+                  "function": "project",
+                  "parameters": [
+                    {
+                      "_type": "func",
+                      "function": "getAll",
+                      "parameters": [
+                        {
+                          "_type": "packageableElementPtr",
+                          "fullPath": "demo::model::Person"
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "values": [
+                        {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x"
+                                }
+                              ],
+                              "property": "firstName"
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ]
+                        },
+                        {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x"
+                                }
+                              ],
+                              "property": "lastName"
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "collection",
+                      "multiplicity": {
+                        "lowerBound": 2,
+                        "upperBound": 2
+                      },
+                      "values": [
+                        {
+                          "_type": "string",
+                          "value": "First Name"
+                        },
+                        {
+                          "_type": "string",
+                          "value": "Last Name"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "parameters": []
+            }
+          }
+        ]
+      },
+      {
+        "_type": "runtime",
+        "name": "DemoRuntime",
+        "package": "demo",
+        "runtimeValue": {
+          "_type": "engineRuntime",
+          "connections": [
+            {
+              "store": {
+                "path": "demo::DemoDb",
+                "type": "STORE"
+              },
+              "storeConnections": [
+                {
+                  "connection": {
+                    "_type": "RelationalDatabaseConnection",
+                    "authenticationStrategy": {
+                      "_type": "h2Default"
+                    },
+                    "databaseType": "H2",
+                    "datasourceSpecification": {
+                      "_type": "h2Local",
+                      "testDataSetupSqls": [
+                        "create schema if not exists demoDb;\ncreate table if not exists demoDb.PERSON_TABLE(id FLOAT PRIMARY KEY, firstName varchar, lastName varchar);\ndelete from demoDb.PERSON_TABLE;\ninsert into demoDb.PERSON_TABLE values(1,'John','Doe');"
+                      ]
+                    },
+                    "element": "demo::DemoDb",
+                    "postProcessorWithParameter": [],
+                    "type": "H2"
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            }
+          ],
+          "mappings": [
+            {
+              "path": "demo::DemoMapping",
+              "type": "MAPPING"
+            }
+          ]
+        }
+      },
+      {
+        "_type": "class",
+        "constraints": [],
+        "name": "Person",
+        "originalMilestonedProperties": [],
+        "package": "demo::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "stereotypes": [],
+            "taggedValues": [],
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "stereotypes": [],
+            "taggedValues": [],
+            "type": "String"
+          }
+        ],
+        "qualifiedProperties": [],
+        "stereotypes": [],
+        "superTypes": [],
+        "taggedValues": []
+      }
+    ]
+  }
+}

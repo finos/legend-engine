@@ -26,7 +26,7 @@ import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDrive
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
-import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
+import org.finos.legend.engine.generation.extension.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
@@ -287,7 +287,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
                 .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension.class)
-                .with(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationExtension.class);
+                .with(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationExtension.class)
+                .with(org.finos.legend.engine.generation.extension.OpenApiGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PureGrammarParserExtension>> getExpectedGrammarParserExtensions()
