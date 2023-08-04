@@ -1360,6 +1360,7 @@ Database meta::relational::tests::milestoning::UnionOnViewWithMilestoning
 ###Relational
 Database meta::relational::tests::milestoning::db(
    Table OrderTable(id Integer PRIMARY KEY, orderDate DATE, prodFk Integer)
+   Table OrderTable2(id Integer PRIMARY KEY, orderDate DATE, prodFk Integer)
    Table OrderDescriptionTable(id Integer PRIMARY KEY, description VARCHAR(200))
    Table OrderDetailsTable(id Integer PRIMARY KEY, settlementDate Date)
    Table MyOrderTable(id Integer PRIMARY KEY, prodFk Integer)
@@ -1385,6 +1386,20 @@ Database meta::relational::tests::milestoning::db(
             externalReferenceSystemName VARCHAR(200),
             from_z DATE,
             thru_z DATE)
+
+  Table MilestonedProductTable2(
+        milestoning(
+            business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+        )
+        id Integer PRIMARY KEY, 
+        name VARCHAR(200) PRIMARY KEY,
+        type VARCHAR(200),
+        exchange VARCHAR(200),
+        classificationSystemId Integer,
+        referenceSystemName VARCHAR(200),
+        externalReferenceSystemName VARCHAR(200),
+        from_z DATE,
+        thru_z DATE) 
    
    Table ProductTableWithBusinessSnapshotMilestoning(
             milestoning(
@@ -1523,7 +1538,15 @@ Database meta::relational::tests::milestoning::db(
             type VARCHAR(200) PRIMARY KEY,
             createdBy VARCHAR(200),
             from_z DATE,
-            thru_z DATE)    
+            thru_z DATE)
+
+       Table ProductSynonymTableNoMilestoning(
+            prodId Integer,
+            name VARCHAR(200) PRIMARY KEY,
+            synonym VARCHAR(200) PRIMARY KEY,
+            type VARCHAR(200) PRIMARY KEY,
+            createdBy VARCHAR(200)
+            )  
             
     Table ProductClassificationTableNoMilestoning(
             type VARCHAR(200) PRIMARY KEY,
@@ -1541,7 +1564,18 @@ Database meta::relational::tests::milestoning::db(
             exchange VARCHAR(200),
             from_z DATE, 
             thru_z DATE)
-   
+    
+    Table ProductClassificationTable2(
+        milestoning(
+            business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+        )
+        type VARCHAR(200) PRIMARY KEY,
+        type_description VARCHAR(400),
+        system VARCHAR(200),
+        exchange VARCHAR(200),
+        from_z DATE, 
+        thru_z DATE)
+
     Table ProductClassificationTableWithBusinessSnapshotMilestoning(
             milestoning(
                business(BUS_SNAPSHOT_DATE=snapshotDate)
@@ -1780,7 +1814,11 @@ Database meta::relational::tests::milestoning::db(
    
    
    Join Order_Product(OrderTable.prodFk=ProductTable.id)
+   Join Order_MilestonedProductTable2(OrderTable.prodFk=MilestonedProductTable2.id)
+   Join Order2_Product(OrderTable2.prodFk=ProductTable.id)
+   Join Order2_MilestonedProductTable2(OrderTable2.prodFk=MilestonedProductTable2.id)   
    Join Order_ProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=ProductTableWithBusinessSnapshotMilestoning.id)
+   Join Order2_ProductWithBusinessSnapshotMilestoning(OrderTable2.prodFk=ProductTableWithBusinessSnapshotMilestoning.id)
    Join Order_BiTemporalProduct(OrderTable.prodFk=BiTemporalProductTable.id)
    Join Order_BiTemporalProductWithBusinessMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessMilestoning.id)
    Join Order_BiTemporalProductWithBusinessSnapshotMilestoning(OrderTable.prodFk=BiTemporalProductTableWithBusinessSnapshotMilestoning.id)
@@ -1794,7 +1832,13 @@ Database meta::relational::tests::milestoning::db(
    Join OrderToSystemADescriptions_SystemAOrderDescriptionTable(OrderToSystemADescriptions.systemADescriptionId=SystemAOrderDescriptionTable.descriptionId)
    Join Order_CusipSynonym(OrderTable.prodFk=ProductSynonymTable.prodId and ProductSynonymTable.type='CUSIP')
    Join Product_Classification(ProductTable.type=ProductClassificationTable.type)
+   Join Product_Classification2(ProductTable.type=ProductClassificationTable2.type)
+   Join Product_ClassificationWithBusinessSnapshotMilestoning(ProductTable.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
+   Join MilestonedProductTable2_Classification(MilestonedProductTable2.type=ProductClassificationTable.type)
+   Join MilestonedProductTable2_Classification2(MilestonedProductTable2.type=ProductClassificationTable2.type)
+   Join MilestonedProductTable2_ClassificationWithBusinessSnapshotMilestoning(MilestonedProductTable2.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
    Join ProductWithBusinessSnapshotMilestoning_ClassificationWithBusinessSnapshotMilestoning(ProductTableWithBusinessSnapshotMilestoning.type=ProductClassificationTableWithBusinessSnapshotMilestoning.type)
+   Join ProductWithBusinessSnapshotMilestoning_Classification(ProductTableWithBusinessSnapshotMilestoning.type=ProductClassificationTable.type)
    Join Product_BiTemporalClassification(ProductTable.type=BiTemporalProductClassificationTable.type)
    Join BiTemporalProduct_Classification(BiTemporalProductTable.type=ProductClassificationTable.type)
    Join BiTemporalProduct_BiTemporalClassification(BiTemporalProductTable.type=BiTemporalProductClassificationTable.type)
@@ -1803,7 +1847,15 @@ Database meta::relational::tests::milestoning::db(
    Join BiTemporalProductWithProcessingMilestoning_BiTemporalClassificationWithProcessingMilestoning(BiTemporalProductTableWithProcessingMilestoning.type=BiTemporalProductClassificationTableWithProcessingMilestoning.type)
    Join BiTemporalProductWithNoMilestoning_BiTemporalClassificationWithNoMilestoning(BiTemporalProductTableWithNoMilestoning.type=BiTemporalProductClassificationTableWithNoMilestoning.type)
    Join Product_Exchange(ProductTable.exchange=ProductExchangeTable.name)
+   Join Product_ExchangeNoMilestoning(ProductTable.exchange=ProductExchangeTableNoMilestoning.name)
+   Join MilestonedProductTable2_Exchange(MilestonedProductTable2.exchange=ProductExchangeTable.name)
+   Join MilestonedProductTable2_ExchangeNoMilestoning(MilestonedProductTable2.exchange=ProductExchangeTableNoMilestoning.name) 
    Join Product_Synonym(ProductTable.name=ProductSynonymTable.name)
+   Join Product_SynonymNoMilestoning(ProductTable.name=ProductSynonymTableNoMilestoning.name)
+   Join MilestonedProductTable2_Synonym(MilestonedProductTable2.name=ProductSynonymTable.name)
+   Join MilestonedProductTable2_SynonymNoMilestoning(MilestonedProductTable2.name=ProductSynonymTableNoMilestoning.name)
+   Join ProductWithBusinessSnapshotMilestoning_Synonym(ProductTableWithBusinessSnapshotMilestoning.name=ProductSynonymTable.name)
+   Join ProductWithBusinessSnapshotMilestoning_SynonymNoMilestoning(ProductTableWithBusinessSnapshotMilestoning.name=ProductSynonymTableNoMilestoning.name)
    Join Product_NewActivityInfo(ProductTable.id=NewActivityInfoTable.productId)
    Join Product_StockProduct(ProductTable.id = StockProductTable.id)
    Join Product_CancelActivities(ProductTable.id=CancelActivitiesTable.productId)
@@ -1814,6 +1866,9 @@ Database meta::relational::tests::milestoning::db(
    Join ClassificationSystem_System(ProductClassificationSystemTable.name=SystemTable.name)
    Join Classification_System(ProductClassificationTable.system=SystemTable.name)
    Join Classification_Exchange(ProductClassificationTable.exchange=ProductExchangeTable.name)
+   Join Classification_ExchangeNoMilestoning(ProductClassificationTable.exchange=ProductExchangeTableNoMilestoning.name)
+   Join Classification2_Exchange(ProductClassificationTable2.exchange=ProductExchangeTable.name)
+   Join Classification2_ExchangeNoMilestoning(ProductClassificationTable2.exchange=ProductExchangeTableNoMilestoning.name)
    Join Classification_Exchange_multipleOperations(ProductClassificationTable.exchange=ProductExchangeTable.name or (ProductClassificationTable.exchange is null and ProductExchangeTable.name is null))
    Join ProductClassificationTableNoMilestoning_ExchangeNoMilestoning(ProductClassificationTableNoMilestoning.exchange=ProductExchangeTableNoMilestoning.name)
    Join System_SystemDescrption(SystemTable.name=SystemDescriptionTable.systemName)
