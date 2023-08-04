@@ -18,15 +18,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-core-language-pure</artifactId>
         <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-external-shared-format-model</artifactId>
     <name>Legend Engine - External - Shared - Format - Model</name>
-
-
 
     <build>
         <plugins>
@@ -80,7 +78,7 @@
                             <listener>true</listener>
                             <treatWarningsAsErrors>true</treatWarningsAsErrors>
                             <libDirectory>target/antlr</libDirectory>
-                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                            <outputDirectory>target/generated-sources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -100,10 +98,17 @@
     </build>
 
     <dependencies>
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <!-- PURE -->
+
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared</artifactId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -133,22 +138,18 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
+        <!-- ENGINE -->
+
+        <!-- TODO: Generation dependencies should be removed from here -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-java</artifactId>
+            <artifactId>legend-engine-external-shared</artifactId>
         </dependency>
-        <!-- ENGINE -->
-
-        <!-- PURE -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-        <!-- PURE -->
+        <!-- TODO: Generation dependencies should be removed from here -->
 
         <!-- ANNOTATIONS -->
         <dependency>
