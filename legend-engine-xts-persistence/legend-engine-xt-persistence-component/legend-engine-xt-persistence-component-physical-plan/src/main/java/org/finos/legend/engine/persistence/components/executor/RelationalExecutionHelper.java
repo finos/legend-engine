@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.executor;
+package org.finos.legend.engine.persistence.components.executor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -36,9 +34,9 @@ public interface RelationalExecutionHelper
 
     boolean doesTableExist(Dataset dataset);
 
-    void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping);
+    void validateDatasetSchema(Dataset dataset, TypeMapping datatypeMapping);
 
-    Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping);
+    Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, TypeMapping mapping);
 
     void executeStatement(String sql);
 

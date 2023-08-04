@@ -44,4 +44,6 @@ public interface Executor<C extends PhysicalPlanNode, R extends ResultData, P ex
     void revert();
 
     void close();
+
+    RelationalExecutionHelper getRelationalExecutionHelper();
 }
