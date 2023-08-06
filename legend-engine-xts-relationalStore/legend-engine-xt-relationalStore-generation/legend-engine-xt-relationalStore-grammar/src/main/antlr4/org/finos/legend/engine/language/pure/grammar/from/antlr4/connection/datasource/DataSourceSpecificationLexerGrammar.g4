@@ -15,20 +15,7 @@ NAME:                                       'name';
 BRACKET_OPEN:                               '[';
 BRACKET_CLOSE:                              ']';
 
-
-SNOWFLAKE:                                  'Snowflake';
-ACCOUNT:                                    'account';
-WAREHOUSE:                                  'warehouse';
 REGION:                                     'region';
-CLOUDTYPE:                                  'cloudType';
-QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
-PROXYHOST:                                  'proxyHost';
-PROXYPORT:                                  'proxyPort';
-NONPROXYHOSTS:                              'nonProxyHosts';
-ACCOUNTTYPE:                                'accountType';
-ORGANIZATION:                               'organization';
-ROLE:                                       'role';
-ENABLE_QUERY_TAGS:                          'enableQueryTags';
 
 DATABRICKS:                                 'Databricks';
 PROTOCOL:                                   'protocol';

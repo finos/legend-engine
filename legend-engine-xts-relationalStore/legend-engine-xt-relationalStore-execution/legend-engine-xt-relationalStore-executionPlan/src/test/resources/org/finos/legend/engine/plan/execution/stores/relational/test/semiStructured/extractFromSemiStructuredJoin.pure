@@ -150,34 +150,6 @@ Mapping join::mapping::H2Mapping
   }
 )
 
-###Runtime
-Runtime join::runtime::SnowflakeRuntime
-{
-    mappings :
-    [
-        join::mapping::SnowflakeMapping
-    ];
-    connections :
-    [
-        join::store::SnowflakeDB :
-        [
-            connection_1 : #{
-                RelationalDatabaseConnection {
-                    store: join::store::SnowflakeDB;
-                    type: Snowflake;
-                    specification: Snowflake
-                    {
-                        name: 'dbName';
-                        account: 'account';
-                        warehouse: 'warehouse';
-                        region: 'region';
-                    };
-                    auth: DefaultH2;
-                }
-            }#
-        ]
-    ];
-}
 Runtime join::runtime::MemSQLRuntime
 {
     mappings :

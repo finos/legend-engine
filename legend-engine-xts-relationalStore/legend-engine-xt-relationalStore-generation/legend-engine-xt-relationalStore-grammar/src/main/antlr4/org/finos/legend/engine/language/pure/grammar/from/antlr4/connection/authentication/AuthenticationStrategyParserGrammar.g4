@@ -64,25 +64,6 @@ userNamePasswordAuthUserNameVaultRef:   USERNAME_PASSWORD_AUTH_USERNAME_VAULT_RE
 userNamePasswordAuthPasswordVaultRef:   USERNAME_PASSWORD_AUTH_PASSWORD_VAULT_REF COLON STRING SEMI_COLON
 ;
 
-snowflakePublicAuth:                    SNOWFLAKE_PUBLIC_AUTH
-                                            BRACE_OPEN
-                                                (
-                                                    snowflakePublicAuthKeyVaultRef
-                                                    | snowflakePublicAuthPassPhraseVaultRef
-                                                    | snowflakePublicAuthUserName
-                                                )*
-                                            BRACE_CLOSE
-;
-
-snowflakePublicAuthKeyVaultRef:         SNOWFLAKE_AUTH_KEY_VAULT_REFERENCE COLON STRING SEMI_COLON
-;
-
-snowflakePublicAuthPassPhraseVaultRef:  SNOWFLAKE_AUTH_PASSPHRASE_VAULT_REFERENCE COLON STRING SEMI_COLON
-;
-
-snowflakePublicAuthUserName:  SNOWFLAKE_AUTH_PUBLIC_USERNAME COLON STRING SEMI_COLON
-;
-
 gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH
 ;
 

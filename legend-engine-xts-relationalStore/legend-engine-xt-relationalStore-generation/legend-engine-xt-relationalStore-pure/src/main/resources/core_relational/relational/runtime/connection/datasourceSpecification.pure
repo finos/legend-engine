@@ -49,26 +49,6 @@ Enum meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType
     VPS, MultiTenant
 }
 
-Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
-{
-    accountName:String[1];
-    region:String[1];
-    warehouseName:String[1];
-    databaseName:String[1];
-    role:String[0..1];
-
-    proxyHost:String[0..1];
-    proxyPort:String[0..1];
-    nonProxyHosts:String[0..1];
-
-    accountType: meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType[0..1];
-    organization:String[0..1];
-    cloudType:String[0..1];
-
-    quotedIdentifiersIgnoreCase:Boolean[0..1];
-    enableQueryTags: Boolean[0..1];
-}
-
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {   
   {doc.doc ='clusterID'} clusterID:String[1];

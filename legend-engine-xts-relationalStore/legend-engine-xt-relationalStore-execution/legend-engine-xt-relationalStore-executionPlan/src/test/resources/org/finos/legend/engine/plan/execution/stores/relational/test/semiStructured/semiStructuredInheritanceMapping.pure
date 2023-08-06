@@ -164,35 +164,6 @@ Mapping inheritance::mapping::H2Mapping
   }
 )
 
-###Runtime
-Runtime inheritance::runtime::SnowflakeRuntime
-{
-    mappings :
-    [
-        inheritance::mapping::SnowflakeMapping
-    ];
-    connections :
-    [
-        inheritance::store::SnowflakeDB :
-        [
-            connection_1 : #{
-                RelationalDatabaseConnection {
-                    store: inheritance::store::SnowflakeDB;
-                    type: Snowflake;
-                    specification: Snowflake
-                    {
-                        name: 'dbName';
-                        account: 'account';
-                        warehouse: 'warehouse';
-                        region: 'region';
-                    };
-                    auth: Test;
-                }
-            }#
-        ]
-    ];
-}
-
 Runtime inheritance::runtime::MemSQLRuntime
 {
     mappings :

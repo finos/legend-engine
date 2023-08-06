@@ -54,13 +54,6 @@ Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::
 {
 }
 
-Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
-{
-    privateKeyVaultReference : String[1];
-    passPhraseVaultReference : String[1];
-    publicUserName : String[1];
-}
-
 Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy extends meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
 {
 }
@@ -97,25 +90,6 @@ Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::
     port:String[1];
     protocol:String[1];
     httpPath:String[1];
-}
-
-Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification extends meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-    accountName : String[1];
-    region : String[1];
-    warehouseName : String[1];
-    databaseName : String[1];
-    cloudType : String[0..1];
-    accountType: String[0..1];
-    organization: String[0..1];
-
-    quotedIdentifiersIgnoreCase : Boolean[0..1];
-
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
-    nonProxyHosts: String[0..1];
-   
-    role: String [0..1];
 }
 
 Class meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::DatabaseConnection

@@ -114,35 +114,6 @@ Mapping joinChain::mapping::MemSQLMapping
   }
 )
 
-###Runtime
-Runtime joinChain::runtime::SnowflakeRuntime
-{
-    mappings :
-    [
-        joinChain::mapping::SnowflakeMapping
-    ];
-    connections :
-    [
-        joinChain::store::SnowflakeDB :
-        [
-            connection_1 : #{
-                RelationalDatabaseConnection {
-                    store: joinChain::store::SnowflakeDB;
-                    type: Snowflake;
-                    specification: Snowflake
-                    {
-                        name: 'dbName';
-                        account: 'account';
-                        warehouse: 'warehouse';
-                        region: 'region';
-                    };
-                    auth: Test;
-                }
-            }#
-        ]
-    ];
-}
-
 Runtime joinChain::runtime::MemSQLRuntime
 {
     mappings :

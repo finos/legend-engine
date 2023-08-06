@@ -21,10 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-
-import java.util.Optional;
 
 public class DataSourceSpecificationParseTreeWalker
 {
@@ -77,63 +74,6 @@ public class DataSourceSpecificationParseTreeWalker
 
         DataSourceSpecificationParserGrammar.HttpPathContext httpCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.httpPath(), "httpPath", dsSpec.sourceInformation);
         dsSpec.httpPath = PureGrammarParserUtility.fromGrammarString(httpCtx.STRING().getText(), true);
-
-        return dsSpec;
-    }
-
-    public SnowflakeDatasourceSpecification visitSnowflakeDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.SnowflakeDatasourceSpecificationContext dbSpecCtx)
-    {
-        SnowflakeDatasourceSpecification dsSpec = new SnowflakeDatasourceSpecification();
-        dsSpec.sourceInformation = code.getSourceInformation();
-        // databaseName
-        DataSourceSpecificationParserGrammar.DbNameContext databaseNameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
-        dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(databaseNameCtx.STRING().getText(), true);
-        // account
-        DataSourceSpecificationParserGrammar.DbAccountContext accountCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbAccount(), "account", dsSpec.sourceInformation);
-        dsSpec.accountName = PureGrammarParserUtility.fromGrammarString(accountCtx.STRING().getText(), true);
-        // warehouse
-        DataSourceSpecificationParserGrammar.DbWarehouseContext warehouseCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbWarehouse(), "warehouse", dsSpec.sourceInformation);
-        dsSpec.warehouseName = PureGrammarParserUtility.fromGrammarString(warehouseCtx.STRING().getText(), true);
-        // region
-        DataSourceSpecificationParserGrammar.SnowflakeRegionContext regionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.snowflakeRegion(), "region", dsSpec.sourceInformation);
-        dsSpec.region = PureGrammarParserUtility.fromGrammarString(regionCtx.STRING().getText(), true);
-        // cloudType
-        DataSourceSpecificationParserGrammar.CloudTypeContext cloudTypeCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.cloudType(), "cloudType", dsSpec.sourceInformation);
-        if (cloudTypeCtx != null)
-        {
-            dsSpec.cloudType = PureGrammarParserUtility.fromGrammarString(cloudTypeCtx.STRING().getText(), true);
-        }
-        //quotedIdentifiersIgnoreCase
-        DataSourceSpecificationParserGrammar.SnowflakeQuotedIdentifiersIgnoreCaseContext snowflakeQuotedIdentifiersIgnoreCaseCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.snowflakeQuotedIdentifiersIgnoreCase(), "quotedIdentifiersIgnoreCase", dsSpec.sourceInformation);
-        if (snowflakeQuotedIdentifiersIgnoreCaseCtx != null)
-        {
-            dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
-        }
-        // enableQueryTags
-        DataSourceSpecificationParserGrammar.EnableQueryTagsContext snowflakeQueryTagsCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.enableQueryTags(), "enableQueryTags", dsSpec.sourceInformation);
-        if (snowflakeQueryTagsCtx != null)
-        {
-            dsSpec.enableQueryTags = Boolean.parseBoolean(snowflakeQueryTagsCtx.BOOLEAN().getText());
-        }
-        // proxyHost
-        DataSourceSpecificationParserGrammar.DbProxyHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyHost(), "proxyHost", dsSpec.sourceInformation);
-        Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));
-        // proxyPort
-        DataSourceSpecificationParserGrammar.DbProxyPortContext proxyPortContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyPort(), "proxyPort", dsSpec.sourceInformation);
-        Optional.ofNullable(proxyPortContext).ifPresent(portCtx -> dsSpec.proxyPort = PureGrammarParserUtility.fromGrammarString(portCtx.STRING().getText(), true));
-        // nonProxyHosts
-        DataSourceSpecificationParserGrammar.DbNonProxyHostsContext nonProxyHostsContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbNonProxyHosts(), "nonProxyHosts", dsSpec.sourceInformation);
-        Optional.ofNullable(nonProxyHostsContext).ifPresent(nonProxyHostsCtx -> dsSpec.nonProxyHosts = PureGrammarParserUtility.fromGrammarString(nonProxyHostsCtx.STRING().getText(), true));
-        // accountType
-        DataSourceSpecificationParserGrammar.DbAccountTypeContext accountTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbAccountType(), "accountType", dsSpec.sourceInformation);
-        Optional.ofNullable(accountTypeContext).ifPresent(accountTypeCtx -> dsSpec.accountType = PureGrammarParserUtility.fromIdentifier(accountTypeCtx.identifier()));
-        // organization
-        DataSourceSpecificationParserGrammar.DbOrganizationContext organizationContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbOrganization(), "organization", dsSpec.sourceInformation);
-        Optional.ofNullable(organizationContext).ifPresent(organizationCtx -> dsSpec.organization = PureGrammarParserUtility.fromGrammarString(organizationCtx.STRING().getText(), true));
-
-        // role
-        DataSourceSpecificationParserGrammar.DbRoleContext roleContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbRole(), "role", dsSpec.sourceInformation);
-        Optional.ofNullable(roleContext).ifPresent(roleCtx -> dsSpec.role = PureGrammarParserUtility.fromGrammarString(roleCtx.STRING().getText(), true));
 
         return dsSpec;
     }

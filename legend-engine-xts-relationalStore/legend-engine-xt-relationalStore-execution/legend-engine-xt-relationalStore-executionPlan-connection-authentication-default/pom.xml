@@ -88,10 +88,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
         </dependency>
         <dependency>
@@ -130,13 +126,6 @@
             <artifactId>jackson-core</artifactId>
         </dependency>
         <!-- JACKSON -->
-
-        <!-- DRIVERS -->
-        <dependency>
-            <groupId>net.snowflake</groupId>
-            <artifactId>snowflake-jdbc</artifactId>
-        </dependency>
-        <!-- DRIVERS -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

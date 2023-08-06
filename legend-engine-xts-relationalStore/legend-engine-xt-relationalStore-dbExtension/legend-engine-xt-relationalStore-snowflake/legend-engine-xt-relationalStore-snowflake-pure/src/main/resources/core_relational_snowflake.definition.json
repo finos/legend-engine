@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_snowflake",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::snowflake|meta::relational::tests::sqlQueryToString::snowflake|meta::pure::executionPlan::tests::snowflake|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies" : ["platform", "platform_functions", "platform_store_relational", "core_functions", "core", "core_relational"]
+}

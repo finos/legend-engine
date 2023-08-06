@@ -25,7 +25,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -51,7 +50,6 @@ public abstract class DatabaseManager
                     LOGGER.info("DatabaseManager starting initialization");
                     long start = System.currentTimeMillis();
                     register(new H2Manager());
-                    register(new SnowflakeManager());
                     register(new DatabricksManager());
                     register(new PostgresManager());
                     register(new RedshiftManager());
