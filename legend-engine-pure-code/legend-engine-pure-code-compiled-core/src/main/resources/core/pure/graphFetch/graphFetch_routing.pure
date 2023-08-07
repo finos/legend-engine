@@ -244,8 +244,10 @@ function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1]
 {
   let updatedSubTrees = $tree.subTrees->map(st |
                                                  let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
-                                                 let splitPropertyTree = $propertyTree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion->toOne());
-                                                 if(($propertyTree.sets->size() > 1) && $splitPropertyTree,
+                                                 let splitPropertyTreeWhenMultipleSetImpls = ($propertyTree.sets->size() > 1) && ($propertyTree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion));
+                                                 let splitPropertyTreeWhenMultiplePropertyMappings = ($propertyTree.propertyMapping->size() > 1) && $propertyTree.propertyMapping->forAll(pm | $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && $extensions->storeContractForSetImplementation($pm.owner->cast(@InstanceSetImplementation)->toOne()).splitGraphFetchTreeForPropertyUnion);
+                                                 
+                                                 if( $splitPropertyTreeWhenMultipleSetImpls,
                                                  |                                                                                            
                                                     if($propertyTree.property->instanceOf(QualifiedProperty),
                                                     |
@@ -259,9 +261,9 @@ function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1]
                                                       $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($sourceSetImplementationIds))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));
                                                     );,
                                                  |
-                                                    if(($propertyTree.propertyMapping->size() > 1) && $splitPropertyTree,
-                                                      | let SourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
-                                                        ^$propertyTree(propertyMapping = $propertyTree.propertyMapping->filter(pm | $pm.sourceSetImplementationId->in($SourceSetImplementationIds)));,
+                                                    if($splitPropertyTreeWhenMultiplePropertyMappings,
+                                                      | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                        ^$propertyTree(propertyMapping = $propertyTree.propertyMapping->filter(pm | $pm.sourceSetImplementationId->in($sourceSetImplementationIds)));,
                                                       | $propertyTree
                                                       );
                                                  );
