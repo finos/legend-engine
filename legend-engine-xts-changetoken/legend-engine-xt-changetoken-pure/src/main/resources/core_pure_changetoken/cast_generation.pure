@@ -210,6 +210,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:RemoveField[1]|[],
+      t:RenameField[1]|_handleRenameFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
       t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
@@ -284,6 +285,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:RemoveField[1]|[],
+      t:RenameField[1]|_handleRenameFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
       t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
@@ -457,6 +459,24 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       )
     ])
   ];
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenameFieldUpcast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:RenameField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  j_if(
+  $typeVar->j_invoke('equals', [j_string($token.class)]),
+  j_if(
+  j_eq($objVar->j_invoke('get', [j_string($token.oldFieldName)], javaObject()), j_null())->j_not(),
+  j_block([
+  $resVar->j_invoke('put', [j_string($token.newFieldName), $objVar->j_invoke('get', [j_string($token.oldFieldName)], javaVoid())], javaVoid()),
+  $objVar->j_invoke('remove', [j_string($token.oldFieldName)], javaVoid())
+  ])
+  )
+  );
 }
 
 
@@ -646,6 +666,22 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleCha
   );
 }
 
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenameFieldDowncast(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:RenameField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
+{
+  j_if(
+  $typeVar->j_invoke('equals', [j_string($token.class)]),
+  j_if(
+  j_eq($objVar->j_invoke('get', [j_string($token.newFieldName)], javaObject()), j_null())->j_not(),
+  j_block([
+  $resVar->j_invoke('put', [j_string($token.oldFieldName), $objVar->j_invoke('get', [j_string($token.newFieldName)], javaVoid())], javaVoid()),
+  $objVar->j_invoke('remove', [j_string($token.newFieldName)], javaVoid())
+  ])
+  )
+  );
+}
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
   class:meta::external::language::java::metamodel::Class[1],

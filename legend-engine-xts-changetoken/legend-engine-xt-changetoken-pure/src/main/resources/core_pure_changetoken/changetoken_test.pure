@@ -279,6 +279,29 @@ function meta::pure::changetoken::tests::getVersionsStringQuotes():Versions[1]
     );
 }
 
+// This is test Versions: RenameField abc to xyz
+function meta::pure::changetoken::tests::getVersionsRename():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^RenameField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            oldFieldName='abc',
+            newFieldName='xyz'
+          )
+        ]
+      )
+    ]
+  );
+}
+
 // This is test Versions: AddField with ConstValue('{"@type":"Custom","value":"0d"}')
 function meta::pure::changetoken::tests::getVersionsCustom():Versions[1]
 {
