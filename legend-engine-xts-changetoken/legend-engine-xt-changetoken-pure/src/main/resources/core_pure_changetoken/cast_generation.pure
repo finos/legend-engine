@@ -209,7 +209,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
-      t:RemoveField[1]|[],
+      t:RemoveField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:RenameField[1]|_handleRenameFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
@@ -284,7 +284,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
-      t:RemoveField[1]|[],
+      t:RemoveField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:RenameField[1]|_handleRenameFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
@@ -483,7 +483,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldUpcast
 (
   class:meta::external::language::java::metamodel::Class[1],
-  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+  token:AddRemoveField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
 ):Code[1]  
 {
   let valVar = j_variable(javaObject(), 'value');
@@ -685,7 +685,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
   class:meta::external::language::java::metamodel::Class[1],
-  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
+  token:AddRemoveField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
 {
   let valVar = j_variable(javaObject(), 'value');
   let mapVar = j_variable(objectNode(), 'value');
