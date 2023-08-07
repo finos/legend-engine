@@ -242,26 +242,20 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
 
 function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*], exeCtx: ExecutionContext[1]):RoutedGraphFetchTree[1]
 {
-  let updatedSubTrees = $tree.subTrees->map(st |
-                                                 let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
+  let updatedSubTrees = $tree.subTrees->map(st | let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
                                                  let splitPropertyTreeWhenMultipleSetImpls = ($propertyTree.sets->size() > 1) && ($propertyTree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion));
                                                  let splitPropertyTreeWhenMultiplePropertyMappings = ($propertyTree.propertyMapping->size() > 1) && $propertyTree.propertyMapping->forAll(pm | $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && $extensions->storeContractForSetImplementation($pm.owner->cast(@InstanceSetImplementation)->toOne()).splitGraphFetchTreeForPropertyUnion);
                                                  
                                                  if( $splitPropertyTreeWhenMultipleSetImpls,
-                                                 |                                                                                            
-                                                    if($propertyTree.property->instanceOf(QualifiedProperty),
-                                                    |
-                                                      let property = $propertyTree.property->cast(@QualifiedProperty<Any>);
+                                                 |  if($propertyTree.property->instanceOf(QualifiedProperty),
+                                                    | let property = $propertyTree.property->cast(@QualifiedProperty<Any>);
                                                       let sourceSetImplementation = $tree.sets->toOne();
-                                                      let multipleExpressionForUnion = meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation($property.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingRoutedValueSpecification), $sourceSetImplementation, $exeCtx, $extensions);                                                    
-                                                      
+                                                      let multipleExpressionForUnion = meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation($property.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingRoutedValueSpecification), $sourceSetImplementation, $exeCtx, $extensions);                                                       
                                                       $multipleExpressionForUnion->map(x | ^$propertyTree(property = ^$property(expressionSequence = $x), sets = $x.sets););,
-                                                    |
-                                                      let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                    | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
                                                       $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($sourceSetImplementationIds))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));
                                                     );,
-                                                 |
-                                                    if($splitPropertyTreeWhenMultiplePropertyMappings,
+                                                 | if($splitPropertyTreeWhenMultiplePropertyMappings,
                                                       | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
                                                         ^$propertyTree(propertyMapping = $propertyTree.propertyMapping->filter(pm | $pm.sourceSetImplementationId->in($sourceSetImplementationIds)));,
                                                       | $propertyTree
