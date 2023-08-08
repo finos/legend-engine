@@ -156,7 +156,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = true");
+        testConnection(connection, "ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = false");
 
         String planJSON = new String(Files.readAllBytes(Paths.get(ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake.class.getResource("/snowflake-graph-fetch-plan-quotedIdentifiersIgnoreCase.json").toURI())));
 

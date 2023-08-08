@@ -132,7 +132,7 @@
                       "region": "us-east-2",
                       "role": "LEGEND_INTEGRATION_ROLE1",
                       "warehouseName": "LEGENDRO_WH",
-                      "quotedIdentifiersIgnoreCase": true
+                      "quotedIdentifiersIgnoreCase": false
                     },
                     "element": "database::db1",
                     "postProcessorWithParameter": [],
@@ -249,7 +249,8 @@
                   "databaseName": "GITHUB_EPSSTAN_DB",
                   "region": "us-east-2",
                   "role": "LEGEND_INTEGRATION_ROLE1",
-                  "warehouseName": "LEGENDRO_WH"
+                  "warehouseName": "LEGENDRO_WH",
+                  "quotedIdentifiersIgnoreCase": false
                 },
                 "element": "database::db1",
                 "postProcessorWithParameter": [],
