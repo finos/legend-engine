@@ -534,7 +534,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
    if($nestedFreeMarkerOperationHolder,
       |format($res->toOne().format, $params),
-      |if($freeMarkerOp.name->contains('enumMap_') || $freeMarkerOp.name == 'equalEnumOpSelector',
+      |if($freeMarkerOp.name->contains('enumMap_') || $freeMarkerOp.name == 'equalEnumOpSelector' || $freeMarkerOp.name->startsWith('number'),
         |'${' + format($res->toOne().format, $params) + '}',
         |'(${' + format($res->toOne().format, $params) + '})'));
 }
@@ -544,7 +544,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getFr
    let freeMarkerOpMap = [
       pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
       pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)')),
-      pair('equalEnumOpSelector', ^ToSql(format='equalEnumOperationSelector(%s, %s, %s)'))
+      pair('equalEnumOpSelector', ^ToSql(format='equalEnumOperationSelector(%s, %s, %s)')),
+      pair('numberAdd', ^ToSql(format='(%s?number + %s?number)')),
+      pair('numberMultiply',^ToSql(format='(%s?number * %s?number)')),
+      pair('numberSubtract',^ToSql(format='(%s?number - %s?number)')),
+      pair('numberVariable',^ToSql(format='%s?number'))
    ]->newMap();
 }
 

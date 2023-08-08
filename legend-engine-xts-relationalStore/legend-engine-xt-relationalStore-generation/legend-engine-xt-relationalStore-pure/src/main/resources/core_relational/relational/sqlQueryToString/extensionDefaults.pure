@@ -114,9 +114,9 @@ function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsW
       );
 }
 
-function meta::relational::functions::sqlQueryToString::default::processTakeDefault(s:SelectSQLQuery[1], format:Format[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processTakeDefault(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions: Extension[*]):String[1]
 {
-   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
 }
 
 function meta::relational::functions::sqlQueryToString::default::getDefaultLiteralProcessors():Map<Type,LiteralProcessor>[1]
@@ -250,20 +250,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
-  $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
+  $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  + processLimit($s, $format, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+  + processLimit($s, $dbConfig, $format, $extensions, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
-function meta::relational::functions::sqlQueryToString::default::processTop(s:SelectSQLQuery[1], format:Format[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processTop(s:SelectSQLQuery[1], format:Format[1],dbConfig:DbConfig[1], extensions: Extension[*]):String[1]
 {
    if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull),
-         |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
+         |'top '+$s.toRow->toOne()->getValueForTake($format, $dbConfig, $extensions)+' ', |'');
 }
 
 function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
@@ -341,9 +341,9 @@ function meta::relational::functions::sqlQueryToString::default::processOrderBy(
    ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'));
 }
 
-function meta::relational::functions::sqlQueryToString::default::processLimit(s:SelectSQLQuery[1], format:Format[1],
-              takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1] -> String[1]}>[0..1],
-              sliceOrDropProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], Any[1] -> String[1]}>[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processLimit(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*],
+              takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[0..1],
+              sliceOrDropProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*], Any[1] -> String[1]}>[1]):String[1]
 {
    if ($s.fromRow == [] && $s.toRow == [],
       |
@@ -353,33 +353,35 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
                       | -1,
                       |$s.toRow.value->match([
                           i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
-                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}'),
+                          fmoh:FreeMarkerOperationHolder[1]|$fmoh->processOperation($dbConfig,$format,$extensions)
                           ])
                       );
          if ($s.fromRow == [],
             |
                // We have a "take"
                assert($s.toRow->isNotEmpty());
-               if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format), |'');
+               if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format, $dbConfig, $extensions), |'');
             ,
             |
                //We have a "slice" or a "drop"
                assert($s.fromRow->isNotEmpty());
-               $sliceOrDropProcessor->eval($s, $format, $size);
+               $sliceOrDropProcessor->eval($s, $format, $dbConfig, $extensions, $size);
             );
       );
 }
 
-function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
-   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions), $size]);
 }
 
-function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1]):String[1]
+function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1],format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
 {
    $l.value->match([
       i:Integer[1]| $i->toString(),
-      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '',[], [])
+      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '',[], []),
+      fmoh:FreeMarkerOperationHolder[1]|$fmoh->processOperation($dbConfig,$format,$extensions)
    ]);
 }
 
