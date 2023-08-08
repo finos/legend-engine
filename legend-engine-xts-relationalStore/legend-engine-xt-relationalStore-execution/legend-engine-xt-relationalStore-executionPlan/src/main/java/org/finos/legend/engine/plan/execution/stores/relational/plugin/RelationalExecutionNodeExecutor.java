@@ -2152,14 +2152,14 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     private static DoubleStrategyHashMap<Object, Object, SQLExecutionResult> switchedParentHashMapPerChildResult(RelationalGraphObjectsBatch relationalGraphObjectsBatch, int parentIndex, ResultSet childResultSet, Supplier<List<String>> parentPrimaryKeyColumnsSupplier, DatabaseConnection databaseConnection)
     {
-        List<String> parentPrimaryKeyColumnNames = UpperCaseColumnsIfDbConnectionIsCaseSensitive(parentPrimaryKeyColumnsSupplier.get(),databaseConnection);
+        List<String> parentPrimaryKeyColumnNames = UpperCaseColumnsIfDbConnectionIsNotCaseSensitive(parentPrimaryKeyColumnsSupplier.get(),databaseConnection);
         List<Integer> parentPrimaryKeyIndices = parentPrimaryKeyColumnNames.stream().map(FunctionHelper.unchecked(childResultSet::findColumn)).collect(Collectors.toList());
         DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap = relationalGraphObjectsBatch.getNodeObjectsHashMap(parentIndex);
         RelationalGraphFetchUtils.switchSecondKeyHashingStrategy(parentMap, relationalGraphObjectsBatch.getNodePrimaryKeyGetters(parentIndex), parentPrimaryKeyIndices);
         return parentMap;
     }
 
-    private static List<String> UpperCaseColumnsIfDbConnectionIsCaseSensitive(List<String> columnNames, DatabaseConnection databaseConnection)
+    private static List<String> UpperCaseColumnsIfDbConnectionIsNotCaseSensitive(List<String> columnNames, DatabaseConnection databaseConnection)
     {
         boolean isDatabaseIdentifiersCaseSensitive = databaseConnection.accept(new DatabaseIdentifiersCaseSensitiveVisitor());
         if (!isDatabaseIdentifiersCaseSensitive)
