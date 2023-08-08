@@ -181,6 +181,12 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-dependencies</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.pure</groupId>
+                    <artifactId>legend-pure-m4</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
