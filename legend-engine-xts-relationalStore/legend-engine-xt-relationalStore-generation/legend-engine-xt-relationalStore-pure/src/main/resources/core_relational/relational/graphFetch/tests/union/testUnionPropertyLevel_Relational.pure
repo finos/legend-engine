@@ -35,22 +35,22 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::prop
   let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
    
   executeInDb('Drop table if exists PersonSet1;', $connection);    
-  executeInDb('Create Table PersonSet1 (ID INT, lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);    
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (1, \'Scott\', 1, 1);', $connection);    
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (2, \'Anand\', 1, 2);', $connection);    
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (3, \'Roberts\', 2, 2);', $connection);
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (4, \'David\', 2, 1);', $connection);   
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (21, \'Bala\', 3, 1);', $connection);
-  executeInDb('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (22, \'Raman\', 3, 2);', $connection);
+  executeInDb('Create Table PersonSet1 (ID INT, firstName_s1 VARCHAR(200), lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);    
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (1, \'Bran\', \'Scott\', 1, 1);', $connection);    
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (2, \'Ravi\', \'Anand\', 1, 2);', $connection);    
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (3, \'Sam\', \'Roberts\', 2, 2);', $connection);
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (4, \'Novel\', \'David\', 2, 1);', $connection);   
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (21, \'Simran\', \'Bala\', 3, 1);', $connection);
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (22, \'CV\', \'Raman\', 3, 2);', $connection);
 
   executeInDb('Drop table if exists PersonSet2;', $connection);    
-  executeInDb('Create Table PersonSet2 (ID INT, lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);    
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (5, \'Taylor\', 1, 1);', $connection);    
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (6, \'Wright\', 1, 2);', $connection);
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (7, \'Mark\', 2, 1);', $connection);
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (8, \'Allen\', 2, 2);', $connection);    
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (19, \'Bark\', 3, 1);', $connection);
-  executeInDb('insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (20, \'Simon\', 3, 2);', $connection); 
+  executeInDb('Create Table PersonSet2 (ID INT, firstName_s2 VARCHAR(200), lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);    
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (5, \'Rahul\', \'Taylor\', 1, 1);', $connection);    
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (6, \'Pranay\', \'Wright\', 1, 2);', $connection);
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (7, \'Nitin\', \'Mark\', 2, 1);', $connection);
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (8, \'Atul\', \'Allen\', 2, 2);', $connection);    
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (19, \'Raj\', \'Bark\', 3, 1);', $connection);
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (20, \'Khali\', \'Simon\', 3, 2);', $connection); 
 
   executeInDb('Drop table if exists PersonSet3;', $connection);    
   executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);    
@@ -229,6 +229,28 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
   );
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::propertyLevel::testUnionWithQualifiedProperty():Boolean[1]
+{
+  let tree = #{
+                Firm{
+                  legalName,
+                  employeeByLastNameFirstName('Scott'),
+                  isFirmX(),
+                  employees{
+                    lastName,
+                    firstName
+                  }
+                }
+              }#;
+
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping1, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+  '[{"legalName":"Firm X","isFirmX()":"Yes","employeeByLastNameFirstName(\'Scott\')":"Bran","employees":[{"lastName":"Scott","firstName":"Bran"},{"lastName":"Anand","firstName":"Ravi"},{"lastName":"Taylor","firstName":"Rahul"},{"lastName":"Wright","firstName":"Pranay"}]},' +
+  '{"legalName":"Firm A","isFirmX()":"No","employeeByLastNameFirstName(\'Scott\')":null,"employees":[{"lastName":"Roberts","firstName":"Sam"},{"lastName":"David","firstName":"Novel"},{"lastName":"Mark","firstName":"Nitin"},{"lastName":"Allen","firstName":"Atul"}]}]',
+  $result
+  );
+}
+
 ###Mapping
 import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::model::simple::*;
@@ -259,6 +281,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
   Person[person_set1] : Relational
   {
       lastName : [myDB]PersonSet1.lastName_s1,
+      firstName : [myDB]PersonSet1.firstName_s1,
       address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet1AddressSet2_ADDRESSID
   }
@@ -266,6 +289,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
+      firstName : [myDB]PersonSet2.firstName_s2,
       address[a_set1] : [myDB]@PersonSet2AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
