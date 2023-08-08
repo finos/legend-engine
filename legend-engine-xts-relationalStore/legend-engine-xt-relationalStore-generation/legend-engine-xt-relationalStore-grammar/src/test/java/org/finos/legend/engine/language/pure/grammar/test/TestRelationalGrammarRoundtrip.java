@@ -158,6 +158,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  }\n" +
                 ")\n");
     }
+    
     @Test
     public void testRelationalSimpleFullInPretty()
     {
@@ -243,7 +244,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "  Join Address_Person(addressTable.ID = personTable.ADDRESSID\n" +
                         "    and (addressTable.ID = firmTable.ADDRESSID\n" +
                         "      and addressTable.ID = firmTable.ADDRESSID)\n" +
-                        "    and addressTable.ID = firmTable.ADDRESSID)\n"+
+                        "    and addressTable.ID = firmTable.ADDRESSID)\n" +
                 "  Join Firm_Ceo(firmTable.CEOID = personTable.ID)\n" +
                 "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
                 "  Join Person_Location(personTable.ID = locationTable.PERSONID)\n" +
