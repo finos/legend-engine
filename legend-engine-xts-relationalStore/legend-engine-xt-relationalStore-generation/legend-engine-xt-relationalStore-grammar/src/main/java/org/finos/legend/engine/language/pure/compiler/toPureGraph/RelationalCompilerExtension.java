@@ -380,10 +380,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 context));
 
                         List<DatabaseAuthenticationFlowKey> flowKeys = context.getCompilerExtensions().getExtensions().stream().filter(ext -> ext instanceof IRelationalCompilerExtension).map(ext -> ((IRelationalCompilerExtension) ext).getFlowKeys()).flatMap(Collection::stream).collect(Collectors.toList());
-                        System.out.println(relationalDatabaseConnection.databaseType);
-                        System.out.println(relationalDatabaseConnection.datasourceSpecification);
-                        System.out.println(relationalDatabaseConnection.authenticationStrategy);
-                        System.out.println(flowKeys.contains(DatabaseAuthenticationFlowKey.newKey(relationalDatabaseConnection.databaseType, relationalDatabaseConnection.datasourceSpecification.getClass(), relationalDatabaseConnection.authenticationStrategy.getClass())));
+
                         if (relationalDatabaseConnection.databaseType == null)
                         {
                             relationalDatabaseConnection.databaseType = relationalDatabaseConnection.type;
