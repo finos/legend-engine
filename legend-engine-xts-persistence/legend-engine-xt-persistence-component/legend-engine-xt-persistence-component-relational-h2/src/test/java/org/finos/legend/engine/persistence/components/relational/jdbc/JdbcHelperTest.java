@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.junit.jupiter.api.Test;
 

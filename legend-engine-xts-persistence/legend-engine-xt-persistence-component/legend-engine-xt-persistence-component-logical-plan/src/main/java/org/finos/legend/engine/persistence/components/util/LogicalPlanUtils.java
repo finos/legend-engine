@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.util;
 
 import java.util.UUID;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -31,6 +32,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
@@ -73,7 +76,9 @@ public class LogicalPlanUtils
     public static final String DEFAULT_META_TABLE = "batch_metadata";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
-    private static final String UNDERSCORE = "_";
+    public static final String UNDERSCORE = "_";
+    public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
+    public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
 
     private LogicalPlanUtils()
     {
@@ -395,6 +400,38 @@ public class LogicalPlanUtils
             stagedFilesFields.add(fieldValue);
         }
         return stagedFilesFields;
+    }
+
+    public static Dataset getTempDataset(Datasets datasets)
+    {
+        return datasets.tempDataset().orElse(DatasetDefinition.builder()
+                .schema(datasets.mainDataset().schema())
+                .database(datasets.mainDataset().datasetReference().database())
+                .group(datasets.mainDataset().datasetReference().group())
+                .name(LogicalPlanUtils.generateTableNameWithSuffix(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), TEMP_DATASET_BASE_NAME))
+                .alias(TEMP_DATASET_BASE_NAME)
+                .build());
+    }
+
+    public static Dataset getTempDatasetWithDeleteIndicator(Datasets datasets, String deleteIndicatorField)
+    {
+        if (datasets.tempDatasetWithDeleteIndicator().isPresent())
+        {
+            return datasets.tempDatasetWithDeleteIndicator().get();
+        }
+        else
+        {
+            Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
+            List<Field> mainFieldsPlusDeleteIndicator = new ArrayList<>(datasets.mainDataset().schema().fields());
+            mainFieldsPlusDeleteIndicator.add(deleteIndicator);
+            return DatasetDefinition.builder()
+                    .schema(datasets.mainDataset().schema().withFields(mainFieldsPlusDeleteIndicator))
+                    .database(datasets.mainDataset().datasetReference().database())
+                    .group(datasets.mainDataset().datasetReference().group())
+                    .name(LogicalPlanUtils.generateTableNameWithSuffix(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME))
+                    .alias(TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
+                    .build();
+        }
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =

@@ -26,7 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
@@ -101,6 +101,7 @@ public class TestUtils
     public static String endDateTimeName = "end_datetime";
     public static String dataSplitName = "data_split";
     public static String batchName = "batch";
+    public static String ratingName = "rating";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -151,6 +152,8 @@ public class TestUtils
     public static Field endDateTime = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(endDateTimeName).build();
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
     public static Field batch = Field.builder().name(batchName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchName).primaryKey(true).build();
+    public static Field rating = Field.builder().name(ratingName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(ratingName).build();
+
 
     public static DatasetDefinition getBasicMainTable()
     {
