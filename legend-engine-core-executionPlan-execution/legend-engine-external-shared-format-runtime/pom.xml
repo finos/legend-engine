@@ -18,15 +18,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-core-executionPlan-execution</artifactId>
         <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-external-shared-format-runtime</artifactId>
     <name>Legend Engine - External - Shared - Format - Runtime</name>
-
-
 
     <build>
         <plugins>
@@ -41,7 +39,6 @@
                             <ignoredUsedUndeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-mapping</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
-<!--                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-java</dependency>-->
                             </ignoredUsedUndeclaredDependencies>
                         </configuration>
                     </execution>
@@ -69,7 +66,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
                                     <excludes>
