@@ -136,14 +136,14 @@ public class HelperRelationalGrammarComposer
                     }
 
 
-                    return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context, true, numTabs+1) + ")";
+                    return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context, true, numTabs + 1) + ")";
                 }
                 case "or":
                 case "and":
                 {
-                    if(renderStyle == RenderStyle.PRETTY)
+                    if (renderStyle == RenderStyle.PRETTY)
                     {
-                        if(!nested)
+                        if (!nested)
                         {
                             return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString("\n  " + getTabString(1) + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
                         }
