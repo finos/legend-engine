@@ -15,9 +15,9 @@
 package org.finos.legend.pure.code.core.external.format.json;
 
 import junit.framework.TestSuite;
-import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
 public class Test_Pure_ExternalFormatJson
 {

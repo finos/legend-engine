@@ -29,4 +29,6 @@ public interface IngestModeVisitor<T>
     T visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot);
 
     T visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta);
+
+    T visitBulkLoad(BulkLoadAbstract bulkLoad);
 }

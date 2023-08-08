@@ -14,31 +14,97 @@
 
 package org.finos.legend.engine.plan.execution.result.graphFetch;
 
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheStats;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class GraphObjectsBatch
 {
+    private static final ExecutionCache<GraphFetchCacheKey, List<Object>> nullCache = new ExecutionCache<GraphFetchCacheKey, List<Object>>()
+    {
+        @Override
+        public List<Object> get(GraphFetchCacheKey key, Callable<? extends List<Object>> valueLoader)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public List<Object> getIfPresent(GraphFetchCacheKey key)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public Map<? extends GraphFetchCacheKey, ? extends List<Object>> getAllPresent(Iterable<? extends GraphFetchCacheKey> keys)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public void put(GraphFetchCacheKey key, List<Object> value)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public void putAll(Map<? extends GraphFetchCacheKey, ? extends List<Object>> keyValues)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public void invalidate(GraphFetchCacheKey key)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public void invalidateAll(Iterable<? extends GraphFetchCacheKey> keys)
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public void invalidateAll()
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public long estimatedSize()
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+
+        @Override
+        public ExecutionCacheStats stats()
+        {
+            throw new UnsupportedOperationException("no operations can be performed on null Cache");
+        }
+    };
+
     private final long graphFetchBatchMemoryLimit;
     protected final long batchIndex;
-    protected Map<Integer, List<?>> nodeObjects;
-    protected Map<Integer, ExecutionCache<GraphFetchCacheKey, List<Object>>> xStorePropertyCaches;
-    protected long totalObjectMemoryUtilization;
-    protected long rowCount;
+    protected ConcurrentMap<Integer, List<?>> nodeObjects;
+    protected ConcurrentMap<Integer, ExecutionCache<GraphFetchCacheKey, List<Object>>> xStorePropertyCaches;
+    protected AtomicLong totalObjectMemoryUtilization;
+    protected AtomicLong rowCount;
 
     public GraphObjectsBatch(long batchIndex, long graphFetchBatchMemoryLimit)
     {
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.batchIndex = batchIndex;
-        this.nodeObjects = new HashMap<>();
-        this.xStorePropertyCaches = new HashMap<>();
-        this.totalObjectMemoryUtilization = 0;
-        this.rowCount = 0;
+        this.nodeObjects = new ConcurrentHashMap<>();
+        this.xStorePropertyCaches = new ConcurrentHashMap<>();
+        this.totalObjectMemoryUtilization = new AtomicLong(0);
+        this.rowCount = new AtomicLong(0);
     }
 
     public GraphObjectsBatch(GraphObjectsBatch other)
@@ -68,28 +134,39 @@ public class GraphObjectsBatch
 
     public void setXStorePropertyCachesForNodeIndex(int index, ExecutionCache<GraphFetchCacheKey, List<Object>> cache)
     {
+        if (cache == null)
+        {
+            // concurrentMap doesn't support nulls as keys/values, so we put in a proxy instead.
+            this.xStorePropertyCaches.put(index, nullCache);
+            return;
+        }
         this.xStorePropertyCaches.put(index, cache);
     }
 
     public ExecutionCache<GraphFetchCacheKey, List<Object>> getXStorePropertyCacheForNodeIndex(int index)
     {
-        return this.xStorePropertyCaches.get(index);
+        ExecutionCache<GraphFetchCacheKey, List<Object>> cache = this.xStorePropertyCaches.get(index);
+        if (nullCache.equals(cache))
+        {
+            return null;
+        }
+        return cache;
     }
 
     public long getRowCount()
     {
-        return this.rowCount;
+        return this.rowCount.get();
     }
 
     public void incrementRowCount()
     {
-        this.rowCount++;
+        this.rowCount.incrementAndGet();
     }
 
     public void addObjectMemoryUtilization(long memoryBytes)
     {
-        this.totalObjectMemoryUtilization += memoryBytes;
-        if (this.totalObjectMemoryUtilization > this.graphFetchBatchMemoryLimit)
+        this.totalObjectMemoryUtilization.addAndGet(memoryBytes);
+        if (this.totalObjectMemoryUtilization.get() > this.graphFetchBatchMemoryLimit)
         {
             throw new RuntimeException("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.");
         }
@@ -97,6 +174,6 @@ public class GraphObjectsBatch
 
     public long getTotalObjectMemoryUtilization()
     {
-        return this.totalObjectMemoryUtilization;
+        return this.totalObjectMemoryUtilization.get();
     }
 }

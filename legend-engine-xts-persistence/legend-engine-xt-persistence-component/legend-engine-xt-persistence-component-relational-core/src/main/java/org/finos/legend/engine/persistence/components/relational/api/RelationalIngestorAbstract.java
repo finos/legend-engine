@@ -33,6 +33,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatas
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -94,7 +95,8 @@ public abstract class RelationalIngestorAbstract
     private static final String SINGLE_QUOTE = "'";
     private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
 
-    private static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
+    public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
+    private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
 
     //---------- FLAGS ----------
 
@@ -260,6 +262,7 @@ public abstract class RelationalIngestorAbstract
             .caseConversion(caseConversion())
             .executionTimestampClock(executionTimestampClock())
             .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
+            .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
 
@@ -283,7 +286,15 @@ public abstract class RelationalIngestorAbstract
             }
         }
         // Perform Ingestion
-        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode);
+        List<IngestorResult> result;
+        if (enrichedIngestMode instanceof BulkLoad)
+        {
+            result = performBulkLoad(updatedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode);
+        }
+        else
+        {
+            result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode);
+        }
         return result;
     }
 
@@ -309,6 +320,8 @@ public abstract class RelationalIngestorAbstract
                     .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
                     .dataSplitRange(dataSplitRange)
                     .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
+                    .status(IngestStatus.SUCCEEDED)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
                     .build();
                 results.add(result);
                 dataSplitIndex++;
@@ -343,10 +356,45 @@ public abstract class RelationalIngestorAbstract
         // Execute metadata ingest SqlPlan
         if (generatorResult.metadataIngestSqlPlan().isPresent())
         {
+            // add batchEndTimestamp
+            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
             executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
         }
         return statisticsResultMap;
     }
+
+
+    private List<IngestorResult> performBulkLoad(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, IngestMode ingestMode)
+    {
+        try
+        {
+            List<IngestorResult> results = new ArrayList<>();
+            executor.begin();
+            Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
+
+            // Execute ingest SqlPlan
+            IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues);
+            // Execute metadata ingest SqlPlan
+            if (generatorResult.metadataIngestSqlPlan().isPresent())
+            {
+                executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
+            }
+
+            results.add(result);
+            executor.commit();
+            return results;
+        }
+        catch (Exception e)
+        {
+            executor.revert();
+            throw e;
+        }
+        finally
+        {
+            executor.close();
+        }
+    }
+
 
     private Datasets importExternalDataset(IngestMode ingestMode, Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
     {

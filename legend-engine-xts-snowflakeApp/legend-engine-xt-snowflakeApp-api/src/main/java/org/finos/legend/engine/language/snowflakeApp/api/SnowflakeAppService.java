@@ -23,6 +23,9 @@ import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInf
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentManager;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentResult;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
@@ -41,23 +44,23 @@ import org.finos.legend.pure.generated.Root_meta_relational_mapping_SQLExecution
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 
-public class SnowflakeAppService implements FunctionActivatorService<Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp>
+public class SnowflakeAppService implements FunctionActivatorService<Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp, SnowflakeDeploymentResult>
 {
     private ConnectionManagerSelector connectionManager;
-    private  SnowflakeAppDeploymentTool snowflakeDeploymentTool;
+    private SnowflakeDeploymentManager snowflakeDeploymentManager;
 
     public SnowflakeAppService()
     {
         TemporaryTestDbConfiguration conf = new TemporaryTestDbConfiguration();
         conf.port = Integer.parseInt(System.getProperty("h2ServerPort", "1234"));
         this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList());
-        this.snowflakeDeploymentTool = new SnowflakeAppDeploymentTool(connectionManager);
+        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
     }
 
     public SnowflakeAppService(ConnectionManagerSelector connectionManager)
     {
         this.connectionManager = connectionManager;
-        this.snowflakeDeploymentTool = new SnowflakeAppDeploymentTool(connectionManager);
+        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
     }
 
     @Override
@@ -88,7 +91,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> publishToSandbox(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public SnowflakeDeploymentResult publishToSandbox(PureModel pureModel, Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         Object[] objects = this.extractSQLExpressionsAndConnectionMetadata(pureModel, activator, routerExtensions);
         RichIterable<String> sqlExpressions = (RichIterable<String>) objects[0];
@@ -97,16 +100,9 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
         Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy as = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) objects[2];
 
         String applicationName = activator._applicationName();
-        try
-        {
-            this.snowflakeDeploymentTool.deploy(ds, as, applicationName);
-            return Lists.mutable.empty();
-        }
-        catch (Exception e)
-        {
-            FunctionActivatorError functionActivatorError = new FunctionActivatorError(e.getMessage());
-            return Lists.mutable.with(functionActivatorError);
-        }
+        SnowflakeDeploymentConfiguration config = new SnowflakeDeploymentConfiguration(ds, as, applicationName);
+
+        return this.snowflakeDeploymentManager.deploy(new SnowflakeAppArtifact(),config);
     }
 
     @Override

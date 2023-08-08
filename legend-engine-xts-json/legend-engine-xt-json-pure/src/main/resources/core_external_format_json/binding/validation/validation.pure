@@ -25,7 +25,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::model::unit::*;
 
 // To be removed
-import meta::json::schema::fromSchema::*;
+import meta::external::format::json::schema::fromSchema::*;
 // To be removed
 
 Class meta::external::format::json::binding::validation::JsonSchemaBindingDetail extends SuccessfulBindingDetail

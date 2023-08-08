@@ -37,7 +37,7 @@ import meta::pure::generation::metamodel::*;
 
 // To be removed
 import meta::json::*;
-import meta::json::schema::fromSchema::*;
+import meta::external::format::json::schema::fromSchema::*;
 // To be removed
 
 // ========================================================================================================================================================

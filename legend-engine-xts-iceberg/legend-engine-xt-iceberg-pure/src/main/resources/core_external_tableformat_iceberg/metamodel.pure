@@ -1,0 +1,124 @@
+import meta::external::tableformat::iceberg::metamodel::*;
+
+Class meta::external::tableformat::iceberg::metamodel::Type
+{
+}
+
+// nested types
+
+Class meta::external::tableformat::iceberg::metamodel::NestedType extends meta::external::tableformat::iceberg::metamodel::Type
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::StructType extends meta::external::tableformat::iceberg::metamodel::NestedType
+{
+  fields: meta::external::tableformat::iceberg::metamodel::NestedField[1..*];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::ListType extends meta::external::tableformat::iceberg::metamodel::NestedType
+{
+  elementField: meta::external::tableformat::iceberg::metamodel::NestedField[1];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::MapType extends meta::external::tableformat::iceberg::metamodel::NestedType
+{
+  keyField: meta::external::tableformat::iceberg::metamodel::NestedField[1];
+  valueField: meta::external::tableformat::iceberg::metamodel::NestedField[1];
+}
+
+Class meta::external::tableformat::iceberg::metamodel::NestedField
+{
+  id: Integer[1];
+  name: String[1];
+  type: meta::external::tableformat::iceberg::metamodel::Type[1];
+  required: Boolean[1];
+  doc: String[1];
+}
+
+// primitive types
+
+Class meta::external::tableformat::iceberg::metamodel::PrimitiveType extends meta::external::tableformat::iceberg::metamodel::Type
+{
+}
+
+Class meta::external::tableformat::iceberg::metamodel::BooleanType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '32-bit signed integer'}
+meta::external::tableformat::iceberg::metamodel::IntegerType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '64-bit signed integer'}
+meta::external::tableformat::iceberg::metamodel::LongType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '32-bit IEEE 754 floating point'}
+meta::external::tableformat::iceberg::metamodel::FloatType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = '64-bit IEEE 754 floating point'}
+meta::external::tableformat::iceberg::metamodel::DoubleType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Fixed point decimal'}
+meta::external::tableformat::iceberg::metamodel::DecimalType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+[
+  precisionMaxLength: $this.precision <= 38
+]
+{
+  scale: Integer[1];
+  precision: Integer[1];
+}
+
+Class
+{doc.doc = 'Calendar date without timezone or time'}
+meta::external::tableformat::iceberg::metamodel::DateType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Time of day without date or timezone'}
+meta::external::tableformat::iceberg::metamodel::TimeType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Timestamp without timezone. These represent a date and time of day regardless of zone. Values are independent of zone adjustment and stored with microsecond precision'}
+meta::external::tableformat::iceberg::metamodel::TimestampType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Timestamp with timzeone. These represent a point in time. Values are stored in UTC, do not retain source timezone, and have microsecond precision'}
+meta::external::tableformat::iceberg::metamodel::TimestampTzType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Arbitrary length character sequences'}
+meta::external::tableformat::iceberg::metamodel::StringType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
+
+Class
+{doc.doc = 'Fixed-length byte array'}
+meta::external::tableformat::iceberg::metamodel::FixedType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+  length: Integer[1];
+}
+
+Class
+{doc.doc = 'Arbitrary length byte array'}
+meta::external::tableformat::iceberg::metamodel::BinaryType extends meta::external::tableformat::iceberg::metamodel::PrimitiveType
+{
+}
