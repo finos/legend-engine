@@ -82,7 +82,6 @@
                                         <include>org.slf4j:slf4j-api:${slf4j.version}</include>
                                         <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
-                                        <include>org.finos.legend.pure:legend-pure-m4:${legend.pure.version}</include>
                                     </includes>
                                 </bannedDependencies>
                             </rules>
@@ -181,6 +180,11 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-core-executionPlan-execution</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <exclusions>
                 <exclusion>
@@ -237,11 +241,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m4</artifactId>
             <scope>test</scope>
         </dependency>
 
