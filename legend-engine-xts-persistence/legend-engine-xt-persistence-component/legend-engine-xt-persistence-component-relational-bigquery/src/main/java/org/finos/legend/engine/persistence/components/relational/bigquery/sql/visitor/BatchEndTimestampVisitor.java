@@ -36,7 +36,7 @@ public class BatchEndTimestampVisitor implements LogicalPlanVisitor<BatchEndTime
         if (batchEndTimestampPattern.isPresent())
         {
             DatetimeValue datetimeValue = DatetimeValue.of(batchEndTimestampPattern.get());
-            return new DatetimeVisitor().visit(prev, datetimeValue, context);
+            return new DatetimeValueVisitor().visit(prev, datetimeValue, context);
         }
         else
         {

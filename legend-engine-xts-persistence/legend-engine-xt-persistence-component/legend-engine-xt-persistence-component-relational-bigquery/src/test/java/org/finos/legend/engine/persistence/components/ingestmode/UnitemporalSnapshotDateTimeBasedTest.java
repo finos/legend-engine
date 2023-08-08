@@ -40,7 +40,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') " +
+                "WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) " +
                 "AND (NOT (EXISTS " +
                 "(SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
@@ -48,9 +48,9 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '9999-12-31 23:59:59')))";
+                "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59'))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -70,7 +70,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE sink.`batch_time_out` = '9999-12-31 23:59:59'";
+                "WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -88,16 +88,16 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET " +
                 "sink.`BATCH_TIME_OUT` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE (sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59') AND " +
+                "WHERE (sink.`BATCH_TIME_OUT` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage WHERE ((sink.`ID` = stage.`ID`) " +
                 "AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` = stage.`DIGEST`))))";
 
         String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` " +
                 "(`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_TIME_IN`, `BATCH_TIME_OUT`) " +
                 "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' FROM `MYDB`.`STAGING` as stage " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM `MYDB`.`STAGING` as stage " +
                 "WHERE NOT (stage.`DIGEST` IN (SELECT sink.`DIGEST` FROM `MYDB`.`MAIN` as sink " +
-                "WHERE sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59')))";
+                "WHERE sink.`BATCH_TIME_OUT` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59'))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableTimeBasedCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
@@ -116,7 +116,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') " +
+                "WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) " +
                 "AND (NOT (EXISTS " +
                 "(SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`)))) " +
                 "AND (EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE sink.`biz_date` = stage.`biz_date`))";
@@ -124,9 +124,9 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND (sink.`biz_date` = stage.`biz_date`))))";
+                "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) AND (sink.`biz_date` = stage.`biz_date`))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -146,7 +146,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
+                "WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND " +
                 "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`)))) AND " +
                 "(sink.`biz_date` IN ('2000-01-01 00:00:00','2000-01-02 00:00:00'))";
@@ -154,9 +154,9 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink " +
-                "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
+                "WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) AND " +
                 "(sink.`biz_date` IN ('2000-01-01 00:00:00','2000-01-02 00:00:00')))))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));

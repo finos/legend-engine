@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-public class DatetimeVisitor implements LogicalPlanVisitor<DatetimeValue>
+public class DatetimeValueVisitor implements LogicalPlanVisitor<DatetimeValue>
 {
 
     private static final String DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S";

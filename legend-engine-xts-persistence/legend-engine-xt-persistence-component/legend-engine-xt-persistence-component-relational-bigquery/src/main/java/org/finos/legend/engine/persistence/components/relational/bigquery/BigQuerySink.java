@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Del
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -44,6 +45,7 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchStartTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DatetimeValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
@@ -92,6 +94,7 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Delete.class, new DeleteVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(Truncate.class, new TruncateVisitor());
+        logicalPlanVisitorByClass.put(DatetimeValue.class, new DatetimeValueVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         logicalPlanVisitorByClass.put(BatchStartTimestamp.class, new BatchStartTimestampVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
