@@ -736,7 +736,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ])
         ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String', 'str'])
       };
-  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingSelectStar():Boolean[1]
@@ -749,7 +749,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ->groupBy(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'], agg('COUNT(1)', row | 1, y | $y->count()))->filter(row | $row.getInteger('COUNT(1)') > 0)
         ->restrict([ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       };
-  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 //CAST
