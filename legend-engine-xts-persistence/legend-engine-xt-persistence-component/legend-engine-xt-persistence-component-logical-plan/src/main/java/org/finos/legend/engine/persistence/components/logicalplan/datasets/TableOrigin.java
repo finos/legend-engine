@@ -16,5 +16,5 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 public enum TableOrigin
 {
-    NATIVE, ICEBERG, EXTERNAL, EXTERNAL_STAGE
+    NATIVE, ICEBERG, EXTERNAL
 }

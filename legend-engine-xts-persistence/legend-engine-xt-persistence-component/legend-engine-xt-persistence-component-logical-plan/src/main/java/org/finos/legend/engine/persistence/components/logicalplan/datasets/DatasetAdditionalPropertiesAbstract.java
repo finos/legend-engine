@@ -37,9 +37,5 @@ public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
 
     Optional<String> externalVolume();
 
-    Optional<String> dataPath();
-
-    Optional<String> filePattern();
-
     Map<String, String> tags();
 }

@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.21.1-SNAPSHOT</version>
+        <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -27,10 +27,10 @@
     <name>Legend Engine - XTS - Generation</name>
 
 
-
     <modules>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-generation-pure</module>
+        <module>legend-engine-external-shared</module>
         <module>legend-engine-xt-artifact-generation-api</module>
     </modules>
 </project>

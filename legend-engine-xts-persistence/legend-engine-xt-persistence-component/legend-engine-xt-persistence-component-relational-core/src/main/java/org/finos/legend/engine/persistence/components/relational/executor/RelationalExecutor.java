@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.executor;
 
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -126,6 +127,12 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     public void close()
     {
         relationalExecutionHelper.closeTransactionManager();
+    }
+
+    @Override
+    public RelationalExecutionHelper getRelationalExecutionHelper()
+    {
+        return this.relationalExecutionHelper;
     }
 
     private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)

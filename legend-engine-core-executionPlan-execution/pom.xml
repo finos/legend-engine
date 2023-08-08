@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.21.1-SNAPSHOT</version>
+        <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,7 @@
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
+        <module>legend-engine-external-shared-format-runtime</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
     </modules>
 

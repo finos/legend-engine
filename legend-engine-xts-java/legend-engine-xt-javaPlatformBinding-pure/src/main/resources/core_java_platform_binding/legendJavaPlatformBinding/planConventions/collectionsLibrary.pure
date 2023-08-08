@@ -81,6 +81,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          fc (map_T_m__Function_1__V_m_,                                          fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
          fc (map_T_$0_1$__Function_1__V_$0_1$_,                                  fcAlias(                        map_T_MANY__Function_1__V_MANY_)),
          fc3(slice_T_MANY__Integer_1__Integer_1__T_MANY_,                        {ctx,collection,limit1,limit2 | $collection->j_streamOf()->js_skip(pinToZero($limit1))->js_limit($limit2->j_minus(pinToZero($limit1)))}),
+         fc3(paginated_T_MANY__Integer_1__Integer_1__T_MANY_,                    {ctx,collection,pageNumber,pageSize | $collection->j_streamOf()->js_skip(pinToZero($pageSize)->j_multiply(pinToZero($pageNumber)->j_minus(j_int(1))))->js_limit($pageSize)}),
          fc2(take_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $collection->j_streamOf()->js_limit($limit)}),
          fc2(union_T_MANY__T_MANY__T_MANY_,                                      {ctx,collection1,collection2  | javaStream()->j_invoke('concat', [$collection1->j_streamOf(), $collection2->j_streamOf()], javaStream($ctx.returnType()->elementType()))->js_distinct()}),
          fc2(intersection_T_MANY__T_MANY__T_MANY_,                               {ctx,collection1,collection2  | intersect($ctx, $collection1, $collection2)}), 

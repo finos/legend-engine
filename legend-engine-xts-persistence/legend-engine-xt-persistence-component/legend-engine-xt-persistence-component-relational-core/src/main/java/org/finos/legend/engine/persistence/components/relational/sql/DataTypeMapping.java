@@ -14,10 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.relational.sql;
 
+import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 
-public interface DataTypeMapping
+public interface DataTypeMapping extends TypeMapping
 {
     DataType getDataType(FieldType type);
 }

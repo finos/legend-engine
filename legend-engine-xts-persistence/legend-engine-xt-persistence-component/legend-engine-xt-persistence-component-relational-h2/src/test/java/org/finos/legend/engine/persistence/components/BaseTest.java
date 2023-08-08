@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -170,7 +171,8 @@ public class BaseTest
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .build();
-        IngestorResult result = ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
+
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -221,7 +223,7 @@ public class BaseTest
             .enableSchemaEvolution(options.enableSchemaEvolution())
             .build();
 
-        List<IngestorResult> results = ingestor.ingestWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
+        List<IngestorResult> results = ingestor.performFullIngestionWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
@@ -267,7 +269,15 @@ public class BaseTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
-        IngestorResult result = ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
+        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
+
+        datasets = ingestor.create(datasets);
+        datasets = ingestor.evolve(datasets);
+
+        executor.begin();
+        IngestorResult result = ingestor.ingest(datasets);
+        // Do more stuff if needed
+        executor.commit();
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 

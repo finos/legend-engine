@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -22,15 +24,23 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
@@ -47,6 +57,11 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
@@ -66,6 +81,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Objects;
+import java.util.ArrayList;
+
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
@@ -75,6 +94,12 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
     private static final Map<DataType, Set<DataType>> EXPLICIT_DATA_TYPE_MAPPING;
+
+    private static final String LOADED = "LOADED";
+    private static final String FILE = "file";
+    private static final String BULK_LOAD_STATUS = "status";
+    private static final String ROWS_LOADED = "rows_loaded";
+    private static final String ERRORS_SEEN = "errors_seen";
 
     static
     {
@@ -94,6 +119,12 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(DatasetAdditionalProperties.class, new DatasetAdditionalPropertiesVisitor());
+        logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
+        logicalPlanVisitorByClass.put(SnowflakeStagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
@@ -189,4 +220,64 @@ public class SnowflakeSink extends AnsiSqlSink
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
     }
+
+    @Override
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues);
+        List<Map<String, Object>> resultSets = results.get(0).getData();
+        List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
+
+        long totalFilesLoaded = 0;
+        long totalRowsLoaded = 0;
+        long totalRowsWithError = 0;
+
+        for (Map<String, Object> row: resultSets)
+        {
+            Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
+            Object filePath = row.get(FILE);
+            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals(LOADED))
+            {
+                totalFilesLoaded++;
+                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
+            }
+
+            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals(LOADED) && Objects.nonNull(filePath))
+            {
+                dataFilePathsWithFailedBulkLoad.add(filePath.toString());
+            }
+
+            Object rowsWithError = row.get(ERRORS_SEEN);
+            if (Objects.nonNull(rowsWithError))
+            {
+                totalRowsWithError += (Long) row.get(ERRORS_SEEN);
+            }
+        }
+        IngestorResult result;
+        if (dataFilePathsWithFailedBulkLoad.isEmpty())
+        {
+            Map<StatisticName, Object> stats = new HashMap<>();
+            stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
+            stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
+            stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+            result = IngestorResult.builder()
+                    .status(IngestStatus.SUCCEEDED)
+                    .updatedDatasets(datasets)
+                    .putAllStatisticByName(stats)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                    .build();
+        }
+        else
+        {
+            String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
+            result = IngestorResult.builder()
+                    .status(IngestStatus.ERROR)
+                    .message(errorMessage)
+                    .updatedDatasets(datasets)
+                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                    .build();
+        }
+        return result;
+    }
+
 }

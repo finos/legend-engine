@@ -66,4 +66,9 @@ public interface FieldAbstract extends LogicalPlanNode
     Optional<String> fieldAlias();
 
     Optional<Object> defaultValue();
+
+    Optional<Integer> columnNumber();
+
+    // Element to be derived from the column from this path
+    Optional<String> elementPath();
 }

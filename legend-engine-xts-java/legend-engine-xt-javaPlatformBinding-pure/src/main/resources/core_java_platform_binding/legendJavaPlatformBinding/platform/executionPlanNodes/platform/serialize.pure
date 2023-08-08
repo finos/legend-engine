@@ -195,7 +195,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       | $data.tree,
       |
    if($data.auxiliaryTrees->exists(t|$class->_subTypeOf($t.class)),
-      | $data.auxiliaryTrees->filter(t|$class->_subTypeOf($t.class))->toOne(),
+      | $data.auxiliaryTrees->filter(t|$class->_subTypeOf($t.class))->at(0),
       | ^RootGraphFetchTree<Any>(class=$class->cast(@meta::pure::metamodel::type::Class<Any>))
    ));
 }

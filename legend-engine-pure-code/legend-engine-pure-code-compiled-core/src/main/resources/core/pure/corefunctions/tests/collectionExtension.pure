@@ -145,3 +145,11 @@ function <<test.Test>> meta::pure::functions::tests::collection::toNumbered():Bo
    assertEquals([pair(1, 'A'), pair(2, 'B')], ['A', 'B']->toNumbered());
    assertEquals([], []->toIndexed());
 }
+
+function <<test.Test>> meta::pure::functions::tests::collection::paginated():Boolean[1]
+{
+  assertEquals([1,2,3,4,5,6,7,8,9,10]->paginated(1,10), [1,2,3,4,5,6,7,8,9,10]);
+  assertEquals([1,2,3,4,5,6,7,8,9,10]->paginated(2,6), [7,8,9,10]);
+  assertEquals([1,2,3,4,5,6,7,8,9,10]->paginated(1,0), []);
+  assertEquals([1,2,3,4,5,6,7,8,9,10]->paginated(1,4), [1,2,3,4]);
+}
