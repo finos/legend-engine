@@ -18,14 +18,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-xts-generation</artifactId>
         <version>4.21.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-external-shared</artifactId>
     <name>Legend Engine - External - Format - Shared</name>
-
 
 
     <dependencies>
@@ -35,20 +34,21 @@
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
         <!-- PURE -->
 
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
+        </dependency>
+        <!--    Depends on legend-engine-pure-code-compiled-core for protocol transformation   -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>

@@ -27,10 +27,10 @@
     <name>Legend Engine - XTS - Generation</name>
 
 
-
     <modules>
         <module>legend-engine-language-pure-dsl-generation</module>
         <module>legend-engine-language-pure-dsl-generation-pure</module>
+        <module>legend-engine-external-shared</module>
         <module>legend-engine-xt-artifact-generation-api</module>
     </modules>
 </project>
