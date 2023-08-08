@@ -17,7 +17,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
- 
+
     <parent>
         <groupId>org.finos</groupId>
         <artifactId>finos</artifactId>
@@ -104,15 +104,7 @@
         <module>legend-engine-xts-analytics</module>
 
 
-
-
-
-
-        <module>legend-engine-external-format-jsonSchema</module>
-
         <module>legend-engine-external-shared</module>
-        <module>legend-engine-external-shared-format-model</module>
-        <module>legend-engine-external-shared-format-runtime</module>
 
         <module>legend-engine-application-query</module>
 
@@ -496,7 +488,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -590,7 +582,6 @@
                 <artifactId>legend-engine-xt-functionActivator-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
 
 
             <!-- ENGINE -->

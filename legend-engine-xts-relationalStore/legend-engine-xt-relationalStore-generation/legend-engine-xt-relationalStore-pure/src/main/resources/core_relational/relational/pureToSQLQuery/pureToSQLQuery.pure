@@ -2429,6 +2429,34 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::processPaginated(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let preceedingFunction = $f.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression).func;
+  assert( $preceedingFunction == sortBy_T_m__Function_$0_1$__T_m_ || $preceedingFunction == sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, 'Paginated should be called on a sort or sortBy function');
+  
+  let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let mainSelect = $mainQuery.select;
+  let param1 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);
+  assert($param1->instanceOf(Literal),'Invalid type for first parameter inside the paginated function. Expected an integer/integer variable, found operation/function');
+  let pageNumber = $param1->cast(@Literal);
+  let param2 = processValueSpecification($f.parametersValues->at(2), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);
+  assert($param2->instanceOf(Literal),'Invalid type for second parameter inside the paginated function. Expected an integer/integer variable, found operation/function');
+  let pageSize = $param2->cast(@Literal);
+  
+  let parents = $state.functionExpressionStack->evaluateAndDeactivate();
+  assert($parents->size() == 1 || ($parents->size() == 2 && $parents->at(0)->byPassRouterInfo()->cast(@FunctionExpression)->evaluateAndDeactivate().func->in(meta::pure::graphFetch::execution::graphFetchFunctions())), 'Paginated should either be last function in TDS query or called right before graphFetch');
+  
+  let processedSelect = ^$mainSelect (
+                fromRow = ^Literal(value = ^FreeMarkerOperationHolder(name='numberMultiply',parameters=[^FreeMarkerOperationHolder(name='numberSubtract', parameters=[$pageNumber, ^Literal(value='1')]),$pageSize])),
+                toRow = ^Literal(value = ^FreeMarkerOperationHolder(name='numberVariable',parameters=[$pageSize]))
+          );
+
+  ^$mainQuery(
+    select = $processedSelect,
+    currentTreeNode = if($mainQuery.currentTreeNode->isEmpty(),  | $mainQuery.currentTreeNode, | $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $processedSelect.data->toOne()))
+  );
+}
+
 function meta::relational::functions::pureToSqlQuery::processTake(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -7239,6 +7267,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processSlice_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::take_T_MANY__Integer_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processTake_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::limit_T_MANY__Integer_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processTake_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::paginated_T_MANY__Integer_1__Integer_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processPaginated_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::drop_T_MANY__Integer_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processDrop_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::relational::functions::pureToSqlQuery::processMap_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__OperationWithParentPropertyMapping_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::map_T_m__Function_1__V_m_, second=meta::relational::functions::pureToSqlQuery::processMap_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__OperationWithParentPropertyMapping_1_),
@@ -7381,6 +7410,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processTDSSortColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processTDSSortInformation_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processTDSSortSingular_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processPaginated_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processEquals_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processEquals_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::multiplicity::toOne_T_MANY__T_1_, second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

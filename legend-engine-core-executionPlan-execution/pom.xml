@@ -31,6 +31,7 @@
         <module>legend-engine-executionPlan-execution</module>
         <module>legend-engine-executionPlan-execution-api</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
+        <module>legend-engine-external-shared-format-runtime</module>
         <module>legend-engine-executionPlan-execution-store-inMemory</module>
     </modules>
 
