@@ -84,66 +84,12 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
   assertEquals('select cast("root".stringDateTimeFormat as timestamp) as "timestamp" from dataTable as "root"',$sybaseSQL->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testProject():Boolean[1]
-{
-    let result = execute(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Joe Bloggs ', 'MrsSmith'], $result.values->at(0).rows.values);
-    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$result->sqlRemoveFormatting());
-   
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$snowflakeSql);
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testToSQLStringConcatPresto():Boolean[1]
 {
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$prestoSql);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testToSQLStringConcatSnowflake():Boolean[1]
-{
-   let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$snowflakeSql);
-}
-
-function  <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::sqlFunction::legnth::testToSQLStringLenSnowflake():Boolean[1]
-{
-   let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | length($s.concatResult)], ['len']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select length(concat("root".string1, "root".string2)) as "len" from dataTable as "root"',$snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testFilter():Boolean[1]
-{
-    let result = execute(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals(['Joe Bloggs '], $result.values->at(0).rows.values);
-    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$result->sqlRemoveFormatting());
-    
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::joinStrings::testToSQLStringjoinStringsMappingSnowflake():Boolean[1]
-{
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.joinStringsResult], ['aggregatedCol']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select listagg("root".string1, \':\') as "aggregatedCol" from dataTable as "root"',$snowflakeSql);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::joinStrings::testToSQLStringjoinStringsExpressionSnowflake():Boolean[1]
-{
-    let stringVals = ['Joe Bloggs', 'Mrs.Smith', 'John'];
-    let separator = ':';
-    let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s|joinStrings($stringVals, $separator)], ['concatenatedCOL']),testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select concat(\'Joe Bloggs\', \':\', \'Mrs.Smith\', \':\', \'John\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testProject():Boolean[1]
@@ -203,17 +149,9 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
 
-   let sPostgre = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-
    let sHive = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Hive, meta::relational::extension::relationalExtensions());
-
-   let sSnowflake = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
 
    let sPresto = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
@@ -222,9 +160,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sIQ);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sH2);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sDB2);
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPostgre);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSnowflake);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
 }
 
@@ -698,41 +634,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    assertEquals('select date_diff(\'day\',Date(\'2017-03-01\'),Date(\'2017-04-01\')) as "dateDiff" from dataTable as "root"',$s);
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringDateDiffInSnowflake():Boolean[1]
-{
-   let da = %2013-03-01T19:09:20;
-   let db = %2017-03-01T20:08:08;
-  
-   let test = toSQLString(|SqlFunctionDemo.all()->project([s|dateDiff($da, $db, DurationUnit.YEARS), 
-                                                           s|dateDiff($da, $db, DurationUnit.MONTHS), 
-                                                           s|dateDiff($da, $db, DurationUnit.WEEKS), 
-                                                           s|dateDiff($da, $db, DurationUnit.DAYS),
-                                                           s|dateDiff($da, $db, DurationUnit.HOURS),
-                                                           s|dateDiff($da, $db, DurationUnit.MINUTES),
-                                                           s|dateDiff($da, $db, DurationUnit.SECONDS)],
-                                                           ['dateDiffYears','dateDiffMonths','dateDiffWeeks','dateDiffDays','dateDiffHours','dateDiffMinutes','dateDiffSeconds']),
-                                                   testMapping,
-                                                   meta::relational::runtime::DatabaseType.Snowflake,
-                                                   meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(year,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffYears",'+
-                ' datediff(month,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffMonths",'+
-                ' datediff(week,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffWeeks",'+
-                ' datediff(day,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffDays",'+
-                ' datediff(hour,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffHours",'+
-                ' datediff(minute,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffMinutes",'+
-                ' datediff(second,\'2013-03-01 19:09:20\'::timestamp,\'2017-03-01 20:08:08\'::timestamp) as "dateDiffSeconds"'+ ' from dataTable as "root"',$test);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128InSnowflake():Boolean[1]
-{
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_char("root".int1) as "convertVarchar128" from dataTable as "root"', $s);
-
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128InPrestoSQL():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
@@ -754,14 +655,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Composite, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
-
-}
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinPostgres():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
@@ -794,34 +687,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
    println($result.values->meta::json::toJSON());
    assertEquals('select cast( parseDateTime(concat(\'01\', "root".stringUserDefinedDateFormat), \'ddMMMyyyy\') as date) as "convertToDateUserDefinedFormat" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%1995-11-01, %1995-11-01], $result.values->at(0).rows.values);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinSnowflake():Boolean[1]
-{
-
-   let s =toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']),
-                                                       testMapping,
-                                                       meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-
-   assertEquals('select to_date("root".stringDateFormat,\'yyyy-MM-dd\') as "convertToDate" from dataTable as "root"', $s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinSnowflakeUserDefinedFormatStartsWithYear():Boolean[1]
-{
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat2], ['convertToDateUserDefinedFormat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date("root".stringUserDefinedDateFormat,\'YYYY/MM/DD\') as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinSnowflakeUserDefinedFormatStartsWithDay():Boolean[1]
-{
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat3], ['convertToDateUserDefinedFormat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_date("root".stringUserDefinedDateFormat,\'DD/MM/YYYY\') as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinPresto():Boolean[1]
@@ -900,22 +765,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select convert( timestamp,"root".stringDateTimeFormat,121) as "convertToDateTime" from dataTable as "root"',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateTimeinSnowFlake():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTimeUserDefinedFormat], ['convertToDateTime']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DDTHH:MI:SS\') as "convertToDateTime" from dataTable as "root"',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateTimeWithMilliSecondsinSnowFlake():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateTimeUserDefinedFormat1], ['convertToDateTime']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DDTHH:MI:SS.FF\') as "convertToDateTime" from dataTable as "root"',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::replace::testProject():Boolean[1]

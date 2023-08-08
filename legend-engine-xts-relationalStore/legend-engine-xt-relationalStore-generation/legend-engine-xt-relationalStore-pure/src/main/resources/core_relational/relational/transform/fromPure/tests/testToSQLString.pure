@@ -77,17 +77,7 @@ function meta::relational::tests::functions::sqlstring::testCasesForDocGeneratio
          dbType = meta::relational::runtime::DatabaseType.SybaseIQ,
          expectedSql = 'select "root".LEGALNAME as "legalName", list("personTable_d#4_d_m1".FIRSTNAME,\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"',
          generateUsageFor = [meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_]
-      ),
-      
-      ^TestCase(
-         id ='testTakePostgres',
-         query = |Person.all()->project([#/Person/firstName!name#])->take(0),
-         mapping = meta::relational::tests::simpleRelationalMapping,
-         dbType = meta::relational::runtime::DatabaseType.Postgres,
-         expectedSql = 'select "root".FIRSTNAME as "name" from personTable as "root" limit 0',
-         generateUsageFor = [meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_]
       )
-      
    ]
 }
 
@@ -198,9 +188,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    
    let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LEGALNAME as "legalName", group_concat("personTable_d#4_d_m1".FIRSTNAME separator \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
-
-   let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $postGresSql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
@@ -214,9 +201,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 
    let prestoSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".FIRSTNAME, \'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $prestoSql);
-
-   let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\'_\', "root".LASTNAME, Text\'\') as "firstName_lastName" from personTable as "root"', $postGresSql);
 
    let db2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select ("root".FIRSTNAME concat \'_\' concat "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $db2Sql);
@@ -240,16 +224,6 @@ function meta::relational::tests::functions::sqlstring::filterReportDates<T>(x:T
    $x->map($path)->toOne() <= $end;
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringConcatPostgres():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
-                                    ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
-                                    meta::relational::tests::simpleRelationalMapping,
-                                    meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-
-   assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\' \', "root".LASTNAME, Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testNonExecutableSQLString():Boolean[1]
 {
    let s = toNonExecutableSQLString(|Trade.all()->filter(t | $t.product.cusipSynonym.name == 'CUSIP1')
@@ -260,28 +234,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testNonExe
                                     meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
    assertSameSQL('select "synonymTable_d#4_f_d#5".NAME as "Cusip", sum("root".quantity) as "Total Quantity" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#6" on ("root".prodId = "productTable_d#6".ID) left outer join (select "synonymTable_d#4_f_d#5".PRODID as PRODID, "synonymTable_d#4_f_d#5".NAME as NAME from productSchema.synonymTable as "synonymTable_d#4_f_d#5" where "synonymTable_d#4_f_d#5".TYPE = \'CUSIP\' and 1 = 2) as "synonymTable_d#4_f_d#5" on ("synonymTable_d#4_f_d#5".PRODID = "productTable_d#6".ID) left outer join productSchema.synonymTable as "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md" on ("synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".PRODID = "productTable_d#6".ID and "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".TYPE = \'CUSIP\') where "synonymTable_d#6_f_d#5_d#2_m1_r_d_m2_md".NAME = \'CUSIP1\' and 1 = 2 group by "Cusip"', $s);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testTakePostgres():Boolean[1]
-{
-   meta::relational::tests::functions::sqlstring::runTestCaseById('testTakePostgres');
-}
-
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | 'String',
-                                                      b | %2016-03-01,
-                                                      c | %2016-03-01T12:18:18.976+0200,
-                                                      d | 1,
-                                                      e | 1.1
-                                                   ],
-                                                   ['a','b','c','d', 'e'])->take(0),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   print($result);
-   assertEquals('select Text\'String\' as "a", Date\'2016-03-01\' as "b", Timestamp\'2016-03-01 10:18:18.976\' as "c", 1 as "d", 1.1 as "e" from personTable as "root" limit 0', $result);
-   true;
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testProcessLiteralForPresto():Boolean[1]
@@ -328,24 +280,10 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testProces
    assertEquals('select top 0 \'String\' as "a", convert(DATE, \'2016-03-01\', 121) as "b", convert(DATETIME, \'2016-03-01 10:18:18.976\', 121) as "c", 1 as "d", 1.1 as "e" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testRoundPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([p | round($p.age->toOne() / 100)], ['round']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 0) as "round" from personTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testRoundToDecimalsPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([p | round(cast($p.age->toOne() / 100, @Decimal), 2)], ['round']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 2) as "round" from personTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithLength():Boolean[1]
 {
    [DatabaseType.H2, DatabaseType.Sybase,
-    DatabaseType.SybaseIQ, DatabaseType.Composite, DatabaseType.Postgres]->map(db|
+    DatabaseType.SybaseIQ, DatabaseType.Composite]->map(db|
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
       assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
@@ -375,12 +313,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
       assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $s);
    );
 
-   let postgresSql = toSQLString(
-              |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
-               meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-
-   assertEquals('select substring("root".FULLNAME, 0, position(Text\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $postgresSql);
-
    let prestoSql = toSQLString(
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
                meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMapping, DatabaseType.Presto, meta::relational::extension::relationalExtensions());
@@ -394,28 +326,9 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    assertEquals('select substr("root".FULLNAME, 0, position(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $db2sql);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationIndexOf():Boolean[1]
-{
-   let expected = [
-      pair(DatabaseType.Postgres, 'select strpos("root".FIRSTNAME, Text\'Jo\') as "index" from personTable as "root"')
-   ];
-   
-   $expected->map(p|
-      let driver = $p.first;
-      let expectedSql = $p.second;
-               
-      let result = toSQLString(
-         |meta::relational::tests::model::simple::Person.all()->project(p|$p.firstName->indexOf('Jo'), 'index'),
-         simpleRelationalMapping, 
-         $driver, meta::relational::extension::relationalExtensions());
-
-      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
-   )->distinct() == [true];
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevSample():Boolean[1]
 {
-   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Postgres, DatabaseType.Presto]->map(db|
+   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Presto]->map(db|
       let s = toSQLString(
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
@@ -426,7 +339,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithStdDevPopulation():Boolean[1]
 {
-   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Postgres, DatabaseType.Presto]->map(db|
+   [DatabaseType.SybaseIQ, DatabaseType.H2, DatabaseType.DB2, DatabaseType.Presto]->map(db|
       let s = toSQLString(
               |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
                meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, $db, meta::relational::extension::relationalExtensions());
@@ -465,16 +378,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
    assertEquals('select datediff(yy,"root".settlementDateTime,now()) as "DiffYears" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInYears():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.YEARS)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) as "a" from personTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMonths():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -503,16 +406,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ['DiffMonths']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select datediff(mm,"root".settlementDateTime,now()) as "DiffMonths" from tradeTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMonths():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.MONTHS)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select ((DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) * 12 + (DATE_PART(\'month\', Date\'2012-01-01\') - DATE_PART(\'month\', Date\'2011-10-02\'))) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInWeeks():Boolean[1]
@@ -545,16 +438,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
    assertEquals('select datediff(wk,"root".settlementDateTime,now()) as "DiffWeeks" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInWeeks():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.WEEKS)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (TRUNC(DATE_PART(\'day\', Date\'2012-01-01\' - Date\'2011-10-02\')/7)) as "a" from personTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInDays():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -583,16 +466,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ['DiffDays']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select datediff(dd,"root".settlementDateTime,now()) as "DiffDays" from tradeTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInDays():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2011-12-31T01:00:00.0, %2011-12-29T23:00:00.0, DurationUnit.DAYS)
-                                                   ],
-                                                  ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (DATE_PART(\'day\', Timestamp\'2011-12-31 01:00:00.0\' - Timestamp\'2011-12-29 23:00:00.0\')) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInHours():Boolean[1]
@@ -625,16 +498,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
    assertEquals('select datediff(hh,"root".settlementDateTime,now()) as "DiffHours" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInHours():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.HOURS)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select ((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMinutes():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -663,16 +526,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ['DiffMinutes']),
                             simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select datediff(mi,"root".settlementDateTime,now()) as "DiffMinutes" from tradeTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMinutes():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.MINUTES)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInSeconds():Boolean[1]
@@ -705,16 +558,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
    assertEquals('select datediff(ss,"root".settlementDateTime,now()) as "DiffSeconds" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInSeconds():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.SECONDS)
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select ((((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'second\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForH2ForDifferenceInMilliseconds():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -745,16 +588,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
    assertEquals('select datediff(ms,"root".settlementDateTime,now()) as "DiffMilliseconds" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPostgresForDifferenceInMilliseconds():Boolean[1]
-{
-   let result = toSQLString(|Trade.all()->project([
-                                                     t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
-                                                  ],
-                                                  ['DiffMilliseconds']),
-                            simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (((((DATE_PART(\'day\', "root".settlementDateTime - now())) * 24 + (DATE_PART(\'hour\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'minute\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'second\', "root".settlementDateTime - now()))) * 1000 + (DATE_PART(\'milliseconds\', "root".settlementDateTime - now()))) as "DiffMilliseconds" from tradeTable as "root"', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfWeekNumber():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -771,8 +604,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfY
       pair(DatabaseType.SybaseIQ, 'select datepart(DAYOFYEAR,"root".tradeDate) as "doy" from tradeTable as "root"'),
       pair(DatabaseType.H2, 'select DAY_OF_YEAR("root".tradeDate) as "doy" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select dayofyear("root".tradeDate) as "doy" from tradeTable as "root"'),
-      pair(DatabaseType.Presto, 'select day_of_year("root".tradeDate) as "doy" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_part(\'doy\', "root".tradeDate) as "doy" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select day_of_year("root".tradeDate) as "doy" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -798,7 +630,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim()
     pair(DatabaseType.H2, $common),
     pair(DatabaseType.SybaseIQ, $common),
     pair(DatabaseType.Composite, $common),
-    pair(DatabaseType.Postgres, $common),
     pair(DatabaseType.Presto, $common)
   ];
    
@@ -829,7 +660,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt()
     pair(DatabaseType.H2, $common),
     pair(DatabaseType.SybaseIQ, $common),
     pair(DatabaseType.Composite, $common),
-    pair(DatabaseType.Postgres, $common),
     pair(DatabaseType.Presto, $common),
     pair(DatabaseType.Sybase, $common)
    ];
@@ -848,17 +678,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt()
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
-}
-
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForStartsWithFunctionForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | $a.firstName->startsWith('tri')
-                                                   ],
-                                                   ['a']),
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME like \'tri%\' as "a" from personTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForBooleanInProject_SybaseIQ_StartsWith():Boolean[1]
@@ -969,46 +788,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
    assertEquals('select case when ((\'true\' = \'true\' or \'false\' = \'true\')) then \'true\' else \'false\' end as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionUsageInProjectionForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.SECONDS)
-                                                   ], 
-                                                   ['a']), 
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionWithHourForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | adjust(%2011-12-30T08:55:00.0->datePart(), %2011-12-30T08:55:00.0->hour(), DurationUnit.HOURS)
-                                                   ], 
-                                                   ['a']), 
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Person.all()->project([
-                                                      a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
-                                                   ], 
-                                                   ['a']), 
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
-                                                      a | 'a'
-                                                   ], 
-                                                   ['a']), 
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInProjectionForH2():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
@@ -1103,16 +882,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 3 - day_of_week(current_date) > 0 then 3 - day_of_week(current_date) - 7 else 3 - day_of_week(current_date) end, current_date)', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustFunctionUsageInFiltersForPostgres():Boolean[1]
-{
-   let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.DAYS) > %2011-12-30T08:55:00.0)->project([
-                                                      a | 'a'
-                                                   ], 
-                                                   ['a']), 
-                              simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationForProjectLambdaWithSquareBrackets_SybaseIQ():Boolean[1]
 {
    let result = toSQLString(
@@ -1142,8 +911,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS + (month("root".tradeDate)-1) MONTHS as "date" from tradeTable as "root"'),
       pair(DatabaseType.Sybase, 'select dateadd(DAY, -(day("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Presto, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1163,8 +931,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisMonth():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.Presto, 'select date_trunc(\'month\', current_date) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'month\', CURRENT_DATE) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'month\', current_date) as "date" from tradeTable as "root"')
    ];
 
    $expected->map(p|
@@ -1188,8 +955,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS as "date" from tradeTable as "root"'),
       pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, "root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Presto, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1213,8 +979,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year(current date)-1) YEARS as "date" from tradeTable as "root"'),
       pair(DatabaseType.Sybase, 'select dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Presto, 'select date_trunc(\'year\', current_date) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'year\', CURRENT_DATE) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'year\', current_date) as "date" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1234,8 +999,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfThisQuarter():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.Presto, 'select date_trunc(\'quarter\', current_date) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'quarter\', CURRENT_DATE) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'quarter\', current_date) as "date" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1289,18 +1053,12 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
    testToSqlGenerationFirstDayOfQuarter(DatabaseType.Presto, 'select date_trunc(\'quarter\', "root".tradeDate) as "date" from tradeTable as "root"');
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_Postgres():Boolean[1]
-{
-   testToSqlGenerationFirstDayOfQuarter(DatabaseType.Postgres, 'select date_trunc(\'quarter\', "root".tradeDate) as "date" from tradeTable as "root"');
-}
-
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfWeek():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.SybaseIQ, 'select dateadd(DAY, -(mod(datepart(weekday, "root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"'),
       pair(DatabaseType.H2, 'select dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Presto, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"')
+      pair(DatabaseType.Presto, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1475,8 +1233,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::functions::sqlstring
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationMinuteSecond():Boolean[1]
 {
    let expected = [
-      pair(DatabaseType.SybaseIQ, 'select minute("root".settlementDateTime) as "settlementDateTimeMinute", second("root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"'),
-      pair(DatabaseType.Postgres, 'select date_part(\'minute\', "root".settlementDateTime) as "settlementDateTimeMinute", date_part(\'second\', "root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"')
+      pair(DatabaseType.SybaseIQ, 'select minute("root".settlementDateTime) as "settlementDateTimeMinute", second("root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"')
    ];
    
    $expected->map(p|
@@ -1543,8 +1300,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
    assertSameSQL($expectedSQL, $resultSybaseIQ);
    let resultDB2 = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertSameSQL($expectedSQL, $resultDB2);
-   let resultPostgresSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertSameSQL($expectedSQL, $resultPostgresSQL);
    let resultComposite = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Composite, meta::relational::extension::relationalExtensions());
    assertSameSQL($expectedSQL, $resultComposite);
 }
@@ -1565,13 +1320,6 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testIsDist
 
    let db2 = toSQLString($func, simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LEGALNAME as "LegalName", case when (count(distinct("personTable_d#4_d_m1".FIRSTNAME)) = count("personTable_d#4_d_m1".FIRSTNAME)) then \'true\' else \'false\' end as "IsDistinctFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "root".LEGALNAME', $db2);
-}
-
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testToStringOnPostgres():Boolean[1]
-{
-   let func = {|Person.all()->project([col(x | $x.firstName, 'FirstName'), col(x | $x.age->toOne()->toString()->toUpper(), 'AgeString')])};
-   let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".FIRSTNAME as "FirstName", upper(cast("root".AGE as varchar)) as "AgeString" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationDayOfMonth_SybaseIQ():Boolean[1]

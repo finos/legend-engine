@@ -31,7 +31,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -89,10 +88,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         if (databaseCommands instanceof RedshiftCommands)
         {
             return visitRedshift((RedshiftCommands) databaseCommands);
-        }
-        if (databaseCommands instanceof PostgresCommands)
-        {
-            return visitPostgres((PostgresCommands) databaseCommands);
         }
         for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
         {
@@ -197,15 +192,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
 
     private Boolean visitRedshift(RedshiftCommands redshiftCommands)
     {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    private Boolean visitPostgres(PostgresCommands postgresCommands)
-    {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = postgresCommands.getDefaultIngestionMethod();
-        }
         throw new UnsupportedOperationException("not yet implemented");
     }
 

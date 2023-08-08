@@ -83,14 +83,6 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME not like \'%[^a-zA-Z0-9]%\'',$s);
 }
 
-function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::testFilterUsingIsAlphaNumericFunctionSnowFlake():Boolean[1]
-{
-
-   let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->isAlphaNumeric())};
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[a-zA-Z0-9]*$\'',$s);
-}
-
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunction():Boolean[1]
 {
    let result = execute(|Person.all()
@@ -127,15 +119,6 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunctionSnowflake():Boolean[1]
-{
-
-   let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
-
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[A-Za-z0-9]*$\'',$s);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSubstringFunction():Boolean[1]
@@ -360,30 +343,6 @@ function <<test.Test>> meta::relational::tests::query::function::floor::testFilt
    let result = execute(|Trade.all()->filter(t | $t.id->floor() == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where floor("root".ID) = 1', $result);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::trim::testSupportForTrimFunction():Boolean[1]
-{
-let result = toSQLString(|Person.all()
-      ->filter({row| $row.firstName->trim() != ''})
-      ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (trim("root".FIRSTNAME) <> Text\'\' OR trim("root".FIRSTNAME) is null)', $result);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::trim::testSupportForLTrimFunction():Boolean[1]
-{
-let result = toSQLString(|Person.all()
-      ->filter({row| $row.firstName->ltrim() != ''})
-      ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (ltrim("root".FIRSTNAME) <> Text\'\' OR ltrim("root".FIRSTNAME) is null)', $result);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::trim::testSupportForRTrimFunction():Boolean[1]
-{
-let result = toSQLString(|Person.all()
-      ->filter({row| $row.firstName->rtrim() != ''})
-      ->project([#/Person/firstName#, #/Person/firm/legalName#]), simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
- assertEquals('select "root".FIRSTNAME as "firstName", "firmTable_d_1_d_m2".LEGALNAME as "legalName" from personTable as "root" left outer join firmTable as "firmTable_d_1_d_m2" on ("firmTable_d_1_d_m2".ID = "root".FIRMID) where (rtrim("root".FIRSTNAME) <> Text\'\' OR rtrim("root".FIRSTNAME) is null)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::pow::testFilterUsingPowFunction():Boolean[1]

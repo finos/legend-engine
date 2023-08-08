@@ -27,7 +27,7 @@ public class Test_Relational_DbSpecific_Postgres_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
-        return createSuite(
+        return Relational_DbSpecific_UsingPureClientTestSuite.createSuite(
                 "meta::relational::tests::sqlQueryToString::postgres",
                 "org/finos/legend/engine/server/test/userTestConfig_withPostgresTestConnection.json",
                 new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")

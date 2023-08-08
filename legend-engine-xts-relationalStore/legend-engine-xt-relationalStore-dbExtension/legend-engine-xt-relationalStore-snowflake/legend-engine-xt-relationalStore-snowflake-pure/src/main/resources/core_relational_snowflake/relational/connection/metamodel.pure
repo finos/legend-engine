@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+Enum meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType
+{
+    VPS, MultiTenant
+}
+
 Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
     accountName:String[1];

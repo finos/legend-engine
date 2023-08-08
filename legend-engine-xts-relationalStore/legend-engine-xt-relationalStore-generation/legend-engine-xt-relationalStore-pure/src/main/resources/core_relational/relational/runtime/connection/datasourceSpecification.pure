@@ -44,11 +44,6 @@ Class meta::pure::alloy::connections::alloy::specification::DatabricksDatasource
     httpPath:String[1];
 }
 
-Enum meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType
-{
-    VPS, MultiTenant
-}
-
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {   
   {doc.doc ='clusterID'} clusterID:String[1];
