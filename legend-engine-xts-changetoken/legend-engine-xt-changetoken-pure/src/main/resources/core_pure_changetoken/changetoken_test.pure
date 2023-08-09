@@ -404,6 +404,43 @@ function meta::pure::changetoken::tests::getVersionsMove():Versions[1]
     );
 }
 
+// This is test Versions: RenameField names.first and names.last to firstName and lastName, remove names
+function meta::pure::changetoken::tests::getVersionsMoveExtract():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^RenameField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    oldFieldName=['names', 'first'],
+                                    newFieldName='firstName'
+                            )
+                            ,
+                            ^RenameField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    oldFieldName=['names', 'last'],
+                                    newFieldName='lastName'
+                            )
+                            ,
+                            ^RemoveField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='names',
+                                    fieldType='NamesClass[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='{"@type":"NamesClass","middle":""}')
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
 // This is test Versions: AddField with ConstValue('{"@type":"Custom","value":"0d"}')
 function meta::pure::changetoken::tests::getVersionsCustom():Versions[1]
 {
