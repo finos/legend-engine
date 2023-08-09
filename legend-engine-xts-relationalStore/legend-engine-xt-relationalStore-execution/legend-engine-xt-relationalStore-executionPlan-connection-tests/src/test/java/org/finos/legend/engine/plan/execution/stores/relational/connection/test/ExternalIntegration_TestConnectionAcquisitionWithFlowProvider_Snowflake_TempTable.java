@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
@@ -34,34 +31,35 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import javax.security.auth.Subject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+@RunWith(Parameterized.class)
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake_TempTable extends DbSpecificTests
 {
+    private final Boolean quotedIdentifiersIgnoreCaseFlagForSnowflake;
+    private final Boolean quotedIdentifiersIgnoreCaseFlagInConnection;
+    private final Boolean isExecutionSuccess;
+    private final String errorMessage;
     private ConnectionManagerSelector connectionManagerSelector;
 
     @Override
@@ -74,6 +72,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     public static void setupTest() throws IOException
     {
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
+    }
+
+    public ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake_TempTable(Boolean quotedIdentifiersIgnoreCaseFlagForSnowflake, Boolean quotedIdentifiersIgnoreCaseFlagInConnection, Boolean isExecutionSuccess, String errorMessage) throws Exception
+    {
+       this.quotedIdentifiersIgnoreCaseFlagForSnowflake = quotedIdentifiersIgnoreCaseFlagForSnowflake;
+       this.quotedIdentifiersIgnoreCaseFlagInConnection = quotedIdentifiersIgnoreCaseFlagInConnection;
+       this.isExecutionSuccess = isExecutionSuccess;
+       this.errorMessage = errorMessage;
     }
 
     @Before
@@ -96,22 +102,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         assertTrue("snowflake keypair flow does not exist ", flow.isPresent());
     }
 
-    @Test
-    public void testSnowflakePublicConnection_subject() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
-    }
-
-    @Test
-    public void testSnowflakePublicConnection_profile() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
-    }
-
     private RelationalDatabaseConnection snowflakeWithKeyPairSpec() throws Exception
     {
         SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
@@ -128,41 +118,62 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         return new RelationalDatabaseConnection(snowflakeDatasourceSpecification, authSpec, DatabaseType.Snowflake);
     }
 
-    @Ignore
-    public void testTempTableHandlingWithRawJDBC() throws Exception
+    @Parameterized.Parameters
+    public static Collection<Object[]> data()
     {
-        Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
+        return Arrays.asList(new Object[][]{
+                {true,  true,  true,  null},
+                {true,  false, false, "Column not found: parent_key_gen_0" },
+                {false, true,  false, "Column not found: parent_key_gen_0" },
+                {false, false, true,  null},
+        });
+    }
 
-        Properties properties = new Properties();
-        properties.put("ocspFailOpen", "true");
-        properties.put("account", "ki79827");
-        properties.put("warehouse", "LEGENDRO_WH");
-        properties.put("db", "LEGEND_TEMP_DB");
-        properties.put("schema", "LEGEND_TEMP_SCHEMA");
-        properties.put("role", "LEGEND_INTEGRATION_ROLE1");
-        properties.put("user", "GITHUB_EPSSTAN");
-        properties.put("password", "xxxxx!");
-        //properties.put("privateKey", "xxxxx");
-        String url = "jdbc:snowflake://ki79827.us-east-2.aws.snowflakecomputing.com";
-        Connection connection = DriverManager.getConnection(url, properties);
+    @Test
+    public void TestCasesForTempTables() throws Exception
+    {
+        RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        testConnection(connection, String.format("ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = %s",this.quotedIdentifiersIgnoreCaseFlagForSnowflake));
 
-        String data = Lists.immutable.of("1", "2", "3").makeString("\n");
-        Path tempPath = Files.createTempFile("temp", "temp").toAbsolutePath();
-        Files.write(tempPath, data.getBytes(), StandardOpenOption.APPEND);
+        String planJSON = new String(Files.readAllBytes(Paths.get(ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake_TempTable.class.getResource("/snowflake-graph-fetch-plan.json").toURI())));
+        planJSON = planJSON.replace("QUOTED_IDENTIFIERS_IGNORE_CASE_PLACEHOLDER",quotedIdentifiersIgnoreCaseFlagInConnection.toString());
 
-        ImmutableList<String> sqls = Lists.immutable.of(
-                "CREATE TEMPORARY TABLE temp_1 (a VARCHAR(100))",
-                "CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE",
-                "PUT file://" + tempPath.toAbsolutePath().toString() + " @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE//tmp/temp.csv PARALLEL = 16 AUTO_COMPRESS = TRUE",
-                "COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE file_format = (type = CSV field_optionally_enclosed_by= '\"')",
-                "DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE"
-        );
-
-        Statement statement = connection.createStatement();
-        for (String sql : sqls)
+        String result = execute(planJSON);
+        String expected = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"defects\":[],\"value\":{\"legalName\":\"firm1\",\"employees\":[{\"firstName\":\"pf1\",\"lastName\":\"pl1\"},{\"firstName\":\"pf2\",\"lastName\":\"pl2\"},{\"firstName\":\"pf3\",\"lastName\":\"pl3\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm2\",\"employees\":[{\"firstName\":\"pf4\",\"lastName\":\"pl4\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm3\",\"employees\":[{\"firstName\":\"pf5\",\"lastName\":\"pl5\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm4\",\"employees\":[{\"firstName\":\"pf6\",\"lastName\":\"pl6\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm5\",\"employees\":[]}}]}";
+        if (isExecutionSuccess)
         {
-            System.out.println("Executing " + sql);
-            statement.execute(sql);
+            assertEquals(expected, result);
+        }
+        else
+        {
+            assertEquals(errorMessage,result);
+        }
+
+        testConnection(connection, "ALTER USER UNSET QUOTED_IDENTIFIERS_IGNORE_CASE");
+    }
+
+    public String execute(String planJSON)
+    {
+        try
+        {
+            RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
+                    .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(9078))
+                    .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                    .build();
+            StoreExecutor storeExecutor = Relational.build(relationalExecutionConfiguration);
+
+            PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(storeExecutor);
+
+            Result result = planExecutor.execute(planJSON);
+            JsonStreamToJsonDefaultSerializer jsonStreamToJsonDefaultSerializer = new JsonStreamToJsonDefaultSerializer(((JsonStreamingResult) result));
+            OutputStream outputStream = new ByteArrayOutputStream();
+            jsonStreamToJsonDefaultSerializer.stream(outputStream);
+            return outputStream.toString();
+        }
+        catch (Exception e)
+        {
+            return e.getMessage();
         }
     }
 }
