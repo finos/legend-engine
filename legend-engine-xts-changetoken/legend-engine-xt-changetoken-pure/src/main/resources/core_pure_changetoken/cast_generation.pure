@@ -487,8 +487,17 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
   j_block(
   $newFieldName->size()->range()->tail()->map({i|
     j_if($newFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap())->j_not(),
-      javaRuntimeException()->j_new(j_plus(j_string('Missing destination map: '), j_string($newFieldName->take($i)->joinStrings('.'))))->j_throw()
+      javaRuntimeException()->j_new(j_plus(j_string('Destination is not a map: '), j_string($newFieldName->take($i)->joinStrings('.'))))->j_throw()
   )})->concatenate([
+    j_if($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+     ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject())->j_ne(j_null())
+     ->j_and($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+     ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject())->j_invoke('equals',
+       $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+       ->j_cast(objectNode())->j_invoke('get', [j_string($oldFieldName->last()->toOne())], javaVoid()))->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite with different value:')
+          ->j_plus($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+          ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject()))])->j_throw()),
     $newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
     ->j_cast(objectNode())->j_invoke('put', [j_string($newFieldName->last()->toOne()),
       $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
@@ -519,12 +528,16 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
       df:ConstValue[1] | if(_isPrimitive($token.fieldType) || !_isComplex($df.value),|
       [
         $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)]),
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
         $objVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
       ],| j_block([
         $mapVar->j_declare(javaStream()->j_invoke('of',
         $df.value->cast(@String)->parseJSON()->cast(@meta::json::JSONObject).keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
         javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
       ]->concatenate([
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
         $objVar->j_invoke('put', [j_string($token.fieldName), $mapVar], javaVoid())
       ]))
       ),
@@ -537,6 +550,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
           j_string($df.source->cast(@RelativeFieldReference).path) // TODO: handle other types of references
         ], javaObject())),
         // res.put("abc", value);
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
         $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
       ]
     ])
