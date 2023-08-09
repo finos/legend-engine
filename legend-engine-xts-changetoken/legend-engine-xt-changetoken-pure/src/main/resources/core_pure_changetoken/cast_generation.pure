@@ -281,7 +281,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   ])));
 
   let typeVar = j_variable(javaString(), 'type');
-  let changeTokenHandlers = $version.changeTokens
+  let changeTokenHandlers = $version.changeTokens->reverse()
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:RemoveField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
@@ -469,13 +469,30 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
 {
   j_if(
   $typeVar->j_invoke('equals', [j_string($token.class)]),
+  _handleRenameField($class, $token.oldFieldName, $token.newFieldName, $objVar, $typeVar, $version, $pathVar, $rootObjVar, $resVar)
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenameField
+  (
+  class:meta::external::language::java::metamodel::Class[1],
+  oldFieldName:String[1..*], newFieldName:String[1..*], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+  ):Code[1]
+{
   j_if(
-  j_eq($objVar->j_invoke('get', [j_string($token.oldFieldName)], javaObject()), j_null())->j_not(),
+  $oldFieldName->size()->range()->tail()->reverse()->fold({i,r|
+  j_ne($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_cast(objectNode()),j_null())->j_and($r)},
+  j_ne($oldFieldName->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_cast(objectNode()),j_null())
+  ),
   j_block([
-  $resVar->j_invoke('put', [j_string($token.newFieldName), $objVar->j_invoke('get', [j_string($token.oldFieldName)], javaVoid())], javaVoid()),
-  $objVar->j_invoke('remove', [j_string($token.oldFieldName)], javaVoid())
+    $newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+    ->j_cast(objectNode())->j_invoke('put', [j_string($newFieldName->last()->toOne()),
+      $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+      ->j_cast(objectNode())->j_invoke('get', [j_string($oldFieldName->last()->toOne())], javaVoid())
+    ], javaVoid()),
+    $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+    ->j_cast(objectNode())->j_invoke('remove', [j_string($oldFieldName->last()->toOne())], javaVoid())
   ])
-  )
   );
 }
 
@@ -673,13 +690,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
 {
   j_if(
   $typeVar->j_invoke('equals', [j_string($token.class)]),
-  j_if(
-  j_eq($objVar->j_invoke('get', [j_string($token.newFieldName)], javaObject()), j_null())->j_not(),
-  j_block([
-  $resVar->j_invoke('put', [j_string($token.oldFieldName), $objVar->j_invoke('get', [j_string($token.newFieldName)], javaVoid())], javaVoid()),
-  $objVar->j_invoke('remove', [j_string($token.newFieldName)], javaVoid())
-  ])
-  )
+  _handleRenameField($class, $token.newFieldName, $token.oldFieldName, $objVar, $typeVar, $version, $pathVar, $rootObjVar, $resVar)
   );
 }
 

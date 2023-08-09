@@ -327,6 +327,37 @@ function meta::pure::changetoken::tests::getVersionsRename():Versions[1]
   );
 }
 
+// This is test Versions: RenameField abc to xyz.def
+function meta::pure::changetoken::tests::getVersionsMove():Versions[1]
+{
+    ^Versions(
+            versions=[
+                ^Version( // base version
+                        version='ftdm:abcdefg123'
+                ),
+                ^Version(
+                        version='ftdm:abcdefg456',
+                        prevVersion='ftdm:abcdefg123',
+                        changeTokens=[
+                            ^AddField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    fieldName='xyz',
+                                    fieldType='SampleNestedClass[1]',
+                                    safeCast=true,
+                                    defaultValue=^ConstValue(value='{"@type":"SampleNestedClass","step":0,"active":true}')
+                            )
+                            ,
+                            ^RenameField(
+                                    class='meta::pure::changetoken::tests::SampleClass',
+                                    oldFieldName='abc',
+                                    newFieldName=['xyz', 'def']
+                            )
+                        ]
+                )
+            ]
+    );
+}
+
 // This is test Versions: AddField with ConstValue('{"@type":"Custom","value":"0d"}')
 function meta::pure::changetoken::tests::getVersionsCustom():Versions[1]
 {
