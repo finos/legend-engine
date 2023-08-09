@@ -1,0 +1,4 @@
+org.finos.legend.connection.jdbc.drivers.H2_JDBCConnectionManager
+org.finos.legend.connection.jdbc.drivers.PostgreSQL_JDBCConnectionManager
+org.finos.legend.connection.jdbc.drivers.MemSQL_JDBCConnectionManager
+org.finos.legend.connection.jdbc.drivers.SQLServer_JDBCConnectionManager

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.connection;
+package org.finos.legend.connection;
 
 import java.sql.Connection;
 import java.util.Properties;
@@ -24,8 +24,8 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.AWSSecretsManagerVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.engine.connection.jdbc.JdbcConnectionProvider;
-import org.finos.legend.engine.connection.jdbc.JdbcConnectionSpecification;
+import org.finos.legend.connection.jdbc.JdbcConnectionProvider;
+import org.finos.legend.connection.jdbc.JdbcConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
