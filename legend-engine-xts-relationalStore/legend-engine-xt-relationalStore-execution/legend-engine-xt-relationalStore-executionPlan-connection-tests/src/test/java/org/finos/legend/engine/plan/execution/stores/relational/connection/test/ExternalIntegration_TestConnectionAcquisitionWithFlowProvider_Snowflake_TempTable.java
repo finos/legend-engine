@@ -123,8 +123,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     {
         return Arrays.asList(new Object[][]{
                 {true,  true,  true,  null},
-                {true,  false, false, ""  },
-                {false, true,  false, "" },
+                {true,  false, false, "Column not found: parent_key_gen_0" },
+                {false, true,  false, "Column not found: parent_key_gen_0" },
                 {false, false, true,  null},
         });
     }
@@ -134,10 +134,10 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, String.format("ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = {}",this.quotedIdentifiersIgnoreCaseFlagForSnowflake));
+        testConnection(connection, String.format("ALTER USER SET QUOTED_IDENTIFIERS_IGNORE_CASE = %s",this.quotedIdentifiersIgnoreCaseFlagForSnowflake));
 
         String planJSON = new String(Files.readAllBytes(Paths.get(ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowflake_TempTable.class.getResource("/snowflake-graph-fetch-plan.json").toURI())));
-        planJSON.replace("QUOTED_IDENTIFIERS_IGNORE_CASE_PLACEHOLDER",quotedIdentifiersIgnoreCaseFlagInConnection.toString());
+        planJSON = planJSON.replace("QUOTED_IDENTIFIERS_IGNORE_CASE_PLACEHOLDER",quotedIdentifiersIgnoreCaseFlagInConnection.toString());
 
         String result = execute(planJSON);
         String expected = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"defects\":[],\"value\":{\"legalName\":\"firm1\",\"employees\":[{\"firstName\":\"pf1\",\"lastName\":\"pl1\"},{\"firstName\":\"pf2\",\"lastName\":\"pl2\"},{\"firstName\":\"pf3\",\"lastName\":\"pl3\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm2\",\"employees\":[{\"firstName\":\"pf4\",\"lastName\":\"pl4\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm3\",\"employees\":[{\"firstName\":\"pf5\",\"lastName\":\"pl5\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm4\",\"employees\":[{\"firstName\":\"pf6\",\"lastName\":\"pl6\"}]}},{\"defects\":[],\"value\":{\"legalName\":\"firm5\",\"employees\":[]}}]}";
