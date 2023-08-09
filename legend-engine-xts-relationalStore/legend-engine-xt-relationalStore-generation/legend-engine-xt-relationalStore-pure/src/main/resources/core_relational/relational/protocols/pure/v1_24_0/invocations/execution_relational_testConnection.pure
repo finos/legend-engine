@@ -66,8 +66,7 @@ function meta::protocols::pure::v1_24_0::transformation::toPureGraph::connection
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
                                                             pair('h2Local', 'LocalH2DatasourceSpecification('),
-                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
-                                                            pair('redshift', 'RedshiftDatasourceSpecification')
+                                                            pair('databricks', 'DatabricksDatasourceSpecification')
                                                           ])
                                             )
                 );
@@ -167,17 +166,7 @@ function meta::protocols::pure::v1_24_0::transformation::toPureGraph::connection
               port = $d.port,
               protocol = $d.protocol,
               httpPath = $d.httpPath
-         ),
-     r:meta::protocols::pure::v1_24_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
-          ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
-              //  _type = 'redshift',
-                clusterID = $r.clusterID,
-                port =$r.port,
-                region = $r.region,
-                databaseName = $r.databaseName,
-                endpointURL = $r.endpointURL,
-                host = $r.host 
-         )   
+         )
    ])->toOneMany());
 }
 

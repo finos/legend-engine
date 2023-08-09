@@ -128,21 +128,6 @@ Class <<typemodifiers.abstract>> meta::protocols::pure::v1_28_0::metamodel::stor
    _type: String[1];
 }
 
-
-Class meta::protocols::pure::v1_28_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification extends meta::protocols::pure::v1_28_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-   
-   clusterID:String[1];
-   region:String[1];
-   host:String[1];
-   databaseName:String[1];
-   port:Integer[1];
-   endpointURL:String[0..1];
-}
-
-
-
-
 Class <<typemodifiers.abstract>> meta::protocols::pure::v1_28_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
    _type: String[1];

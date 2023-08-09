@@ -20,7 +20,6 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.data
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
@@ -92,25 +91,5 @@ public class DataSourceSpecificationParseTreeWalker
         DataSourceSpecificationParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
         return dsSpec;
-    }
-
-    public RedshiftDatasourceSpecification visitRedshiftDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.RedshiftDatasourceSpecificationContext ctx)
-    {
-        RedshiftDatasourceSpecification redshiftSpec = new RedshiftDatasourceSpecification();
-        DataSourceSpecificationParserGrammar.ClusterIDContext clusterID = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.clusterID(), "clusterID", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.DbHostContext host = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbHost(), "dbHost", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.DbPortContext port = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbPort(), "port", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.RegionContext region = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.region(), "region", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.DbNameContext database = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbName(), "name", redshiftSpec.sourceInformation);
-        DataSourceSpecificationParserGrammar.EndpointURLContext endpoint = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.endpointURL(), "endpointURL", redshiftSpec.sourceInformation);
-
-        redshiftSpec.clusterID = PureGrammarParserUtility.fromGrammarString(clusterID.STRING().getText(), true);
-        redshiftSpec.host = PureGrammarParserUtility.fromGrammarString(host.STRING().getText(), true);
-        redshiftSpec.port = Integer.parseInt(port.INTEGER().getText());
-        redshiftSpec.region = PureGrammarParserUtility.fromGrammarString(region.STRING().getText(), true);
-        redshiftSpec.databaseName = PureGrammarParserUtility.fromGrammarString(database.STRING().getText(), true);
-        redshiftSpec.endpointURL = PureGrammarParserUtility.fromGrammarString(endpoint.STRING().getText(), true);
-
-        return redshiftSpec;
     }
 }

@@ -34,7 +34,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
@@ -681,20 +680,6 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + convertString(spec.port, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "protocol: " + convertString(spec.protocol, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "httpPath: " + convertString(spec.httpPath, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation) + "}";
-        }
-        else if (_spec instanceof RedshiftDatasourceSpecification)
-        {
-            RedshiftDatasourceSpecification spec = (RedshiftDatasourceSpecification) _spec;
-            int baseIndentation = 1;
-            return "Redshift\n" +
-                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.host, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "clusterID: " + convertString(spec.clusterID, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "endpointURL: " + convertString(spec.endpointURL, true) + ";\n" +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
 

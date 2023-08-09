@@ -20,7 +20,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl;
@@ -31,8 +30,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_sp
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl;
 
 
 public class DatasourceSpecificationBuilder implements DatasourceSpecificationVisitor<Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>
@@ -82,18 +79,6 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _static._protocol(staticDatasourceSpecification.protocol);
             _static._httpPath(staticDatasourceSpecification.httpPath);
             return _static;
-        }
-        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
-        {
-            RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification redshiftSpec = new Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification"));
-            redshiftSpec._clusterID(redshiftDatasourceSpecification.clusterID);
-            redshiftSpec._databaseName(redshiftDatasourceSpecification.databaseName);
-            redshiftSpec._endpointURL(redshiftDatasourceSpecification.endpointURL);
-            redshiftSpec._host(redshiftDatasourceSpecification.host);
-            redshiftSpec._port(redshiftDatasourceSpecification.port);
-            redshiftSpec._region(redshiftDatasourceSpecification.region);
-            return redshiftSpec;
         }
         return null;
     }
