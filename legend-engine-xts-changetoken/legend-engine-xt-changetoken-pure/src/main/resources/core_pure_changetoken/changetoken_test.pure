@@ -350,6 +350,29 @@ function meta::pure::changetoken::tests::getVersionsRenameProperty():Versions[1]
   );
 }
 
+// This is test Versions: RenameField abc.value to abc.valueCustom
+function meta::pure::changetoken::tests::getVersionsRenameNestedProperty():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^RenameField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            oldFieldName=['abc', 'value'],
+            newFieldName=['abc', 'valueCustom']
+          )
+        ]
+      )
+    ]
+  );
+}
+
 // This is test Versions: RenameField abc to xyz.def
 function meta::pure::changetoken::tests::getVersionsMove():Versions[1]
 {
