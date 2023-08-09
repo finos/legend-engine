@@ -69,7 +69,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
                                                             pair('h2Local', 'LocalH2DatasourceSpecification('),
                                                             pair('snowflake', 'SnowflakeDatasourceSpecification'),
-                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
                                                             pair('redshift', 'RedshiftDatasourceSpecification')
                                                           ])
                                             )
@@ -193,14 +192,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             role = $s.role,
             enableQueryTags = $s.enableQueryTags
         ),
-      d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
-          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
-              // _type = 'databricks',
-              hostname = $d.hostname,
-              port = $d.port,
-              protocol = $d.protocol,
-              httpPath = $d.httpPath
-         ),
      r:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
           ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
               //  _type = 'redshift',

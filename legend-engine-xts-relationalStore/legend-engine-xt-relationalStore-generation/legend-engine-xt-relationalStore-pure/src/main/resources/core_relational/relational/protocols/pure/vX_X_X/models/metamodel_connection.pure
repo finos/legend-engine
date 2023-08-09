@@ -91,14 +91,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    databaseName: String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-    hostname:String[1];
-    port:String[1];
-    protocol:String[1];
-    httpPath:String[1];
-}
-
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
     accountName : String[1];

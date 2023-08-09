@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,28 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::databr
     transfers_connection_transformAuthenticationStrategy = [
     ],
     transfers_connection_transformDatasourceSpecification = [
+        d:meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification[1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification(
+                    _type = 'databricks',
+                    hostname = $d.hostname,
+                    port = $d.port,
+                    protocol = $d.protocol,
+                    httpPath = $d.httpPath
+                )
     ],
     reverse_transfers_typeLookups = [
+        pair('databricks', 'DatabricksDatasourceSpecification')
     ],
     reverse_transfers_connection_transformAuthenticationStrategy = [
     ],
     reverse_transfers_connection_transformDatasourceSpecification = [
+        d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
+                ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
+                    hostname = $d.hostname,
+                    port = $d.port,
+                    protocol = $d.protocol,
+                    httpPath = $d.httpPath
+                )
     ]
   )
 }
