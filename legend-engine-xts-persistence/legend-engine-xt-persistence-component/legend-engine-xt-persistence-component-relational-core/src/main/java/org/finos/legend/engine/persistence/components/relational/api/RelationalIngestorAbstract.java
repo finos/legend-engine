@@ -41,6 +41,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selec
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.ingestmode.TempDatasetsEnricher;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -177,23 +178,92 @@ public abstract class RelationalIngestorAbstract
         return builder.build();
     }
 
+    // ---------- Private Fields ----------
+    private IngestMode enrichedIngestMode;
+    private Datasets enrichedDatasets;
+    private Transformer<SqlGen, SqlPlan> transformer;
+    private Executor<SqlGen, TabularData, SqlPlan> executor;
+    private Resources.Builder resourcesBuilder;
+    private GeneratorResult generatorResult;
+    boolean mainDatasetExists;
+    private Planner planner;
+
+
     // ---------- API ----------
 
-    public IngestorResult ingest(RelationalConnection connection, Datasets datasets)
+    /*
+    - Initializes executor
+    - @return : The methods returns the Executor to the caller enabling them to handle their own transaction
+    */
+    public Executor init(RelationalConnection connection)
     {
-        return ingest(connection, datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
+        this.executor = relationalSink().getRelationalExecutor(connection);
+        return executor;
     }
 
-    public List<IngestorResult> ingestWithDataSplits(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    /*
+    - Create Datasets
+    */
+    public Datasets create(Datasets datasets)
+    {
+        init(datasets);
+        createAllDatasets();
+        return this.enrichedDatasets;
+    }
+
+    /*
+    - Evolve Schema of Target table based on schema changes in staging table
+    */
+    public Datasets evolve(Datasets datasets)
+    {
+        init(datasets);
+        evolveSchema();
+        return this.enrichedDatasets;
+    }
+
+    /*
+    - Perform ingestion from staging to main dataset based on the Ingest mode, executes in current transaction
+    */
+    public IngestorResult ingest(Datasets datasets)
+    {
+        init(datasets);
+        return ingest(Arrays.asList()).stream().findFirst().orElseThrow(IllegalStateException::new);
+    }
+
+    /*
+    Perform full ingestion from Staging to Target table based on the Ingest mode
+    Full Ingestion covers:
+    1. Export external dataset
+    2. Create tables
+    3. Evolves Schema
+    4. Ingestion from staging to main dataset in a transaction
+     */
+    public IngestorResult performFullIngestion(RelationalConnection connection, Datasets datasets)
+    {
+        return performFullIngestion(connection, datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
+    }
+
+    /*
+    Perform ingestion from Staging to Target table based on the Ingest mode, handling different datasplits in the staging data
+    Full Ingestion covers:
+    1. Export external dataset
+    2. Create tables
+    3. Evolves Schema
+    4. Ingestion from staging to main dataset in a transaction
+    */
+    public List<IngestorResult> performFullIngestionWithDataSplits(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
         // Provide the default dataSplit ranges if missing
         if (dataSplitRanges == null || dataSplitRanges.isEmpty())
         {
             dataSplitRanges = Arrays.asList(DataSplitRange.of(1,1));
         }
-        return ingest(connection, datasets, dataSplitRanges);
+        return performFullIngestion(connection, datasets, dataSplitRanges);
     }
 
+    /*
+    Get the latest staging filters stored in the metadata tables for a dataset
+    */
     public List<DatasetFilter> getLatestStagingFilters(RelationalConnection connection, Datasets datasets) throws JsonProcessingException
     {
         MetadataDataset metadataDataset = datasets.metadataDataset().isPresent()
@@ -212,125 +282,54 @@ public abstract class RelationalIngestorAbstract
 
     // ---------- UTILITY METHODS ----------
 
-    private List<IngestorResult> ingest(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    private void evolveSchema()
     {
-        IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
-        Datasets enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
-
-        Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
-        Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
-
-        Resources.Builder resourcesBuilder = Resources.builder();
-        Datasets updatedDatasets = enrichedDatasets;
-
-        // import external dataset reference
-        if (updatedDatasets.stagingDataset() instanceof ExternalDatasetReference)
+        if (mainDatasetExists && generatorResult.schemaEvolutionDataset().isPresent())
         {
-            // update staging dataset reference to imported dataset
-            updatedDatasets = importExternalDataset(enrichedIngestMode, updatedDatasets, transformer, executor);
-            resourcesBuilder.externalDatasetImported(true);
+            enrichedDatasets = enrichedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
+            generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
         }
-
-        // Check if staging dataset is empty
-        if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(updatedDatasets.stagingDataset()))
-        {
-            resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
-        }
-
-        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
-        if (mainDatasetExists && enableSchemaEvolution())
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
-        }
-        else
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, enrichedIngestMode));
-        }
-
-        // Add Optimization Columns if needed
-        enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(updatedDatasets));
-
-        // generate sql plans
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(enrichedIngestMode)
-            .relationalSink(relationalSink())
-            .cleanupStagingData(cleanupStagingData())
-            .collectStatistics(collectStatistics())
-            .createStagingDataset(createStagingDataset())
-            .enableSchemaEvolution(enableSchemaEvolution())
-            .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
-            .caseConversion(caseConversion())
-            .executionTimestampClock(executionTimestampClock())
-            .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
-            .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
-            .batchIdPattern(BATCH_ID_PATTERN)
-            .build();
-
-        Planner planner = Planners.get(updatedDatasets, enrichedIngestMode, plannerOptions());
-        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
-
-        // Create Datasets
-        if (createDatasets())
-        {
-            executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
-        }
-
-        // The below boolean is created before the execution of pre-actions, hence it represents whether the main table has already existed before that
-        if (mainDatasetExists)
-        {
-            // Perform schema evolution
-            if (generatorResult.schemaEvolutionDataset().isPresent())
-            {
-                updatedDatasets = updatedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
-                generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
-            }
-        }
-        // Perform Ingestion
-        List<IngestorResult> result;
-        if (enrichedIngestMode instanceof BulkLoad)
-        {
-            result = performBulkLoad(updatedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode);
-        }
-        else
-        {
-            result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode);
-        }
-        return result;
     }
 
-    private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
-        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode)
+    private void createAllDatasets()
     {
+        executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+    }
+
+    private List<IngestorResult> ingest(List<DataSplitRange> dataSplitRanges)
+    {
+        if (enrichedIngestMode instanceof BulkLoad)
+        {
+            return performBulkLoad(enrichedDatasets, transformer, planner, executor, generatorResult, enrichedIngestMode);
+        }
+        else
+        {
+            return performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode);
+        }
+    }
+
+    private List<IngestorResult> performFullIngestion(RelationalConnection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    {
+        // 1. init
+        init(connection);
+        init(datasets);
+
+        // 2. Create Datasets
+        if (createDatasets())
+        {
+            createAllDatasets();
+        }
+
+        // Evolve Schema
+        evolveSchema();
+
+        // Perform Ingestion
+        List<IngestorResult> result;
         try
         {
-            List<IngestorResult> results = new ArrayList<>();
             executor.begin();
-            int dataSplitIndex = 0;
-            int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
-            do
-            {
-                Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
-                // Extract the Placeholders values
-                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange);
-                // Load main table, extract stats and update metadata table
-                Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
-                IngestorResult result = IngestorResult.builder()
-                    .putAllStatisticByName(statisticsResultMap)
-                    .updatedDatasets(datasets)
-                    .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
-                    .dataSplitRange(dataSplitRange)
-                    .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
-                    .status(IngestStatus.SUCCEEDED)
-                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-                    .build();
-                results.add(result);
-                dataSplitIndex++;
-            }
-            while (planner.dataSplitExecutionSupported() && dataSplitIndex < dataSplitsCount);
-            // Clean up
-            executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
+            result = ingest(dataSplitRanges);
             executor.commit();
-            return results;
         }
         catch (Exception e)
         {
@@ -341,6 +340,103 @@ public abstract class RelationalIngestorAbstract
         {
             executor.close();
         }
+        return result;
+    }
+
+
+    private void init(Datasets datasets)
+    {
+        // Validation: init(Connection) must have been invoked
+        if (this.executor == null)
+        {
+            throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
+        }
+        // 1. Case handling
+        enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
+
+        // 2. Initialize transformer
+        transformer = new RelationalTransformer(relationalSink(), transformOptions());
+        resourcesBuilder = Resources.builder();
+
+        // 3. import external dataset
+        if (enrichedDatasets.stagingDataset() instanceof ExternalDatasetReference)
+        {
+            enrichedDatasets = importExternalDataset(enrichedDatasets);
+        }
+
+        // 4. Check if staging dataset is empty
+        if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(enrichedDatasets.stagingDataset()))
+        {
+            resourcesBuilder.stagingDataSetEmpty(datasetEmpty(enrichedDatasets.stagingDataset(), transformer, executor));
+        }
+
+        // 5. Check if main Dataset Exists
+        mainDatasetExists = executor.datasetExists(enrichedDatasets.mainDataset());
+        if (mainDatasetExists && enableSchemaEvolution())
+        {
+            enrichedDatasets = enrichedDatasets.withMainDataset(constructDatasetFromDatabase(executor, enrichedDatasets.mainDataset()));
+        }
+        else
+        {
+            enrichedDatasets = enrichedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(enrichedDatasets, enrichedIngestMode));
+        }
+
+        // 6. Add Optimization Columns if needed
+        enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(enrichedDatasets));
+
+        // 7. Enrich temp Datasets
+        enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
+
+        // 8. generate sql plans
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(enrichedIngestMode)
+                .relationalSink(relationalSink())
+                .cleanupStagingData(cleanupStagingData())
+                .collectStatistics(collectStatistics())
+                .createStagingDataset(createStagingDataset())
+                .enableSchemaEvolution(enableSchemaEvolution())
+                .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
+                .caseConversion(caseConversion())
+                .executionTimestampClock(executionTimestampClock())
+                .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
+                .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
+                .batchIdPattern(BATCH_ID_PATTERN)
+                .build();
+
+        planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions());
+        generatorResult = generator.generateOperations(enrichedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
+    }
+
+    private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
+        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode)
+    {
+         List<IngestorResult> results = new ArrayList<>();
+         int dataSplitIndex = 0;
+         int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
+         do
+         {
+             Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
+             // Extract the Placeholders values
+             Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange);
+             // Load main table, extract stats and update metadata table
+             Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
+             IngestorResult result = IngestorResult.builder()
+                 .putAllStatisticByName(statisticsResultMap)
+                 .updatedDatasets(datasets)
+                 .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+                 .dataSplitRange(dataSplitRange)
+                 .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
+                 .status(IngestStatus.SUCCEEDED)
+                 .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                 .build();
+             results.add(result);
+             dataSplitIndex++;
+         }
+         while (planner.dataSplitExecutionSupported() && dataSplitIndex < dataSplitsCount);
+         // Clean up
+         executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
+         return results;
     }
 
     private Map<StatisticName, Object> loadData(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Map<String, String> placeHolderKeyValues)
@@ -366,37 +462,23 @@ public abstract class RelationalIngestorAbstract
 
     private List<IngestorResult> performBulkLoad(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, IngestMode ingestMode)
     {
-        try
-        {
-            List<IngestorResult> results = new ArrayList<>();
-            executor.begin();
-            Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
+        List<IngestorResult> results = new ArrayList<>();
+        Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
-            // Execute ingest SqlPlan
-            IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues);
-            // Execute metadata ingest SqlPlan
-            if (generatorResult.metadataIngestSqlPlan().isPresent())
-            {
-                executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
-            }
+        // Execute ingest SqlPlan
+        IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), placeHolderKeyValues);
+        // Execute metadata ingest SqlPlan
+        if (generatorResult.metadataIngestSqlPlan().isPresent())
+        {
+            executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
+        }
 
-            results.add(result);
-            executor.commit();
-            return results;
-        }
-        catch (Exception e)
-        {
-            executor.revert();
-            throw e;
-        }
-        finally
-        {
-            executor.close();
-        }
+        results.add(result);
+        return results;
     }
 
 
-    private Datasets importExternalDataset(IngestMode ingestMode, Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
+    private Datasets importExternalDataset(Datasets datasets)
     {
         ExternalDatasetReference externalDatasetReference = (ExternalDatasetReference) datasets.stagingDataset();
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
@@ -410,8 +492,8 @@ public abstract class RelationalIngestorAbstract
         // TODO : Auto infer schema in future
 
         // Prepare DigestInfo
-        boolean hasDigestField = ingestMode.accept(IngestModeVisitors.DIGEST_REQUIRED);
-        Optional<String> digestFieldOptional = ingestMode.accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD);
+        boolean hasDigestField = enrichedIngestMode.accept(IngestModeVisitors.DIGEST_REQUIRED);
+        Optional<String> digestFieldOptional = enrichedIngestMode.accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD);
         boolean populateDigest = hasDigestField && externalDatasetReference.schema().fields().stream().noneMatch(field -> field.name().equalsIgnoreCase(digestFieldOptional.orElseThrow(IllegalStateException::new)));
 
         if (populateDigest)
@@ -425,15 +507,16 @@ public abstract class RelationalIngestorAbstract
         Datasets updatedDatasets = datasets.withStagingDataset(extractedStagingDatasetDefinition);
 
         // Create staging table
-        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(extractedStagingDatasetDefinition, false);
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(extractedStagingDatasetDefinition, true);
         SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
         executor.executePhysicalPlan(tableCreationPhysicalPlan);
 
         // Load staging data
-        Set<String> metaFields = ingestMode.accept(IngestModeVisitors.META_FIELDS_TO_EXCLUDE_FROM_DIGEST);
+        Set<String> metaFields = enrichedIngestMode.accept(IngestModeVisitors.META_FIELDS_TO_EXCLUDE_FROM_DIGEST);
         DigestInfo digestInfo = DigestInfo.builder().populateDigest(populateDigest).digestField(digestFieldOptional.orElse(null)).addAllMetaFields(metaFields).build();
         Importer importer = Importers.forExternalDatasetReference(externalDatasetReference, transformer, executor);
         importer.importData(externalDatasetReference, digestInfo);
+        resourcesBuilder.externalDatasetImported(true);
 
         return updatedDatasets;
     }

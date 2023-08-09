@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.execu
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.TableId;
+import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -32,7 +33,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.constraints.columns.PKColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
@@ -156,8 +157,13 @@ public class BigQueryHelper implements RelationalExecutionHelper
         return tableExists;
     }
 
-    public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
+    public void validateDatasetSchema(Dataset dataset, TypeMapping typeMapping)
     {
+        if (!(typeMapping instanceof  DataTypeMapping))
+        {
+            throw new IllegalStateException("Only DataTypeMapping allowed in validateDatasetSchema");
+        }
+        DataTypeMapping datatypeMapping = (DataTypeMapping) typeMapping;
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
 
@@ -201,8 +207,13 @@ public class BigQueryHelper implements RelationalExecutionHelper
         validateColumns(userColumns, dbColumns);
     }
 
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
+    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, TypeMapping typeMapping)
     {
+        if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+        {
+            throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
+        }
+        JdbcPropertiesToLogicalDataTypeMapping mapping = (JdbcPropertiesToLogicalDataTypeMapping) typeMapping;
         List<String> primaryKeysInDb = this.fetchPrimaryKeys(tableName, schemaName, databaseName);
         com.google.cloud.bigquery.Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
 

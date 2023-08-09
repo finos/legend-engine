@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.relational.sql;
 
+import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
-public interface JdbcPropertiesToLogicalDataTypeMapping
+public interface JdbcPropertiesToLogicalDataTypeMapping extends TypeMapping
 {
     String NUMBER = "NUMBER";
     String TINYINT = "TINYINT";

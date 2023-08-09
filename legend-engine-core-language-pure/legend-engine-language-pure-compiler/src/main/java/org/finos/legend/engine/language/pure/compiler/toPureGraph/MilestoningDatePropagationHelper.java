@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -33,7 +34,9 @@ import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.Mi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.AnnotatedElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
@@ -230,8 +233,12 @@ public class MilestoningDatePropagationHelper
         }
         else if (property._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
         {
-            return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) property._owner())._originalMilestonedProperties().toList().select(prop -> prop._name() != property._name()).getFirst()._genericType()._rawType();
-
+            MutableList<? extends Property<? extends Object, ? extends Object>> milestonedProperty = ((Association) property._owner())._originalMilestonedProperties().toList().select(prop -> prop._name() != property._name());
+            if (milestonedProperty.isEmpty())
+            {
+                throw new EngineException("The property '" + property._name() + "' is milestoned with stereotypes: [ businesstemporal ] and requires date parameters: [ businessDate ]", EngineErrorType.COMPILATION);
+            }
+            return milestonedProperty.getFirst()._genericType()._rawType();
         }
         return null;
     }

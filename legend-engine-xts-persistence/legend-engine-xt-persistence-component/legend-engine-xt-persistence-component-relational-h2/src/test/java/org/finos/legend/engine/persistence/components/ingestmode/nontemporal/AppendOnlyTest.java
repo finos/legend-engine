@@ -388,7 +388,7 @@ class AppendOnlyTest extends BaseTest
                 .build();
         try
         {
-            ingestor.ingest(JdbcConnection.of(h2Sink.connection()), datasets);
+            ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
             Assertions.fail("Should not be successful");
         }
         catch (Exception e)

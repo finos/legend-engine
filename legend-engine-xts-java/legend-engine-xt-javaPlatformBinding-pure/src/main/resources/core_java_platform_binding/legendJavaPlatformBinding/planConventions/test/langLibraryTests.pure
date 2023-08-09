@@ -86,17 +86,21 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testIf() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
-      ->addTest('if then', {|if(true, |1, |2)}, 'true ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+      ->addTest('if then', {|if(true, |1, |2)}, 'true ? 1L : 2L', javaLong())
+               ->assert('(%s) == 1L')
+       ->addTest('nested if multi expression', {|
+                                if(true, |  1 ,|if(true,| 2, | let a= 1; $a+2;);)}, 'true ? 1L : true ? 2L : ((java.util.function.Supplier<Long>) () -> { long a = 1L; return java.util.Arrays.asList(a, 2L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue(); } ).get()', javaLong())
          ->assert('(%s) == 1L')
-      ->addTest('if else', {|if(false, |1, |2)}, 'false ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+      ->addTest('if else', {|if(false, |1, |2)}, 'false ? 1L : 2L', javaLong())
          ->assert('(%s) == 2L')
-      ->addTest('if gives empty vs 1', {|if(false, |'A', |[])}, 'false ? ((java.util.function.Supplier<String>) () -> "A").get() : ((java.util.function.Supplier<String>) () -> null).get()', javaString())
+      ->addTest('if gives empty vs 1', {|if(false, |'A', |[])}, 'false ? "A" : null', javaString())
          ->assert('(%s) == null')
-      ->addTest('if gives empty vs Many', {|if(false, |['A', 'B'], |[])}, 'false ? ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Arrays.asList("A", "B")).get() : ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Collections.emptyList()).get()', javaList(javaString()))
+      ->addTest('if gives empty vs Many', {|if(false, |['A', 'B'], |[])}, 'false ? java.util.Arrays.asList("A", "B") : java.util.Collections.<String>emptyList()', javaList(javaString()))
          ->assert('(%s).isEmpty()')
+      ->addTest('if many else one', {|if(false, |['A', 'B'], |'C')}, 'false ? java.util.Arrays.asList("A", "B") : (java.util.List<String>) java.util.Arrays.asList("C")', javaList(javaString()))
+         ->assert('(%s).equals( java.util.Arrays.asList("C"))')
       ->runTests();
 }
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testOr() : Boolean[1]
