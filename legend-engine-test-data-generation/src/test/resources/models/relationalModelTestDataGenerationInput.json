@@ -1,0 +1,641 @@
+{
+  "query": {
+    "_type": "lambda",
+    "body": [
+      {
+        "_type": "func",
+        "function": "project",
+        "parameters": [
+          {
+            "_type": "func",
+            "function": "getAll",
+            "parameters": [
+              {
+                "_type": "packageableElementPtr",
+                "fullPath": "model::Firm"
+              }
+            ]
+          },
+          {
+            "_type": "collection",
+            "multiplicity": {
+              "lowerBound": 2,
+              "upperBound": 2
+            },
+            "values": [
+              {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ],
+                    "property": "id"
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "x"
+                  }
+                ]
+              },
+              {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "employees"
+                      }
+                    ],
+                    "property": "firstName"
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "x"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "_type": "collection",
+            "multiplicity": {
+              "lowerBound": 2,
+              "upperBound": 2
+            },
+            "values": [
+              {
+                "_type": "string",
+                "value": "Id"
+              },
+              {
+                "_type": "string",
+                "value": "Employees/First Name"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": []
+  },
+  "mapping": "model::NewMapping",
+  "model": {
+    "_type": "data",
+    "elements": [
+      {
+        "_type": "class",
+        "name": "Firm",
+        "package": "model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1
+            },
+            "name": "employees",
+            "type": "model::Person"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          }
+        ],
+        "superTypes": [
+          "model::LegalEntity"
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "Person",
+        "package": "model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "firstName",
+            "type": "String"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "lastName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "class",
+        "name": "LegalEntity",
+        "package": "model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "legalName",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "_type": "relational",
+        "filters": [],
+        "includedStores": [],
+        "joins": [
+          {
+            "name": "FirmPerson",
+            "operation": {
+              "_type": "dynaFunc",
+              "funcName": "equal",
+              "parameters": [
+                {
+                  "_type": "column",
+                  "column": "firm_id",
+                  "table": {
+                    "_type": "Table",
+                    "database": "model::Test",
+                    "mainTableDb": "model::Test",
+                    "schema": "default",
+                    "table": "PersonTable"
+                  },
+                  "tableAlias": "PersonTable"
+                },
+                {
+                  "_type": "column",
+                  "column": "id",
+                  "table": {
+                    "_type": "Table",
+                    "database": "model::Test",
+                    "mainTableDb": "model::Test",
+                    "schema": "default",
+                    "table": "FirmTable"
+                  },
+                  "tableAlias": "FirmTable"
+                }
+              ]
+            }
+          }
+        ],
+        "name": "Test",
+        "package": "model",
+        "schemas": [
+          {
+            "name": "default",
+            "tables": [
+              {
+                "columns": [
+                  {
+                    "name": "id",
+                    "nullable": false,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "Legal_name",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 200
+                    }
+                  }
+                ],
+                "name": "FirmTable",
+                "primaryKey": [
+                  "id"
+                ]
+              },
+              {
+                "columns": [
+                  {
+                    "name": "id",
+                    "nullable": false,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "firm_id",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "firstName",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 200
+                    }
+                  },
+                  {
+                    "name": "lastName",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Varchar",
+                      "size": 200
+                    }
+                  }
+                ],
+                "name": "PersonTable",
+                "primaryKey": [
+                  "id"
+                ]
+              }
+            ],
+            "views": []
+          }
+        ]
+      },
+      {
+        "_type": "mapping",
+        "classMappings": [
+          {
+            "_type": "relational",
+            "class": "model::Firm",
+            "distinct": false,
+            "mainTable": {
+              "_type": "Table",
+              "database": "model::Test",
+              "mainTableDb": "model::Test",
+              "schema": "default",
+              "table": "FirmTable"
+            },
+            "primaryKey": [
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "FirmTable"
+                },
+                "tableAlias": "FirmTable"
+              }
+            ],
+            "propertyMappings": [
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "model::Firm",
+                  "property": "employees"
+                },
+                "relationalOperation": {
+                  "_type": "elemtWithJoins",
+                  "joins": [
+                    {
+                      "db": "model::Test",
+                      "name": "FirmPerson"
+                    }
+                  ]
+                },
+                "target": "model_Person"
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "model::Firm",
+                  "property": "id"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "id",
+                  "table": {
+                    "_type": "Table",
+                    "database": "model::Test",
+                    "mainTableDb": "model::Test",
+                    "schema": "default",
+                    "table": "FirmTable"
+                  },
+                  "tableAlias": "FirmTable"
+                }
+              }
+            ],
+            "root": true
+          },
+          {
+            "_type": "relational",
+            "class": "model::Person",
+            "distinct": false,
+            "mainTable": {
+              "_type": "Table",
+              "database": "model::Test",
+              "mainTableDb": "model::Test",
+              "schema": "default",
+              "table": "PersonTable"
+            },
+            "primaryKey": [
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "model::Test",
+                  "mainTableDb": "model::Test",
+                  "schema": "default",
+                  "table": "PersonTable"
+                },
+                "tableAlias": "PersonTable"
+              }
+            ],
+            "propertyMappings": [
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "model::Person",
+                  "property": "firstName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "firstName",
+                  "table": {
+                    "_type": "Table",
+                    "database": "model::Test",
+                    "mainTableDb": "model::Test",
+                    "schema": "default",
+                    "table": "PersonTable"
+                  },
+                  "tableAlias": "PersonTable"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "model::Person",
+                  "property": "lastName"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "lastName",
+                  "table": {
+                    "_type": "Table",
+                    "database": "model::Test",
+                    "mainTableDb": "model::Test",
+                    "schema": "default",
+                    "table": "PersonTable"
+                  },
+                  "tableAlias": "PersonTable"
+                }
+              }
+            ],
+            "root": true
+          },
+          {
+            "_type": "operation",
+            "class": "model::LegalEntity",
+            "operation": "INHERITANCE",
+            "parameters": [],
+            "root": true
+          }
+        ],
+        "enumerationMappings": [],
+        "includedMappings": [],
+        "name": "NewMapping",
+        "package": "model",
+        "tests": []
+      },
+      {
+        "_type": "service",
+        "autoActivateUpdates": true,
+        "documentation": "",
+        "execution": {
+          "_type": "pureSingleExecution",
+          "func": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "project",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "getAll",
+                    "parameters": [
+                      {
+                        "_type": "packageableElementPtr",
+                        "fullPath": "model::Firm"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "x"
+                              }
+                            ],
+                            "property": "id"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "lambda",
+                        "body": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "property",
+                                "parameters": [
+                                  {
+                                    "_type": "var",
+                                    "name": "x"
+                                  }
+                                ],
+                                "property": "employees"
+                              }
+                            ],
+                            "property": "firstName"
+                          }
+                        ],
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "collection",
+                    "multiplicity": {
+                      "lowerBound": 2,
+                      "upperBound": 2
+                    },
+                    "values": [
+                      {
+                        "_type": "string",
+                        "value": "Id"
+                      },
+                      {
+                        "_type": "string",
+                        "value": "Employees/First Name"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "parameters": []
+          },
+          "mapping": "model::NewMapping",
+          "runtime": {
+            "_type": "runtimePointer",
+            "runtime": "model::Runtime"
+          }
+        },
+        "name": "MyService",
+        "owners": [
+          "anonymous"
+        ],
+        "package": "model",
+        "pattern": "/24eec42b-fa3a-47e7-8b6a-c6d939cecae6",
+        "testSuites": [
+          {
+            "_type": "serviceTestSuite",
+            "id": "testSuite_1",
+            "testData": {
+              "connectionsTestData": [
+                {
+                  "data": {
+                    "_type": "relationalCSVData",
+                    "tables": [
+                      {
+                        "schema": "default",
+                        "table": "FirmTable",
+                        "values": "id,Legal_name"
+                      },
+                      {
+                        "schema": "default",
+                        "table": "PersonTable",
+                        "values": "id,firm_id,firstName,lastName"
+                      }
+                    ]
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            },
+            "tests": [
+              {
+                "_type": "serviceTest",
+                "assertions": [
+                  {
+                    "_type": "equalToJson",
+                    "expected": {
+                      "_type": "externalFormat",
+                      "contentType": "application/json",
+                      "data": "[ {\n  \"First Name\" : \"'test\"\n} ]"
+                    },
+                    "id": "assertion_1"
+                  }
+                ],
+                "id": "test_1",
+                "keys": [],
+                "serializationFormat": "PURE_TDSOBJECT"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_type": "runtime",
+        "name": "Runtime",
+        "package": "model",
+        "runtimeValue": {
+          "_type": "engineRuntime",
+          "connections": [
+            {
+              "store": {
+                "path": "model::Test",
+                "type": "STORE"
+              },
+              "storeConnections": [
+                {
+                  "connection": {
+                    "_type": "connectionPointer",
+                    "connection": "model::MyC"
+                  },
+                  "id": "connection_1"
+                }
+              ]
+            }
+          ],
+          "mappings": [
+            {
+              "path": "model::NewMapping",
+              "type": "MAPPING"
+            }
+          ]
+        }
+      },
+      {
+        "_type": "connection",
+        "connectionValue": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "databaseType": "H2",
+          "datasourceSpecification": {
+            "_type": "h2Local",
+            "testDataSetupSqls": [
+              "Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (3, 'Firm2X');\nInsert into FirmTable (id, Legal_Name) values (2, 'Firm3X');\nInsert into FirmTable (id, Legal_Name) values (1, 'FirmX');\nInsert into FirmTable (id, Legal_Name) values (4, 'Firm3X');\nInsert into FirmTable (id, Legal_Name) values (7, 'Firm3X');\n\nInsert into FirmTable (id, Legal_Name) values (10, 'Firm3X');\n\nInsert into FirmTable (id, Legal_Name) values (9, 'Firm3X');\n\nInsert into PersonTable (id, firm_id, lastName, firstName) values (1, 1, 'https://github.com/YannanGao-gs/legend-engine/tree/master', 'Doe');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (1, 2, 'https://github.com/YannanGao-gs/legend-engine/tree/master', 'Doe');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (1, 3, 'https://github.com/YannanGao-gs/legend-engine/tree/master', 'Doe');\n"
+            ]
+          },
+          "element": "model::Test",
+          "type": "H2"
+        },
+        "name": "MyC",
+        "package": "model"
+      }
+    ]
+  },
+  "runtime": "model::Runtime"
+}
