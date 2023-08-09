@@ -16,10 +16,9 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sql.v
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.sqldom.common.FunctionName;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -40,8 +39,8 @@ public class BatchEndTimestampVisitor implements LogicalPlanVisitor<BatchEndTime
         }
         else
         {
-            FunctionImpl currentDatetime = FunctionImpl.builder().functionName(FunctionName.CURRENT_DATETIME).build();
-            return new FunctionVisitor().visit(prev, currentDatetime, context);
+            prev.push(new Function(FunctionName.CURRENT_DATETIME, null, context.quoteIdentifier()));
+            return new VisitorResult();
         }
     }
 }
