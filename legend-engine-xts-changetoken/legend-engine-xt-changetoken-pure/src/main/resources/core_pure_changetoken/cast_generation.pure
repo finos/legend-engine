@@ -479,11 +479,14 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
   oldFieldName:String[1..*], newFieldName:String[1..*], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
   ):Code[1]
 {
-  j_if(
   $oldFieldName->size()->range()->tail()->reverse()->fold({i,r|
-  $oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap())->j_and($r)},
+  j_if($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap()),$r,
+  j_if(j_ne($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar),j_null()),
+  javaRuntimeException()->j_new(j_plus(j_string('Source is not a map: '), j_string($oldFieldName->take($i)->joinStrings('.'))))->j_throw()
+  ))},
+  j_if(
   j_ne($oldFieldName->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar),j_null())
-  ),
+  ,
   j_block(
   $newFieldName->size()->range()->tail()->map({i|
     j_if($newFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap())->j_not(),
@@ -506,6 +509,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
     $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
     ->j_cast(objectNode())->j_invoke('remove', [j_string($oldFieldName->last()->toOne())], javaVoid())
   ])
+  )
   )
   );
 }
