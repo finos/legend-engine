@@ -41,6 +41,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -48,11 +49,24 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RelationalAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
@@ -64,8 +78,26 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_relational_mapping_GroupByMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_mapping_RelationalAssociationImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
+import org.finos.legend.pure.generated.Root_meta_relational_runtime_RelationalExecutionContext_Impl;
+import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -85,10 +117,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -345,7 +379,18 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraConnectionPostProcessor),
                                 context));
 
-                        //we currently need to add both as __queryPostProcessorsWithParameter is used for plan generation
+                        List<DatabaseAuthenticationFlowKey> flowKeys = context.getCompilerExtensions().getExtensions().stream().filter(ext -> ext instanceof IRelationalCompilerExtension).map(ext -> ((IRelationalCompilerExtension) ext).getFlowKeys()).flatMap(Collection::stream).collect(Collectors.toList());
+
+                        if (relationalDatabaseConnection.databaseType == null)
+                        {
+                            relationalDatabaseConnection.databaseType = relationalDatabaseConnection.type;
+                        }
+                        if (!flowKeys.contains(DatabaseAuthenticationFlowKey.newKey(relationalDatabaseConnection.databaseType, relationalDatabaseConnection.datasourceSpecification.getClass(), relationalDatabaseConnection.authenticationStrategy.getClass())))
+                        {
+                            context.pureModel.addWarnings(Lists.mutable.with(new Warning(connectionValue.sourceInformation, "Unsupported Database Authentication Flow with Database Type: " + relationalDatabaseConnection.databaseType.name() + ", Datasource: " + relationalDatabaseConnection.datasourceSpecification.getClass().getSimpleName() + ", Authentication: " + relationalDatabaseConnection.authenticationStrategy.getClass().getSimpleName())));
+                        }
+
+                        //we currently need to add both as __queryPosNDattProcessorsWithParameter is used for plan generation
                         //and _postProcessors is used for serialization of plan to protocol
                         relational._datasourceSpecification(datasource);
                         relational._authenticationStrategy(authenticationStrategy);
@@ -592,4 +637,19 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(RelationalValidator::validateRelationalMapping);
     }
 
+    @Override
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Databricks, DatabricksDatasourceSpecification.class, ApiTokenAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Redshift, RedshiftDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.H2, StaticDatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.H2, LocalH2DatasourceSpecification.class, DefaultH2AuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.H2, LocalH2DatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.SqlServer, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Postgres, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Postgres, StaticDatasourceSpecification.class, MiddleTierUserNamePasswordAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.MemSQL, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class)
+        );
+    }
 }

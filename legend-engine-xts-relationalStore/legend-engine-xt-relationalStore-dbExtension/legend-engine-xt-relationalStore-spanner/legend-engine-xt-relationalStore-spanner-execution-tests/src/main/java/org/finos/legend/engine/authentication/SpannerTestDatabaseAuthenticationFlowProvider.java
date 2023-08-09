@@ -24,23 +24,23 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public class SpannerTestDatabaseAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
-  private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ?
-      extends AuthenticationStrategy>> flows()
-  {
-    return Lists.immutable.of(
-        new SpannerWithGCPApplicationDefaultCredentialsFlow()
-    );
-  }
-
-  @Override
-  public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
-  {
-    if (!(configuration instanceof SpannerTestDatabaseAuthenticationFlowProviderConfiguration))
+    private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ?
+            extends AuthenticationStrategy>> flows()
     {
-      String message = "Mismatch in flow provider configuration. It should be an instance of "
-                       + SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
-      throw new RuntimeException(message);
+        return Lists.immutable.of(
+                new SpannerWithGCPApplicationDefaultCredentialsFlow()
+        );
     }
-    flows().forEach(this::registerFlow);
-  }
+
+    @Override
+    public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
+    {
+        if (!(configuration instanceof SpannerTestDatabaseAuthenticationFlowProviderConfiguration))
+        {
+            String message = "Mismatch in flow provider configuration. It should be an instance of "
+                    + SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class.getSimpleName();
+            throw new RuntimeException(message);
+        }
+        flows().forEach(this::registerFlow);
+    }
 }

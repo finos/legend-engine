@@ -16,6 +16,8 @@ package org.finos.legend.engine.authentication;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithStaticUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPWorkloadIdentityFederationFlow;
 import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
@@ -51,6 +53,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new SpannerWithGCPApplicationDefaultCredentialsFlow(),
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
+                new H2LocalWithStaticUserPasswordFlow(),
+                new H2LocalWithDefaultUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(databaseAuthenticationFlowProviderConfiguration.credentialProviderProvider),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
@@ -58,8 +62,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow(),
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow(),
-                new SqlServerStaticWithUserPasswordFlow()
+                new TrinoWithUserPasswordFlow()
         );
     }
 
