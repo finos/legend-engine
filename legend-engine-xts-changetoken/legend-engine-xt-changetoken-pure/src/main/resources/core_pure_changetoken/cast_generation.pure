@@ -484,7 +484,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
   j_ne($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_cast(objectNode()),j_null())->j_and($r)},
   j_ne($oldFieldName->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_cast(objectNode()),j_null())
   ),
-  j_block([
+  j_block(
+  $newFieldName->size()->range()->tail()->map({i|
+    j_if(j_eq($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_cast(objectNode()),j_null()),
+      javaRuntimeException()->j_new(j_plus(j_string('Missing destination object: '), j_string($oldFieldName->at($i-1))))->j_throw()
+  )})->concatenate([
     $newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
     ->j_cast(objectNode())->j_invoke('put', [j_string($newFieldName->last()->toOne()),
       $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
@@ -493,6 +497,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
     $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
     ->j_cast(objectNode())->j_invoke('remove', [j_string($oldFieldName->last()->toOne())], javaVoid())
   ])
+  )
   );
 }
 
