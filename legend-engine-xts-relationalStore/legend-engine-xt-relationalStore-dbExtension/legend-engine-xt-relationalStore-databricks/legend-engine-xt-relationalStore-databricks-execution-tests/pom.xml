@@ -51,6 +51,15 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-protocol</artifactId>
+            <version>4.21.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
+        </dependency>
         <!-- LEGEND ENGINE -->
 
         <!-- ECLIPSE COLLECTIONS -->
@@ -80,14 +89,20 @@
             <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
+            <version>4.21.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

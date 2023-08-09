@@ -18,6 +18,19 @@
         <groupId>org.finos.legend.engine</groupId>
         <version>4.21.1-SNAPSHOT</version>
     </parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
+            <version>4.21.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-databricks</artifactId>
@@ -27,7 +40,7 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-databricks-execution</module>
-<!--        <module>legend-engine-xt-relationalStore-databricks-execution-tests</module>-->
+        <module>legend-engine-xt-relationalStore-databricks-execution-tests</module>
         <module>legend-engine-xt-relationalStore-databricks-grammar</module>
         <module>legend-engine-xt-relationalStore-databricks-protocol</module>
 <!--        <module>legend-engine-xt-relationalStore-databricks-pure</module>-->
