@@ -37,6 +37,10 @@ public class PureIDELight extends PureIDEServer
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
         return Lists.mutable.<RepositoryCodeStorage>empty()
+                .with(this.buildCore("legend-engine-config/legend-engine-pure-code-compiled-core-configuration", "configuration"))
+                .with(this.buildCore("legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
+                .with(this.buildCore("legend-engine-pure-code/legend-engine-pure-code-compiled-core", ""))
+                .with(this.buildCore("legend-engine-core-language-pure/legend-engine-protocol-generation-pure", "protocol_generation"))
                 .with(this.buildCore("legend-engine-xts-persistence/legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xts-mastery/legend-engine-xt-mastery-pure", "mastery"))
                 .with(this.buildCore("legend-engine-xts-functionActivator/legend-engine-xt-functionActivator-pure", "function_activator"))
@@ -78,7 +82,6 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-pure", "external-language-java"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-featureBased-pure", "external-language-java-feature-based-generation"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
-                .with(this.buildCore("legend-engine-config/legend-engine-pure-code-compiled-core-configuration", "configuration"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure-metamodel", "external-query-sql-metamodel"))
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xts-authentication/legend-engine-xt-authentication-pure", "authentication"))
@@ -87,8 +90,6 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
                 .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
                 .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure","service"))
-                .with(this.buildCore("legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
-                .with(this.buildCore("legend-engine-pure-code/legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure","external-tableformat-iceberg"))
                ;
     }
