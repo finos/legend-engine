@@ -131,6 +131,7 @@ public class GraphQLExecute extends GraphQL
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
+        MetricsHandler.createMetrics(this.getClass());
 
     }
 
