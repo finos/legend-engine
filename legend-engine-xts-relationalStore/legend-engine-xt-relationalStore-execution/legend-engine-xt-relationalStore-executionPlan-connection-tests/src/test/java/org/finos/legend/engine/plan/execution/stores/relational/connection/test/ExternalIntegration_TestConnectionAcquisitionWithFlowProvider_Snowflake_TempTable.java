@@ -123,8 +123,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     {
         return Arrays.asList(new Object[][]{
                 {true,  true,  true,  null},
-                {true,  false, false, "Column not found: parent_key_gen_0" },
-                {false, true,  false, "Column not found: parent_key_gen_0" },
+                {true,  false, false, "java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: Column not found: parent_key_gen_0" },
+                {false, true,  false, "java.lang.RuntimeException: java.lang.RuntimeException: java.sql.SQLException: Column not found: PARENT_KEY_GEN_0" },
                 {false, false, true,  null},
         });
     }
