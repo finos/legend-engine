@@ -170,6 +170,181 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testNestedIfStatements()
+    {
+        test("function testNestedIfStatements(): Any[*]\n" +
+                "{\n" +
+                "  if(5 > 1, |'5 is greater than one!', |\n" +
+                "    if(2 > 1, |'2 is greater than one!', |\n" +
+                "    if(3 > 1, |'3 is greater than one!', |\n" +
+                "    if(4 > 1, |'4 is greater than one!', |'Bad Math!'))));\n" +
+                "  if(5 > 1, |'5 is greater than one!', |\n" +
+                "    if(2 > 1, |let b = 5, |\n" +
+                "    if(3 > 1, |'3 is greater than one!', |\n" +
+                "    if(4 > 1, |testNestedIfStatements(), |'Bad Math!'))));\n" +
+                "  let a = 5;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationalSimpleFull()
+    {
+        test("###Relational\n" +
+                "Database simple::dbInc\n" +
+                "(\n" +
+                "  Schema productSchema\n" +
+                "  (\n" +
+                "    Table productTable\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY,\n" +
+                "      NAME VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "  Table differentPersonTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LEGALNAME VARCHAR(200),\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    CEOID INTEGER\n" +
+                "  )\n" +
+                "  Table otherFirmTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    LEGALNAME VARCHAR(200),\n" +
+                "    ADDRESSID INTEGER\n" +
+                "  )\n" +
+                "  Table addressTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    TYPE INTEGER,\n" +
+                "    NAME VARCHAR(200),\n" +
+                "    STREET VARCHAR(100),\n" +
+                "    COMMENTS VARCHAR(100)\n" +
+                "  )\n" +
+                "  Table locationTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    PERSONID INTEGER,\n" +
+                "    PLACE VARCHAR(200),\n" +
+                "    date DATE\n" +
+                "  )\n" +
+                "  Table placeOfInterestTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    locationID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                "\n" +
+                "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)\n" +
+                "  Join Address_Person(addressTable.ID = personTable.ADDRESSID = personTable.ADDRESSID)\n" +
+                "  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID or addressTable.ID = firmTable.ADDRESSID) and (addressTable.ID = firmTable.YEEEEEE or addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.niketh)\n" +
+                "  Join Address_Person(addressTable.ID = personTable.ADDRESSID and (addressTable.ID = firmTable.ADDRESSID and addressTable.ID = firmTable.ADDRESSID) and addressTable.ID = firmTable.ADDRESSID)\n" +
+                "  Join Firm_Ceo(firmTable.CEOID = personTable.ID)\n" +
+                "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
+                "  Join Person_Location(personTable.ID = locationTable.PERSONID)\n" +
+                "  Join location_PlaceOfInterest(locationTable.ID = placeOfInterestTable.locationID)\n" +
+                "  Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class simple::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  otherNames: String[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  employees: simple::Person[*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Enum simple::GeographicEntityType\n" +
+                "{\n" +
+                "  CITY,\n" +
+                "  COUNTRY,\n" +
+                "  REGION\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person[simple_Person]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    firm: [simple::dbInc]@Firm_Person,\n" +
+                "    locations: [simple::dbInc]@Person_Location,\n" +
+                "    manager: [simple::dbInc]@Person_Manager\n" +
+                "  }\n" +
+                "  simple::Firm[simple_Firm]: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]firmTable\n" +
+                "    legalName: [simple::dbInc]firmTable.LEGALNAME,\n" +
+                "    employees: [simple::dbInc]@Firm_Person\n" +
+                "  }\n" +
+                "\n" +
+                "  PlacesOfInterest: Relational\n" +
+                "  {\n" +
+                "    AssociationMapping\n" +
+                "    (\n" +
+                "      location: [dbInc]@location_PlaceOfInterest,\n" +
+                "      placeOfInterest: [dbInc]@location_PlaceOfInterest\n" +
+                "    )\n" +
+                "  }\n" +
+                "\n" +
+                "  simple::GeographicEntityType: EnumerationMapping GE\n" +
+                "  {\n" +
+                "    CITY: [1]\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testFilterIfCall()
+    {
+        test("###Mapping\n" +
+                "Mapping  meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
+                "    ~filter \n" +
+                "       if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |true, |true), |false)\n" +
+                "    name: $src.name,\n" +
+                "    region: $src.region\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testDerivedPropertyWithMultipleStatements()
     {
         test("Class Firm\n" +

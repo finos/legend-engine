@@ -30,12 +30,16 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
                 "  {\n" +
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
-                "    ~filter if($src.fullName == 'johndoe', |if($src.lastName == 'good', |true, |true), |false)\n" +
+                "    ~filter \n" +
+                "       if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |true, |true), |false)\n" +
                 "    name: $src.name,\n" +
                 "    region: $src.region\n" +
                 "  }\n" +
@@ -46,26 +50,30 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     public void testIncludeDispatch()
     {
         testFormat("###Mapping\n" +
-                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
-                "(\n" +
-                "  include mapping meta::pure::mapping::includedMapping\n" +
-                "  include mapping meta::pure::mapping::DispatchMapping\n" +
-                "\n" +
-                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
-                "  {\n" +
-                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
-                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
-                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
-                "  }\n" +
-                "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
-                "  {\n" +
-                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
-                "    ~filter if($src.fullName == 'johndoe', |if($src.lastName == 'good', |true, |true), |false)\n" +
-                "    name: $src.name,\n" +
-                "    region: $src.region\n" +
-                "  }\n" +
-                ")\n",
+                        "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                        "(\n" +
+                        "  include mapping meta::pure::mapping::includedMapping\n" +
+                        "  include mapping meta::pure::mapping::DispatchMapping\n" +
+                        "\n" +
+                        "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                        "  {\n" +
+                        "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                        "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                        "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                        "    testing:\n" +
+                        "      if($src.fullName == 'johndoe', |\n" +
+                        "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                        "  }\n" +
+                        "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
+                        "  {\n" +
+                        "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
+                        "    ~filter \n" +
+                        "       if($src.fullName == 'johndoe', |\n" +
+                        "        if($src.lastName == 'good', |true, |true), |false)\n" +
+                        "    name: $src.name,\n" +
+                        "    region: $src.region\n" +
+                        "  }\n" +
+                        ")\n",
         "###Mapping\n" +
                 "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
                 "(\n" +
@@ -100,7 +108,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "\n" +
                 "  MappingTests\n" +
@@ -121,7 +131,6 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "        <Object, JSON, model::domain::Source, '{\"oneName\":\"oneName 2\",\"anotherName\":\"anotherName 16\",\"oneDate\":\"2020-02-05\",\"anotherDate\":\"2020-04-13\",\"oneNumber\":24,\"anotherNumber\":29}'>,\n" +
                 "        <Object, XML, SourceClass, '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"{\\\\\"anotherOne\\\\\":\\\\\"movie\\\\\"}\\\"}\"}}}'>\n" +
                 "      ];\n" +
-                // This is a very deeply nested string that represents a JSON, we must be extremely careful with (un)escaping this during serialization or parsing
                 "      assert: '{\"defects\":[],\"value\":{\"name\":\"oneName 99\"},\"source\":{\"defects\":[],\"value\":{\"oneName\":\"oneName 99\"},\"source\":{\"number\":1,\"record\":\"{\\\"oneName\\\":\\\"oneName 99\\\",\\\"anotherName\\\":\\\"{\\\\\"anotherOne\\\\\":\\\\\"movie\\\\\"}\\\"}\"}}}';\n" +
                 "    )\n" +
                 "  ]\n" +
@@ -232,7 +241,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "\n" +
                 "  testSuites:\n" +
@@ -283,7 +294,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "\n" +
                 "  MappingTests\n" +
@@ -352,7 +365,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "\n" +
                 "  testSuites:\n" +
@@ -448,7 +463,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 "\n" +
                 "  testSuites:\n" +
@@ -739,9 +756,14 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  {\n" +
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
                 "    +prop1: String[1]: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    +prop2: Integer[1]: 1,\n" +
+                "    +prop3: Float[1]: 1.0,\n" +
+                "    +prop4: Boolean[1]: true,\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 ")\n");
 
@@ -757,7 +779,9 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    +prop4: Boolean[1]: true,\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
+                "    testing:\n" +
+                "      if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
                 "  }\n" +
                 ")\n");
     }
