@@ -44,26 +44,6 @@ function <<test.Test>> meta::relational::tests::query::take::testSliceByVendor()
    let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s);
 
-   // Sybase is has specific checks
-   
-   let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->slice(3, 5);};
-   
-   let s4 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit 3,2', $s4);
-   
-   let f3 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->slice(3, 5);};
-   
-   let s5 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName" from (select "limitoffset_via_window_subquery"."firstName" as "firstName", "limitoffset_via_window_subquery"."lastName" as "lastName" from '
-                + '(select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME) as "row_number" from personTable as "root") '
-                + 'as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number <= 50) as "subselect" order by "firstName" limit 3,2', $s5);   
-   
-   
-   let f4 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->sort(asc('firstName'))->slice(0,50)->restrict('firstName');};
-   
-   let s6 = toSQLString($f4, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName" from (select "limitoffset_via_window_subquery"."firstName" as "firstName", "limitoffset_via_window_subquery"."lastName" as "lastName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME ASC) as "row_number" from personTable as "root") as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number <= 50) as "subselect"', $s6);      
-   
    let s7 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 rows fetch next 2 rows only', $s7);   
 }
@@ -100,8 +80,6 @@ function <<test.Test>> meta::relational::tests::query::take::testTakeByVendor():
 {               
    let s = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
-   let s2 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s2);
    let s5 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 10', $s5);
 }

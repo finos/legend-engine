@@ -221,12 +221,6 @@ function <<test.Test>> meta::relational::tests::mapping::join::testChainedInnerJ
    assertSameSQL('select "firmpersonbridgetable_0".FIRSTNAME as "firstname", "root".LEGALNAME as "firm", "firmpersonbridgetable_0".LASTNAME as "lastname" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) where "root".LEGALNAME = \'Firm C\'', $result);
 }
 
-function <<test.Test>> meta::relational::tests::mapping::join::testConvertToStringSybase():Boolean[1]
-{
-   let s = toSQLString(|Trade.all()->project([#/Trade/account/name!name#]), MappingForAccountAndTrade, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "accountTable_d_0_d_m1".name as "name" from tradeTable as "root" left outer join accountTable as "accountTable_d_0_d_m1" on (convert(VARCHAR(128), "root".accountID) = "accountTable_d_0_d_m1".ID)', $s);
-}
-
 function <<test.Test>> meta::relational::tests::mapping::join::testConvertToStringH2():Boolean[1]
 {
    let result = execute(|Trade.all()->project([#/Trade/account/name!name#]), MappingForAccountAndTrade, testRuntime(), meta::relational::extension::relationalExtensions());

@@ -36,8 +36,9 @@
         <module>legend-engine-xt-relationalStore-trino</module>
         <module>legend-engine-xt-relationalStore-snowflake</module>
         <module>legend-engine-xt-relationalStore-redshift</module>
+        <module>legend-engine-xt-relationalStore-sybaseiq</module>
 
-        <module>legend-engine-xt-relationalStore-test-reports</module>
+      <module>legend-engine-xt-relationalStore-test-reports</module>
         <module>legend-engine-xt-relationalStore-test-server</module>
         <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>

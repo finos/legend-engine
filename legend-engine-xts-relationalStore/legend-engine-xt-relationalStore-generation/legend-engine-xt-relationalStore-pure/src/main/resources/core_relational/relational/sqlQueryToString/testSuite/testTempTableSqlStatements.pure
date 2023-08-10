@@ -121,19 +121,3 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::tes
   ];
   meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
 }
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
-{
- let actualSqls = getTempTableSqlStatements(DatabaseType.SybaseIQ);
- let expectedSqls = [
-   'DECLARE LOCAL TEMPORARY TABLE temp_table_test([integer_Column] INT,[float_Column] FLOAT,[string_Column] VARCHAR(128),[datetime_Column] TIMESTAMP,[date_Column] DATE) ON COMMIT PRESERVE ROWS',
-   ['load table temp_table_test( [integer_Column] null(blanks),[float_Column] null(blanks),[string_Column] null(blanks),[datetime_Column] null(blanks),[date_Column] null(blanks) ) USING CLIENT FILE \'${csv_file_location}\' FORMAT BCP ',
-   '\nwith checkpoint on ',
-   '\nquotes on ',
-   '\nescapes off ',
-   '\ndelimited by \',\' ',
-   '\nROW DELIMITED BY \'\r\n\'']->joinStrings(''),
-   'Drop table if exists temp_table_test;'
-  ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
-}

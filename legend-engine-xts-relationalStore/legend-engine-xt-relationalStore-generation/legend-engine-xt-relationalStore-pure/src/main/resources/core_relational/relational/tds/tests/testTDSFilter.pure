@@ -192,15 +192,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterFollow
    assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" where "root".FIRSTNAME = \'John\' group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\'', $result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDatesSybase():Boolean[1]
-{
-
-   let dt = %2015-01-01T00:00:00.000;
-   let sql = toSQLString(|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
-                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < convert(DATETIME, \'2015-01-01 00:00:00.000\', 121)', $sql);
-}
-
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnRootClassAggValueAfterGroupByWithHavingMultipleFilters():Boolean[1]
 {
    

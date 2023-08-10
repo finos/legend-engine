@@ -1,5 +1,4 @@
 import meta::relational::functions::sqlQueryToString::sybaseASE::*;
-import meta::relational::functions::sqlQueryToString::sybaseIQ::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
@@ -79,4 +78,114 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $dbConfig, $format, $extensions, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFunctionToSqlCommonToBothSybases(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+  let selectOutsideWhen = selectOutsideWhenGenerationState();
+  let notSelectOutsideWhen = notSelectOutsideWhenGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateIQ()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeIQ()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(VARCHAR(128), %s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='datepart(DAY,%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='datename(WEEKDAY,%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'datepart(Weekday,'+ $p->at(0)+')',|$p->dayOfWeekNumberSybaseIQ());})),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='datepart(DAYOFYEAR,%s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(day(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(%s) - 1, dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(day(today()) - 1), today())%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(today()) - 1, dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()))%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, today()) - 1), today())%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(datepart(weekday, %s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('isEmpty',                $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isEmpty',                $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotEmpty',             $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotNull',              $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNull',                 $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='isnumeric(%s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='list(%s,%s)')),
+    dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(Day, case when %s - dow(%s) > 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('today()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now(%s)', transform={p:String[*] | ''})),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1,|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='charindex(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - dow(%s) >= 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('today()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='today(%s)', transform={p:String[*] | ''})),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::convertToDateIQ(params:String[*]):String[1]
+{
+   $params->convertDateFunctionHasCorrectParams();
+   let dateFormat = if( $params->size() == 1,| 120,| dateFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   if ($dateFormat == 106,
+       |'convert ( date,(\'01 \' + ' + 'substring(' + $params->at(0) + ',1,3)' + ' + \' \' + ' + 'substring(' + $params->at(0) + ',4,4))' + ',' + $dateFormat->toString() + ')',
+       |'convert ( date,'+$params->at(0)+','+$dateFormat->toString() +')';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::convertToDateTimeIQ(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,| 120 ,| dateTimeFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   //http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/Dateformat.htm
+   'convert( timestamp,'+$params->at(0)+','+$dateTimeFormat->toString() +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::dayOfWeekNumberSybaseIQ(dayOfWeek: String[*]):String[1]
+{
+   let day = if(startsWith($dayOfWeek->at(1),'\''),|$dayOfWeek->at(1)->removeQuotes(),|$dayOfWeek->at(1));
+   assert(or($day == 'Sunday',$day == 'Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   if($day =='Sunday',|'datepart(Weekday,'+$dayOfWeek->at(0)+')',|'mod (datepart(weekday,'+$dayOfWeek->at(0)+')+5,7)+1');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::formatMostRecentSybase(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::transformToTimestampSybaseIQ(params:String[2]):String[1]
+{
+  // Temporarily revert functionality to handle scenarios that have date string of the format yyyyMMdd
+  'cast('+$params->at(0)+' as timestamp)';
+
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+  // assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+  // let timestampFormat = 121;
+  // 'convert(datetime,'+$params->at(0)+','+$timestampFormat->toString() +')';
 }
