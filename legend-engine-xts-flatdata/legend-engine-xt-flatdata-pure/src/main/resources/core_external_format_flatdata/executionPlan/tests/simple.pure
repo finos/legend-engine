@@ -258,7 +258,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   
   let result  = executeFlatdataBindingQuery($query, $vars);
 
-  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"lineNumber":2,"record":"John,Doe","recordValues":[{"address":"First Name","rawValue":"John"},{"address":"Last Name","rawValue":"Doe"}]},"value":{}},"value":{"fullName":"John Doe"}}}', $result);
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[],"source":{"defects":[],"source":{"number":1,"lineNumber":2,"record":"John,Doe","recordValues":[{"address":"First Name","rawValue":"John"},{"address":"Last Name","rawValue":"Doe"}]},"value":{"lastName":"Doe","firstName":"John"}},"value":{"fullName":"John Doe"}}}', $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testBindingAndM2MChainedSimpleWithInputDataModification(): Boolean[1]

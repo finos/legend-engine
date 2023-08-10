@@ -47,6 +47,12 @@ public class SingleExecutionPlan extends ExecutionPlan
         return this;
     }
 
+    @Override
+    public SingleExecutionPlan getSingleExecutionPlan(Function<? super String, ?> parameterValueAccessor, Map<String, ?> params)
+    {
+        return this;
+    }
+
     @JsonIgnore
     @BsonIgnore
     public MutableMap<String, Object> getExecutionStateParams(MutableMap<String, Object> inputState)

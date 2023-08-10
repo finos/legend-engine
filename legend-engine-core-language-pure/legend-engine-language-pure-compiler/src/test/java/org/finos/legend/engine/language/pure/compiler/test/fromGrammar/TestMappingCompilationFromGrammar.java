@@ -163,6 +163,42 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testMilestonedNestedProperty()
+    {
+        test("Class test::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<meta::pure::profiles::temporal.businesstemporal>> test::Firm_milestoned\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  legalOwner: test::Person[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "  employees: test::Person[*];\n" +
+                "  employer: test::Firm_milestoned[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping reporting::mapping::referenceDataMapping\n" +
+                "(\n" +
+                "  *test::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::Firm_milestoned\n" +
+                "    id: $src.legalOwner.employer.id\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [24:1-31:1]: Error in 'reporting::mapping::referenceDataMapping': The property 'employer' is milestoned with stereotypes: [ businesstemporal ] and requires date parameters: [ businessDate ]");
+    }
+
+    @Test
     public void testMappingExplosion()
     {
         test("Class test::Firm\n" +

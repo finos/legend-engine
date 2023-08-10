@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
@@ -79,6 +80,7 @@ public class PersistenceTestRunner implements TestRunner
         TestResult result;
         Persistence persistence = ListIterate.detect(data.getElementsOfType(Persistence.class), ele -> ele.getPath().equals(getElementFullPath(purePersistence, pureModel.getExecutionSupport())));
         PersistenceTest persistenceTest = persistence.tests.stream().filter(test -> test.id.equals(atomicTest._id())).findFirst().get();
+        Path graphFetchPath = persistenceTest.graphFetchPath;
         List<PersistenceTestBatch> testBatches = persistenceTest.testBatches;
 
         PersistenceTestH2Connection persistenceTestH2Connection = new PersistenceTestH2Connection();
@@ -104,8 +106,8 @@ public class PersistenceTestRunner implements TestRunner
             // Test runner flow for v2
             else
             {
-                targetDataset = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.getTargetDatasetV2(purePersistence);
-                serviceOutputTarget = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getServiceOutputTarget(persistence);
+                targetDataset = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.getTargetDatasetV2(purePersistence, graphFetchPath);
+                serviceOutputTarget = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getServiceOutputTarget(persistence, graphFetchPath);
                 fieldsToIgnore = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getFieldsToIgnoreForComparison(serviceOutputTarget);
                 isTransactionMilestoningTimeBased = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.isTransactionMilestoningTimeBased(serviceOutputTarget);
 
@@ -192,7 +194,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.ingest(JdbcConnection.of(connection), enrichedDatasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets);
         return result;
     }
 
@@ -210,7 +212,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.ingest(JdbcConnection.of(connection), enrichedDatasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets);
         return result;
     }
 

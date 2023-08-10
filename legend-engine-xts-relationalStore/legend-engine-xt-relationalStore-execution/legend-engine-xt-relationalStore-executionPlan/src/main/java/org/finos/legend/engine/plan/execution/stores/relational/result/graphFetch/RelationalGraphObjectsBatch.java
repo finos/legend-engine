@@ -22,24 +22,26 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class RelationalGraphObjectsBatch extends GraphObjectsBatch
 {
-    private Map<Integer, DoubleStrategyHashMap<Object, Object, SQLExecutionResult>> nodeObjectsHashMap;
-    private Map<Integer, List<Method>> nodePrimaryKeyGetters;
+    private ConcurrentMap<Integer, DoubleStrategyHashMap<Object, Object, SQLExecutionResult>> nodeObjectsHashMap;
+    private ConcurrentMap<Integer, List<Method>> nodePrimaryKeyGetters;
 
     public RelationalGraphObjectsBatch(long batchIndex, long graphFetchBatchMemoryLimit)
     {
         super(batchIndex, graphFetchBatchMemoryLimit);
-        this.nodeObjectsHashMap = new HashMap<>();
-        this.nodePrimaryKeyGetters = new HashMap<>();
+        this.nodeObjectsHashMap = new ConcurrentHashMap<>();
+        this.nodePrimaryKeyGetters = new ConcurrentHashMap<>();
     }
 
     public RelationalGraphObjectsBatch(GraphObjectsBatch graphObjectsBatch)
     {
         super(graphObjectsBatch);
-        this.nodeObjectsHashMap = new HashMap<>();
-        this.nodePrimaryKeyGetters = new HashMap<>();
+        this.nodeObjectsHashMap = new ConcurrentHashMap<>();
+        this.nodePrimaryKeyGetters = new ConcurrentHashMap<>();
     }
 
     public DoubleStrategyHashMap<Object, Object, SQLExecutionResult> getNodeObjectsHashMap(int nodeIndex)

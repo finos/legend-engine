@@ -22,13 +22,18 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.testable.persistence.mapper.FieldTypeMapper;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_target_PersistenceTarget;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_RelationalPersistenceTarget;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.finos.legend.pure.generated.platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToSqlText_DataType_1__String_1_;
 
@@ -38,11 +43,18 @@ public class DatasetMapper
     private static String DEFAULT_SCHEMA = "default";
     private static String H2_PUBLIC_SCHEMA = "PUBLIC";
 
-    public static Dataset getTargetDatasetV2(Root_meta_pure_persistence_metamodel_Persistence persistence) throws Exception
+    public static Dataset getTargetDatasetV2(Root_meta_pure_persistence_metamodel_Persistence persistence, Path graphFetchPath) throws Exception
     {
-        Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget serviceOutputTarget = getTdsServiceOutput(persistence);
+        Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget serviceOutputTarget;
+        if (persistence._serviceOutputTargets().size() > 1 && graphFetchPath != null)
+        {
+            serviceOutputTarget = getMultiFlatServiceTargetOutput(persistence, graphFetchPath);
+        }
+        else
+        {
+            serviceOutputTarget = getFlatServiceTargetOutput(persistence);
+        }
         Table table = getTargetTable(serviceOutputTarget);
-
         String schemaName = table._schema()._name();
         if (schemaName.equals(DEFAULT_SCHEMA))
         {
@@ -58,6 +70,46 @@ public class DatasetMapper
                 .build();
 
         return datasetDefinition;
+    }
+
+    private static Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget getMultiFlatServiceTargetOutput(Root_meta_pure_persistence_metamodel_Persistence persistence, Path graphFetchPath) throws Exception
+    {
+        RichIterable<? extends Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget> serviceOutputTargets = persistence._serviceOutputTargets();
+        if (serviceOutputTargets.size() == 1)
+        {
+            return serviceOutputTargets.getAny();
+        }
+        else
+        {
+            if (graphFetchPath == null)
+            {
+                throw new Exception("Graph fetch service-outputs require path parameter within tests");
+            }
+            List<String> testPropertyList = IngestModeMapper.getPropertyList(graphFetchPath);
+            for (Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget serviceOutputTarget: serviceOutputTargets)
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path path = ((Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput)serviceOutputTarget._serviceOutput())._path();
+                if (path._name() == graphFetchPath.name && getPurePropertyList(path).containsAll(testPropertyList))
+                {
+                    return serviceOutputTarget;
+                }
+            }
+            throw new Exception("Exception : Cannot find a serviceOutputTarget with the matching path");
+        }
+    }
+
+    private static List<String> getPurePropertyList(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path path)
+    {
+        List<String> propertyList = new ArrayList<>();
+        path._path().forEach(ppe ->
+        {
+            if (ppe instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement)
+            {
+                String property = String.valueOf(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement) ppe)._property());
+                propertyList.add(property);
+            }
+        });
+        return propertyList;
     }
 
     public static Datasets enrichAndDeriveDatasets(ServiceOutputTarget serviceOutputTarget, Dataset mainDataset, String testData) throws Exception
@@ -95,13 +147,9 @@ public class DatasetMapper
         return builder.build();
     }
 
-    public static Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget getTdsServiceOutput(Root_meta_pure_persistence_metamodel_Persistence persistence)
+    public static Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget getFlatServiceTargetOutput(Root_meta_pure_persistence_metamodel_Persistence persistence)
     {
         RichIterable<? extends Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget> serviceOutputTargets = persistence._serviceOutputTargets();
-        if (serviceOutputTargets.size() > 1)
-        {
-            throw new UnsupportedOperationException("write-component-test only supports flat target ");
-        }
         return serviceOutputTargets.getAny();
     }
 

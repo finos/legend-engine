@@ -20,7 +20,9 @@ public enum StatisticName
     ROWS_TERMINATED("rowsTerminated"),
     ROWS_INSERTED("rowsInserted"),
     ROWS_UPDATED("rowsUpdated"),
-    ROWS_DELETED("rowsDeleted");
+    ROWS_DELETED("rowsDeleted"),
+    FILES_LOADED("filesLoaded"),
+    ROWS_WITH_ERRORS("rowsWithErrors");
 
     String value;
 

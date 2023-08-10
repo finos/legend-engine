@@ -549,6 +549,30 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                          $result1);
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::subType::subTypeWithQualifiedPropertyUnionMapping(): Boolean[1]
+{
+  let treeString =  '#{\n'+
+                    '  meta::relational::graphFetch::tests::subType::Address{\n'+
+                    '    Id,\n'+
+                    '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
+                    '      landmarkName\n' +
+                    '    }\n' +                      
+                    '  }\n'+
+                    '}#';
+  let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
+  let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
+  let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  
+  assertJsonStringsEqual('[{"Id":1,"landmarkName()":"lm1"},' +
+                         '{"Id":2,"landmarkName()":"lm2"},' +
+                         '{"Id":3,"landmarkName()":"lm3"},' +
+                         '{"Id":4},{"Id":5},{"Id":6}]',
+                         $result1);
+}
+
 ###Pure
 Class meta::relational::graphFetch::tests::subType::Address
 {
@@ -561,6 +585,7 @@ Class meta::relational::graphFetch::tests::subType::Street extends meta::relatio
 {
    street: String[1];
    coordinate : meta::relational::graphFetch::tests::subType::Coordinate[1];
+   landmarkName(){$this.landmark.lmName} : String[1]; 
 }
 
 Class meta::relational::graphFetch::tests::subType::City extends meta::relational::graphFetch::tests::subType::Address

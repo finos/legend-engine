@@ -272,3 +272,8 @@ function meta::pure::functions::collection::getAllForEachDate<T>(type:Class<T>[1
     fail('not implemented');
     [];
 }
+
+function meta::pure::functions::collection::paginated<T>(set:T[*], pageNumber: Integer[1], pageSize: Integer[1]): T[*]
+{
+  $set->slice(($pageNumber - 1) * $pageSize, $pageNumber * $pageSize);
+}

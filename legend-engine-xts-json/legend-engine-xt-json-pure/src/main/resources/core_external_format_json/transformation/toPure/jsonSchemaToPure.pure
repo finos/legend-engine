@@ -37,7 +37,7 @@ import meta::pure::generation::metamodel::*;
 
 // To be removed
 import meta::json::*;
-import meta::json::schema::fromSchema::*;
+import meta::external::format::json::schema::fromSchema::*;
 // To be removed
 
 // ========================================================================================================================================================
@@ -131,7 +131,7 @@ function <<access.private>> meta::external::format::json::transformation::toPure
 function <<access.private>> meta::external::format::json::transformation::toPure::schemaToSchemaInput(schema:Schema[1], context:GenerationContext[1]): SchemaInput[1]
 {
    ^SchemaInput(
-      fileName   = $schema.location->toOne(),
+      fileName   = $schema.location->toOne('Location not provided for JsonSchema' + $schema.id->map(i | ' - ' + $i)->joinStrings('')),
       schema     = $schema.detail->toOne()->cast(@JsonSchema).content,
       pathPrefix = $context.package
    )

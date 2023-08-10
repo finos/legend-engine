@@ -180,4 +180,18 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
         Assert.assertEquals("test::TestPersistence", result.testable);
     }
+
+    @Test
+    public void testBatchIdBasedWithDeleteIndicatorUserSpecifiesFromAndThruGraphFetch() throws Exception
+    {
+        String path = "src/test/resources/v2/bitemporal-delta/batch_id_based/persistence_with_del_ind_user_specifies_from_and_thru_graph_fetch.txt";
+        String persistenceSpec = readPureCode(path);
+
+        for (TestResult result : testPersistence(persistenceSpec).results)
+        {
+            assertTrue(result instanceof TestExecuted);
+            Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+            Assert.assertEquals("test::TestPersistence", result.testable);
+        }
+    }
 }

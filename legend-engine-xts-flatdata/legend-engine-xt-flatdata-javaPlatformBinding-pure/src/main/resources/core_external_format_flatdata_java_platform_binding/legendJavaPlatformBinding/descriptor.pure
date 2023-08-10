@@ -20,6 +20,7 @@ import meta::external::format::flatdata::executionPlan::platformBinding::legendJ
 import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::*;
 import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::*;
 
+
 function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
 {
   ^ExternalFormatLegendJavaPlatformBindingDescriptor
@@ -29,4 +30,17 @@ function meta::external::format::flatdata::executionPlan::platformBinding::legen
     externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
   )
+}
+
+
+function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
+{
+     meta::pure::executionPlan::platformBinding::platformBindingExtension([
+            meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+               // Bindings
+               meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+                  meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor()
+               ])
+            ])
+      ])
 }

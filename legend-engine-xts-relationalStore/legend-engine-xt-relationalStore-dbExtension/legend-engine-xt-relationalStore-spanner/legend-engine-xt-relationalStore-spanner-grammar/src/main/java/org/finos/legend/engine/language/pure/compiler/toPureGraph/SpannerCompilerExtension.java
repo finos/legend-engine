@@ -14,16 +14,20 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import java.util.List;
-import java.util.Optional;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl;
+
+import java.util.List;
+import java.util.Optional;
 
 public class SpannerCompilerExtension implements IRelationalCompilerExtension
 {
@@ -52,5 +56,11 @@ public class SpannerCompilerExtension implements IRelationalCompilerExtension
     public CompilerExtension build()
     {
         return new SpannerCompilerExtension();
+    }
+
+    @Override
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Spanner, SpannerDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class));
     }
 }

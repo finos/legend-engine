@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDeltaAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
@@ -344,6 +345,12 @@ public class SchemaEvolution
                     .map(Collections::singleton)
                     .orElse(Collections.emptySet());
         }
+
+        @Override
+        public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return Collections.emptySet();
+        }
     };
 
     private static final IngestModeVisitor<Set<String>> MAIN_TABLE_FIELDS_TO_IGNORE = new IngestModeVisitor<Set<String>>()
@@ -400,6 +407,12 @@ public class SchemaEvolution
             fieldsToIgnore.addAll(bitemporalDelta.transactionMilestoning().accept(TRANSACTION_FIELDS_TO_IGNORE));
             fieldsToIgnore.addAll(bitemporalDelta.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE));
             return fieldsToIgnore;
+        }
+
+        @Override
+        public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
+        {
+            return Collections.emptySet();
         }
     };
 

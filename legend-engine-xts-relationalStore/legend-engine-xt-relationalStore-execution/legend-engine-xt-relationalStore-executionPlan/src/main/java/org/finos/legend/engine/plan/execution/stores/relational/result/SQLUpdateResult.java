@@ -30,7 +30,7 @@ import java.util.List;
 
 public class SQLUpdateResult extends SQLResult
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLUpdateResult.class);
 
     private final int updateCount;
 

@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
+import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
@@ -160,10 +161,15 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
+    public void validateDatasetSchema(Dataset dataset, TypeMapping typeMapping)
     {
         try
         {
+            if (!(typeMapping instanceof  DataTypeMapping))
+            {
+                throw new IllegalStateException("Only DataTypeMapping allowed in validateDatasetSchema");
+            }
+            DataTypeMapping datatypeMapping = (DataTypeMapping) typeMapping;
             String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
@@ -250,10 +256,15 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
+    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, TypeMapping typeMapping)
     {
         try
         {
+            if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+            {
+                throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
+            }
+            JdbcPropertiesToLogicalDataTypeMapping mapping = (JdbcPropertiesToLogicalDataTypeMapping) typeMapping;
             DatabaseMetaData dbMetaData = this.connection.getMetaData();
 
             // Get primary keys

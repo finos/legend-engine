@@ -16,15 +16,20 @@ package org.finos.legend.engine.authentication;
 
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
+import org.finos.legend.engine.authentication.demoflows.H2LocalWithStaticUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.BigQueryWithGCPWorkloadIdentityFederationFlow;
 import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.MemSQLStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
 import org.finos.legend.engine.authentication.flows.SpannerWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.TrinoWithDelegatedKerberosFlow;
+import org.finos.legend.engine.authentication.flows.TrinoWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
@@ -48,11 +53,16 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new SpannerWithGCPApplicationDefaultCredentialsFlow(),
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
+                new H2LocalWithStaticUserPasswordFlow(),
+                new H2LocalWithDefaultUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(databaseAuthenticationFlowProviderConfiguration.credentialProviderProvider),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
                 new RedshiftWithUserPasswordFlow(),
-                new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow()
+                new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow(),
+                new MemSQLStaticWithUserPasswordFlow(),
+                new TrinoWithDelegatedKerberosFlow(),
+                new TrinoWithUserPasswordFlow()
         );
     }
 

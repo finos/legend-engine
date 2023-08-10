@@ -589,6 +589,7 @@ Class meta::pure::persistence::metamodel::PersistenceTest extends meta::pure::te
 {
   testBatches                 : PersistenceTestBatch[*];
   isTestDataFromServiceOutput : Boolean[0..1];
+  graphFetchPath : meta::pure::metamodel::path::Path<Nil, Any|*>[0..1];
 }
 
 Class meta::pure::persistence::metamodel::PersistenceTestBatch

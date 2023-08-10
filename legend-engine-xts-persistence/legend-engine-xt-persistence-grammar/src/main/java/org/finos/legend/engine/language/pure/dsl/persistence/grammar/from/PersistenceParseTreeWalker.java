@@ -798,6 +798,13 @@ public class PersistenceParseTreeWalker
             persistenceTest.isTestDataFromServiceOutput = Boolean.parseBoolean(PureGrammarParserUtility.fromIdentifier(isTestDataFromServiceOutputContext.identifier()));
         }
 
+        //graphFetchPath
+        PersistenceParserGrammar.GraphFetchPathContext graphFetchPathContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.graphFetchPath(), "graphFetchPath", persistenceTest.sourceInformation);
+        if (graphFetchPathContext != null)
+        {
+            persistenceTest.graphFetchPath = visitPath(graphFetchPathContext.dslNavigationPath());
+        }
+
         return persistenceTest;
     }
 

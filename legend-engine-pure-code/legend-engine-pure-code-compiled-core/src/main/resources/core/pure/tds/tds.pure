@@ -404,6 +404,14 @@ function
    $newTds->mutateAdd('rows', $tds.rows->take($size)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
 }
 
+function 
+   {doc.doc = 'Returns the n-th (n = pageNumber) page TDS after paginating as per pageSize'}
+   meta::pure::tds::paginated(tds:TabularDataSet[1], pageNumber:Integer[1], pageSize: Integer[1]):TabularDataSet[1]
+{
+   let newTds = ^TabularDataSet(columns=$tds.columns);
+   $newTds->mutateAdd('rows', $tds.rows->paginated($pageNumber, $pageSize)->map(r|^TDSRow(parent=$newTds,values=$r.values)));
+}
+
 function
    {doc.doc = 'Reduce the number of rows in the provided TDS, dropping the first set of rows based on the specified size'}
    meta::pure::tds::drop(tds:TabularDataSet[1], size:Integer[1]):TabularDataSet[1]

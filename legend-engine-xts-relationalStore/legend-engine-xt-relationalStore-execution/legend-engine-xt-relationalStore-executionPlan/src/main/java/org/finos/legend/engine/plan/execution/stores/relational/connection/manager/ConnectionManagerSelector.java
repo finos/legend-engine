@@ -59,6 +59,11 @@ public class ConnectionManagerSelector
         this.flowProviderHolder = flowProviderHolder;
     }
 
+    public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
+    {
+        return flowProviderHolder;
+    }
+
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
     {
         return this.getDatabaseConnection(profiles, databaseConnection, StoreExecutionState.emptyRuntimeContext());

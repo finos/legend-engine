@@ -127,6 +127,6 @@ jobs:
       - name: Print Summary
         run: |
           echo "Temp Dir " ${{ runner.temp }}
-          mvn -pl legend-engine-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=./summaries,${{ runner.temp }}/out.md
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=./summaries,${{ runner.temp }}/out.md
           cat ${{ runner.temp }}/out.md >> $GITHUB_STEP_SUMMARY
          

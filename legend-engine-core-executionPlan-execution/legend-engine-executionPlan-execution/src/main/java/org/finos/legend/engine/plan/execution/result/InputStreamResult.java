@@ -14,25 +14,32 @@
 
 package org.finos.legend.engine.plan.execution.result;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.builder.stream.StreamBuilder;
+import org.slf4j.Logger;
 
 public class InputStreamResult extends Result
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(InputStreamResult.class);
     private final InputStream inputStream;
+    private final List<Closeable> closeables;
 
     public InputStreamResult(InputStream inputStream)
     {
-        this(inputStream, Collections.emptyList());
+        this(inputStream, Collections.emptyList(), Collections.emptyList());
     }
 
-    public InputStreamResult(InputStream inputStream, List<ExecutionActivity> activities)
+    public InputStreamResult(InputStream inputStream, List<ExecutionActivity> activities, List<Closeable> closeables)
     {
         super("success", activities);
         this.inputStream = inputStream;
+        this.closeables = closeables;
     }
 
     public InputStream getInputStream()
@@ -43,6 +50,30 @@ public class InputStreamResult extends Result
     public Builder getResultBuilder()
     {
         return new StreamBuilder();
+    }
+
+    @Override
+    public void close()
+    {
+        try
+        {
+            this.closeables.forEach(c ->
+            {
+                try
+                {
+                    c.close();
+                }
+                catch (IOException e)
+                {
+                    LOGGER.error("Error closing closeable in InputStreamResult", e);
+                }
+            });
+            this.inputStream.close();
+        }
+        catch (IOException e)
+        {
+            LOGGER.error("Error closing InputStreamResult", e);
+        }
     }
 
     @Override

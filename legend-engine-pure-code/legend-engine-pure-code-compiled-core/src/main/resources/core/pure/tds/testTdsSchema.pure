@@ -264,7 +264,13 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
    assertSchemaRoundTripEquality({|   
          {a:String[1], b:String[1], c:String[1], d:String[1], e:String[1], f:String[1], g:String[1] | Person.all()
             ->project([col(p|$p.age->first(), 'age1')])
-         }->eval('a', 'b', 'c', 'd', 'e', 'f', 'g')});              
+         }->eval('a', 'b', 'c', 'd', 'e', 'f', 'g')});             
+
+   assertSchemaRoundTripEquality(
+         ^TDSColumn(name='age1', offset = 0, type = Integer),
+         {a:String[1], b:String[1], c:String[1], d:String[1], e:String[1], f:String[1], g:String[1] | Person.all()
+            ->project([col(p|$p.age->first(), 'age1')])
+         });               
 }
 
 function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
@@ -278,12 +284,12 @@ function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : F
    assertSchemaRoundTripEquality($expected, $query, $extensions);
 }
    
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<Any>[1]) : Boolean[1]
 {   
    assertSchemaRoundTripEquality($expected, $query, defaultExtensions());
 }  
 
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:Extension[*]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<Any>[1], extensions:Extension[*]) : Boolean[1]
 {
    let actual = $query->meta::pure::tds::schema::resolveSchema($extensions);
    

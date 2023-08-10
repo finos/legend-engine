@@ -75,7 +75,7 @@ import java.util.stream.Collectors;
 
 public class RelationalExecutor
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(RelationalExecutor.class);
 
     public static final String DEFAULT_DB_TIME_ZONE = "GMT";
 
@@ -95,7 +95,6 @@ public class RelationalExecutor
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("DateTime", "TIMESTAMP");
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("StrictDate", "DATE");
         DATA_TYPE_RELATIONAL_TYPE_MAP.put("Boolean", "BIT");
-
     }
 
     private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;

@@ -23,6 +23,11 @@ public class SnowflakeAppArtifact extends FunctionActivatorArtifact
 {
     RichIterable<String> sqlExpressions = Lists.mutable.empty();
 
+    public SnowflakeAppArtifact()
+    {
+        //empty artifact
+    }
+
     public SnowflakeAppArtifact(RichIterable<String> sqlExpressions)
     {
         this.sqlExpressions = sqlExpressions;

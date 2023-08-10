@@ -148,6 +148,7 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: false;\n" +
+                "      graphFetchPath: #/test::example::MyType/prop#;\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}\n";

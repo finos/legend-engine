@@ -23,6 +23,7 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
@@ -32,12 +33,40 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 
 public class TestRelationalConnectionManager
 {
+    static class NoOpFlowProvider implements DatabaseAuthenticationFlowProvider
+    {
+        @Override
+        public Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Map<DatabaseAuthenticationFlowKey, DatabaseAuthenticationFlow> getFlows()
+        {
+            return null;
+        }
+
+        @Override
+        public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
+        {
+
+        }
+
+        @Override
+        public int count()
+        {
+            return 0;
+        }
+    }
+
     @Test
     public void testConnection() throws Exception
     {
@@ -99,26 +128,5 @@ public class TestRelationalConnectionManager
         Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
         Optional<CredentialSupplier> credential = RelationalConnectionManager.getCredential(flowProvider, connectionSpec, identity, StoreExecutionState.emptyRuntimeContext());
         assertFalse(credential.isPresent());
-    }
-
-    static class NoOpFlowProvider implements DatabaseAuthenticationFlowProvider
-    {
-        @Override
-        public Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection)
-        {
-            return Optional.empty();
-        }
-
-        @Override
-        public void configure(DatabaseAuthenticationFlowProviderConfiguration configuration)
-        {
-
-        }
-
-        @Override
-        public int count()
-        {
-            return 0;
-        }
     }
 }

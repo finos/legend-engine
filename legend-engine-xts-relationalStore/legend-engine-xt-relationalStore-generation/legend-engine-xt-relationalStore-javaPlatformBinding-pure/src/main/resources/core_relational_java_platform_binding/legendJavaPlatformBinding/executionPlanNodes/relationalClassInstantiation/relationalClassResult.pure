@@ -233,6 +233,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
               ->imports(javaClass('java.sql.ResultSet'))
               ->imports(javaClass('java.sql.ResultSetMetaData'))
               ->imports(javaClass('java.sql.Types'))
+              ->imports(javaClass('java.sql.JDBCType'))
               ->imports($conventions->className(PureDate));
 
    $helperClass
@@ -533,7 +534,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '}\n'+
       'else\n'+
       '{\n'+
-      '    throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type String from SQL column of type \'" + columnType + "\'.");\n'+
+      '    throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type String from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'+
       '}\n'   
    );
 }
@@ -561,7 +562,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Integer from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Integer from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -607,7 +608,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Float from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Float from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -666,7 +667,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Decimal from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Decimal from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -731,7 +732,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Boolean from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Boolean from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -784,7 +785,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type StrictDate from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type StrictDate from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -837,7 +838,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type DateTime from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type DateTime from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 
@@ -916,7 +917,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        }\n'+
       '    };\n'+
       '}\n'+
-      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Date from SQL column of type \'" + columnType + "\'.");\n'
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Date from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
    );
 }
 

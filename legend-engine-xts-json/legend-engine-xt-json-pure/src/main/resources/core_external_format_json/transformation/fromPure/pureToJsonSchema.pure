@@ -24,8 +24,8 @@ import meta::pure::generation::metamodel::*;
 import meta::pure::model::unit::*;
 
 // To be removed
-import meta::json::schema::fromSchema::*;
-import meta::json::schema::generation::*;
+import meta::external::format::json::schema::fromSchema::*;
+import meta::external::format::json::schema::generation::*;
 // To be removed
 
 // ========================================================================================================================================================

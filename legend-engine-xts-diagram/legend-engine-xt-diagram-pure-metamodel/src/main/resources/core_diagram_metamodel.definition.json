@@ -3,7 +3,6 @@
   "pattern": "(meta::pure::metamodel::diagram)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_functions",
-    "core"
+    "platform_dsl_diagram"
   ]
 }

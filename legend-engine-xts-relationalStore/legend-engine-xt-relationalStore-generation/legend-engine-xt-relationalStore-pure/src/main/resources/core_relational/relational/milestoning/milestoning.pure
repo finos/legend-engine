@@ -157,7 +157,8 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                                                                                    |$join.operation);
                                                         let newJoin = ^$join(operation=$newJoinOperation);,
                                            u:Union[1] | $join,
-                                           s:SelectSQLQuery[1] | $join
+                                           s:SelectSQLQuery[1] | $join,
+                                           s:SemiStructuredArrayFlatten[1] | $join
                                      ]);
                                      let newAlias = $j.alias->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAlias);
                                      let joinWithAliasProcessed = reprocessJoin($newJoin, ^OldAliasToNewAlias(first=$j.alias.name, second=$newAlias), []);

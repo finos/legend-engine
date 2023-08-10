@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
-
-import java.util.List;
-
 public class DataSpaceExecutableAnalysisResult
 {
     public String title;
@@ -25,5 +21,4 @@ public class DataSpaceExecutableAnalysisResult
     public String executable;
     public DataSpaceExecutableInfo info;
     public DataSpaceExecutableResult result;
-    public List<DatasetSpecification> datasets;
 }

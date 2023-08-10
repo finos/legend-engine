@@ -149,38 +149,42 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
   + processLimitDatabricks(
       $s,
+      $dbConfig,
       $format,
-      processTakeDatabricks_SelectSQLQuery_1__Format_1__String_1_,
-      processOffsetDatabricks_SelectSQLQuery_1__Format_1__String_1_,
-      processSliceDatabricks_SelectSQLQuery_1__Format_1__Any_1__String_1_
+      $extensions,
+      processTakeDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_,
+      processOffsetDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_,
+      processSliceDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_
   );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTakeDatabricks(s:SelectSQLQuery[1], format:Format[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTakeDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
 {
    assert($s.toRow->isNotEmpty());
-   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processOffsetDatabricks(s:SelectSQLQuery[1], format:Format[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processOffsetDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
 {
    assert($s.fromRow->isNotEmpty());
-   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]);
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSliceDatabricks(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSliceDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
    assert($s.toRow->isNotEmpty());
    assert($s.fromRow->isNotEmpty());
-   '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake()]);
+   '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processLimitDatabricks(
    s:SelectSQLQuery[1],
-   format:Format[1],
-   takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1] -> String[1]}>[1],
-   offsetProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1] -> String[1]}>[1],
-   sliceProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], Any[1] -> String[1]}>[1]
+   dbConfig: DbConfig[1], 
+   format:Format[1], 
+   extensions:Extension[*],
+   takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],
+   offsetProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],
+   sliceProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*], Any[1] -> String[1]}>[1]
    ):String[1]
 {
    if ($s.fromRow == [] && $s.toRow == [],
@@ -192,12 +196,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
               i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer),
               v:VarPlaceHolder[1]| [$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
             ]);
-            $sliceProcessor->eval($s, $format, $size);
+            $sliceProcessor->eval($s, $format,$dbConfig, $extensions, $size);
          ,| if ($s.toRow == [],
               | // toRow is null, this is an offset
-                $offsetProcessor->toOne()->eval($s, $format);
+                $offsetProcessor->toOne()->eval($s, $format,$dbConfig, $extensions);
              ,| // fromRow is null, this is a take
-                $takeProcessor->toOne()->eval($s, $format);
+                $takeProcessor->toOne()->eval($s, $format,$dbConfig, $extensions);
           );
       );
    );

@@ -50,7 +50,7 @@ Class meta::relational::extension::RelationalExtension extends ModuleExtension
 
 function meta::relational::extension::relationalExtensions() : meta::pure::extension::Extension[*]
 {
-   [relationalExtension('relational')]
+   [relationalExtension()]
 }
 
 function meta::relational::extension::relationalSerializerExtension(version:String[1]):String[1]
@@ -58,11 +58,11 @@ function meta::relational::extension::relationalSerializerExtension(version:Stri
    'meta::protocols::pure::'+$version+'::extension::getRelationalExtension_String_1__SerializerExtension_1_';
 }
 
-function meta::relational::extension::relationalExtension(type:String[1]) : meta::pure::extension::Extension[1]
+function meta::relational::extension::relationalExtension() : meta::pure::extension::Extension[1]
 {
    ^Extension
    (
-      type = $type,
+      type = 'relational',
 
       availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::relational::contract::relationalStoreContract()),                         
 

@@ -438,6 +438,34 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
     }
 
     @Test
+    public void serviceStoreM2MChainingExampleWithGraphFetchChecked()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Trade.all()\n" +
+                "       ->graphFetchChecked(#{\n" +
+                "           meta::external::store::service::showcase::domain::Trade {\n" +
+                "               tradeId,\n" +
+                "               quantity\n" +
+                "           }\n" +
+                "         }#)\n" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Trade {\n" +
+                "               tradeId,\n" +
+                "               quantity\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\"s_tradeId\\\":\\\"1\\\",\\\"s_traderDetails\\\":\\\"abc:F_Name_1:L_Name_1\\\",\\\"s_tradeDetails\\\":\\\"30:100\\\"}\"},\"value\":{\"s_tradeDetails\":\"30:100\",\"s_tradeId\":\"1\"}},\"value\":{\"s_tradeDetails\":\"30:100\",\"s_tradeId\":\"1\"}},\"value\":{\"tradeId\":\"1\",\"quantity\":100}},{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":2,\"record\":\"{\\\"s_tradeId\\\":\\\"2\\\",\\\"s_traderDetails\\\":\\\"abc:F_Name_1:L_Name_1\\\",\\\"s_tradeDetails\\\":\\\"31:200\\\"}\"},\"value\":{\"s_tradeDetails\":\"31:200\",\"s_tradeId\":\"2\"}},\"value\":{\"s_tradeDetails\":\"31:200\",\"s_tradeId\":\"2\"}},\"value\":{\"tradeId\":\"2\",\"quantity\":200}},{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":3,\"record\":\"{\\\"s_tradeId\\\":\\\"3\\\",\\\"s_traderDetails\\\":\\\"abc:F_Name_2:L_Name_2\\\",\\\"s_tradeDetails\\\":\\\"30:300\\\"}\"},\"value\":{\"s_tradeDetails\":\"30:300\",\"s_tradeId\":\"3\"}},\"value\":{\"s_tradeDetails\":\"30:300\",\"s_tradeId\":\"3\"}},\"value\":{\"tradeId\":\"3\",\"quantity\":300}},{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":4,\"record\":\"{\\\"s_tradeId\\\":\\\"4\\\",\\\"s_traderDetails\\\":\\\"abc:F_Name_2:L_Name_2\\\",\\\"s_tradeDetails\\\":\\\"31:400\\\"}\"},\"value\":{\"s_tradeDetails\":\"31:400\",\"s_tradeId\":\"4\"}},\"value\":{\"s_tradeDetails\":\"31:400\",\"s_tradeId\":\"4\"}},\"value\":{\"tradeId\":\"4\",\"quantity\":400}}]}";
+
+        Assert.assertEquals(expectedRes, executePlan(plan));
+    }
+
+    @Test
     public void serviceStoreM2MChainingWithFilterExample()
     {
         String query = "###Pure\n" +

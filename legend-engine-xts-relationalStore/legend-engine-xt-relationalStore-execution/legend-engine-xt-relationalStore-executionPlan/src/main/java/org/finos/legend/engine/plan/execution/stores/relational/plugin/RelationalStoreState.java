@@ -18,6 +18,7 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalGraphFetchExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
@@ -26,12 +27,14 @@ import java.util.Optional;
 
 public class RelationalStoreState implements StoreState
 {
+    private final RelationalGraphFetchExecutor relationalGraphFetchExecutor;
     private final RelationalExecutor relationalExecutor;
     private final RelationalExecutorInfo relationalExecutorInfo = new RelationalExecutorInfo();
 
     public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration)
     {
         this.relationalExecutor = new RelationalExecutor(temporarytestdb, relationalExecutionConfiguration);
+        this.relationalGraphFetchExecutor = new RelationalGraphFetchExecutor(relationalExecutionConfiguration.getRelationalGraphFetchParallelExecutionConfig());
     }
 
     public RelationalStoreState(int port)
@@ -42,7 +45,10 @@ public class RelationalStoreState implements StoreState
     public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
         this.relationalExecutor = new RelationalExecutor(temporarytestdb, relationalExecutionConfiguration, flowProviderHolder);
+        this.relationalGraphFetchExecutor = new RelationalGraphFetchExecutor(relationalExecutionConfiguration.getRelationalGraphFetchParallelExecutionConfig());
     }
+
+
 
     @Override
     public StoreType getStoreType()
@@ -59,5 +65,10 @@ public class RelationalStoreState implements StoreState
     public RelationalExecutor getRelationalExecutor()
     {
         return this.relationalExecutor;
+    }
+
+    public RelationalGraphFetchExecutor getRelationalGraphFetchExecutor()
+    {
+        return this.relationalGraphFetchExecutor;
     }
 }

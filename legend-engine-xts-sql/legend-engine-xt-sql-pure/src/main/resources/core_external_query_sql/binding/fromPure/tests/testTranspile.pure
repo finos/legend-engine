@@ -43,41 +43,73 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+                pair('Boolean', 'Boolean_table1'),
+                pair('Integer', 'Integer_table1'),
+                pair('Float', 'Float_table1'),
+                pair('Decimal', 'Decimal_table1'),
+                pair('StrictDate', 'StrictDate_table1'),
+                pair('DateTime', 'DateTime_table1'),
+                pair('String', 'String_table1')
+          ])
         ->join(FlatInput.all()->project(
                 [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                 ['ID', 'Integer', 'String']
-              ), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
-        )->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+              )->renameColumns([
+                pair('ID', 'ID_table2'),
+                pair('Integer', 'Integer_table2'),
+                pair('String', 'String_table2')
+          ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
+        )->renameColumns([
+              pair('Boolean_table1', 'Boolean'),
+              pair('Integer_table1', 'Integer'),
+              pair('Float_table1', 'Float'),
+              pair('Decimal_table1', 'Decimal'),
+              pair('StrictDate_table1', 'StrictDate'),
+              pair('DateTime_table1', 'DateTime'),
+              pair('String_table1', 'String')
+        ])->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarAndColumnsFromJoinTable():Boolean[1]
 {
-  let sqlString = 'SELECT table1.*, table2.id, sin(table2.int) FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT ID as "id", Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
+  let sqlString = 'SELECT table1.*, table2.id, sin(table2.int) FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT ID as "id", Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."int"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
         ->join(FlatInput.all()->project(
                 [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                 ['ID', 'Integer', 'String']
               )->renameColumns([
                 pair('ID', 'id'),
                 pair('Integer', 'int')
-              ])->restrict(['id', 'int']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('int')}
+              ])->restrict(['id', 'int'])->renameColumns([
+                pair('id', 'id_table2'),
+                pair('int', 'int_table2')
+              ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('int_table2')}
         )->project([
-          col(row:TDSRow[1] | $row.getBoolean('Boolean'), 'Boolean'),
-          col(row:TDSRow[1] | $row.getInteger('Integer'), 'Integer'),
-          col(row:TDSRow[1] | $row.getFloat('Float'), 'Float'),
-          col(row:TDSRow[1] | $row.getDecimal('Decimal'), 'Decimal'),
-          col(row:TDSRow[1] | $row.getStrictDate('StrictDate'), 'StrictDate'),
-          col(row:TDSRow[1] | $row.getDateTime('DateTime'), 'DateTime'),
-          col(row:TDSRow[1] | $row.getString('String'), 'String'),
-          col(row:TDSRow[1] | $row.getInteger('id'), 'id'),
-          col(row:TDSRow[1] | sin($row.getInteger('int')), 'sin(int)')
-        ]);
+          col(row:TDSRow[1] | $row.getBoolean('Boolean_table1'), 'Boolean'),
+          col(row:TDSRow[1] | $row.getInteger('Integer_table1'), 'Integer'),
+          col(row:TDSRow[1] | $row.getFloat('Float_table1'), 'Float'),
+          col(row:TDSRow[1] | $row.getDecimal('Decimal_table1'), 'Decimal'),
+          col(row:TDSRow[1] | $row.getStrictDate('StrictDate_table1'), 'StrictDate'),
+          col(row:TDSRow[1] | $row.getDateTime('DateTime_table1'), 'DateTime'),
+          col(row:TDSRow[1] | $row.getString('String_table1'), 'String'),
+          col(row:TDSRow[1] | $row.getInteger('id_table2'), 'id'),
+          col(row:TDSRow[1] | sin($row.getInteger('int_table2')), 'sin(int)')
+        ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -104,6 +136,34 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->renameColumns(pair('Integer', 'int'))
       ->restrict(['Boolean', 'int'])
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimes():Boolean[1]
+{
+  let sqlString = 'SELECT String, String as "str" FROM service."/service/service1"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getString('String'), 'str')
+        ])
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnMultiTimesGroupBy():Boolean[1]
+{
+  let sqlString = 'SELECT String, String as "str" FROM service."/service/service1" group by 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getString('String'), 'str')
+        ])->restrict(['String', 'str'])->distinct()
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -252,6 +312,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->sort([desc('Integer'), asc('Boolean')])
       };
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -361,9 +422,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->filter(row | ($row.getInteger('Integer') > 1) 
-                    || ($row.getInteger('Integer') < 1) 
-                    || ($row.getInteger('Integer') >= 1) 
+      ->filter(row | ($row.getInteger('Integer') > 1)
+                    || ($row.getInteger('Integer') < 1)
+                    || ($row.getInteger('Integer') >= 1)
                     || ($row.getInteger('Integer') <= 1)
                     || (($row.getInteger('Integer') >= 0) && ($row.getInteger('Integer') <= 1)))
       };
@@ -401,7 +462,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today()) 
+      ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today())
             || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') <= today()) || ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')))
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -438,7 +499,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->filter(row | 
+      ->filter(row |
         !(($row.getString('String')->isEmpty() && 'ABC'->isEmpty()) || (isTrue($row.getString('String') == 'ABC')))
         ||
         (($row.getString('String')->isEmpty() && 'DEF'->isEmpty()) || (isTrue($row.getString('String') == 'DEF')))
@@ -593,16 +654,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //HAVING
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHaving():Boolean[1]
 {
-  let sqlString = 'SELECT count(Integer) AS "count" FROM service."/service/service1" GROUP BY String HAVING count(Integer) > 0 AND count(1) > 0';
+  let sqlString = 'SELECT count(Integer) AS "count", max(Integer) FROM service."/service/service1" GROUP BY String HAVING count(Integer) > 0 AND count(1) > 0 AND floor(max(Integer)) > 0';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy('String', [
           agg('count', row | $row.getInteger('Integer'), y | $y->count()),
+          agg('max(Integer)', row | $row.getInteger('Integer'), y | $y->max()),
           agg('count(1)', row | 1, y | $y->count())
-        ])->filter(row | ($row.getInteger('count') > 0) && ($row.getInteger('count(1)') > 0))
-          ->restrict('count')
+        ])->filter(row | ($row.getInteger('count') > 0) && ($row.getInteger('count(1)') > 0) && (floor($row.getInteger('max(Integer)')) > 0))
+          ->restrict(['count', 'max(Integer)'])
 
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -628,12 +690,74 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingWithJoinAndColumnAlias():Boolean[1]
+{
+  let sqlString = 'SELECT table1.*, table2.String as "str" FROM service(\'/service/service1\') "table1" LEFT JOIN service(\'/service/service1\') "table2" USING (String) HAVING (COUNT(1) > 0)';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->renameColumns([
+                pair('Boolean', 'Boolean_table1'),
+                pair('Integer', 'Integer_table1'),
+                pair('Float', 'Float_table1'),
+                pair('Decimal', 'Decimal_table1'),
+                pair('StrictDate', 'StrictDate_table1'),
+                pair('DateTime', 'DateTime_table1'),
+                pair('String', 'String_table1')
+        ])->join(FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->renameColumns([
+                pair('Boolean', 'Boolean_table2'),
+                pair('Integer', 'Integer_table2'),
+                pair('Float', 'Float_table2'),
+                pair('Decimal', 'Decimal_table2'),
+                pair('StrictDate', 'StrictDate_table2'),
+                pair('DateTime', 'DateTime_table2'),
+                pair('String', 'String_table2')
+        ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['String'])
+        ->renameColumns([
+          pair('String_table2', 'str')
+        ])
+        ->groupBy([
+          'Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1',
+          'str'
+        ], agg('COUNT(1)', row | 1, y | $y->count()))
+        ->filter(row | $row.getInteger('COUNT(1)') > 0)
+        ->renameColumns([
+                pair('Boolean_table1', 'Boolean'),
+                pair('Integer_table1', 'Integer'),
+                pair('Float_table1', 'Float'),
+                pair('Decimal_table1', 'Decimal'),
+                pair('StrictDate_table1', 'StrictDate'),
+                pair('DateTime_table1', 'DateTime'),
+                pair('String_table1', 'String')
+        ])
+        ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String', 'str'])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingSelectStar():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service1\') HAVING (COUNT(1) > 0)';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->groupBy(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'], agg('COUNT(1)', row | 1, y | $y->count()))->filter(row | $row.getInteger('COUNT(1)') > 0)
+        ->restrict([ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 //CAST
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
 {
   let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",'
                 + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE PRECISION) AS "double", CAST(String AS NUMERIC) AS "numeric",'
-                + ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS Integer) AS "expression"  FROM service."/service/service1"';
+                + ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS VARCHAR) AS "integerString", CAST(Integer AS Integer) AS "expression"  FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -648,6 +772,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | parseFloat($row.getString('String')), 'double'),
           col(row:TDSRow[1] | parseDecimal($row.getString('String')), 'numeric'),
           col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp'),
+          col(row:TDSRow[1] | toString($row.getInteger('Integer')), 'integerString'),
           col(row:TDSRow[1] | cast($row.getInteger('Integer'), @Integer), 'expression')
         ])
       };
@@ -733,7 +858,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 ///ARITHMETIC
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmetic():Boolean[1]
 {
-  let sqlString = 'SELECT 1 + 1 AS "plus", 1 - 1 AS "minus", 1 * 1 AS "multiply", 1 / 1 AS "divide", Integer + Float AS "column plus" FROM service."/service/service1"';
+  let sqlString = 'SELECT 1 + 2 AS "plus", 1 - 2 AS "minus", 1 * 2 AS "multiply", 1 / 2 AS "divide", 1 % 2 AS "mod", 1 ^ 2 AS "pow", Integer + Float AS "column plus" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -741,10 +866,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         ->project(
           [
-            col(row:TDSRow[1] | 1 + 1, 'plus'),
-            col(row:TDSRow[1] | 1 - 1, 'minus'),
-            col(row:TDSRow[1] | 1 * 1, 'multiply'),
-            col(row:TDSRow[1] | 1 / 1, 'divide'),
+            col(row:TDSRow[1] | 1 + 2, 'plus'),
+            col(row:TDSRow[1] | 1 - 2, 'minus'),
+            col(row:TDSRow[1] | 1 * 2, 'multiply'),
+            col(row:TDSRow[1] | 1 / 2, 'divide'),
+            col(row:TDSRow[1] | mod(1, 2), 'mod'),
+            col(row:TDSRow[1] | pow(1, 2), 'pow'),
             col(row:TDSRow[1] | $row.getInteger('Integer') + $row.getFloat('Float'), 'column plus')
           ]
         )
@@ -760,12 +887,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
         ->join(FlatInput.all()->project(
                 [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                 ['ID', 'Integer', 'String']
-              )->restrict(['Integer']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
-        )->restrict('Integer')
+              )->restrict('Integer')
+              ->renameColumns([
+                pair('Integer', 'Integer_table2')
+              ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
+        )->restrict('Integer_table1')->renameColumns(pair('Integer_table1', 'Integer'))
       };
 
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -778,13 +916,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->join(
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(
           FlatInput.all()->project(
             [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-            [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['Integer']
+            [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict(['Integer', 'String'])
+            ->renameColumns([
+              pair('Integer', 'Integer_table2'),
+              pair('String', 'String_table2')
+            ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['Integer']
         )->renameColumns([
-          pair('Integer', 'Int'),
-          pair('String', 'Str')
+          pair('Integer_table1', 'Int'),
+          pair('String_table2', 'Str')
         ])->restrict(['Int', 'Str'])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -797,31 +948,75 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->join(FlatInput.all()->project(
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(FlatInput.all()->project(
             [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
             ['ID', 'Integer', 'String']
-        ), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')})->restrict(['Integer', 'String'])
+        )->renameColumns([
+          pair('ID', 'ID_table2'),
+          pair('Integer', 'Integer_table2'),
+          pair('String', 'String_table2')
+        ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')})
+        ->renameColumns([
+          pair('Integer_table1', 'Integer'),
+          pair('String_table2', 'String')
+        ])
+        ->restrict(['Integer', 'String'])
       };
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoin():Boolean[1]
 {
-  let sqlString = 'SELECT * FROM (SELECT * FROM service(\'/service/service1\')) "Custom SQL Query" LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "Custom SQL Query1" ON ("Custom SQL Query"."String" = "Custom SQL Query1"."ID") LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "Custom SQL Query2" ON ("Custom SQL Query"."String" = "Custom SQL Query2"."String") WHERE "Custom SQL Query1"."String" = \'ABC\'';
+  let sqlString = 'SELECT * FROM (SELECT * FROM service(\'/service/service1\')) "table1" LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table2" ON ("table1"."String" = "table2"."ID") LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table3" ON ("table1"."String" = "table3"."String") WHERE "table2"."String" = \'ABC\'';
 
   let sqlTransformContext = $sqlString->processQuery();
 
   let expected = {|FlatInput.all()
                     ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+                    ->renameColumns([
+                      pair('Boolean', 'Boolean_table1'),
+                      pair('Integer', 'Integer_table1'),
+                      pair('Float', 'Float_table1'),
+                      pair('Decimal', 'Decimal_table1'),
+                      pair('StrictDate', 'StrictDate_table1'),
+                      pair('DateTime', 'DateTime_table1'),
+                      pair('String', 'String_table1')
+                    ])
                     ->join(FlatInput.all()
-                            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String']),
+                            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+                            ->renameColumns([
+                              pair('ID', 'ID_table2'),
+                              pair('Integer', 'Integer_table2'),
+                              pair('String', 'String_table2')
+                            ]),
                       meta::relational::metamodel::join::JoinType.LEFT_OUTER,
-                      {row1, row2|$row1.getString('String') == $row2.getInteger('ID')})
+                      {row1, row2|$row1.getString('String_table1') == $row2.getInteger('ID_table2')})
                     ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-                            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String']),
+                            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+                            ->renameColumns([
+                              pair('ID', 'ID_table3'),
+                              pair('Integer', 'Integer_table3'),
+                              pair('String', 'String_table3')
+                            ]),
                       meta::relational::metamodel::join::JoinType.LEFT_OUTER,
-                      {row1, row2|$row1.getString('String') == $row2.getString('String')})
-                    ->filter({row|$row.getString('String') == 'ABC'})
+                      {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table3')})
+                    ->filter({row|$row.getString('String_table2') == 'ABC'})
+                    ->renameColumns([
+                      pair('Boolean_table1', 'Boolean'),
+                      pair('Float_table1', 'Float'),
+                      pair('Decimal_table1', 'Decimal'),
+                      pair('StrictDate_table1', 'StrictDate'),
+                      pair('DateTime_table1', 'DateTime')
+                    ])
                 };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -900,7 +1095,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDatePart():Boolean[1]
 {
   let sqlString = 'SELECT date_part(\'year\', StrictDate) AS "YEAR", date_part(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_part(\'month\', StrictDate) AS "MONTH", date_part(\'week\', StrictDate) AS "WEEK", ' +
-                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'doy\', StrictDate) AS "DOY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", ' + 
+                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'doy\', StrictDate) AS "DOY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", ' +
                   'date_part(\'second\', StrictDate) AS "SECOND", date_part(\'epoch\', StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -930,7 +1125,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtract():Boolean[1]
 {
   let sqlString = 'SELECT EXTRACT(\'year\' FROM StrictDate) AS "YEAR", EXTRACT(\'quarter\' FROM CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", EXTRACT(\'month\' FROM StrictDate) AS "MONTH", EXTRACT(\'week\' FROM StrictDate) AS "WEEK", ' +
-                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'doy\' FROM StrictDate) AS "DOY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", ' + 
+                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'doy\' FROM StrictDate) AS "DOY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", ' +
                   'EXTRACT(\'second\' FROM StrictDate) AS "SECOND", EXTRACT(\'epoch\' FROM StrictDate) AS "EPOCH" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -966,9 +1161,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   'StrictDate + 6 * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES", ' +
                   'StrictDate + NULL * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES_NULL", ' +
                   'StrictDate + NULL + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD_NULL", ' +
-                  '(CAST(\'2023-01-01\' AS DATE) + 2 * INTERVAL \'1 DAY\') + 3 * INTERVAL \'2 DAY\' AS "INTERVAL_MIX", ' + 
+                  '(CAST(\'2023-01-01\' AS DATE) + 2 * INTERVAL \'1 DAY\') + 3 * INTERVAL \'2 DAY\' AS "INTERVAL_MIX", ' +
                   'StrictDate + EXTRACT(\'year\' FROM StrictDate) * INTERVAL \'2 YEAR 3 DAYS\' AS "INTERVAL_MIX2", '  +
-                  'CAST((DATE_TRUNC( \'DAY\', CAST("StrictDate" AS DATE) ) + (EXTRACT(DOW FROM "StrictDate") * INTERVAL \'1 DAY\')) AS DATE) AS "INTERVAL_MIX3" ' + 
+                  'CAST((DATE_TRUNC( \'DAY\', CAST("StrictDate" AS DATE) ) + (EXTRACT(DOW FROM "StrictDate") * INTERVAL \'1 DAY\')) AS DATE) AS "INTERVAL_MIX3" ' +
                   'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -995,8 +1190,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
-                  'starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", rtrim(String) AS "RTRIM", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
+  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
+                  'starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -1009,12 +1204,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | length($row.getString('String')), 'CHAR_LENGTH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
                 col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM2'),
                 col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                 col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
                 col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
                 col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
                 col(row:TDSRow[1] | indexOf($row.getString('String'), 'abc'), 'STRPOS'),
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM2'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
                 col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),
@@ -1095,8 +1292,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sql = $plan.rootExecutionNode->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery;
 
   assertEquals('select case when "root".integer is not null then "root".integer else 1 end as "COALESCE" from flat as "root"', $sql);
-
-
 }
 
 //WINDOW FUNCTIONS
@@ -1242,11 +1437,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\', ints => [1,2,3], date => \'2023-01-01\') LIMIT 1';
   let sqlTransformContext = $sqlString->processQuery();
-  let expected = {|
-      let id = 'abc';
-      let ints = [1,2, 3];
-      let date = %2023-01-01;
-
+  let expected = {id:String[1], ints:Integer[*], date:StrictDate[0..1]|
       FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
         [
           x | $x.idIn, x | $x.integerIn, x | $x.enumVal
@@ -1263,11 +1454,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') LIMIT 1';
   let sqlTransformContext = $sqlString->processQuery();
-  let expected = {|
-  
-      let id = 'abc';
-      let ints = [];
-      let date = [];
+  let expected = {id:String[1], ints:Integer[*], date:StrictDate[0..1]|
 
       FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
         [
@@ -1294,6 +1481,33 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
         ]
       );};
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedMultiLineJoin():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" from service(\'/service/service3\')';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {id_1:String[1], ints_1:Integer[*], date_1:StrictDate[0..1]|
+
+      let const_3 = 123;
+
+      FlatInput.all()->filter(f | $f.idIn == $id_1 && $f.integerIn->in($ints_1) && ($f.strictDateIn > $date_1))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )->concatenate(FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_3
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->restrict(['ID', 'Integer', 'The Enum Value']));};
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -1402,6 +1616,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MULTIPLY, right = ^IntegerLiteral(value = 2)), '1 * 2');
   doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.DIVIDE, right = ^IntegerLiteral(value = 2)), '1 / 2');
   doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.MODULUS, right = ^IntegerLiteral(value = 2)), '1 % 2');
+  doNameTest(^ArithmeticExpression(left = ^IntegerLiteral(value = 1), type = ArithmeticType.POWER, right = ^IntegerLiteral(value = 2)), '1 ^ 2');
+
 
   doNameTest(^BetweenPredicate(min = ^IntegerLiteral(value = 0), max = ^IntegerLiteral(value = 2), value = ^IntegerLiteral(value = 1)), '1 BETWEEN 0 AND 2');
 
@@ -1466,14 +1682,9 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
 
   let extensions = relationalExtensions();
-  let context = ^SqlTransformContext(
-    sources = $sources,
-    extensions = $extensions,
-    scopeWithFrom = $scopeWithFrom,
-    aliases = ^Map<String, String>(),
-    contexts = ^Map<String, SqlTransformContext>());
+  let context = rootContext($sources, $extensions);
 
-  $query->processRootQuery($context);
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom));
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::forceGetStringType(col: TDSColumn[1]): String[1]
