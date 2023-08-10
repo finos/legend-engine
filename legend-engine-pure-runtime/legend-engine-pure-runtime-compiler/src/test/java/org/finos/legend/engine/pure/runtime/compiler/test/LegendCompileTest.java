@@ -46,15 +46,6 @@ public abstract class LegendCompileTest
     }
 
     @Test
-    public void testFunction()
-    {
-        test("let x = meta::legend::compile('function a::f():Integer[1]{1+1}')->cast(@ConcreteFunctionDefinition<Any>);" +
-                   "println($x);" +
-                   "assertEquals(1, $x->size());" +
-                   "assertEquals(1, $x.expressionSequence->size());");
-    }
-
-    @Test
     public void testCoreInstanceCopy()
     {
         test("let x = meta::legend::compile('function a::f():Integer[1]{1+1}')->toOne()->cast(@ConcreteFunctionDefinition<Any>);" +
@@ -93,8 +84,46 @@ public abstract class LegendCompileTest
     @Test
     public void testMapping()
     {
-        test("let x =  meta::legend::compile('Class a::A{name:String[1];}\\n###Mapping\\nMapping a::M(a::A : Pure{~src a::A name : $src.name})')->filter(x | $x->instanceOf(meta::pure::mapping::Mapping))->cast(@meta::pure::mapping::Mapping);\n" +
-                  "assertEquals('name', $x.classMappings->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation).propertyMappings.property.name);");
+        test("let mappingStr = '" +
+                       "###Pure\\n" +
+                       "Class a::A{name:String[1];}\\n" +
+                       "\\n" +
+                       "###Mapping\\n" +
+                       "Mapping a::M\\n" +
+                        "(\\n" +
+                        "  a::A : Pure\\n" +
+                        "  {\\n" +
+                        "    ~src a::A\\n" +
+                        "    name : $src.name\\n" +
+                        "  }\\n" +
+                        ")\\n" +
+                        "';\n" +
+                "let x =  meta::legend::compile($mappingStr)->filter(x | $x->instanceOf(meta::pure::mapping::Mapping))->cast(@meta::pure::mapping::Mapping);\n" +
+                "assertEquals('name', $x.classMappings->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation).propertyMappings.property.name);");
+    }
+
+    @Test
+    public void testMappingReferenceInMapping()
+    {
+        testWith("let mappingStr = '" +
+                "###Pure\\n" +
+                "Class a::A{name:String[1];}\\n" +
+                "\\n" +
+                "###Mapping\\n" +
+                "Mapping a::M\\n" +
+                "(\\n" +
+                "  include a::baseM" +
+                "  a::A : Pure\\n" +
+                "  {\\n" +
+                "    ~src a::A\\n" +
+                "    name : $src.name\\n" +
+                "  }\\n" +
+                ")\\n" +
+                "';\n" +
+                "let x =  meta::legend::compile($mappingStr)->filter(x | $x->instanceOf(meta::pure::mapping::Mapping))->cast(@meta::pure::mapping::Mapping);\n" +
+                "assertEquals('name', $x.classMappings->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation).propertyMappings.property.name);",
+                basicModel()
+            );
     }
 
     @Test
@@ -118,12 +147,80 @@ public abstract class LegendCompileTest
                 "assertEquals('X X Test', $x);");
     }
 
+    @Test
+    public void testFunction()
+    {
+        test("let funcStr ='function a::f():Integer[1]\\n" +
+                "                 {\\n" +
+                "                    1+1\\n" +
+                "                  }\\n';" +
+                "let x=  meta::legend::compile($funcStr)->cast(@ConcreteFunctionDefinition<Any>);" +
+                "println($x);" +
+                "assertEquals(1, $x->size());" +
+                "assertEquals(1, $x.expressionSequence->size());");
+    }
+
+    @Test
+    public void testTypeReferenceInFunction()
+    {
+        testWith(
+                "let funcStr ='function a::f():a::baseA[1]\\n" +
+                "                 {\\n" +
+                "                    a::baseA.all()->toOne();\\n" +
+                "                  }\\n';" +
+                "let x =  meta::legend::compile($funcStr)->cast(@ConcreteFunctionDefinition<Any>);" +
+                "println($x);" +
+                "assertEquals(1, $x->size());" +
+                "assertEquals(1, $x.expressionSequence->size());",
+                basicModel()
+        );
+    }
+
+    @Test
+    public void testMappingReferenceInFunction()
+    {
+        testWith(
+                "let funcStr ='function a::f():a::A[1]\\n" +
+                        "                 {\\n" +
+                        "                    a::A.all()->from(a::M, ^Runtime())->toOne();\\n" +
+                        "                  }\\n';" +
+                        "let x =  meta::legend::compile($funcStr)->cast(@ConcreteFunctionDefinition<Any>);" +
+                        "println($x);" +
+                        "assertEquals(1, $x->size());" +
+                        "assertEquals(1, $x.expressionSequence->size());",
+                basicModel()
+        );
+    }
+
+    public String basicModel()
+    {
+        return
+            "###Pure\n" +
+            "Class a::baseA\n" +
+            "{\n" +
+            "   name:String[1];\n" +
+            "}\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping a::baseM\n" +
+            "(\n" +
+            "  a::baseA : Pure\n" +
+            "  {\n" +
+            "    ~src a::baseA\n" +
+            "    name : $src.name\n" +
+            "  }\n" +
+            ")\n";
+    }
 
 
     private void test(String code)
     {
-        Tools.test(code, functionExecution, runtime);
+        Tools.test(code, "", functionExecution, runtime);
     }
 
+    private void testWith(String code, String otherParserCode)
+    {
+        Tools.test(code, otherParserCode, functionExecution, runtime);
+    }
 
 }

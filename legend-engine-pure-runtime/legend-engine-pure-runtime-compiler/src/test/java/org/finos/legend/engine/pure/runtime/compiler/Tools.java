@@ -99,15 +99,17 @@ public class Tools
     }
 
 
-    public static void test(String code, FunctionExecution functionExecution, PureRuntime runtime)
+    public static void test(String code, String otherParserCode, FunctionExecution functionExecution, PureRuntime runtime)
     {
         try
         {
             runtime.createInMemoryAndCompile(
                     Tuples.pair("testSource.pure",
+                            otherParserCode +
+                            "###Pure\n" +
                             "function test():Any[*] \n"
-                                    + "{"
-                                    + code
+                                    + "{\n"
+                                    +    code
                                     + "}\n"));
             CoreInstance func = runtime.getFunction("test():Any[*]");
             functionExecution.start(func, Lists.immutable.empty());

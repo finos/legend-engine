@@ -974,7 +974,25 @@ public class PureModel implements IPureModel
 
     public Mapping getMapping_safe(String fullPath)
     {
-        return this.mappingsIndex.get(packagePrefix(fullPath));
+        Mapping mapping = this.mappingsIndex.get(packagePrefix(fullPath));
+        if (mapping == null)
+        {
+            // Search for mappings in the Pure graph
+            try
+            {
+                mapping = (Mapping) this.executionSupport.getMetadata("meta::pure::mapping::Mapping", "Root::" + fullPath);
+            }
+            catch (Exception ignored)
+            {
+                // do nothing
+            }
+
+            if (mapping != null)
+            {
+                this.mappingsIndex.put(fullPath, mapping);
+            }
+        }
+        return mapping;
     }
 
 
