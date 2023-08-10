@@ -94,15 +94,6 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    assertEquals( 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not replace("firmtable_0".LEGALNAME, \' X\', \'X\') regexp \'^[A-Za-z0-9]*$\'', $result_next->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunctionPresto():Boolean[1]
-{
-
-   let fn = {|Person.all()->filter(p | $p.firm->toOne().legalName->matches('[A-Za-z0-9]*'))};
-
-   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where REGEXP_LIKE("firmTable_d#2_dy0_d#3_d_m1".LEGALNAME, \'^[A-Za-z0-9]*$\')',$s);
-}
-
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSubstringFunction():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
