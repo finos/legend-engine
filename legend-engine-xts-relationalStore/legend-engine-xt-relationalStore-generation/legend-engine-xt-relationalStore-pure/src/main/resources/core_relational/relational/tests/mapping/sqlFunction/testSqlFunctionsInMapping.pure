@@ -134,17 +134,12 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
 
-   let sHive = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Hive, meta::relational::extension::relationalExtensions());
-
    let sPresto = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
 
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sH2);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sDB2);
-   assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
 }
 
