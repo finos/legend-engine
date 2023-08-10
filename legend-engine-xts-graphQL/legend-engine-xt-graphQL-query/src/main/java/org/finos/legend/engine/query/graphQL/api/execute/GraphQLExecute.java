@@ -326,8 +326,11 @@ public class GraphQLExecute extends GraphQL
                         {
                             Thread.sleep(10);
                         }
-                        generator.writeFieldName("extensions");
-                        generator.writeObject(extensionsObject.get());
+                        Map<String, ?> extensions = extensionsObject.get();
+                        if(extensions != null && !extensions.isEmpty()) {
+                            generator.writeFieldName("extensions");
+                            generator.writeObject(extensions);
+                        }
                         generator.writeEndObject();
                     }
                     catch (Exception e)
