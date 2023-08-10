@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-config</artifactId>
-        <version>4.21.2-SNAPSHOT</version>
+        <version>4.22.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server</artifactId>
@@ -416,7 +416,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-query</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-data-generation</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-generation</artifactId>
@@ -462,7 +465,6 @@
             <artifactId>legend-engine-xt-relationalStore-trino-execution</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>

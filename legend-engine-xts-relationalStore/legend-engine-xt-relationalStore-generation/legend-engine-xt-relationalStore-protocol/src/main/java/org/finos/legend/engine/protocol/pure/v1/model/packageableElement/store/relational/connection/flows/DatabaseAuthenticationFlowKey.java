@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.authentication;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -27,17 +27,16 @@ public class DatabaseAuthenticationFlowKey
     private final Class<? extends DatasourceSpecification> datasourceProtocolSpecClass;
     private final Class<? extends AuthenticationStrategy> authStrategyProtocolSpecClass;
 
+    public DatabaseAuthenticationFlowKey(DatabaseType databaseType, Class<? extends DatasourceSpecification> datasourceProtocolSpecClass, Class<? extends AuthenticationStrategy> authStrategyProtocolSpecClass)
+    {
+        this.databaseType = databaseType;
+        this.datasourceProtocolSpecClass = datasourceProtocolSpecClass;
+        this.authStrategyProtocolSpecClass = authStrategyProtocolSpecClass;
+    }
+
     public static DatabaseAuthenticationFlowKey newKey(DatabaseType databaseType, Class<? extends DatasourceSpecification> datasourceClass, Class<? extends AuthenticationStrategy> authenticationStrategyClass)
     {
         return new DatabaseAuthenticationFlowKey(databaseType, datasourceClass, authenticationStrategyClass);
-    }
-
-    public static DatabaseAuthenticationFlowKey newKey(DatabaseAuthenticationFlow flow)
-    {
-        DatabaseType databaseType = flow.getDatabaseType();
-        Class<? extends DatasourceSpecification> datasourceClass = flow.getDatasourceClass();
-        Class<? extends AuthenticationStrategy> authenticationClass = flow.getAuthenticationStrategyClass();
-        return DatabaseAuthenticationFlowKey.newKey(databaseType, datasourceClass, authenticationClass);
     }
 
     public static DatabaseAuthenticationFlowKey newKey(RelationalDatabaseConnection connection)
@@ -46,13 +45,6 @@ public class DatabaseAuthenticationFlowKey
         Class<? extends DatasourceSpecification> datasourceClass = connection.datasourceSpecification.getClass();
         Class<? extends AuthenticationStrategy> authenticationClass = connection.authenticationStrategy.getClass();
         return DatabaseAuthenticationFlowKey.newKey(databaseType, datasourceClass, authenticationClass);
-    }
-
-    public DatabaseAuthenticationFlowKey(DatabaseType databaseType, Class<? extends DatasourceSpecification> datasourceProtocolSpecClass, Class<? extends AuthenticationStrategy> authStrategyProtocolSpecClass)
-    {
-        this.databaseType = databaseType;
-        this.datasourceProtocolSpecClass = datasourceProtocolSpecClass;
-        this.authStrategyProtocolSpecClass = authStrategyProtocolSpecClass;
     }
 
     @Override
@@ -76,5 +68,20 @@ public class DatabaseAuthenticationFlowKey
     public int hashCode()
     {
         return Objects.hash(databaseType, datasourceProtocolSpecClass, authStrategyProtocolSpecClass);
+    }
+
+    public DatabaseType getDatabaseType()
+    {
+        return databaseType;
+    }
+
+    public Class<? extends DatasourceSpecification> getDatasourceProtocolSpecClass()
+    {
+        return datasourceProtocolSpecClass;
+    }
+
+    public Class<? extends AuthenticationStrategy> getAuthStrategyProtocolSpecClass()
+    {
+        return authStrategyProtocolSpecClass;
     }
 }

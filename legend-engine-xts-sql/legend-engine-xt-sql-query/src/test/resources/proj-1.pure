@@ -98,6 +98,35 @@ Service demo::H2PersonService
   }
 }
 
+Service demo::H2PersonServiceParameterized
+{
+  pattern: '/personServiceForNames';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {names:String[*]|demo::employee.all()->filter(p | $names->isEmpty() || $p.name->in($names))->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 
 ###Pure
 Enum demo::employeeType

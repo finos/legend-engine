@@ -19,8 +19,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
@@ -78,6 +81,13 @@ public class TrinoCompilerExtension implements IRelationalCompilerExtension
     public CompilerExtension build()
     {
         return new TrinoCompilerExtension();
+    }
+
+    @Override
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Trino, TrinoDatasourceSpecification.class, TrinoDelegatedKerberosAuthenticationStrategy.class),
+                DatabaseAuthenticationFlowKey.newKey(DatabaseType.Trino, TrinoDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class));
     }
 }
 

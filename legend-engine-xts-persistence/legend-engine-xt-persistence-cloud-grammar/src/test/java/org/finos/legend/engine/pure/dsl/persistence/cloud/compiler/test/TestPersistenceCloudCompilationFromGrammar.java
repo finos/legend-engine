@@ -122,7 +122,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "RelationalDatabaseConnection test::ServiceConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: Snowflake;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -132,7 +132,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "RelationalDatabaseConnection test::SinkConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: MemSQL;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -267,7 +267,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "RelationalDatabaseConnection test::ServiceConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: Snowflake;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +
@@ -277,7 +277,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
                 "RelationalDatabaseConnection test::SinkConnection\n" +
                 "{\n" +
                 "  store: test::TestDatabase;\n" +
-                "  type: MemSQL;\n" +
+                "  type: H2;\n" +
                 "  specification: LocalH2\n" +
                 "  {\n" +
                 "  };\n" +

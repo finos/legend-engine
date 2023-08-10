@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -40,6 +41,39 @@ import org.finos.legend.engine.shared.core.identity.Identity;
  */
 public interface DatabaseAuthenticationFlow<D extends DatasourceSpecification, A extends AuthenticationStrategy>
 {
+    /*
+        This is intended to carry 'runtime context' that is not part of the model (i.e datasource spec and auth spec), but is needed to create a credential.
+        For e.g. this can be used to inject server/platform configuration required to connect to external vault.
+     */
+    class RuntimeContext
+    {
+        private ImmutableMap<String, String> contextParams = Maps.immutable.empty();
+
+        private RuntimeContext(ImmutableMap<String, String> contextParams)
+        {
+            this.contextParams = contextParams;
+        }
+
+        private RuntimeContext()
+        {
+        }
+
+        public static RuntimeContext newWith(ImmutableMap<String, String> contextParams)
+        {
+            return new RuntimeContext(contextParams);
+        }
+
+        public static RuntimeContext empty()
+        {
+            return new RuntimeContext();
+        }
+
+        public ImmutableMap<String, String> getContextParams()
+        {
+            return contextParams;
+        }
+    }
+
     Class<D> getDatasourceClass();
 
     Class<A> getAuthenticationStrategyClass();
@@ -54,39 +88,14 @@ public interface DatabaseAuthenticationFlow<D extends DatasourceSpecification, A
 
     default Credential makeCredential(Identity identity, D datasourceSpecification, A authenticationStrategy, RuntimeContext credentialAcquisitionContext) throws Exception
     {
-           return this.makeCredential(identity, datasourceSpecification, authenticationStrategy);
+        return this.makeCredential(identity, datasourceSpecification, authenticationStrategy);
     }
 
-    /*
-        This is intended to carry 'runtime context' that is not part of the model (i.e datasource spec and auth spec), but is needed to create a credential.
-        For e.g. this can be used to inject server/platform configuration required to connect to external vault.
-     */
-    class RuntimeContext
+    static DatabaseAuthenticationFlowKey newKey(DatabaseAuthenticationFlow flow)
     {
-        private ImmutableMap<String, String> contextParams = Maps.immutable.empty();
-
-        public static RuntimeContext newWith(ImmutableMap<String, String> contextParams)
-        {
-            return new RuntimeContext(contextParams);
-        }
-
-        public static RuntimeContext empty()
-        {
-            return new RuntimeContext();
-        }
-
-        private RuntimeContext(ImmutableMap<String, String> contextParams)
-        {
-            this.contextParams = contextParams;
-        }
-
-        private RuntimeContext()
-        {
-        }
-
-        public ImmutableMap<String, String> getContextParams()
-        {
-            return contextParams;
-        }
+        DatabaseType databaseType = flow.getDatabaseType();
+        Class<? extends DatasourceSpecification> datasourceClass = flow.getDatasourceClass();
+        Class<? extends AuthenticationStrategy> authenticationClass = flow.getAuthenticationStrategyClass();
+        return DatabaseAuthenticationFlowKey.newKey(databaseType, datasourceClass, authenticationClass);
     }
 }

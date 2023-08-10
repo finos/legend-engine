@@ -14,8 +14,10 @@
 
 import meta::pure::tds::schema::*;
 
-function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
+function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
+   assert($f->functionReturnType().rawType == TabularDataSet, 'function must return TabularDataSet');
+
    let es = $f->evaluateAndDeactivate().expressionSequence->last();
    assertEquals(1, $es->size());
 

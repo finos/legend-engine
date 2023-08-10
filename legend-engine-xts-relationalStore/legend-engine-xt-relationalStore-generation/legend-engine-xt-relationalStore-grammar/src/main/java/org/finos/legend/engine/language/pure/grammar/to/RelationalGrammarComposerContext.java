@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 /**
  * There are 2 reasons why we have this specialized grammar composer context instead of using PureGrammarComposerContext
@@ -27,12 +28,14 @@ public final class RelationalGrammarComposerContext
     private final String indentationString;
     private final String currentDatabase;
     private final Boolean useDynaFunctionName;
+    private final RenderStyle renderStyle;
 
     private RelationalGrammarComposerContext(RelationalGrammarComposerContext.Builder builder)
     {
         this.indentationString = builder.indentationString;
         this.currentDatabase = builder.currentDatabase;
         this.useDynaFunctionName = builder.useDynaFunctionName;
+        this.renderStyle = builder.renderStyle;
 
     }
 
@@ -56,11 +59,17 @@ public final class RelationalGrammarComposerContext
         return useDynaFunctionName;
     }
 
+    public RenderStyle getRenderStyle()
+    {
+        return renderStyle;
+    }
+
     public static final class Builder
     {
         private String indentationString = "";
         private String currentDatabase;
         private Boolean useDynaFunctionName = true;
+        private RenderStyle renderStyle = RenderStyle.STANDARD;
 
         private Builder()
         {
@@ -80,6 +89,7 @@ public final class RelationalGrammarComposerContext
             builder.indentationString = context.getIndentationString();
             builder.currentDatabase = context.getCurrentDatabase();
             builder.useDynaFunctionName = context.getUseDynaFunctionName();
+            builder.renderStyle = context.renderStyle;
 
             return builder;
         }
@@ -103,6 +113,12 @@ public final class RelationalGrammarComposerContext
         public RelationalGrammarComposerContext.Builder withIndentation(int count)
         {
             this.indentationString += StringUtils.repeat(" ", count);
+            return this;
+        }
+
+        public RelationalGrammarComposerContext.Builder withRenderStyle(RenderStyle renderStyle)
+        {
+            this.renderStyle = renderStyle;
             return this;
         }
 

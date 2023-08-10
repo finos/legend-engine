@@ -19,9 +19,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
 import org.junit.Assert;
 import org.junit.Test;
@@ -129,38 +128,26 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: MiddleTierUserNamePassword\n" +
+                "  auth: UserNamePassword\n" +
                 "  {\n" +
-                "    vaultReference: 'value';\n" +
+                "    baseVaultReference: 'value';\n" +
+                "    userNameVaultReference: 'value';\n" +
+                "    passwordVaultReference: 'value';\n" +
                 "  };\n" +
                 "}\n");
 
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) result.getTwo().getConnection("simple::StaticConnection", SourceInformation.getUnknownSourceInformation());
-        String vaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._vaultReference();
-        assertEquals("value", vaultReference);
+        String baseVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._baseVaultReference();
+        String userNameVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._userNameVaultReference();
+        String passwordVaultReference = ((Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl) connection._authenticationStrategy())._passwordVaultReference();
+        assertEquals("value", baseVaultReference);
+        assertEquals("value", userNameVaultReference);
+        assertEquals("value", passwordVaultReference);
     }
 
     @Test
     public void testSqlServerConnectionPropertiesPropagatedToCompiledGraph()
     {
-        test(TestRelationalCompilationFromGrammar.DB_INC +
-                "###Connection\n" +
-                "RelationalDatabaseConnection simple::StaticConnection\n" +
-                "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
-                "  type: SqlServer;\n" +
-                "  specification: Static\n" +
-                "  {\n" +
-                "    name: 'name';\n" +
-                "    host: 'host';\n" +
-                "    port: 1234;\n" +
-                "  };\n" +
-                "  auth: DelegatedKerberos\n" +
-                "  {\n" +
-                "    serverPrincipal: 'dummyPrincipal';\n" +
-                "  };\n" +
-                "}\n");
-
         test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
@@ -192,20 +179,20 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "  store: model::relational::tests::dbInc;\n" +
                 "  type: H2;\n" +
                 "  quoteIdentifiers: true;\n" +
-                "  specification: LocalH2\n" +
+                "  specification: Static\n" +
                 "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: DelegatedKerberos\n" +
+                "  auth: Test\n" +
                 "  {\n" +
-                "    serverPrincipal: 'dummyPrincipal';" +
                 "  };\n" +
                 "}\n");
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection connection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
-        String serverPrincipal = ((Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl) connection._authenticationStrategy())._serverPrincipal();
         Boolean quoteIdentifiers = connection._quoteIdentifiers();
 
         Assert.assertTrue(quoteIdentifiers);
-        Assert.assertEquals("dummyPrincipal", serverPrincipal);
     }
 
 }

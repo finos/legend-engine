@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.21.2-SNAPSHOT</version>
+    <version>4.22.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -111,6 +111,8 @@
         <module>legend-engine-xts-data-push</module>
         <!-- Data Push -->
 
+        <!-- Test Data Generation -->
+        <module>legend-engine-test-data-generation</module>
     </modules>
 
     <properties>
@@ -1590,7 +1592,11 @@
                 <artifactId>legend-engine-testable</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-data-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-platform-java</artifactId>

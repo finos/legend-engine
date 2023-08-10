@@ -47,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +69,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             {
                 if (element instanceof Database)
                 {
-                    return renderDatabase((Database) element);
+                    return renderDatabase((Database) element, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -81,7 +82,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         return Lists.mutable.with((elements, context, composedSections) ->
         {
             List<Database> composableElements = ListIterate.selectInstancesOf(elements, Database.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, RelationalGrammarComposerExtension::renderDatabase).makeString("###" + RelationalGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, x -> RelationalGrammarComposerExtension.renderDatabase(x, context)).makeString("###" + RelationalGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
@@ -220,11 +221,11 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         });
     }
 
-    private static String renderDatabase(Database database)
+    private static String renderDatabase(Database database, PureGrammarComposerContext PUREcontext)
     {
         List<Schema> nonDefaultSchema = ListIterate.select(database.schemas, schema -> !"default".equals(schema.name));
         Schema defaultSchema = ListIterate.select(database.schemas, schema -> "default".equals(schema.name)).getFirst();
-        RelationalGrammarComposerContext context = RelationalGrammarComposerContext.Builder.newInstance().withCurrentDatabase(PureGrammarComposerUtility.convertPath(database.getPath())).withNoDynaFunctionNames().build();
+        RelationalGrammarComposerContext context = RelationalGrammarComposerContext.Builder.newInstance().withCurrentDatabase(PureGrammarComposerUtility.convertPath(database.getPath())).withNoDynaFunctionNames().withRenderStyle(PUREcontext.getRenderStyle()).build();
         StringBuilder builder = new StringBuilder();
         builder.append("Database ").append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
         boolean nonEmpty = false;

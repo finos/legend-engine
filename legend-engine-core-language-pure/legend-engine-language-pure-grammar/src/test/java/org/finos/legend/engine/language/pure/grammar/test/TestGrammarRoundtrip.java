@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -72,12 +73,17 @@ public class TestGrammarRoundtrip
             test(code, null, false);
         }
 
+        public static void test(String code, RenderStyle renderStyle)
+        {
+            test(code, null, false, renderStyle);
+        }
+
         public static void testWithSectionInfoPreserved(String code)
         {
             test(code, null, true);
         }
 
-        private static void test(String code, String message, boolean keepSectionIndex)
+        private static void test(String code, String message, boolean keepSectionIndex, RenderStyle renderStyle)
         {
             PureModelContextData modelData = null;
             try
@@ -91,7 +97,7 @@ public class TestGrammarRoundtrip
             {
                 throw new RuntimeException(e);
             }
-            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(renderStyle).build());
             Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
 
             if (keepSectionIndex)
@@ -105,6 +111,11 @@ public class TestGrammarRoundtrip
                     .withSerializer(modelData.serializer)
                     .withElements(ListIterate.reject(modelData.getElements(), el -> el instanceof SectionIndex)).build();
             Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelDataWithoutSectionIndex));
+        }
+
+        private static void test(String code, String message, boolean keepSectionIndex)
+        {
+            test(code, message, keepSectionIndex, RenderStyle.STANDARD);
         }
 
         public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode)

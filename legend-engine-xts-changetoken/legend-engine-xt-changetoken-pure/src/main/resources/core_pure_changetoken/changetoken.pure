@@ -176,12 +176,12 @@ Class
 {doc.doc='rename a field of a class'}
 meta::pure::changetoken::RenameField extends ClassChangeToken
 {
-  oldFieldName: String[1];
-  newFieldName: String[1];
+  oldFieldName: String[1..*];
+  newFieldName: String[1..*];
 
   toString() { 'RenameField(' 
-    + 'oldFieldName=' + $this.oldFieldName->toString() + ','
-    + 'newFieldName=' + $this.newFieldName->toString()
+    + 'oldFieldName=' + $this.oldFieldName->joinStrings('.')->toString() + ','
+    + 'newFieldName=' + $this.newFieldName->joinStrings('.')->toString()
     + ')' }: String[1];
 }
 

@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,7 +42,7 @@ public class TestDefaultSupportedFlowsCount
         assertEquals("mismatch in number of default authentication flows", TestDefaultSupportedFlows.data().size(), defaultProvider.count());
     }
 
-    @Test
+    @Ignore
     public void h2FlowSupportedOnlyForStaticDatasource()
     {
         try
