@@ -104,28 +104,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
    assertPlanGenerationForOptionalParameter(DatabaseType.DB2, $expectedPlan);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Sybase():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Sybase")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Sybase, $expectedPlan); 
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Presto():Boolean[1]      
 {
    let expectedPlan ='Sequence\n'+
@@ -2001,33 +1979,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       '      resultColumns = [(\"TradeId\", INT)]\n'+
       '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".settlementDateTime in (${renderCollectionWithTz(dates![] \"[US/Arizona]\" \",\" \"Timestamp\'\" \"\'\" \"null\")})\n'+
       '      connection = DatabaseConnection(type = \"Presto\")\n'+
-      '    )\n'+
-      '  )\n'+
-      ')\n';
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithStrictDate():Boolean[1]
-{
-   let res = executionPlan({dates:StrictDate[*] |Trade.all()->filter(t|$t.date->in($dates))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping,
-                           ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Sybase)),
-                           meta::relational::extension::relationalExtensions());
-   let expected =
-      'Sequence\n'+
-      '(\n'+
-      '  type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '  (\n'+
-      '    FunctionParametersValidationNode\n'+
-      '    (\n'+
-      '      functionParameters = [dates:StrictDate[*]]\n'+
-      '    )\n'+
-      '    Relational\n'+
-      '    (\n'+
-      '      type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '      resultColumns = [(\"TradeId\", INT)]\n'+
-      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".tradeDate in (${renderCollection(dates![] \",\" \"convert(DATE, \'\" \"\', 101)\" {} \"null\")})\n'+
-      '      connection = DatabaseConnection(type = \"Sybase\")\n'+
       '    )\n'+
       '  )\n'+
       ')\n';

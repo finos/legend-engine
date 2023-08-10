@@ -148,16 +148,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPresto);
 }
 
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::testTriminSybaseASE():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select rtrim(ltrim("root".string2)) as "trim" from dataTable as "root"',$s);
-
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::left::testProject():Boolean[1]
 {
    let result = execute(|SqlFunctionDemo.all()->project([s | $s.string1Left], ['left']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
@@ -600,14 +590,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    assertEquals('select cast("root".int1 as VARCHAR(128)) as "convertVarchar128" from dataTable as "root"',$s);
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinSybase():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
-
-}
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinComposite():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
@@ -664,15 +646,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select date( date_parse("root".stringUserDefinedDateFormat,\'MMMYYYY\') ) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinIQUserDefinedFormat():Boolean[1]
-{
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDateUserDefinedFormat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select convert ( date,(\'01 \' + substring("root".stringUserDefinedDateFormat,1,3) + \' \' + substring("root".stringUserDefinedDateFormat,4,4)),106) as "convertToDateUserDefinedFormat" from dataTable as "root"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinDb2():Boolean[1]
@@ -848,7 +821,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunc
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testAdjustDateTranslationInMappingAndQuery():Boolean[1]
 {
-   let toAssertDbTypes = [DatabaseType.DB2, DatabaseType.Sybase, DatabaseType.Presto];
+   let toAssertDbTypes = [DatabaseType.DB2, DatabaseType.Presto];
 
    $toAssertDbTypes->map({db |
       let s1 = toSQLString(|SqlFunctionDemo.all()->project([p | $p.adjustDate], ['Dt']), testMapping, $db, meta::relational::extension::relationalExtensions());
