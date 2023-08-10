@@ -197,14 +197,6 @@ function meta::protocols::pure::v1_25_0::transformation::fromPureGraph::connecti
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
          ),
-       d:meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification[1] |
-          ^meta::protocols::pure::v1_25_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification(
-              _type = 'databricks',
-              hostname = $d.hostname,
-              port = $d.port,
-              protocol = $d.protocol,
-              httpPath = $d.httpPath
-         ),
       s:meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification[1] |
         ^meta::protocols::pure::v1_25_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification(
             _type = 'snowflake',

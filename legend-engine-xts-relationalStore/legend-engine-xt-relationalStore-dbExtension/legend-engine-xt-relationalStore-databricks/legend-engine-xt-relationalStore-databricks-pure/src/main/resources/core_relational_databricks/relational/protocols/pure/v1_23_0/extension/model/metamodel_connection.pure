@@ -1,0 +1,7 @@
+Class meta::protocols::pure::v1_23_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification extends meta::protocols::pure::v1_23_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    hostname:String[1];
+    port:String[1];
+    protocol:String[1];
+    httpPath:String[1];
+}

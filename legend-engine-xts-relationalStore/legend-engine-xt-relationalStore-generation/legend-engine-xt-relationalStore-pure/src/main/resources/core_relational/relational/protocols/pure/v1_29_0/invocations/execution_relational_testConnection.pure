@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::protocols::pure::v1_31_0::metamodel::store::relational::connection::alloy::specification::*;
 import meta::pure::alloy::connections::*;
 import meta::relational::runtime::*;
 import meta::protocols::pure::v1_29_0::invocation::execution::testConnection::*;
@@ -69,7 +70,6 @@ function meta::protocols::pure::v1_29_0::transformation::toPureGraph::connection
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
                                                             pair('h2Local', 'LocalH2DatasourceSpecification('),
                                                             pair('snowflake', 'SnowflakeDatasourceSpecification'),
-                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
                                                             pair('redshift', 'RedshiftDatasourceSpecification')
                                                           ])
                                             )
@@ -192,14 +192,6 @@ function meta::protocols::pure::v1_29_0::transformation::toPureGraph::connection
             organization = $s.organization,
             role = $s.role
         ),
-      d:meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
-          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
-              // _type = 'databricks',
-              hostname = $d.hostname,
-              port = $d.port,
-              protocol = $d.protocol,
-              httpPath = $d.httpPath
-         ),
      r:meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
           ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
               //  _type = 'redshift',
