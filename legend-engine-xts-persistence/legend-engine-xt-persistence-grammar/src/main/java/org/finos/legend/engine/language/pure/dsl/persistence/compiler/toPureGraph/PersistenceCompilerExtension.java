@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
@@ -125,7 +126,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
 
                             ListIterable<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-                            ListIterable<? extends Root_meta_pure_extension_Extension> pureExtensions = generatorExtensions.flatCollect(x -> x.getExtraExtensions(context.pureModel)).toList();
+                            ListIterable<? extends Root_meta_pure_extension_Extension> pureExtensions = PureCoreExtensionLoader.extensions().flatCollect(x -> x.extraPureCoreExtensions(context.pureModel.getExecutionSupport())).toList();
 
                             // execute common validations
                             Root_meta_pure_persistence_validation_ValidationRuleSet<? extends Root_meta_pure_persistence_metamodel_PersistenceContext> pureValidationRuleSet = Root_meta_pure_persistence_validation_commonRules_Extension_MANY__ValidationRuleSet_1_(pureExtensions, context.getExecutionSupport());

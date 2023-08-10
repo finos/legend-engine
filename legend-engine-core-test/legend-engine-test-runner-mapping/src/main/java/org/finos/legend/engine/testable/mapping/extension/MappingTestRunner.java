@@ -41,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -94,7 +95,7 @@ public class MappingTestRunner implements TestRunner
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pureModelContextData.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(testablePath));
             MappingTestSuite mappingTestSuite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
-            MappingTestRunnerContext context = new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), extensions.flatCollect(e -> e.getExtraExtensions(pureModel)));
+            MappingTestRunnerContext context = new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())));
             // build plan, executor args
             List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
             // running of each test is catchable and put under a test error

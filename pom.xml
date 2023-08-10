@@ -1654,6 +1654,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-code-core-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1982,6 +1987,16 @@
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-store-relational-pure</artifactId>
                 <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-extensions-collection-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-elasticsearch-V7-pure-metamodel</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
