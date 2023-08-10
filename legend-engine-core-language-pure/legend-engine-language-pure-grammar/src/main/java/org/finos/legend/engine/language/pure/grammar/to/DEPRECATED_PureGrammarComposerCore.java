@@ -137,6 +137,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     private int baseTabLevel = 1;
     private int currentTabLevel = 1;
     private final boolean isIfStatementNested;
+        
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
     {
         this.indentationString = builder.indentationString;
@@ -235,7 +236,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             return this;
         }
 
-        private Builder withCurrentTabLevel(int level){
+        private Builder withCurrentTabLevel(int level)
+        {
             this.currentTabLevel = level;
             return this;
         }
@@ -514,15 +516,15 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String pureFilter = "";
         if (pureInstanceClassMapping.filter != null)
         {
-            this.currentTabLevel+=1;
+            this.currentTabLevel += 1;
             pureInstanceClassMapping.filter.parameters = Collections.emptyList();
-            String filterString = pureInstanceClassMapping.filter.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel+1).build()).replaceFirst("\\|", "");
-            pureFilter = getTabString(2) + "~filter \n " + getTabString(this.currentTabLevel+1) + filterString + "\n";
+            String filterString = pureInstanceClassMapping.filter.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel + 1).build()).replaceFirst("\\|", "");
+            pureFilter = getTabString(2) + "~filter \n " + getTabString(this.currentTabLevel + 1) + filterString + "\n";
         }
         return ": " + "Pure\n" +
                 getTabString(getBaseTabLevel()) + "{\n" +
                 (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel+1).build())).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel + 1).build())).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
                 getTabString(getBaseTabLevel()) + "}";
     }
 
@@ -530,16 +532,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PurePropertyMapping purePropertyMapping)
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
-        this.currentTabLevel+=1;
+        this.currentTabLevel += 1;
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
-        if(lambdaString.contains("if"))
+        if (lambdaString.contains("if"))
         {
             return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
                     (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
                     (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
                     (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
                     (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
-                    ":\n" + getTabString(this.currentTabLevel) +lambdaString;
+                    ":\n" + getTabString(this.currentTabLevel) + lambdaString;
         }
         return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
                 (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
@@ -708,15 +710,15 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "";
         }
-        if(lambda.body.get(0) instanceof AppliedFunction)
+        if (lambda.body.get(0) instanceof AppliedFunction)
         {
-            if(((AppliedFunction) lambda.body.get(0)).function.equals("if") && this.isIfStatementNested)
+            if (((AppliedFunction) lambda.body.get(0)).function.equals("if") && this.isIfStatementNested)
             {
                 boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
                 boolean addCR = lambda.body.size() > 1;
                 return (addWrapper ? "{" : "")
                         + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
-                        + "|\n" + getTabString(this.currentTabLevel+1) + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                        + "|\n" + getTabString(this.currentTabLevel + 1) + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
                         + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
                         + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
             }
