@@ -322,12 +322,13 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        while(!extensionsObject.isDone())
+                        while (!extensionsObject.isDone())
                         {
                             Thread.sleep(10);
                         }
                         Map<String, ?> extensions = extensionsObject.get();
-                        if(extensions != null && !extensions.isEmpty()) {
+                        if (extensions != null && !extensions.isEmpty())
+                        {
                             generator.writeFieldName("extensions");
                             generator.writeObject(extensions);
                         }
@@ -366,7 +367,7 @@ public class GraphQLExecute extends GraphQL
     private Map<String, ?> computeExtensionsField(OperationDefinition operationDefinition)
     {
         List<Directive> directives = ((Field)(operationDefinition.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
-        if(directives.isEmpty())
+        if (directives.isEmpty())
         {
             return new HashMap<>();
         }
@@ -379,7 +380,8 @@ public class GraphQLExecute extends GraphQL
             {
                 m.get(fieldName).put("echo",true);
             }
-            else {
+            else
+            {
                 throw new RuntimeException("Directive not supported: " + directive.name);
             }
         });
