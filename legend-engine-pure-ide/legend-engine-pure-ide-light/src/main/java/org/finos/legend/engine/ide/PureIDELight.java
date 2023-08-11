@@ -90,6 +90,10 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                 .with(this.buildCore("legend-engine-pure-code/legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure","external-tableformat-iceberg"))
+
+                .with(this.buildCore("legend-engine-pure-runtime/legend-engine-pure-runtime-compiler","external-compiler"))
+
+
                ;
     }
 

@@ -1,0 +1,28 @@
+###Pure
+function meta::legend::compile::test::testTypeReferenceInFunction():Any[*]
+{
+    let funcStr ='function meta::legend::compile::test::f():a::baseA[1]\n' +
+                 '{\n' +
+                 '   meta::legend::compile::test::baseA.all()->toOne();\n' +
+                 '}\n';
+    let x =  meta::legend::compile($funcStr)->cast(@ConcreteFunctionDefinition<Any>);
+    print($x, 0);
+    assertEquals(1, $x->size());
+    assertEquals(1, $x.expressionSequence->size());
+}
+
+###Pure
+Class meta::legend::compile::test::baseA
+{
+   name:String[1];
+}
+
+###Mapping
+Mapping meta::legend::compile::test::baseM
+(
+  meta::legend::compile::test::baseA : Pure
+  {
+    ~src meta::legend::compile::test::baseA
+    name : $src.name
+  }
+)

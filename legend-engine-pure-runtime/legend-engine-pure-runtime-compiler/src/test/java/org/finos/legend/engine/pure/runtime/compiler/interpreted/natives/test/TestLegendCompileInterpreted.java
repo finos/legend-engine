@@ -15,6 +15,7 @@
 package org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.test;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.compiler.Tools;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.InterpretedMetadata;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
@@ -36,6 +37,8 @@ public class TestLegendCompileInterpreted extends LegendCompileTest
         Pair<FunctionExecution, PureRuntime> res = Tools.setUpInterpreted();
         functionExecution = res.getOne();
         runtime = res.getTwo();
+        Tools.loadPureFile(runtime, "tests.txt");
+        System.out.println("Set up done for compiled");
     }
 
     @Test

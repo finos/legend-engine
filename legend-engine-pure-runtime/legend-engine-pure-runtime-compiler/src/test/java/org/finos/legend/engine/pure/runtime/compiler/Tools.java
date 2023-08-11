@@ -25,6 +25,7 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.*;
@@ -35,6 +36,15 @@ import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCo
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 public class Tools
 {
@@ -101,6 +111,7 @@ public class Tools
 
     public static void test(String code, String otherParserCode, FunctionExecution functionExecution, PureRuntime runtime)
     {
+        System.out.println("Starting new test");
         try
         {
             runtime.createInMemoryAndCompile(
@@ -118,5 +129,28 @@ public class Tools
         {
             runtime.delete("testSource.pure");
         }
+    }
+
+    public static void loadPureFile(PureRuntime runtime, String resourcePath)
+    {
+        String pureCode ;
+        try
+        {
+            URL url = Thread.currentThread().getContextClassLoader().getResource("tests.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+            pureCode = reader.lines().collect(Collectors.joining("\n"));
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Error loading code repository definition from resource " + resourcePath  );
+        }
+
+        runtime.createInMemoryAndCompile(Tuples.pair("testSource.pure", pureCode));
+    }
+
+    public static void runTest(String testName, FunctionExecution functionExecution, PureRuntime runtime)
+    {
+        CoreInstance func = runtime.getFunction(testName);
+        functionExecution.start(func, Lists.immutable.empty());
     }
 }

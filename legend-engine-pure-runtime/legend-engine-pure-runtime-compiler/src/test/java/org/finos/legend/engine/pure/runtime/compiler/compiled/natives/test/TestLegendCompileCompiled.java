@@ -29,5 +29,7 @@ public class TestLegendCompileCompiled extends LegendCompileTest
         Pair<FunctionExecution, PureRuntime> res = Tools.setUpCompiled();
         functionExecution = res.getOne();
         runtime = res.getTwo();
+        Tools.loadPureFile(runtime, "tests.txt");
+        System.out.println("Set up done for compiled");
     }
 }
