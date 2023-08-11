@@ -74,7 +74,7 @@ public class TestCompileApi
         try
         {
             PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
-            Object response = compileApi.compile(pureModelContextData, null, null).getEntity();
+            Object response = compileApi.compile(pureModelContextData, null, null, false).getEntity();
             actual = objectMapper.writeValueAsString(response);
             if (compilationResult != null)
             {

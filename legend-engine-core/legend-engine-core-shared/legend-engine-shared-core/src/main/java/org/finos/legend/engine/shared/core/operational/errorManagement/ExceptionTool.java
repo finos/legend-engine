@@ -50,7 +50,7 @@ public class ExceptionTool
 
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, exception), status);
+        return manage(eventType, pm, exception instanceof CodeFixException ? new CodeFixExceptionError(-1, exception) : new ExceptionError(-1, exception), status);
     }
 
     public static Response exceptionManager(String message, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)

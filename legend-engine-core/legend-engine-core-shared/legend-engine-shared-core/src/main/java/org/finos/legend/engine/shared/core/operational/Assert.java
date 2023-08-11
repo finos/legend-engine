@@ -15,8 +15,10 @@
 package org.finos.legend.engine.shared.core.operational;
 
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.errorManagement.CodeFixException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class Assert
@@ -53,5 +55,10 @@ public class Assert
     public static void fail(Function0<String> text)
     {
         throw new EngineException(text.value());
+    }
+
+    public static void fail(Function0<String> text, SourceInformation sourceInformation, EngineErrorType type, MutableList<SourceInformation> candidates)
+    {
+        throw new CodeFixException(text.value(), sourceInformation, type, candidates);
     }
 }

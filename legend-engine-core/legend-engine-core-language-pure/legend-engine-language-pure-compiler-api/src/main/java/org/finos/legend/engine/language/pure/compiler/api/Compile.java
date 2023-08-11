@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.CodeFixException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -39,9 +40,11 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -69,7 +72,7 @@ public class Compile
     @ApiOperation(value = "Loads the model and then compiles. It performs no action. Mostly used for testing")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "compile model", doc = "Pure model compilation duration summary")
-    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo, @DefaultValue("false") @QueryParam("returnCodeFixSuggestion") Boolean returnCodeFixSuggestion)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         long start = System.currentTimeMillis();
@@ -86,6 +89,10 @@ public class Compile
         }
         catch (Exception ex)
         {
+            if (!returnCodeFixSuggestion && ex instanceof CodeFixException)
+            {
+                ex = new EngineException(ex.getMessage(), ((CodeFixException) ex).getSourceInformation(), ((CodeFixException) ex).getErrorType());
+            }
             MetricsHandler.observeError(LoggingEventType.COMPILE_MODEL_ERROR, ex, null);
             return handleException(uriInfo, profiles, start, ex);
         }

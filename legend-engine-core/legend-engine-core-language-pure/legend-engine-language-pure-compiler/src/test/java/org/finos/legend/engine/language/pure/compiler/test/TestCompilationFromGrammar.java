@@ -15,15 +15,19 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.operational.errorManagement.CodeFixException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,6 +62,11 @@ public class TestCompilationFromGrammar
 
         public static Pair<PureModelContextData, PureModel> test(String str, String expectedErrorMsg, List<String> expectedWarnings)
         {
+            return test(str, expectedErrorMsg, expectedWarnings, null);
+        }
+
+        public static Pair<PureModelContextData, PureModel> test(String str, String expectedErrorMsg, List<String> expectedWarnings, MutableList<SourceInformation> expectedCandidates)
+        {
             try
             {
                 // do a full re-serialization after parsing to make sure the protocol produced is proper
@@ -84,6 +93,11 @@ public class TestCompilationFromGrammar
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
 
+                if (expectedCandidates != null)
+                {
+                    Assert.fail("Expected compilation error with " + expectedCandidates.size() + " candidates" + "; but no error occurred");
+                }
+
                 return Tuples.pair(modelData, pureModel);
             }
             catch (EngineException e)
@@ -94,6 +108,14 @@ public class TestCompilationFromGrammar
                 }
                 Assert.assertNotNull("No source information provided in error", e.getSourceInformation());
                 Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), e.getErrorType()));
+                if (expectedCandidates != null && e instanceof CodeFixException)
+                {
+                    MutableList<String> candidateComparison = Lists.mutable.empty();
+                    expectedCandidates.forEach((candidate) -> candidateComparison.add(candidate.getMessage()));
+                    ((CodeFixException) e).getCandidates().forEach((candidate) -> candidateComparison.remove(candidate.getMessage()));
+                    Assert.assertTrue("Actual candidates differ from expected candidates",
+                        candidateComparison.isEmpty() && ((CodeFixException) e).getIsCodeFixSuggestion());
+                }
                 return null;
             }
             catch (Exception e)
@@ -941,6 +963,64 @@ public class TestCompilationFromGrammar
                         "[ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
                         "['includedDate',  'calendarAgg'])" +
                         "}");
+    }
+
+    @Test
+    public void testCompilationWithNoAutoImportSuggestionCandidate()
+    {
+        MutableList<SourceInformation> expectedCandidates = Lists.mutable.empty();
+        TestCompilationFromGrammarTestSuite.test("Class example::MyTest\n" +
+                "{\n" +
+                "  x:String[1];\n" +
+                "}\n" +
+                "###Pure\n" +
+                "import example::*;\n" +
+                "function example::testMatch(test : MyTest[1]): MyTst[1]\n" +
+                "{\n" +
+                "  $test->match([ a:MyTest[1]|$a ]);\n" +
+                "}", "COMPILATION error at [7:1-10:1]: Can't find type 'MyTst'", null, expectedCandidates);
+    }
+
+    @Test
+    public void testCompilationWithOneAutoImportSuggestionCandidate()
+    {
+        MutableList<SourceInformation> expectedCandidates = Lists.mutable.empty();
+        expectedCandidates.add(new SourceInformation("example::MyTest", 1, 1, 4, 1));
+        TestCompilationFromGrammarTestSuite.test("Class example::MyTest\n" +
+                "{\n" +
+                "x:String[1];\n" +
+                "}\n" +
+                "###Pure\n" +
+                "function example::testMatch(test:MyTest[1]): MyTest[1]\n" +
+                "{\n" +
+                "  $test->match([ a:MyTest[1]|$a ]);\n" +
+                "}", "COMPILATION error at [6:29-42]: Can't find type 'MyTest'", null, expectedCandidates);
+    }
+
+    @Test
+    public void testCompilationWithMultipleAutoImportSuggestionCandidates()
+    {
+        MutableList<SourceInformation> expectedCandidates = Lists.mutable.empty();
+        expectedCandidates.add(new SourceInformation("example1::MyTest", 1, 1, 4, 1));
+        expectedCandidates.add(new SourceInformation("example2::MyTest", 5, 1, 8, 1));
+        expectedCandidates.add(new SourceInformation("example3::MyTest", 9, 1, 12, 1));
+        TestCompilationFromGrammarTestSuite.test("Class example1::MyTest\n" +
+                "{\n" +
+                "  x:String[1];\n" +
+                "}\n" +
+                "Class example2::MyTest\n" +
+                "{\n" +
+                "  y:String[1];\n" +
+                "}\n" +
+                "Class example3::MyTest\n" +
+                "{\n" +
+                "  z:String[1];\n" +
+                "}\n" +
+                "###Pure\n" +
+                "function example::testMatch(test:MyTest[1]): MyTest[1]\n" +
+                "{\n" +
+                "  $test->match([ a:MyTest[1]|$a ]);\n" +
+                "}", "COMPILATION error at [14:29-42]: Can't find type 'MyTest'", null, expectedCandidates);
     }
 
 }

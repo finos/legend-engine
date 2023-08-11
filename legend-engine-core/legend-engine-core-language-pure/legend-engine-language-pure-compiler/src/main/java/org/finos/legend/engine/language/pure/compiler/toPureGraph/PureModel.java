@@ -60,6 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.CodeFixException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -94,6 +95,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpa
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m4.ModelRepository;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
@@ -665,7 +667,11 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type getType(String fullPath, SourceInformation sourceInformation)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type type = getType_safe(fullPath);
-        Assert.assertTrue(type != null, () -> "Can't find type '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (type == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(typesIndex, fullPath);
+            Assert.fail(() -> "Can't find type '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return type;
     }
 
@@ -730,7 +736,7 @@ public class PureModel implements IPureModel
         }
         catch (EngineException e)
         {
-            throw new EngineException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            throw new CodeFixException("Can't find class '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, ((CodeFixException) e).getCandidates());
         }
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
         try
@@ -769,7 +775,7 @@ public class PureModel implements IPureModel
             }
             catch (EngineException e)
             {
-                throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+                throw new CodeFixException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, ((CodeFixException) e).getCandidates());
             }
             return association;
         }
@@ -784,7 +790,7 @@ public class PureModel implements IPureModel
         }
         catch (EngineException e)
         {
-            throw new EngineException("Can't find enumeration '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            throw new CodeFixException("Can't find enumeration '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, ((CodeFixException) e).getCandidates());
         }
         Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum> enumeration;
         try
@@ -807,7 +813,7 @@ public class PureModel implements IPureModel
         }
         catch (EngineException e)
         {
-            throw new EngineException("Can't find measure '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            throw new CodeFixException("Can't find measure '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, ((CodeFixException) e).getCandidates());
         }
         Measure measure;
         try
@@ -830,7 +836,7 @@ public class PureModel implements IPureModel
         }
         catch (EngineException e)
         {
-            throw new EngineException("Can't find unit '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            throw new CodeFixException("Can't find unit '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, ((CodeFixException) e).getCandidates());
         }
         Unit unit;
         try
@@ -852,7 +858,11 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation(String fullPath, SourceInformation sourceInformation)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.getAssociation_safe(fullPath);
-        Assert.assertTrue(association != null, () -> "Can't find association '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (association == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(associationsIndex, fullPath);
+            Assert.fail(() -> "Can't find association '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return association;
     }
 
@@ -888,7 +898,11 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile(String fullPath, SourceInformation sourceInformation)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = getProfile_safe(fullPath);
-        Assert.assertTrue(profile != null, () -> "Can't find the profile '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (profile == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(profilesIndex, fullPath);
+            Assert.fail(() -> "Can't find the profile '" + addPrefixToTypeReference(fullPath) + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return profile;
     }
 
@@ -918,7 +932,11 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> func = getConcreteFunctionDefinition_safe(fullPath);
-        Assert.assertTrue(func != null, () -> "Can't find function '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (func == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(functionsIndex, fullPath);
+            Assert.fail(() -> "Can't find function '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return func;
     }
 
@@ -936,7 +954,11 @@ public class PureModel implements IPureModel
     public Store getStore(String fullPath, SourceInformation sourceInformation)
     {
         Store store = getStore_safe(fullPath);
-        Assert.assertTrue(store != null, () -> "Can't find store '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (store == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(storesIndex, fullPath);
+            Assert.fail(() -> "Can't find store '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return store;
     }
 
@@ -954,21 +976,33 @@ public class PureModel implements IPureModel
     public Mapping getMapping(String fullPath, SourceInformation sourceInformation)
     {
         Mapping resultMapping = getMapping_safe(fullPath);
-        Assert.assertTrue(resultMapping != null, () -> "Can't find mapping '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (resultMapping == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(mappingsIndex, fullPath);
+            Assert.fail(() -> "Can't find mapping '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return resultMapping;
     }
 
     public Root_meta_pure_runtime_PackageableRuntime getPackageableRuntime(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = this.packageableRuntimesIndex.get(packagePrefix(fullPath));
-        Assert.assertTrue(metamodel != null, () -> "Can't find packageable runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (metamodel == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(packageableRuntimesIndex, fullPath);
+            Assert.fail(() -> "Can't find packageable runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return metamodel;
     }
 
     public Root_meta_pure_runtime_PackageableConnection getPackageableConnection(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_pure_runtime_PackageableConnection metamodel = this.packageableConnectionsIndex.get(packagePrefix(fullPath));
-        Assert.assertTrue(metamodel != null, () -> "Can't find packageable connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (metamodel == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(packageableConnectionsIndex, fullPath);
+            Assert.fail(() -> "Can't find packageable connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return metamodel;
     }
 
@@ -986,7 +1020,11 @@ public class PureModel implements IPureModel
     public Root_meta_pure_runtime_Runtime getRuntime(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_pure_runtime_Runtime runtime = getRuntime_safe(fullPath);
-        Assert.assertTrue(runtime != null, () -> "Can't find runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (runtime == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(runtimesIndex, fullPath);
+            Assert.fail(() -> "Can't find runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return runtime;
     }
 
@@ -1003,7 +1041,11 @@ public class PureModel implements IPureModel
     public Root_meta_pure_runtime_Connection getConnection(String fullPath, SourceInformation sourceInformation)
     {
         Root_meta_pure_runtime_Connection connection = this.getConnection_safe(fullPath);
-        Assert.assertTrue(connection != null, () -> "Can't find connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        if (connection == null)
+        {
+            MutableList<SourceInformation> candidates = findCandidates(connectionsIndex, fullPath);
+            Assert.fail(() -> "Can't find connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, candidates);
+        }
         return connection;
     }
 
@@ -1098,6 +1140,26 @@ public class PureModel implements IPureModel
 
 
     // ------------------------------------------ UTILITY -----------------------------------------
+
+    public MutableList<SourceInformation> findCandidates(MutableMap<String, ? extends CoreInstance> coreInstancesIndex, String fullPath)
+    {
+        MutableList<SourceInformation> candidates = Lists.mutable.empty();
+        String[] fullPathSplit = fullPath.split("::");
+        String entityName = fullPathSplit[fullPathSplit.length - 1];
+        for (Map.Entry<String, ? extends CoreInstance> entry : coreInstancesIndex.entrySet())
+        {
+            String[] entryPathSplit = entry.getKey().split("::");
+            String entryName = entryPathSplit[entryPathSplit.length - 1];
+            if (entryName.equals(entityName) && entry.getValue().getSourceInformation() != null)
+            {
+                org.finos.legend.pure.m4.coreinstance.SourceInformation m4SourceInfo = entry.getValue().getSourceInformation();
+                SourceInformation protocolSourceInfo = new SourceInformation(entry.getKey(), m4SourceInfo.getStartLine(),
+                        m4SourceInfo.getStartColumn(), m4SourceInfo.getEndLine(), m4SourceInfo.getEndColumn());
+                candidates.add(protocolSourceInfo);
+            }
+        }
+        return candidates;
+    }
 
     public CompileContext getContext()
     {
