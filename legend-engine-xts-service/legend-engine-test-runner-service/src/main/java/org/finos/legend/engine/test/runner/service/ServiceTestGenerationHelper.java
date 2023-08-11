@@ -447,6 +447,7 @@ public class ServiceTestGenerationHelper
         }
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection();
         relationalDatabaseConnection.type = DatabaseType.H2;
+        relationalDatabaseConnection.databaseType = DatabaseType.H2;
         relationalDatabaseConnection.element = connection.element;
         if (connection instanceof DatabaseConnection)
         {

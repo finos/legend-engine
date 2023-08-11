@@ -17,8 +17,8 @@ package org.finos.legend.engine.language.pure.relational.api.relationalElement;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class RelationalConnectionDbAuthenticationFlows
 {
-    private String getNameFromClass(Class<?> obj)
+    public static String getNameFromClass(Class<?> obj)
     {
         String[] result = new String[1];
         result[0] = " ";

@@ -139,3 +139,12 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
       ]) 
    )
 }
+
+function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsJavaPlatformBinding(): Extension[1]
+{
+  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+        meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension()
+     ])
+  ])
+}

@@ -186,3 +186,12 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ]) 
    )
 }
+
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryExtensionsJavaPlatformBinding(): Extension[1]
+{
+  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+        meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()
+     ])
+  ])
+}

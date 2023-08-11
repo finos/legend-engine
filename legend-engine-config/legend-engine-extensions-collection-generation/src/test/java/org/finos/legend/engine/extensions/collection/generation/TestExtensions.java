@@ -72,14 +72,19 @@ import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.Snowfl
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension;
+import org.finos.legend.pure.code.core.ElasticsearchPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppProtocolExtension;
+import org.finos.legend.engine.pure.code.core.CorePureCoreExtension;
+import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.ServicePureCoreExtension;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.code.core.*;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
@@ -122,7 +127,7 @@ public class TestExtensions
     @Test
     public void testPlanGeneratorExtensionArePresent()
     {
-        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PlanGeneratorExtension.class);
+        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PureCoreExtension.class);
     }
 
     @Test
@@ -373,13 +378,25 @@ public class TestExtensions
                 ;
     }
 
-    protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
+    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPlanGeneratorExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
-        return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
-                .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class)
-                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.plan.generation.ElasticsearchPlanGeneratorExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.integration.plan.MongoDBPlanGeneratorExtension.class)
+        return Lists.mutable.<Class<? extends PureCoreExtension>>empty()
+                .with(JSONJavaBindingPureCoreExtension.class)
+                .with(MongoDBPureCoreExtension.class)
+                .with(FlatDataPureCoreExtension.class)
+                .with(ElasticsearchPureCoreExtension.class)
+                .with(CorePureCoreExtension.class)
+                .with(JSONPureCoreExtension.class)
+                .with(RelationalPureCoreExtension.class)
+                .with(M2MJavaBindingPureCoreExtension.class)
+                .with(ServiceStoreJavaBindingPureCoreExtension.class)
+                .with(ServiceStorePureCoreExtension.class)
+                .with(FlatDataJavaBindingPureCoreExtension.class)
+                .with(XMLPureCoreExtension.class)
+                .with(XMLJavaBindingPureCoreExtension.class)
+                .with(ServicePureCoreExtension.class)
+                .with(RelationalJavaBindingPureCoreExtension.class)
                 ;
     }
 

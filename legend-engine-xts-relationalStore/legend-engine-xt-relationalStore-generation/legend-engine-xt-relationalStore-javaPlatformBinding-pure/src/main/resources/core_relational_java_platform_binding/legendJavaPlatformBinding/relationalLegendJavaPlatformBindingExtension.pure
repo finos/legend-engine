@@ -158,7 +158,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
 function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    [
-      meta::relational::extension::relationalExtension('relational'),
+      meta::relational::extension::relationalExtension(),
       meta::pure::executionPlan::platformBinding::platformBindingExtension([
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
@@ -167,6 +167,15 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
          ])
       ]) 
    ]  
+}
+
+function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionJavaPlatformBinding(): Extension[1]
+{
+    meta::pure::executionPlan::platformBinding::platformBindingExtension([
+        meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+            meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
+        ])
+    ]);
 }
 
 ###Pure

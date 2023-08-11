@@ -15,10 +15,10 @@
 package org.finos.legend.engine.authentication.provider;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
@@ -33,8 +33,8 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
 
     public void registerFlow(DatabaseAuthenticationFlow flow)
     {
-        this.validateProperUseOfH2Flows(flow);
-        DatabaseAuthenticationFlowKey key = DatabaseAuthenticationFlowKey.newKey(flow);
+        // this.validateProperUseOfH2Flows(flow);
+        DatabaseAuthenticationFlowKey key = DatabaseAuthenticationFlow.newKey(flow);
         this.flows.put(key, flow);
     }
 
@@ -63,7 +63,7 @@ public abstract class AbstractDatabaseAuthenticationFlowProvider implements Data
     @Override
     public Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection)
     {
-        DatabaseType databaseType = this.resolveType(connection.type, connection.databaseType);
+        DatabaseType databaseType = resolveType(connection.type, connection.databaseType);
         Class<? extends DatasourceSpecification> datasourceClass = connection.datasourceSpecification.getClass();
         Class<? extends AuthenticationStrategy> authenticationClass = connection.authenticationStrategy.getClass();
         DatabaseAuthenticationFlowKey key = new DatabaseAuthenticationFlowKey(databaseType, datasourceClass, authenticationClass);

@@ -63,6 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
@@ -338,7 +339,7 @@ public class DataSpaceAnalyticsHelper
                             PureClientVersions.production,
                             PlanPlatform.JAVA,
                             null,
-                            generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel)),
+                            PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
                             generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
                     ).plan.rootExecutionNode.resultType);
                     result.executables.add(executableAnalysisResult);

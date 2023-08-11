@@ -75,6 +75,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.List;
 
@@ -86,11 +87,11 @@ public class HelperRelationalGrammarComposer
 {
     private static final String SELF_JOIN_TABLE_NAME = "{target}";
 
-    public static String renderRelationalOperationElement(RelationalOperationElement op, RelationalGrammarComposerContext context)
+    public static String renderRelationalOperationElement(RelationalOperationElement op, RelationalGrammarComposerContext context, boolean nested, int numTabs)
     {
         if (op instanceof DynaFunc)
         {
-            return renderDynaFunc((DynaFunc) op, context);
+            return renderDynaFunc((DynaFunc) op, context, nested, numTabs);
         }
         else if (op instanceof TableAliasColumn)
         {
@@ -111,8 +112,14 @@ public class HelperRelationalGrammarComposer
         return PureGrammarComposerUtility.unsupported(op.getClass(), "relational operation element type");
     }
 
-    private static String renderDynaFunc(DynaFunc dynaFunc, RelationalGrammarComposerContext context)
+    public static String renderRelationalOperationElement(RelationalOperationElement op, RelationalGrammarComposerContext context)
     {
+       return renderRelationalOperationElement(op, context, false, 0);
+    }
+
+    private static String renderDynaFunc(DynaFunc dynaFunc, RelationalGrammarComposerContext context, boolean nested, int numTabs)
+    {
+        RenderStyle renderStyle = context.getRenderStyle();
         if (context.getUseDynaFunctionName() && (!dynaFunc.funcName.equals("group")))  //we split this because mapping grammar expects dynafunction names while store grammar can handle notations
         {
             return defaultDynaFunctionRender(dynaFunc, context);
@@ -127,12 +134,28 @@ public class HelperRelationalGrammarComposer
                     {
                         return "/* Unable to transform operation: exactly 1 parameter is expected for '(group)' operation */";
                     }
-                    return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context) + ")";
+
+
+                    return "(" + renderRelationalOperationElement(dynaFunc.parameters.get(0), context, true, numTabs + 1) + ")";
                 }
                 case "or":
                 case "and":
                 {
-                    return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
+                    if (renderStyle == RenderStyle.PRETTY)
+                    {
+                        if (!nested)
+                        {
+                            return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString("\n  " + getTabString(1) + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
+                        }
+                        else
+                        {
+                            return LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString("\n  " + getTabString(1 + numTabs) + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
+                        }
+                    }
+                    else
+                    {
+                        return  LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(" " + PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + " ");
+                    }
                 }
                 case "isNull":
                 {
@@ -218,7 +241,6 @@ public class HelperRelationalGrammarComposer
     {
         return PureGrammarComposerUtility.convertIdentifier(dynaFunc.funcName) + "(" + LazyIterate.collect(dynaFunc.parameters, param -> renderRelationalOperationElement(param, context)).makeString(", ") + ")";
     }
-
 
     private static boolean isSelfJoin(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn tableAliasColumn)
     {

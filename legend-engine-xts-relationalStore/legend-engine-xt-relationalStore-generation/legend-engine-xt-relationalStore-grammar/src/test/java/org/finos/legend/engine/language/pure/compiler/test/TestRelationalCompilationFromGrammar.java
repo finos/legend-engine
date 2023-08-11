@@ -2172,26 +2172,30 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "{\n" +
                 "  store: relational::graphFetch::dbInc;\n" +
                 "  type: H2;\n" +
-                "  specification: LocalH2\n" +
+                "  specification: Static\n" +
                 "  {\n" +
-                "    testDataSetupSqls: [\n" +
-                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (101,\\'finos\\');\\nInsert into firmTable (FirmCode, FirmName) values (200,\\'goldman_Sachs\\');'\n" +
-                "      ];\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: DefaultH2;\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
                 "}\n" +
                 "\n" +
                 "RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection\n" +
                 "{\n" +
                 "  store: relational::graphFetch::dbInc;\n" +
                 "  type: H2;\n" +
-                "  specification: LocalH2\n" +
+                "  specification: Static\n" +
                 "  {\n" +
-                "    testDataSetupSqls: [\n" +
-                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (001,\\'Alloy_Engineering\\');\\nInsert into firmTable (FirmCode, FirmName) values (102,\\'legend-engine\\');\\n'\n" +
-                "      ];\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: DefaultH2;\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
                 "}\n" +
                 "\n" +
                 "ModelChainConnection relational::graphFetch::OneMappingConnection\n" +
@@ -2221,6 +2225,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      connection_1: relational::graphFetch::OneMappingConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n",null, Collections.singletonList("COMPILATION error at [97:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
+                "}\n", null, Collections.singletonList("COMPILATION error at [101:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
     }
 }
