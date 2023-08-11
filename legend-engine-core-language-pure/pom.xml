@@ -38,6 +38,7 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-api</module>
         <module>legend-engine-protocol-generation</module>
+        <module>legend-engine-protocol-generation-pure</module>
         <module>legend-engine-protocol-pure</module>
     </modules>
 </project>
