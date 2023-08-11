@@ -35,9 +35,9 @@
     "temporarytestdb": {
       "port": 9099
     },
-    "flowProviderClass": "org.finos.legend.engine.authentication.RedshiftTestDatabaseAuthenticationFlowProvider",
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
     "flowProviderConfiguration": {
-      "_type": "redshiftTest"
+      "_type": "legendDefault"
     }
   },
   "testConnectionsToEnable" : ["Redshift"],

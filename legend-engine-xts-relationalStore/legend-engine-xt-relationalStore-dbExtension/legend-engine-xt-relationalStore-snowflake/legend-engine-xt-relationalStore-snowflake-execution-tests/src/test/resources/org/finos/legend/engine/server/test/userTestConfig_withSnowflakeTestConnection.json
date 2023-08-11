@@ -35,9 +35,9 @@
     "temporarytestdb": {
       "port": 9099
     },
-    "flowProviderClass": "org.finos.legend.engine.authentication.SnowflakeTestDatabaseAuthenticationFlowProvider",
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
     "flowProviderConfiguration": {
-      "_type": "snowflakeTest"
+      "_type": "legendDefault"
     }
   },
   "testConnectionsToEnable" : ["Snowflake"],
@@ -65,7 +65,5 @@
       "postProcessors": [],
       "postProcessorWithParameter": []
     }
-  },
-  "dynamicTestConnectionCreators": {
   }
 }
