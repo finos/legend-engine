@@ -642,7 +642,8 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  meta::pure::mapping::modelToModel::test::shared::dest::Person[p1]: Pure\n" +
                 "  {\n" +
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Person\n" +
-                "    ~filter $src.fullName->startsWith('Johny')\n" +
+                "    ~filter \n" +
+                "       $src.fullName->startsWith('Johny')\n" +
                 "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
                 "    addresses[meta_pure_mapping_modelToModel_test_shared_dest_Address]: $src.addresses,\n" +
@@ -651,7 +652,8 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  meta::pure::mapping::modelToModel::test::shared::dest::Person[p2]: Pure\n" +
                 "  {\n" +
                 "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Person\n" +
-                "    ~filter $src.fullName->startsWith('_')\n" +
+                "    ~filter \n" +
+                "         $src.fullName->startsWith('_')\n" +
                 "    firstName: 'N/A',\n" +
                 "    lastName: 'N/A',\n" +
                 "    firm[f2]: $src.firm\n" +
