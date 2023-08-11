@@ -93,6 +93,64 @@ function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.Open
   );
 }
 
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service with params'} meta::external::format::openapi::transformation::fromPure::tests::simpleServiceWithParams():Service[1]
+{
+   ^Service
+      (
+         pattern = '/service/testOpenApi/{firstName}',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {firstName:String[1], age:Integer[1]|Person.all()->filter(p | and($p.age > $age, $p.firstName == $firstName))->project([col(p|$p.firstName, 'First Name'), col(p|$p.age, 'Age')])},
+                        mapping = personMapping,
+                        runtime = []
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age\n'+
+                         '1,A,Z,24\n'+
+                         '2,C,Z,23\n'+
+                         '3,D,Z,23\n'+
+                         '4,B,Z,20\n'+
+                         '5,A,Y,28\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = ['A', 20],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A']}
+                              )
+                            ]
+                 )
+      );
+}
+
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service without column specification'} meta::external::format::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification():Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/test',
+    owners = [ 'anonymous','testuser'],
+    documentation =  '',
+    autoActivateUpdates= true,
+    execution = ^PureSingleExecution
+                (
+                  func = firstName:String[1]|meta::external::format::openapi::transformation::fromPure::tests::Person.all()->filter(p |$p.firstName == $firstName)->project([x|$x.firstName, x|$x.age ],['First Name', 'Age']),
+                  mapping =  personMapping,
+                  runtime = []
+                )
+  )
+}
+
+function <<test.Test>> meta::external::format::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecificationOpenapiString():Boolean[1]
+{
+  let openapi = testServiceWithoutColumnSpecification()->serviceToOpenApi(^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithoutColumnSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
 
 function <<test.Test>> meta::external::format::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1] 
 {
@@ -108,7 +166,12 @@ function <<test.Test>> meta::external::format::openapi::transformation::fromPure
   assertJsonStringsEqual($expected, $openapi);
 }
 
-
+function <<test.Test>> meta::external::format::openapi::transformation::fromPure::tests::testServiceWithParamShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = simpleServiceWithParams()->serviceToOpenApi(^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithServiceParams.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
 
 ###Mapping
 import meta::external::format::openapi::transformation::fromPure::tests::*;

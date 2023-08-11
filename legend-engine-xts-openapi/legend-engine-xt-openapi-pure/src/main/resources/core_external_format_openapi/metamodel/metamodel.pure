@@ -393,6 +393,7 @@ Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::Sec
 
 Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::SchemaOrReference
 {
+  specificationExtensions: Map<String, List<meta::external::format::openapi::transformation::fromPure::TDSResult>>[0..1];
 }
 
 Class meta::external::format::openapi::metamodel::Reference extends CallbackOrReference,ExampleOrReference,HeaderOrReference,LinkOrReference,ParameterOrReference,RequestBodyOrReference,ResponseOrReference,SecuritySchemeOrReference,SchemaOrReference

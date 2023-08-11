@@ -48,6 +48,12 @@ Class meta::external::format::openapi::transformation::fromPure::OpenApiGenerati
 
 }
 
+Class meta::external::format::openapi::transformation::fromPure::TDSResult
+{
+  column: String[1];
+  type: String[1];
+}
+
 function <<access.private>> meta::external::format::openapi::transformation::fromPure::defaultConfig():OpenAPISchemaConfig[1]
 {
  ^OpenAPISchemaConfig(createSchemaCollection=false);
@@ -90,9 +96,20 @@ function <<access.private>> meta::external::format::openapi::transformation::fro
                                     let paramsExample = $fi.paramsExample;
                                     let func = $fi->getEvaluatedExecutionFunction();
                                     let ret = $fi->getReturnType();
-                                    let responseSchema = $ret->getResponseSchema([]);
+                                    let tdsColumns = if($ret->instanceOf(GenericType) && $ret->cast(@GenericType).rawType == TabularDataSet,
+                                                            |if($func.expressionSequence->evaluateAndDeactivate()->cast(@FunctionExpression).func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_ ,
+                                                                | let cName = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@FunctionExpression).parametersValues->last()->cast(@InstanceValue).values->map(v |  $v->toString());
+                                                                  let cType = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence.genericType;
+                                                                  let cMap = $cName->zip($cType);
+                                                                  list($cMap->map(c | ^TDSResult(column = $c.first, type = $c.second->generateOpenApiType())));,
 
-                                    
+                                                                |let columns = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@FunctionExpression).parametersValues->last()->cast(@InstanceValue).values->filter(c | $c->instanceOf(BasicColumnSpecification))->cast(@BasicColumnSpecification<Any>);
+                                                                 list($columns->map(c | ^TDSResult(column = $c.name, type = $c.func->functionReturnType()->generateOpenApiType())));
+                                                              ),
+                                                            | []
+                                                          );
+
+                                    let responseSchema = $ret->getResponseSchema([], $tdsColumns);
                                     pair($url,
                                             ^PathItem(
                                                       get=^Operation(
@@ -137,6 +154,14 @@ function <<access.private>> meta::external::format::openapi::transformation::fro
   $funcInfo.func->cast(@FunctionDefinition<Any>)->preval(meta::pure::extension::defaultExtensions())
 }
 
+function <<access.private>> meta::external::format::openapi::transformation::fromPure::generateOpenApiType(genericType:GenericType[1]):String[1]
+{
+  $genericType.rawType->match([
+                p:PrimitiveType[1] | $p->primitiveType(),
+                e:Enumeration<Enum>[1]| 'string'
+                ]);
+}
+
 function <<access.private>> meta::external::format::openapi::transformation::fromPure::getReturnType(funcInfo:FunctionInfo[1]): Any[1]
 {
   let func = $funcInfo->getEvaluatedExecutionFunction();
@@ -145,7 +170,6 @@ function <<access.private>> meta::external::format::openapi::transformation::fro
                                                assert($expr->cast(@FunctionExpression)->toOne()->isSerialize());
                                                $expr.parametersValues->at(1)->cast(@InstanceValue).values->toOne(););
 }
-
 
 function <<access.private>> meta::external::format::openapi::transformation::fromPure::returnTypesFromFunctions(funcInfos:FunctionInfo[*]):GenericType[*]
 {
@@ -161,17 +185,12 @@ function <<access.private>> meta::external::format::openapi::transformation::fro
   ->sortBy(a|$a.rawType.name->toOne());
 }
 
-
-
 function <<access.private>> meta::external::format::openapi::transformation::fromPure::buildParameterSchema(func:FunctionDefinition<Any>[1], paramsExample:Map<String,String>[1]):ParameterOrReference[*]
 {
   $func->functionType().parameters->evaluateAndDeactivate()
       ->map(p|let val=$paramsExample->get($p.name->toOne());
               let required = $p.multiplicity->hasLowerBound() && $p.multiplicity->getLowerBound() == 1;
-              let type = $p.genericType.rawType->match([
-              p:PrimitiveType[1] | $p->primitiveType(),
-              e:Enumeration<Enum>[1]| 'string'
-              ]);
+              let type = $p.genericType->generateOpenApiType();
               let enums = $p.genericType.rawType->match([
                   p: PrimitiveType[1] | [],
                   e: Enumeration<Enum>[1] | $e->enumValues().name,
@@ -180,28 +199,32 @@ function <<access.private>> meta::external::format::openapi::transformation::fro
               ^Parameter(
               name=$p.name->toOne(),
               in = if($required, | In.path, | In.query),
-              required = $required
+              required = $required,
+              schema = ^Schema(type = $type)
               );
             );
 }
 
-
-
-function <<access.private>> meta::external::format::openapi::transformation::fromPure::getResponseSchema(schema:Any[1],m:Multiplicity[0..1]):Map<String, ResponseOrReference>[1]
+function <<access.private>> meta::external::format::openapi::transformation::fromPure::getResponseSchema(schema:Any[1],m:Multiplicity[0..1], tds: List<TDSResult>[0..1]):Map<String, ResponseOrReference>[1]
 {
   newMap(
     pair('200', ^Response(
                   description='success',
-                  content=$schema->buildResponseSchema([])
+                  content=$schema->buildResponseSchema([], $tds)
                 )
     )
   )
 }
 
-function <<access.private>> meta::external::format::openapi::transformation::fromPure::buildResponseSchema(tree:Any[1], m:Multiplicity[0..1]):Map<String, MediaType>[1]
+function <<access.private>> meta::external::format::openapi::transformation::fromPure::buildResponseSchema(tree:Any[1], m:Multiplicity[0..1], tds: List<TDSResult>[0..1]):Map<String, MediaType>[1]
 {
   if($tree->instanceOf(GenericType),
-    | $tree->cast(@GenericType)->buildComponent($m)->map(res|newMap(pair('application/json', ^MediaType(schema=$res)))), 
+    | $tree->cast(@GenericType)->buildComponent($m)->map(res| if($tds->isNotEmpty(),
+                                                                | let specificationExtension = newMap(pair('x-tdsResultColumns', $tds->toOne()));
+                                                                  newMap(pair('application/json', ^MediaType(schema= ^$res(specificationExtensions = $specificationExtension))));,
+                                                                | newMap(pair('application/json', ^MediaType(schema= $res)));
+                                                              );
+                                                      ), 
     | $tree->getSchemaFromTree()->map(res|newMap(pair('application/json',^MediaType(schema=$res)))));
 }
 
