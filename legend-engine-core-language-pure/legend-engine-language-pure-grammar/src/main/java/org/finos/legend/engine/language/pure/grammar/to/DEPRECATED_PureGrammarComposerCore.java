@@ -137,7 +137,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     private int baseTabLevel = 1;
     private int currentTabLevel = 1;
     private final boolean isIfStatementNested;
-        
+
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
     {
         this.indentationString = builder.indentationString;
