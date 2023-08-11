@@ -212,6 +212,14 @@ function <<test.Test>> meta::relational::tests::map::testGlobalAggregation():Boo
    assertEquals('select count(*) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::map::testGlobalAggregationOnRoot():Boolean[1]
+{
+   let result = execute(|Firm.all()->count(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 1);
+   assertSameElements([4], $result.values);
+   assertEquals('select count(*) from firmTable as "root"', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::map::testSubAggregation():Boolean[1]
 {
    let result = execute(|Firm.all()->map(f|$f.employees.age->average()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
