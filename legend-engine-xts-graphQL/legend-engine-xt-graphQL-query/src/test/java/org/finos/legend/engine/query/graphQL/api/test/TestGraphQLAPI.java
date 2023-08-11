@@ -156,6 +156,7 @@ public class TestGraphQLAPI
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
