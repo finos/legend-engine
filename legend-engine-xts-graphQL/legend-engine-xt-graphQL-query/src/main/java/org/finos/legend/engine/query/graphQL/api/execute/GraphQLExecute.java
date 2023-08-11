@@ -324,16 +324,22 @@ public class GraphQLExecute extends GraphQL
                         generator.writeEndObject();
                         while (!extensionsObject.isDone())
                         {
-                            try {
+                            try
+                            {
                                 Thread.sleep(10);
-                            } catch (Exception e) {
+                            }
+                            catch (Exception e)
+                            {
                                 throw new RuntimeException(e);
                             }
                         }
                         Map<String, ?> extensions = null;
-                        try {
+                        try
+                        {
                             extensions = extensionsObject.get();
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e)
+                        {
                             throw new RuntimeException(e);
                         }
                         if (extensions != null && !extensions.isEmpty())
