@@ -18,8 +18,8 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.SnowflakeTestDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
@@ -79,14 +79,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     @Before
     public void setup() throws IOException
     {
-        SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = null;
-        SnowflakeTestDatabaseAuthenticationFlowProvider flowProvider = new SnowflakeTestDatabaseAuthenticationFlowProvider();
+        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = null;
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
         flowProvider.configure(flowProviderConfiguration);
         assertSnowflakeKeyPairFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    public void assertSnowflakeKeyPairFlowIsAvailable(SnowflakeTestDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertSnowflakeKeyPairFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         SnowflakeDatasourceSpecification datasourceSpecification = new SnowflakeDatasourceSpecification();
         SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy();
@@ -143,7 +143,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
 
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
                 .withTemporaryTestDbConfiguration(new TemporaryTestDbConfiguration(9078))
-                .withDatabaseAuthenticationFlowProvider(SnowflakeTestDatabaseAuthenticationFlowProvider.class, new SnowflakeTestDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
         StoreExecutor storeExecutor = Relational.build(relationalExecutionConfiguration);
 

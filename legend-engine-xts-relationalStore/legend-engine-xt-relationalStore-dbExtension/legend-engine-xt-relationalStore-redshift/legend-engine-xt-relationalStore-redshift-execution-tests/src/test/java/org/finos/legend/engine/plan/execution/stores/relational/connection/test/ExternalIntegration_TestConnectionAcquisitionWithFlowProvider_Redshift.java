@@ -15,8 +15,8 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.RedshiftTestDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.RedshiftTestDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
@@ -55,8 +55,8 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
     @Before
     public void setup() throws Exception
     {
-        RedshiftTestDatabaseAuthenticationFlowProvider flowProvider = new RedshiftTestDatabaseAuthenticationFlowProvider();
-        flowProvider.configure(new RedshiftTestDatabaseAuthenticationFlowProviderConfiguration());
+        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         assertRedshiftFlowIsAvailable(flowProvider);
 
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
@@ -73,7 +73,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Redsh
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
 
-    public void assertRedshiftFlowIsAvailable(RedshiftTestDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertRedshiftFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
         RelationalDatabaseConnection relationalDatabaseConnection = this.redshiftWithUserPassword();
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
