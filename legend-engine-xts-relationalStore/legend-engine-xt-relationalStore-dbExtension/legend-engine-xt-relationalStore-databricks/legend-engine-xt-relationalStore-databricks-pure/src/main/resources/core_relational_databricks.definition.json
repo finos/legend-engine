@@ -1,10 +1,12 @@
 {
   "name" : "core_relational_databricks",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::databricks|meta::relational::tests::sqlQueryToString::databricks|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::databricks|meta::relational::tests::sqlQueryToString::databricks|meta::relational::databricks::tests|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies" : [
     "platform",
     "platform_functions",
+    "platform_dsl_mapping",
     "platform_store_relational",
+    "core_functions",
     "core",
     "core_relational"
   ]

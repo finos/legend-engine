@@ -28,20 +28,6 @@ meta::protocols::pure::v1_20_0::transformation::fromPureGraph::connection::datab
                     protocol = $d.protocol,
                     httpPath = $d.httpPath
                 )
-    ],
-    reverse_transfers_typeLookups = [
-        pair('databricks', 'DatabricksDatasourceSpecification')
-    ],
-    reverse_transfers_connection_transformAuthenticationStrategy = [
-    ],
-    reverse_transfers_connection_transformDatasourceSpecification = [
-        d:meta::protocols::pure::v1_20_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
-                ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
-                    hostname = $d.hostname,
-                    port = $d.port,
-                    protocol = $d.protocol,
-                    httpPath = $d.httpPath
-                )
     ]
   )
 }

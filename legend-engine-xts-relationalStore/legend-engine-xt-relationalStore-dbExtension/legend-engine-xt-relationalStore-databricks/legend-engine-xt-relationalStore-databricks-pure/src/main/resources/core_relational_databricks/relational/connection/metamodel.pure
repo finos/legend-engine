@@ -1,4 +1,4 @@
-Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+Class meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
     hostname:String[1];
     port:String[1];
