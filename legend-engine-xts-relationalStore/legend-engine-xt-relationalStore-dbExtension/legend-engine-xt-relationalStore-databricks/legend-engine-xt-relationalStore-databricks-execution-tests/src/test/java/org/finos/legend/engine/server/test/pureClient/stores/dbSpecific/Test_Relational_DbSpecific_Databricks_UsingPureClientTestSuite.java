@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2022 Databricks
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedA
 import org.junit.runner.RunWith;
 
 @RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
-public class Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite extends Relational_DbSpecific_UsingPureClientTestSuite
+public class Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite
+        extends Relational_DbSpecific_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
-        return createSuite(
+        // To make test work, please enable environment variable DATABRICKS_API_TOKEN with a valid API token
+        return Relational_DbSpecific_UsingPureClientTestSuite.createSuite(
                 "meta::relational::tests::sqlQueryToString::databricks",
                 "org/finos/legend/engine/server/test/userTestConfig_withDatabricksTestConnection.json",
                 new NamedType(DatabricksTestDatabaseAuthenticationFlowProviderConfiguration.class, "databricksTest")

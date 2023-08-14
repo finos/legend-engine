@@ -82,6 +82,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- PURE -->
 
         <!-- ENGINE -->
@@ -105,7 +110,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-databricks-protocol</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         <!-- ENGINE -->
 
@@ -159,12 +163,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
         </dependency>
         <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->
 

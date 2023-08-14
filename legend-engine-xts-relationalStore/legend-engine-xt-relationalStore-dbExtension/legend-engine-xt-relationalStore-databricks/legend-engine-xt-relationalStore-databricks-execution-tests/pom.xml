@@ -32,10 +32,6 @@
     <dependencies>
         <!-- LEGEND ENGINE -->
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
         </dependency>
@@ -53,12 +49,13 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-databricks-protocol</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-databricks-protocol</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!-- LEGEND ENGINE -->
 
@@ -85,6 +82,11 @@
 
         <!-- TEST -->
         <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
             <scope>test</scope>
@@ -98,12 +100,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

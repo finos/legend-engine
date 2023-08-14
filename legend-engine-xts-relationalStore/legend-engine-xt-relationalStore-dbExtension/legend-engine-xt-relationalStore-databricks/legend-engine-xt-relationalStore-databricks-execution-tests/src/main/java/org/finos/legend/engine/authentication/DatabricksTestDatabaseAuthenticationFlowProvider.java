@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.authentication;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -24,7 +26,9 @@ public class DatabricksTestDatabaseAuthenticationFlowProvider extends AbstractDa
 {
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows(DatabricksTestDatabaseAuthenticationFlowProviderConfiguration configuration)
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        return Lists.immutable.of(
+                new DatabricksWithApiTokenFlow()
+        );
     }
 
     @Override
