@@ -16,17 +16,17 @@ package org.finos.legend.engine.pure.code.core;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-public class Test_Pure_JavaGeneration
+public class Test_Pure_JavaProtocolGeneration
 {
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::language::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::protocols::generation::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }
