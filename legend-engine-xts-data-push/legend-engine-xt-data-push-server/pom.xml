@@ -40,19 +40,7 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
         </dependency>
         <!-- ENGINE -->
 
@@ -66,14 +54,6 @@
                     <artifactId>legend-shared-pac4j-gitlab</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.shared</groupId>
@@ -123,13 +103,6 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
-
-        <!-- ECLIPSE COLLECTIONS -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <!-- ECLIPSE COLLECTIONS -->
 
         <!-- RUNTIME -->
         <dependency>
@@ -186,25 +159,5 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
-
-        <!-- TODO: @akphi - temp - these should be converted to test -->
-        <dependency>
-            <groupId>com.opencsv</groupId>
-            <artifactId>opencsv</artifactId>
-        </dependency>
-        <!-- Questionable - should we not have this dependency and move the core logic there out somewhere? -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
-        </dependency>
-
-        <!-- Extension Collection -->
-        <!-- TODO?: @akphi - should we create a collection for these -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- Extension Collection -->
     </dependencies>
 </project>
