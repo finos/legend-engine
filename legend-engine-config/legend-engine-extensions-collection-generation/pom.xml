@@ -387,7 +387,6 @@
         </dependency>
         <!-- Peristence -->
 
-
         <!-- Dataspace -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -407,8 +406,6 @@
         </dependency>
         <!-- Dataspace -->
 
-
-
         <!-- Snowflake App -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -423,7 +420,6 @@
             <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
         </dependency>
         <!-- Snowflake App -->
-
 
         <!-- Text -->
         <dependency>
@@ -486,10 +482,13 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
         </dependency>
         <!-- MongoDB -->
-
 
         <!-- Authentication -->
         <dependency>
@@ -501,7 +500,6 @@
             <artifactId>legend-engine-xt-authentication-protocol</artifactId>
         </dependency>
         <!-- Authentication -->
-
 
         <!-- Analytics -->
         <dependency>
@@ -540,11 +538,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- DO NOT ADD FURTHER TEST DEPENDENCIES -->
