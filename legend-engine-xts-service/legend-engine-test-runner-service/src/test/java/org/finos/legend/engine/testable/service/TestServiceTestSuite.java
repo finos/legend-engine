@@ -3082,14 +3082,30 @@ public class TestServiceTestSuite
     }
 
     @Test
-    public void testRelationalServiceWithCommmaInCSV()
+    public void testRelationalServiceWithCommaWithQuotesInCSV()
     {
         // setup
-        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSV");
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithCommaWithQuotes");
         // Assertions
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
-        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSV");
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithCommaWithQuotes");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test_1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
+    }
+
+    @Test
+    public void testRelationalServiceWithCommaWithoutQuotesInCSV()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithComma");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithComma");
         Assert.assertTrue(testResult instanceof TestExecuted);
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
         TestExecuted passed = (TestExecuted) testResult;
