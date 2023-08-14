@@ -28,6 +28,21 @@ meta::protocols::pure::v1_25_0::transformation::fromPureGraph::connection::redsh
                                                                      endpointURL = $r.endpointURL,
                                                                      host = $r.host 
                                )
+    ],
+    reverse_transfers_typeLookups = [
+       pair('redshift', 'RedshiftDatasourceSpecification')
+    ],
+    reverse_transfers_connection_transformDatasourceSpecification = [
+         r:meta::protocols::pure::v1_25_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
+                   ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
+                       //  _type = 'redshift',
+                         clusterID = $r.clusterID,
+                         port =$r.port,
+                         region = $r.region,
+                         databaseName = $r.databaseName,
+                         endpointURL = $r.endpointURL,
+                         host = $r.host
+                  )
     ]
   )
 }
