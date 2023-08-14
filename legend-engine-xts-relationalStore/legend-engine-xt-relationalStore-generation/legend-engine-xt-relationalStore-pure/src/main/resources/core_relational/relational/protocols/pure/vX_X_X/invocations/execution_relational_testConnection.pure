@@ -66,8 +66,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
-                                                            pair('h2Local', 'LocalH2DatasourceSpecification('),
-                                                            pair('databricks', 'DatabricksDatasourceSpecification')
+                                                            pair('h2Local', 'LocalH2DatasourceSpecification(')
                                                           ])
                                             )
                 );
@@ -164,14 +163,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             //  _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
-         ),
-      d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
-          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
-              // _type = 'databricks',
-              hostname = $d.hostname,
-              port = $d.port,
-              protocol = $d.protocol,
-              httpPath = $d.httpPath
          )
    ])->toOneMany());
 }

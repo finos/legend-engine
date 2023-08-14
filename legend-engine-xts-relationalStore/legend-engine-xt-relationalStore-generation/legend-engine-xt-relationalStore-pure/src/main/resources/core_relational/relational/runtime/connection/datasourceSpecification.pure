@@ -35,11 +35,3 @@ Class meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpe
     testDataSetupCsv:String[0..1];
     testDataSetupSqls:String[*];
 }
-
-Class meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
-{
-    hostname:String[1];
-    port:String[1];
-    protocol:String[1];
-    httpPath:String[1];
-}

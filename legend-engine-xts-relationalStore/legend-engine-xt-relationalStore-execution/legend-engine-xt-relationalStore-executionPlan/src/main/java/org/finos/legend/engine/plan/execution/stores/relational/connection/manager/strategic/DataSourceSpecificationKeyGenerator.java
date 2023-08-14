@@ -15,12 +15,10 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
@@ -69,15 +67,6 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
-        }
-        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
-        {
-            DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
-            return new DatabricksDataSourceSpecificationKey(
-                    databricksSpecification.hostname,
-                    databricksSpecification.port,
-                    databricksSpecification.protocol,
-                    databricksSpecification.httpPath);
         }
         return null;
     }

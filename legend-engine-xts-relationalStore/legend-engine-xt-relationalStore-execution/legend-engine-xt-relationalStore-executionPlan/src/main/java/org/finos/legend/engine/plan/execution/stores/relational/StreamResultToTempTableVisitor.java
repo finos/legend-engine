@@ -29,7 +29,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -76,10 +75,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     @Override
     public Boolean visit(RelationalDatabaseCommands databaseCommands)
     {
-        if (databaseCommands instanceof DatabricksCommands)
-        {
-            return visitDatabricks((DatabricksCommands) databaseCommands);
-        }
         if (databaseCommands instanceof H2Commands)
         {
             return visitH2((H2Commands) databaseCommands);
@@ -91,15 +86,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             {
                 return result;
             }
-        }
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    private Boolean visitDatabricks(DatabricksCommands databricksCommands)
-    {
-        if (ingestionMethod == null)
-        {
-            ingestionMethod = databricksCommands.getDefaultIngestionMethod();
         }
         throw new UnsupportedOperationException("not yet implemented");
     }

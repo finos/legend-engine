@@ -40,6 +40,7 @@
         <module>legend-engine-xt-relationalStore-sybaseiq</module>
         <module>legend-engine-xt-relationalStore-hive</module>
         <module>legend-engine-xt-relationalStore-presto</module>
+        <module>legend-engine-xt-relationalStore-databricks</module>
 
 
         <module>legend-engine-xt-relationalStore-test-reports</module>

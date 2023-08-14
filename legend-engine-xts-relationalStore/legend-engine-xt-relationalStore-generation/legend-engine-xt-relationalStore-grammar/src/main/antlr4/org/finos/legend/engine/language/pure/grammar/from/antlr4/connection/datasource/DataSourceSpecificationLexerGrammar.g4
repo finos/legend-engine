@@ -17,8 +17,3 @@ BRACKET_CLOSE:                              ']';
 
 REGION:                                     'region';
 
-DATABRICKS:                                 'Databricks';
-PROTOCOL:                                   'protocol';
-HTTP_PATH:                                  'httpPath';
-HOSTNAME:                                   'hostname';
-

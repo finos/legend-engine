@@ -71,13 +71,13 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
         Properties connectionProperties = ds.getConnectionProperties();
 
         Assert.assertEquals("host.databricks.com",
-                connectionProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME));
+                connectionProperties.getProperty(DATABRICKS_HOSTNAME));
         Assert.assertEquals("444",
-                connectionProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT));
+                connectionProperties.getProperty(DATABRICKS_PORT));
         Assert.assertEquals("http",
-                connectionProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL));
+                connectionProperties.getProperty(DATABRICKS_PROTOCOL));
         Assert.assertEquals("/path",
-                connectionProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH));
+                connectionProperties.getProperty(DATABRICKS_HTTP_PATH));
     }
 
     @Test
@@ -98,13 +98,13 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
 
         Properties properties = profile.getConnectionProperties();
         Assert.assertEquals("hostname",
-                properties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME));
+                properties.getProperty(DATABRICKS_HOSTNAME));
         Assert.assertEquals("443",
-                properties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT));
+                properties.getProperty(DATABRICKS_PORT));
         Assert.assertEquals("https",
-                properties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL));
+                properties.getProperty(DATABRICKS_PROTOCOL));
         Assert.assertEquals("/httpPath",
-                properties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH));
+                properties.getProperty(DATABRICKS_HTTP_PATH));
     }
 
 }

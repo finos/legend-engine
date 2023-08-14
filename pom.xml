@@ -825,6 +825,32 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-databricks-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-redshift-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>

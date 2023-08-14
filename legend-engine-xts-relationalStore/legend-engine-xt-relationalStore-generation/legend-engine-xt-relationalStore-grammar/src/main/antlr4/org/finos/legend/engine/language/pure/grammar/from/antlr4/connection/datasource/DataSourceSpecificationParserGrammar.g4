@@ -49,27 +49,7 @@ embeddedH2DSPDirectory:                     DIRECTORY COLON STRING SEMI_COLON
 embeddedH2DSPAutoServerMode:                EMBEDDED_H2_DSP_AUTO_SERVER_MODE COLON BOOLEAN SEMI_COLON
 ;
 
-databricksDatasourceSpecification:          DATABRICKS
-                                                BRACE_OPEN
-                                                    (
-                                                        hostname
-                                                        | port
-                                                        | protocol
-                                                        | httpPath
-                                                    )*
-                                                BRACE_CLOSE
-;
-
-hostname:                                   HOSTNAME COLON STRING SEMI_COLON
-;
-
 port:                                       PORT COLON STRING SEMI_COLON
-;
-
-protocol:                                   PROTOCOL COLON STRING SEMI_COLON
-;
-
-httpPath:                                   HTTP_PATH COLON STRING SEMI_COLON
 ;
 
 region:                                     REGION COLON STRING SEMI_COLON

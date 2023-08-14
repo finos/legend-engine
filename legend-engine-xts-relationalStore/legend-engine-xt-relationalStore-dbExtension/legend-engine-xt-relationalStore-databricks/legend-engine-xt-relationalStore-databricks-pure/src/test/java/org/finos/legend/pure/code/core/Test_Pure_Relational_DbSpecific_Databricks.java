@@ -1,4 +1,4 @@
-//  Copyright 2022 Databricks
+//  Copyright 2022 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.pure.code.core.relational.dbSpecific;
+package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
@@ -27,8 +27,13 @@ public class Test_Pure_Relational_DbSpecific_Databricks
 {
     public static TestSuite suite()
     {
-        String testPackage = "meta::relational::tests::sqlQueryToString::databricks";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
-        return PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
+        executionSupport.getConsole().disable();
+        TestSuite suite = new TestSuite();
+
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::tests::sqlQueryToString::databricks", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::databricks::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational::tests::functions::sqlstring::databricks", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        return suite;
     }
 }
