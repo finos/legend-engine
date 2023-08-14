@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
@@ -29,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
@@ -59,11 +62,13 @@ public class TestDefaultSupportedFlows
                 {DatabaseType.H2, StaticDatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class},
                 {DatabaseType.H2, LocalH2DatasourceSpecification.class, DefaultH2AuthenticationStrategy.class},
                 {DatabaseType.H2, LocalH2DatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class},
+                {DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class},
                 {DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class},
                 {DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPWorkloadIdentityFederationAuthenticationStrategy.class},
                 {DatabaseType.Spanner, SpannerDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class},
                 {DatabaseType.SqlServer, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Databricks, DatabricksDatasourceSpecification.class, ApiTokenAuthenticationStrategy.class},
+                {DatabaseType.Redshift, RedshiftDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Postgres, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Postgres, StaticDatasourceSpecification.class, MiddleTierUserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Trino, TrinoDatasourceSpecification.class, TrinoDelegatedKerberosAuthenticationStrategy.class},

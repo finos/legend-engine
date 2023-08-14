@@ -33,12 +33,15 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_sp
 
 import java.util.List;
 
-public class SnowflakeCompilerExtension implements IRelationalCompilerExtension {
+public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
+{
     @Override
-    public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors() {
+    public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors()
+    {
         return Lists.mutable.with((authenticationStrategy, context) ->
         {
-            if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy) {
+            if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
+            {
                 return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy"))
                         ._publicUserName(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).publicUserName)
                         ._privateKeyVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).privateKeyVaultReference)
@@ -49,10 +52,12 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension 
     }
 
     @Override
-    public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors() {
+    public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors()
+    {
         return Lists.mutable.with((datasourceSpecification, context) ->
         {
-            if (datasourceSpecification instanceof SnowflakeDatasourceSpecification) {
+            if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
+            {
                 SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
                 Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification _snowflake = new Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification"));
                 _snowflake._accountName(snowflakeDatasourceSpecification.accountName);
@@ -65,7 +70,8 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension 
                 _snowflake._proxyHost(snowflakeDatasourceSpecification.proxyHost);
                 _snowflake._proxyPort(snowflakeDatasourceSpecification.proxyPort);
                 _snowflake._nonProxyHosts(snowflakeDatasourceSpecification.nonProxyHosts);
-                if (snowflakeDatasourceSpecification.accountType != null) {
+                if (snowflakeDatasourceSpecification.accountType != null)
+                {
                     _snowflake._accountType(context.pureModel.getEnumValue("meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType", snowflakeDatasourceSpecification.accountType));
                 }
                 _snowflake._organization(snowflakeDatasourceSpecification.organization);
@@ -78,12 +84,14 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension 
     }
 
     @Override
-    public CompilerExtension build() {
+    public CompilerExtension build()
+    {
         return new SnowflakeCompilerExtension();
     }
 
     @Override
-    public List<DatabaseAuthenticationFlowKey> getFlowKeys() {
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
         return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class));
     }
 }
