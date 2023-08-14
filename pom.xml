@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.22.2-SNAPSHOT</version>
+    <version>4.23.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -37,18 +37,10 @@
         -->
 
         <!-- Core System -->
-        <module>legend-engine-core-executionPlan-execution</module>
-        <module>legend-engine-core-executionPlan-generation</module>
-        <module>legend-engine-core-language-pure</module>
-        <module>legend-engine-core-query-pure</module>
-        <module>legend-engine-core-test</module>
-        <module>legend-engine-core-shared</module>
+        <module>legend-engine-core</module>
 
         <!-- Pure Extension -->
-        <module>legend-engine-pure-code</module>
-        <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-runtime</module>
-        <module>legend-engine-pure-platform-modular-generation</module>
+        <module>legend-engine-pure</module>
 
         <!-- Stores -->
         <module>legend-engine-xts-serviceStore</module>
@@ -111,8 +103,6 @@
         <module>legend-engine-xts-data-push</module>
         <!-- Data Push -->
 
-        <!-- Test Data Generation -->
-        <module>legend-engine-test-data-generation</module>
     </modules>
 
     <properties>
@@ -1430,6 +1420,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-generation-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1650,6 +1645,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-code-core-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1982,6 +1982,16 @@
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-store-relational-pure</artifactId>
                 <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-extensions-collection-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-elasticsearch-V7-pure-metamodel</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

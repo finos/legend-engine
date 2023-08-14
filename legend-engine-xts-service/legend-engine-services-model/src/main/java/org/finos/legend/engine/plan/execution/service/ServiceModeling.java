@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.service.post.validation.runner.LegendServicePostValidationRunner;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -138,7 +139,7 @@ public class ServiceModeling
     private TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion, String metricsContext) throws IOException, JavaCompileException
     {
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = extensions.flatCollect(e -> e.getExtraExtensions(pureModelPairs.getTwo()));
+        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModelPairs.getTwo().getExecutionSupport()));
         MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
         ServiceTestRunner runner = new ServiceTestRunner(service, pureService, pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, planExecutor, routerExtensions, planTransformers, pureVersion, metricsContext);

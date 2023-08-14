@@ -27,7 +27,6 @@ public class Test_Pure_JavaGeneration
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::language::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::protocols::generation::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }
