@@ -313,9 +313,9 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         {
             Field dateTimeFrom = getBatchTimeField(validDateTime.dateTimeFromName(), true);
             Field dateTimeThru = getBatchTimeField(validDateTime.dateTimeThruName(), false);
+            validDateTime.validityDerivation().accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaFields));
             mainSchemaFields.add(dateTimeFrom);
             mainSchemaFields.add(dateTimeThru);
-            validDateTime.validityDerivation().accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaFields));
             return null;
         }
     }
