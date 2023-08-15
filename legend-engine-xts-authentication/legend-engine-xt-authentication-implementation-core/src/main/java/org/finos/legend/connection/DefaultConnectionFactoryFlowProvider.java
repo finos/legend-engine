@@ -21,14 +21,14 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultConnectionSetupFlowProvider implements ConnectionSetupFlowProvider
+public class DefaultConnectionFactoryFlowProvider implements ConnectionFactoryFlowProvider
 {
-    private final Map<ConnectionSetupFlowKey, ConnectionFactoryFlow<?, ?, ?>> flows = new ConcurrentHashMap<>();
+    private final Map<ConnectionFlowKey, ConnectionFactoryFlow<?, ?, ?>> flows = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<ConnectionFactoryFlow> lookupFlow(ConnectionSetupSpecification connectionSetupSpecification, Credential credential)
+    public Optional<ConnectionFactoryFlow> lookupFlow(ConnectionSpecification connectionSpecification, Credential credential)
     {
-        return Optional.ofNullable(this.flows.get(new ConnectionSetupFlowKey(connectionSetupSpecification.getClass(), credential.getClass())));
+        return Optional.ofNullable(this.flows.get(new ConnectionFlowKey(connectionSpecification.getClass(), credential.getClass())));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class DefaultConnectionSetupFlowProvider implements ConnectionSetupFlowPr
         for (ConnectionFactoryFlow<?, ?, ?> flow : ServiceLoader.load(ConnectionFactoryFlow.class))
         {
             // TODO?: take care of clash
-            this.flows.put(new ConnectionSetupFlowKey(flow.getConnectionSetupSpecificationClass(), flow.getCredentialClass()), flow);
+            this.flows.put(new ConnectionFlowKey(flow.getConnectionSpecificationClass(), flow.getCredentialClass()), flow);
         }
     }
 }

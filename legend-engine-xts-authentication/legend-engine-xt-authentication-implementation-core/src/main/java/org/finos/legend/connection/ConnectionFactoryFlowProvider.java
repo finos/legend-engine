@@ -19,15 +19,15 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 import java.util.Objects;
 import java.util.Optional;
 
-public interface ConnectionSetupFlowProvider
+public interface ConnectionFactoryFlowProvider
 {
-    <T> Optional<ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential>> lookupFlow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential);
+    <T> Optional<ConnectionFactoryFlow<T, ConnectionSpecification<T>, Credential>> lookupFlow(ConnectionSpecification<T> connectionSpecification, Credential credential);
 
-    default <T> ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> lookupFlowOrThrow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential)
+    default <T> ConnectionFactoryFlow<T, ConnectionSpecification<T>, Credential> lookupFlowOrThrow(ConnectionSpecification<T> connectionSpecification, Credential credential)
     {
-        Optional<ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential>> flowHolder = this.lookupFlow(connectionSetupSpecification, credential);
+        Optional<ConnectionFactoryFlow<T, ConnectionSpecification<T>, Credential>> flowHolder = this.lookupFlow(connectionSpecification, credential);
         return flowHolder.orElseThrow(() -> new RuntimeException(String.format("Unsupported connection setup flow: Specification=%s, Credential=%s",
-                connectionSetupSpecification.getClass().getSimpleName(),
+                connectionSpecification.getClass().getSimpleName(),
                 credential.getClass().getSimpleName())));
     }
 
@@ -38,14 +38,14 @@ public interface ConnectionSetupFlowProvider
      */
     void configure();
 
-    public static class ConnectionSetupFlowKey
+    public static class ConnectionFlowKey
     {
-        private final Class<? extends ConnectionSetupSpecification> connecionSetupSpecificationClass;
+        private final Class<? extends ConnectionSpecification> connectionSpecificationClass;
         private final Class<? extends Credential> credentialClass;
 
-        public ConnectionSetupFlowKey(Class<? extends ConnectionSetupSpecification> connecionSetupSpecificationClass, Class<? extends Credential> credentialClass)
+        public ConnectionFlowKey(Class<? extends ConnectionSpecification> connectionSpecificationClass, Class<? extends Credential> credentialClass)
         {
-            this.connecionSetupSpecificationClass = connecionSetupSpecificationClass;
+            this.connectionSpecificationClass = connectionSpecificationClass;
             this.credentialClass = credentialClass;
         }
 
@@ -60,15 +60,15 @@ public interface ConnectionSetupFlowProvider
             {
                 return false;
             }
-            ConnectionSetupFlowKey that = (ConnectionSetupFlowKey) o;
-            return connecionSetupSpecificationClass.equals(that.connecionSetupSpecificationClass) &&
+            ConnectionFlowKey that = (ConnectionFlowKey) o;
+            return connectionSpecificationClass.equals(that.connectionSpecificationClass) &&
                     credentialClass.equals(that.credentialClass);
         }
 
         @Override
         public int hashCode()
         {
-            return Objects.hash(connecionSetupSpecificationClass, credentialClass);
+            return Objects.hash(connectionSpecificationClass, credentialClass);
         }
     }
 }

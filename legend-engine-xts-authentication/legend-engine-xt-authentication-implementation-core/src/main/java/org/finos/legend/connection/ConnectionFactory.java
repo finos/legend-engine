@@ -24,10 +24,10 @@ import java.util.ServiceLoader;
 
 public class ConnectionFactory
 {
-    private final ConnectionSetupFlowProvider flowProviderHolder;
+    private final ConnectionFactoryFlowProvider flowProviderHolder;
     private final CredentialProviderProvider credentialProviderProvider;
 
-    public ConnectionFactory(ConnectionSetupFlowProvider flowProviderHolder, CredentialProviderProvider credentialProviderProvider)
+    public ConnectionFactory(ConnectionFactoryFlowProvider flowProviderHolder, CredentialProviderProvider credentialProviderProvider)
     {
         this.flowProviderHolder = flowProviderHolder;
         this.credentialProviderProvider = credentialProviderProvider;
@@ -41,25 +41,25 @@ public class ConnectionFactory
         }
     }
 
-    public <T> T getConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential) throws Exception
+    public <T> T getConnection(ConnectionSpecification<T> connectionSpecification, Credential credential) throws Exception
     {
-        ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSetupSpecification, credential);
-        return flow.getConnection(connectionSetupSpecification, credential);
+        ConnectionFactoryFlow<T, ConnectionSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSpecification, credential);
+        return flow.getConnection(connectionSpecification, credential);
     }
 
-    public <T> T getConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    public <T> T getConnection(ConnectionSpecification<T> connectionSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {
-        return this.getConnection(connectionSetupSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
+        return this.getConnection(connectionSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
     }
 
-    public <T> T configureConnection(T connection, ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential) throws Exception
+    public <T> T configureConnection(T connection, ConnectionSpecification<T> connectionSpecification, Credential credential) throws Exception
     {
-        ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSetupSpecification, credential);
-        return flow.getConnection(connectionSetupSpecification, credential);
+        ConnectionFactoryFlow<T, ConnectionSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSpecification, credential);
+        return flow.getConnection(connectionSpecification, credential);
     }
 
-    public <T> T configureConnection(T connection, ConnectionSetupSpecification<T> connectionSetupSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    public <T> T configureConnection(T connection, ConnectionSpecification<T> connectionSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {
-        return this.configureConnection(connection, connectionSetupSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
+        return this.configureConnection(connection, connectionSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
     }
 }

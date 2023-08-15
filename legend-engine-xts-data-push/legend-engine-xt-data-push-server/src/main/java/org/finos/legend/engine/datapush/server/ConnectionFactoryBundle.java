@@ -26,8 +26,8 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionSetupFlowProvider;
-import org.finos.legend.connection.DefaultConnectionSetupFlowProvider;
+import org.finos.legend.connection.ConnectionFactoryFlowProvider;
+import org.finos.legend.connection.DefaultConnectionFactoryFlowProvider;
 
 import java.util.Properties;
 import java.util.function.Function;
@@ -76,10 +76,10 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
                 .with(intermediationRuleProvider)
                 .build();
 
-        ConnectionSetupFlowProvider connectionSetupFlowProvider = new DefaultConnectionSetupFlowProvider();
-        connectionSetupFlowProvider.configure();
+        ConnectionFactoryFlowProvider connectionFactoryFlowProvider = new DefaultConnectionFactoryFlowProvider();
+        connectionFactoryFlowProvider.configure();
 
-        connectionFactory = new ConnectionFactory(connectionSetupFlowProvider, credentialProviderProvider);
+        connectionFactory = new ConnectionFactory(connectionFactoryFlowProvider, credentialProviderProvider);
         connectionFactory.initialize();
     }
 

@@ -22,14 +22,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
-public class StaticJDBCConnectionSetupFlow
+public class StaticJDBCConnectionFlow
 {
-    public static class WithPlaintextUsernamePassword implements ConnectionFactoryFlow<Connection, StaticJDBCConnectionSetupSpecification, PlaintextUserPasswordCredential>
+    public static class WithPlaintextUsernamePassword implements ConnectionFactoryFlow<Connection, StaticJDBCConnectionSpecification, PlaintextUserPasswordCredential>
     {
         @Override
-        public Class<StaticJDBCConnectionSetupSpecification> getConnectionSetupSpecificationClass()
+        public Class<StaticJDBCConnectionSpecification> getConnectionSpecificationClass()
         {
-            return StaticJDBCConnectionSetupSpecification.class;
+            return StaticJDBCConnectionSpecification.class;
         }
 
         @Override
@@ -39,11 +39,11 @@ public class StaticJDBCConnectionSetupFlow
         }
 
         @Override
-        public Connection getConnection(StaticJDBCConnectionSetupSpecification connectionSetupSpecification, PlaintextUserPasswordCredential credential) throws Exception
+        public Connection getConnection(StaticJDBCConnectionSpecification connectionSpecification, PlaintextUserPasswordCredential credential) throws Exception
         {
-            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(connectionSetupSpecification.databaseType.name());
+            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(connectionSpecification.databaseType.name());
             return DriverManager.getConnection(
-                    driver.buildURL(connectionSetupSpecification.host, connectionSetupSpecification.port, connectionSetupSpecification.databaseName, new Properties()),
+                    driver.buildURL(connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, new Properties()),
                     credential.getUser(), credential.getPassword()
             );
         }

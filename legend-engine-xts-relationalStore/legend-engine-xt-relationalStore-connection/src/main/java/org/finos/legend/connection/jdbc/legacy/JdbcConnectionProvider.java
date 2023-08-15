@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc;
+package org.finos.legend.connection.jdbc.legacy;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.connection.legacy.ConnectionProvider;

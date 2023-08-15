@@ -12,8 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.jdbc;
 
-public abstract class ConnectionSetupSpecification<T>
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+
+public class StaticJDBCConnectionSpecification extends JDBCConnectionSpecification
 {
+    public String databaseName;
+
+    public StaticJDBCConnectionSpecification(String host, int port, DatabaseType databaseType, String databaseName)
+    {
+        super(host, port, databaseType);
+        this.databaseName = databaseName;
+    }
 }
