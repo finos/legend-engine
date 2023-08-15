@@ -1348,6 +1348,16 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (1, \'Firm X\', \'LLC\');', $connection);
    executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (2, \'Firm Y\', \'CORPORATION\');', $connection);
 
+   executeInDb('Drop table if exists Org;', $connection);
+   executeInDb('Create Table Org(OrgId INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Org (OrgId, name) values (1, \'simthp\');', $connection);
+   executeInDb('Drop table if exists Dept;', $connection);
+   executeInDb('Create Table Dept(id INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Dept (id, name) values (1, \'simthp\');', $connection);
+   executeInDb('Drop table if exists Branch;', $connection);
+   executeInDb('Create Table Branch(branchId INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Branch (branchId, name) values (1, \'TX\');', $connection);
+
    true;
 }
 
