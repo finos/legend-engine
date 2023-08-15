@@ -653,6 +653,43 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     }
 
     @Test
+    public void testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions()
+    {
+        String queryFunction = "simple::semiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                        "    (\n" +
+                        "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n" +
+                        "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Manager Firm Name\", \"\"), (\"Manager Manager Firm Name\", \"\"), (\"Manager Manager Manager Firm Name\", \"\")]\n" +
+                        "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Manager Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_2\".MANAGERID = \"person_table_3\".ID)\n" +
+                        "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                        "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                        "(\n" +
+                        "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n" +
+                        "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Manager Firm Name\", \"\"), (\"Manager Manager Firm Name\", \"\"), (\"Manager Manager Manager Firm Name\", \"\")]\n" +
+                        "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::$legalName as `Firm Name`, `person_table_1`.FIRM_DETAILS::$legalName as `Manager Firm Name`, `person_table_2`.FIRM_DETAILS::$legalName as `Manager Manager Firm Name`, `person_table_3`.FIRM_DETAILS::$legalName as `Manager Manager Manager Firm Name` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_1` on (`root`.MANAGERID = `person_table_1`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_2` on (`person_table_1`.MANAGERID = `person_table_2`.ID) left outer join PERSON_SCHEMA.PERSON_TABLE as `person_table_3` on (`person_table_2`.MANAGERID = `person_table_3`.ID)\n" +
+                        "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                        ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("Peter,Firm X,Firm X,Firm X,\n" +
+                "John,Firm X,Firm X,,\n" +
+                "John,Firm X,Firm X,Firm X,\n" +
+                "Anthony,Firm X,,,\n" +
+                "Fabrice,Firm A,,,\n" +
+                "Oliver,Firm B,Firm B,,\n" +
+                "David,Firm B,,,\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
     public void testFilterWithSemiStructuredPropertyAccessAtNestedProperty()
     {
         String queryFunction = "simple::filterWithSemiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_";
@@ -778,6 +815,40 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                         "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
                         "  resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
                         "  sql = select `root`.FIRSTNAME as `First Name` from PERSON_SCHEMA.PERSON_TABLE as `root` where `root`.FIRM_DETAILS::$entityType = 'Organization'\n" +
+                        "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                        ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
+        Assert.assertEquals("Peter\n" +
+                "John\n" +
+                "John\n" +
+                "Anthony\n", h2Result.replace("\r\n", "\n"));
+    }
+
+    @Test
+    public void testFilterOnEnumPropertyWithWithIfElseLogicEnum()
+    {
+        String queryFunction = "simple::filterOnEnumPropertyWithIfElseLogicEnum__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                        "    (\n" +
+                        "      type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                        "      resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                        "      sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where case when \"root\".FIRSTNAME = 'John' then \"root\".FIRM_DETAILS['entityType']::varchar else \"root\".FIRM_DETAILS['entityType']::varchar end = 'Organization'\n" +
+                        "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                        "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                        "(\n" +
+                        "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                        "  resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                        "  sql = select `root`.FIRSTNAME as `First Name` from PERSON_SCHEMA.PERSON_TABLE as `root` where case when `root`.FIRSTNAME = 'John' then `root`.FIRM_DETAILS::$entityType else `root`.FIRM_DETAILS::$entityType end = 'Organization'\n" +
                         "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                         ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);

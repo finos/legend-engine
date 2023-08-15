@@ -99,8 +99,8 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                   let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
                   let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
                   ^$last(value = $iv);,
-                | if (!$v.shouldBeRouted,
-                      | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())))->evaluateAndDeactivate();,
+                | if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)])->isPropertyAutoMapped($p, $extensions),
+                      | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
                       | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
 
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
