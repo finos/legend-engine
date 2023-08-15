@@ -21,11 +21,11 @@ import java.util.Optional;
 
 public interface ConnectionSetupFlowProvider
 {
-    <T> Optional<ConnectionSetupFlow<T, ConnectionSetupSpecification<T>, Credential>> lookupFlow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential);
+    <T> Optional<ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential>> lookupFlow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential);
 
-    default <T> ConnectionSetupFlow<T, ConnectionSetupSpecification<T>, Credential> lookupFlowOrThrow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential)
+    default <T> ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> lookupFlowOrThrow(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential)
     {
-        Optional<ConnectionSetupFlow<T, ConnectionSetupSpecification<T>, Credential>> flowHolder = this.lookupFlow(connectionSetupSpecification, credential);
+        Optional<ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential>> flowHolder = this.lookupFlow(connectionSetupSpecification, credential);
         return flowHolder.orElseThrow(() -> new RuntimeException(String.format("Unsupported connection setup flow: Specification=%s, Credential=%s",
                 connectionSetupSpecification.getClass().getSimpleName(),
                 credential.getClass().getSimpleName())));

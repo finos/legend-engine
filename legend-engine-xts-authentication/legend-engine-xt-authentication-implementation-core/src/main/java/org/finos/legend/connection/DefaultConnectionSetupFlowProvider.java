@@ -23,10 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultConnectionSetupFlowProvider implements ConnectionSetupFlowProvider
 {
-    private final Map<ConnectionSetupFlowKey, ConnectionSetupFlow<?, ?, ?>> flows = new ConcurrentHashMap<>();
+    private final Map<ConnectionSetupFlowKey, ConnectionFactoryFlow<?, ?, ?>> flows = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<ConnectionSetupFlow> lookupFlow(ConnectionSetupSpecification connectionSetupSpecification, Credential credential)
+    public Optional<ConnectionFactoryFlow> lookupFlow(ConnectionSetupSpecification connectionSetupSpecification, Credential credential)
     {
         return Optional.ofNullable(this.flows.get(new ConnectionSetupFlowKey(connectionSetupSpecification.getClass(), credential.getClass())));
     }
@@ -35,7 +35,7 @@ public class DefaultConnectionSetupFlowProvider implements ConnectionSetupFlowPr
     public void configure()
     {
         // TODO?: @akphi should we use service loader or have a collector/preset like LegendDefaultDatabaseAuthenticationFlowProvider
-        for (ConnectionSetupFlow<?, ?, ?> flow : ServiceLoader.load(ConnectionSetupFlow.class))
+        for (ConnectionFactoryFlow<?, ?, ?> flow : ServiceLoader.load(ConnectionFactoryFlow.class))
         {
             // TODO?: take care of clash
             this.flows.put(new ConnectionSetupFlowKey(flow.getConnectionSetupSpecificationClass(), flow.getCredentialClass()), flow);

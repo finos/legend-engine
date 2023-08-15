@@ -51,7 +51,8 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
     public void run(C configuration, Environment environment)
     {
         final ConnectionFactoryConfiguration config = this.configSupplier.apply(configuration);
-        // TODO: configure
+        // TODO: @akphi allow, through deployment configuration to load more credential providers
+        // what we have right here is just the bare minimum for setting up the credential providers
 
         // TEMP: for testing
         Properties properties = new Properties();

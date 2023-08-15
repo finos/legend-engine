@@ -31,14 +31,25 @@ public class ConnectionFactory
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public <T> T setupConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential) throws Exception
+    public <T> T getConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential) throws Exception
     {
-        ConnectionSetupFlow<T, ConnectionSetupSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSetupSpecification, credential);
-        return flow.setupConnection(connectionSetupSpecification, credential);
+        ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSetupSpecification, credential);
+        return flow.getConnection(connectionSetupSpecification, credential);
     }
 
-    public <T> T setupConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    public <T> T getConnection(ConnectionSetupSpecification<T> connectionSetupSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {
-        return this.setupConnection(connectionSetupSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
+        return this.getConnection(connectionSetupSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
+    }
+
+    public <T> T configureConnection(T connection, ConnectionSetupSpecification<T> connectionSetupSpecification, Credential credential) throws Exception
+    {
+        ConnectionFactoryFlow<T, ConnectionSetupSpecification<T>, Credential> flow = this.flowProviderHolder.lookupFlowOrThrow(connectionSetupSpecification, credential);
+        return flow.getConnection(connectionSetupSpecification, credential);
+    }
+
+    public <T> T configureConnection(T connection, ConnectionSetupSpecification<T> connectionSetupSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    {
+        return this.configureConnection(connection, connectionSetupSpecification, CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity));
     }
 }

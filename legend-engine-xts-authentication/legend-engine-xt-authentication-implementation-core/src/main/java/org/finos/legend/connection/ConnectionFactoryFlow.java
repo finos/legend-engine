@@ -16,11 +16,19 @@ package org.finos.legend.connection;
 
 import org.finos.legend.engine.shared.core.identity.Credential;
 
-public interface ConnectionSetupFlow<T, SPEC extends ConnectionSetupSpecification<T>, CRED extends Credential>
+public interface ConnectionFactoryFlow<T, SPEC extends ConnectionSetupSpecification<T>, CRED extends Credential>
 {
     Class<SPEC> getConnectionSetupSpecificationClass();
 
     Class<CRED> getCredentialClass();
 
-    T setupConnection(SPEC connectionSetupSpecification, CRED credential) throws Exception;
+    T getConnection(SPEC connectionSetupSpecification, CRED credential) throws Exception;
+
+    default T configureConnection(T connection, SPEC connectionSetupSpecification, CRED credential) throws Exception
+    {
+        throw new UnsupportedOperationException(String.format("Configuring connection is not supported in the connection setup flow for Specification=%s, Credential=%s",
+                this.getConnectionSetupSpecificationClass().getSimpleName(),
+                this.getCredentialClass().getSimpleName())
+        );
+    }
 }
