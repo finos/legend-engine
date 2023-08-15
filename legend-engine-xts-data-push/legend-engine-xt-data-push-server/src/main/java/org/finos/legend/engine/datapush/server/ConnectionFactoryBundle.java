@@ -80,6 +80,7 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
         connectionSetupFlowProvider.configure();
 
         connectionFactory = new ConnectionFactory(connectionSetupFlowProvider, credentialProviderProvider);
+        connectionFactory.initialize();
     }
 
     public static ConnectionFactory getConnectionFactory()

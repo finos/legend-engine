@@ -15,13 +15,12 @@
 package org.finos.legend.connection.jdbc.driver;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.connection.jdbc.JDBCConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
 import java.util.List;
 import java.util.Properties;
 
-public class H2_JDBCConnectionManager extends JDBCConnectionManager
+public class H2_JDBCConnectionDriver implements JDBCConnectionDriver
 {
     @Override
     public List<String> getIds()

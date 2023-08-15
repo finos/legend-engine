@@ -15,6 +15,7 @@
 package org.finos.legend.connection.jdbc;
 
 import org.finos.legend.connection.ConnectionFactoryFlow;
+import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 import java.sql.Connection;
@@ -40,9 +41,9 @@ public class StaticJDBCConnectionSetupFlow
         @Override
         public Connection getConnection(StaticJDBCConnectionSetupSpecification connectionSetupSpecification, PlaintextUserPasswordCredential credential) throws Exception
         {
-            JDBCConnectionManager connectionManager = JDBCConnectionManager.getManagerForDatabaseType(connectionSetupSpecification.databaseType.name());
+            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(connectionSetupSpecification.databaseType.name());
             return DriverManager.getConnection(
-                    connectionManager.buildURL(connectionSetupSpecification.host, connectionSetupSpecification.port, connectionSetupSpecification.databaseName, new Properties()),
+                    driver.buildURL(connectionSetupSpecification.host, connectionSetupSpecification.port, connectionSetupSpecification.databaseName, new Properties()),
                     credential.getUser(), credential.getPassword()
             );
         }

@@ -15,62 +15,63 @@
 package org.finos.legend.connection.jdbc;
 
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.finos.legend.connection.ConnectionManager;
+import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
 
-import java.util.List;
-import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 
 /**
  * TODO?: @akphi - This is a temporary hack!
  * We probably need to have a mechanism to control the connection pool
  * We cloned DatabaseManager from relational executor, we should consider if we can eventually unify these 2
  */
-public abstract class JDBCConnectionManager
+public class JDBCConnectionManager implements ConnectionManager
 {
-    private static final ConcurrentHashMap<String, JDBCConnectionManager> managersByName = ConcurrentHashMap.newMap();
-    private static final AtomicBoolean dbManagerReady = new AtomicBoolean();
+    private static final ConcurrentHashMap<String, JDBCConnectionDriver> driversByName = ConcurrentHashMap.newMap();
+    private static final AtomicBoolean isInitialized = new AtomicBoolean();
 
-    private static void initialize()
+    private static void detectDrivers()
     {
-        if (!dbManagerReady.get())
+        if (!isInitialized.get())
         {
-            synchronized (dbManagerReady)
+            synchronized (isInitialized)
             {
-                if (!dbManagerReady.get())
+                if (!isInitialized.get())
                 {
-                    for (JDBCConnectionManager manager : ServiceLoader.load(JDBCConnectionManager.class))
+                    for (JDBCConnectionDriver driver : ServiceLoader.load(JDBCConnectionDriver.class))
                     {
-                        JDBCConnectionManager.register(manager);
+                        JDBCConnectionManager.register(driver);
                     }
-                    dbManagerReady.getAndSet(true);
+                    isInitialized.getAndSet(true);
                 }
             }
         }
     }
 
-    private static void register(JDBCConnectionManager databaseManager)
+    private static void register(JDBCConnectionDriver driver)
     {
-        databaseManager.getIds().forEach(i -> managersByName.put(i, databaseManager));
+        driver.getIds().forEach(i -> driversByName.put(i, driver));
     }
 
-    public static JDBCConnectionManager getManagerForDatabaseType(String type)
+    public static JDBCConnectionDriver getDriverForDatabaseType(String type)
     {
-        // NOTE: we do this so that we don't have to manually initialize this manager somewhere
-        // in the general flow
-        initialize();
-        JDBCConnectionManager manager = managersByName.get(type);
-        if (manager == null)
+        if (!isInitialized.get())
         {
-            throw new RuntimeException(String.format("Can't find matching JDBC connection manager for database type '%s'", type));
+            throw new IllegalStateException("JDBC connection manager has not been configured properly");
         }
-        return manager;
+        JDBCConnectionDriver driver = driversByName.get(type);
+        if (driver == null)
+        {
+            throw new RuntimeException(String.format("Can't find matching JDBC connection driver for database type '%s'", type));
+        }
+        return driver;
     }
 
-    public abstract List<String> getIds();
-
-    public abstract String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties);
-
-    // TODO?: @akphi - should we port over the driver wrapper stuffs from DatabaseManager as well?
-    public abstract String getDriver();
+    @Override
+    public void initialize()
+    {
+        JDBCConnectionManager.detectDrivers();
+    }
 }
