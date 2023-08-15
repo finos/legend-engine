@@ -14,7 +14,7 @@
 
 package org.finos.legend.connection.jdbc;
 
-import org.finos.legend.connection.ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 
 public class JdbcConnectionSpecification extends ConnectionSpecification
 {
