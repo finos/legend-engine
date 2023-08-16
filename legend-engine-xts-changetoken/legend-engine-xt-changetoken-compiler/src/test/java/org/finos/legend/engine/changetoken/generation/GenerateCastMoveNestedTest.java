@@ -32,7 +32,34 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
-        setupSuite("meta::pure::changetoken::tests::getVersionsMoveNested");
+        setupSuiteFromJson("{\n" +
+                "  \"@type\": \"meta::pure::changetoken::Versions\",\n" +
+                "  \"versions\": [\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg123\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg456\",\n" +
+                "      \"prevVersion\": \"ftdm:abcdefg123\",\n" +
+                "      \"changeTokens\": [\n" +
+                "        {\n" +
+                "          \"@type\": \"meta::pure::changetoken::RenameField\",\n" +
+                "          \"oldFieldName\": [\n" +
+                "            \"abc\",\n" +
+                "            \"value\"\n" +
+                "          ],\n" +
+                "          \"newFieldName\": [\n" +
+                "            \"xyz\",\n" +
+                "            \"value\"\n" +
+                "          ],\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
     }
 
     @Test
