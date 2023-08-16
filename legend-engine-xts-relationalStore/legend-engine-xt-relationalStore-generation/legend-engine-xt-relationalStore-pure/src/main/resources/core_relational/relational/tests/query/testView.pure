@@ -77,14 +77,21 @@ function <<test.Test>> meta::relational::tests::query::view::testViewSimpleExist
   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime" from orderTable as "root" left outer join (select distinct "salespersontable_1".ACCOUNT_ID from (select "salespersontable_1".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_1" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_1".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_1" where "salespersontable_1".firm_name = \'Johnson\') as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) where "salespersontable_0".ACCOUNT_ID is not null', $result);
 }
 
+function <<test.Test>> meta::relational::tests::query::view::testViewPropertyFilterWithPrimaryKey():Boolean[1]
+{
+   let result = execute(|Employee.all()->filter(x|$x.org == 'A')->project([x|$x.category],['Category']), meta::relational::tests::query::view::EmployeeMappingWithViewAndInnerJoin, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
+   let tds = $result.values->at(0);
+   assertEquals('select "dept_2".name as "Category" from (select "root".OrgId as OrgId, "root".name as name from Org as "root") as "root" left outer join (select "orgview_2".OrgId as OrgId, "branch_0".name as name_1, "branch_1".name as name from (select "root".OrgId as OrgId, "root".name as name from Org as "root") as "orgview_2" left outer join Dept as "dept_0" on ("orgview_2".name = "dept_0".name) inner join Branch as "branch_0" on ("dept_0".id = "branch_0".branchId) left outer join Dept as "dept_1" on ("orgview_2".name = "dept_1".name) inner join Branch as "branch_1" on ("dept_1".id = "branch_1".branchId)) as "orgview_1" on ("root".OrgId = "orgview_1".OrgId) left outer join (select "dept_3".name as name_1, "branch_2".name as name from Dept as "dept_3" inner join Branch as "branch_2" on ("dept_3".id = "branch_2".branchId)) as "dept_2" on ("root".name = "dept_2".name_1) where case when 1 = 1 then case when "orgview_1".name_1 is null then \'\' else \'A\' end else case when "orgview_1".name is null then \'\' else \'B\' end end = \'A\'', $result->sqlRemoveFormatting());
+   assertSameElements(['Category'], $tds.columns.name);
+   assertEquals(1, $tds.rows->size());
+   assertEquals(['TX'], $result.values.rows->at(0).values);
+}
 
 ###Mapping
 import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 Mapping meta::relational::tests::query::view::relationalMappingWithViewAndInnerJoin
 (
-   
-
     Person : Relational
             {
                scope([db] PersonFirmView)
@@ -93,7 +100,6 @@ Mapping meta::relational::tests::query::view::relationalMappingWithViewAndInnerJ
                     firm ( legalName:firm_name )
                )
             }
-             
     Order : Relational
              {
                 id : [db]orderTable.ID,
@@ -102,9 +108,18 @@ Mapping meta::relational::tests::query::view::relationalMappingWithViewAndInnerJ
                 settlementDateTime : [db]orderTable.settlementDateTime,
                 pnlContact : [db] @Order_SalesPerson > (INNER) [db] @SalesPerson_PersonView
              }
-             
-   
+)
 
-
-   
+Mapping meta::relational::tests::query::view::EmployeeMappingWithViewAndInnerJoin
+(
+  Employee: Relational
+  {
+    ~primaryKey
+    (
+      [db]OrgView.OrgId
+    )
+    ~mainTable [db]OrgView
+     category: [db]@Org_DeptCat > (INNER) [db]@Dept_Branch | Branch.name,
+     division: [db]@Org_DeptDiv > (INNER) [db]@Dept_Branch | Branch.name
+  }
 )

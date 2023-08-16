@@ -2833,19 +2833,27 @@ function meta::relational::functions::pureToSqlQuery::manageAggregation(leftSql:
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::getPksFromAlias(r:RelationalOperationElement[*], mt:Table[*]):List<Column>[1]
+{
+   ^List<Column>(values=$r->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);));
+}
 
 function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQuery[1], j:RelationalTreeNode[1], newJoinName:String[1], extensions:Extension[*]):Pair<SelectSQLQuery, List<Pair<JoinTreeNode, JoinTreeNode>>>[1]
 {
    let rootJtn = $j;
    let rootJtnAlias = $rootJtn.alias;
 
-   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
-                                                                   u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
-                                                                               pair($mt.schema.database->at(0), ^List<Column>(values=$u.queries.columns->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);)));,
-                                                                   select:SelectSQLQuery[1]| assert($select.data.alias.relationalElement->toOne()->instanceOf(Table), 'Add self Join is supported with SelectSQLQuery only when main relationalElement is Table');
-                                                                                             let mt = $select.data.alias.relationalElement->cast(@Table);
-                                                                                             pair($mt.schema.database->at(0), ^List<Column>(values=$select.columns->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);)));
-                                                               ]);
+   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([ v:ViewSelectSQLQuery[1]| let mt = $v->cast(@ViewSelectSQLQuery).selectSQLQuery->cast(@SelectSQLQuery).data.alias.relationalElement->cast(@Table);
+                                                                                             let pks = getPksFromAlias($v.columns, $mt);
+                                                                                             if($pks->isEmpty(), | fail('There is no primary key defined on the table ' + $mt->toOne().name); false;, | true);
+                                                                                             pair($v.schema.database, $pks);,
+                                                                    t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
+                                                                    u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
+                                                                                pair($mt.schema.database->at(0), getPksFromAlias($u.queries.columns, $mt));,
+                                                                    select:SelectSQLQuery[1]| assert($select.data.alias.relationalElement->toOne()->instanceOf(Table), 'Add self Join is supported with SelectSQLQuery only when main relationalElement is Table');
+                                                                                              let mt = $select.data.alias.relationalElement->cast(@Table);
+                                                                                              pair($mt.schema.database->at(0), getPksFromAlias($select.columns, $mt));
+                                                                  ]);
 
    let rootJtnAliasTablePks = $rootJtnAliasTable.second.values;
    let database = $rootJtnAliasTable.first;
