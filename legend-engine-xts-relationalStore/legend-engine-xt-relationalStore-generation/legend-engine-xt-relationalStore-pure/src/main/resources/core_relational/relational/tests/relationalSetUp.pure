@@ -122,6 +122,10 @@ Database meta::relational::tests::db
 
     Table testClassTable(desks INT PRIMARY KEY, students INT)
 
+    Table Dept(id INT PRIMARY KEY, name VARCHAR(10))
+    Table Branch(branchId INT PRIMARY KEY, name VARCHAR(10))
+    Table Org(OrgId INT PRIMARY KEY, name VARCHAR(10))
+
     View interactionViewMaxTime
     (
        ~filter PositiveInteractionTimeFilter
@@ -179,6 +183,12 @@ Database meta::relational::tests::db
         orderPnl : sum(@OrderPnlTable_Order | orderPnlTable.pnl)
     )
 
+    View OrgView
+    (
+        OrgId: Org.OrgId,
+        name: Org.name
+    )
+
     Schema productSchema
     (
        Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
@@ -210,6 +220,9 @@ Database meta::relational::tests::db
     Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
     Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
     Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+    Join Org_DeptCat(OrgView.name = Dept.name)
+    Join Org_DeptDiv(OrgView.name = Dept.name)
+    Join Dept_Branch(Dept.id = Branch.branchId)
 )
 
 ###Relational
