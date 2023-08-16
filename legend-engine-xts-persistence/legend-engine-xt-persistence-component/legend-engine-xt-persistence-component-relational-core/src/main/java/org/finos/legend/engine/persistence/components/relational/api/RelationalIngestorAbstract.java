@@ -308,7 +308,9 @@ public abstract class RelationalIngestorAbstract
     {
         if (enableConcurrentSafety())
         {
-            executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new));
+            Map<String, String> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
         }
     }
 
@@ -316,7 +318,9 @@ public abstract class RelationalIngestorAbstract
     {
         if (enableConcurrentSafety())
         {
-            executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new));
+            Map<String, String> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
         }
     }
 
