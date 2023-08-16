@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-pure-runtime-compiler</module>
+        <module>legend-engine-pure-runtime-extensions</module>
         <module>legend-engine-pure-runtime-execution</module>
         <module>legend-engine-xt-java-runtime-compiler</module>
     </modules>
