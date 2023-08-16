@@ -2566,41 +2566,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
   assertEquals(['a','b'], $transformedPlan.rootExecutionNode.executionNodes->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode).connection->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testLegacyPublicSnowflakeConnWithQueryTag():Boolean[1]
-{
-  let conn = ^PublicSnowflakeConnection(
-                  accountName              = 'goldmansachs_secdiv',
-                  snowflakeRegion          = 'us-east-1',
-                  warehouseName            = 'SecDivLakeQA_WH_RO_GP_SM' ,
-                  snowFlakeDatabaseName    = 'SecDivLakeQA',
-                  element                  = 'database',
-                  passPhraseVaultReference = '2f24655b16174ebcabe3af7a2a1dc0a7',
-                  privateKeyVaultReference = '68b133c18b434691aa16054cee21603f',   
-                  publicUserName           = 'p2sdvlfqro',
-                  type                     = DatabaseType.Snowflake
-              );
-  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
-  let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=PublicSnowflakeConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=PublicSnowflakeConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=PublicSnowflakeConnection(type="Snowflake"))))';
-  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testLegacyOAuthSnowflakeConnWithQueryTag():Boolean[1]
-{
-  let conn = ^OAuthSnowflakeConnection(
-                  accountName           = 'goldmansachs_secdiv',
-                  snowflakeRegion       = 'us-east-1',
-                  warehouseName         = 'SecDivLakeQA_WH_RO_GP_SM' ,
-                  snowFlakeDatabaseName = 'SecDivLakeQA',
-                  element               = 'database',
-                  oauthKey              = 'idfs',
-                  scopeName             = 'SESSION:ROLE-ANY',
-                  type                  = DatabaseType.Snowflake
-              );
-  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
-  let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=OAuthSnowflakeConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=OAuthSnowflakeConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=OAuthSnowflakeConnection(type="Snowflake"))))';
-  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnWithQueryTag():Boolean[1]
 {
   let conn = ^RelationalDatabaseConnection(
