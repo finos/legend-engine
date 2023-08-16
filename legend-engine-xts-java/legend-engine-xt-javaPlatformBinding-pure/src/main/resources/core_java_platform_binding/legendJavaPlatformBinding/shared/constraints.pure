@@ -264,69 +264,89 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
       ->groupBy(st| $st.property);
 
    let complexSubTreesKeyValues = $complexSubTrees->keyValues()->sortBy(p | $p.first);
-   let subTreeClauses = $complexSubTreesKeyValues->map(
+   let subTreeClauses = $complexSubTreesKeyValues->map( 
       {kv|
-         let childIndex  = $complexSubTreesKeyValues->indexOf($kv);
-         let childPath   = $state.treePath + '_' + $childIndex->toString();
-         let prop        = $kv.first;
-         let subTrees    = $kv.second.values;
-
-         assert($subTrees->size() <= 1, | 'Multiple subTrees for same property not yet supported');
-
-         let propType    = if($subTrees.subType->isEmpty(),
-                              | $prop->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne(),
-                              | $subTrees.subType->toOne());  
-         let propJType   = $state.conventions->pureTypeToJavaType($prop);
-         let getterName  = $state.conventions->getterName($prop);
-         let subDataType = $state.conventions->dataClass($propType, $state.path);
-         let subVar      = j_variable($subDataType, 'child'+$childPath); 
-
-         let subState    = ^$state(
-            gfTree   = $subTrees->toOne(),  
-            class    = $propType,
-            toCheck  = $subVar,
-            treePath = $childPath
-         );
-
-
-         if($propJType->isJavaList(),
+          let childIndex  = $complexSubTreesKeyValues->indexOf($kv);
+          let childPath   = $state.treePath + '_' + $childIndex->toString();
+          let prop        = $kv.first;
+          let subTrees    = $kv.second.values;
+        
+          let propJType   = $state.conventions->pureTypeToJavaType($prop);
+          let getterName  = $state.conventions->getterName($prop);
+          
+          if($propJType->isJavaList(),
             {|
-               let i      = j_variable(javaInt(), 'i'+$childPath);
-               let j      = j_variable(javaInt(), 'j'+$childPath);
-               let childCode = ^$subState(pathNodes=$state.conventions->newRelativePathNode(j_string($prop.name->toOne()), $j)->concatenate($subState.pathNodes))->createConstraintCheckingForTree_recurse($debug);
-               if($childCode->isEmpty(),
-                  | [],
-                  | let getter = $state.toCheck->j_invoke($getterName, [], $propJType);
-                    pair(
-                      j_for($i->j_declare(j_int(0)), $i->j_lt($getter->j_invoke('size', [])), $i->j_inc(),
-                        $j->j_declare($i)
-                        ->concatenate($subVar->j_declare($getter->j_invoke('get', $i)->j_cast($subDataType)))
-                        ->concatenate($childCode.first)
-                        ->toOneMany()
-                      ),
-                      $childCode.second->toOneMany()->mergeProjects());
-               );
+              let i      = j_variable(javaInt(), 'i'+$childPath);
+              let j      = j_variable(javaInt(), 'j'+$childPath);
+
+              let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType)->j_invoke('get', $i);
+              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()), $j);
+              let childConstraintCodes = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);                                                            
+              if($childConstraintCodes->isEmpty(),
+                | [],
+                | let getter = $state.toCheck->j_invoke($getterName, [], $propJType);
+                  pair(
+                    j_for($i->j_declare(j_int(0)), $i->j_lt($getter->j_invoke('size', [])), $i->j_inc(),
+                      $j->j_declare($i)
+                      ->concatenate($childConstraintCodes.first.values)
+                      ->toOneMany()
+                    ),
+                    $childConstraintCodes.second->toOneMany()->mergeProjects());
+                );
             },
             {|
-               let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType);
-               let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()));
-               let childCode  = ^$subState(pathNodes=$pathNode->concatenate($subState.pathNodes))->createConstraintCheckingForTree_recurse($debug);
-               if($childCode->isEmpty(),
+              let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType);
+              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()));    
+              let  childConstraintCodes  = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);                        
+              if($childConstraintCodes->isEmpty(),
                   | [],
                   | pair(
                       j_if($subToCheck->j_ne(j_null()),
-                      $subVar->j_declare($subToCheck->j_cast($subDataType))
-                        ->concatenate($childCode.first)
+                        $childConstraintCodes.first.values
                         ->toOneMany()
                       ),
-                      $childCode.second->toOneMany()->mergeProjects());
-               );
+                      $childConstraintCodes.second->toOneMany()->mergeProjects());
+              );
             }
-         );
-      }
-   );
+          );
+      });
 
-   $checkThisClassConstraints->map(c | pair($c, $project))->concatenate($subTreeClauses);
+  $checkThisClassConstraints->map(c | pair($c, $project))->concatenate($subTreeClauses);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::getChildContraintCodes(propTrees : PropertyGraphFetchTree[*], state : ConstraintCheckingState[1], childPath : String[1], relativePathNode : Code[*], subToCheck : Code[1], debug : DebugContext[1]):Pair<List<Code>,Project>[*]
+{
+  let prop = $propTrees->at(0).property;
+  let childConstraintCodes = $propTrees->map(propTree | let propType  = if($propTree.subType->isEmpty(),
+                                                                          | $prop->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne(),
+                                                                          | $propTree.subType->toOne()
+                                                                        );
+                                                        let subDataType = $state.conventions->dataClass($propType, $state.path);
+                                                        let subVar      = j_variable($subDataType, 'child'+$childPath); 
+                                                        let subState    = ^$state(
+                                                                                  gfTree   = $propTree,  
+                                                                                  class    = $propType,
+                                                                                  toCheck  = $subVar,
+                                                                                  treePath = $childPath,
+                                                                                  pathNodes = $relativePathNode->concatenate($state.pathNodes)
+                                                                                  );
+                                                        let childCode = $subState->createConstraintCheckingForTree_recurse($debug);
+                                                        let subVarDeclarationCode = $subVar->j_declare($subToCheck->j_cast($subDataType));
+                      
+                                                        let subTypeCheck = $subToCheck->j_instanceof($subDataType);
+                                                        if($childCode->isEmpty(),
+                                                          | [],
+                                                          | pair($subTypeCheck, pair(list($subVar->j_declare($subToCheck->j_cast($subDataType))->concatenate($childCode.first)),$childCode.second->toOneMany()->mergeProjects()))
+                                                        );
+                                            );
+  if($childConstraintCodes->isEmpty(),
+  | [],
+  | if($propTrees->size() > 1,
+      |pair(list(j_if(list($childConstraintCodes->map(code | pair($code.first, j_block($code.second.first.values))))))
+                                            ,$childConstraintCodes->map(code | $code.second.second)->toOneMany()->mergeProjects()),
+      | pair($childConstraintCodes->toOne().second.first, $childConstraintCodes->toOne().second.second)
+    );
+  );
 }
 
 // Legacy
