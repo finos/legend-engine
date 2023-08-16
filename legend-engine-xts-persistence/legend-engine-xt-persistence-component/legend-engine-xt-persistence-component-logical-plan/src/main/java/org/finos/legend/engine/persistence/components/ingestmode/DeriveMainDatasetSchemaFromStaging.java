@@ -146,6 +146,15 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
             addDigestField(mainSchemaFields, bulkLoad.digestField().get());
         }
         bulkLoad.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
+        if (bulkLoad.lineageField().isPresent())
+        {
+            Field lineageField = Field.builder()
+                    .name(bulkLoad.lineageField().get())
+                    .type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty()))
+                    .primaryKey(false)
+                    .build();
+            mainSchemaFields.add(lineageField);
+        }
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 

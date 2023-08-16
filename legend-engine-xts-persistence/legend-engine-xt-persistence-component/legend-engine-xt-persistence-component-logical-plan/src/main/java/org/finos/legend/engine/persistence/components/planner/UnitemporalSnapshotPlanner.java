@@ -98,6 +98,10 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             operations.add(Create.of(true, stagingDataset()));
         }
         operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
         return LogicalPlan.of(operations);
     }
 

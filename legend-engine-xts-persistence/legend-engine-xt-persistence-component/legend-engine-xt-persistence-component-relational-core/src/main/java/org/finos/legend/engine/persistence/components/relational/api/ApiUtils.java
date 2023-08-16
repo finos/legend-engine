@@ -19,7 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatas
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsEnricher;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 
@@ -38,16 +38,16 @@ public class ApiUtils
         return mainDataset;
     }
 
-    public static Datasets applyCase(Datasets datasets, CaseConversion caseConversion)
+    public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)
     {
-        DatasetsCaseConverter converter = new DatasetsCaseConverter();
+        DatasetsEnricher converter = new DatasetsEnricher();
         if (caseConversion == CaseConversion.TO_UPPER)
         {
-            return converter.applyCaseOnDatasets(datasets, String::toUpperCase);
+            return converter.enrichAndApplyCase(datasets, String::toUpperCase);
         }
         if (caseConversion == CaseConversion.TO_LOWER)
         {
-            return converter.applyCaseOnDatasets(datasets, String::toLowerCase);
+            return converter.enrichAndApplyCase(datasets, String::toLowerCase);
         }
         return datasets;
     }

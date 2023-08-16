@@ -94,6 +94,12 @@ public abstract class RelationalGeneratorAbstract
         return false;
     }
 
+    @Default
+    public boolean enableConcurrentSafety()
+    {
+        return false;
+    }
+
     public abstract Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet();
 
     public abstract Optional<String> batchStartTimestampPattern();
@@ -118,6 +124,7 @@ public abstract class RelationalGeneratorAbstract
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
+            .enableConcurrentSafety(enableConcurrentSafety())
             .build();
     }
 
@@ -164,7 +171,7 @@ public abstract class RelationalGeneratorAbstract
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
         IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
-        Datasets datasetsWithCaseConversion = ApiUtils.applyCase(datasets, caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
         Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());
@@ -186,6 +193,23 @@ public abstract class RelationalGeneratorAbstract
         // pre-actions
         LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
+
+        // initialize-lock
+        LogicalPlan initializeLockLogicalPlan = planner.buildLogicalPlanForInitializeLock(resources);
+        Optional<SqlPlan> initializeLockSqlPlan = Optional.empty();
+        if (initializeLockLogicalPlan != null)
+        {
+            initializeLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(initializeLockLogicalPlan));
+        }
+
+        // acquire-lock
+        LogicalPlan acquireLockLogicalPlan = planner.buildLogicalPlanForAcquireLock(resources);
+        Optional<SqlPlan> acquireLockSqlPlan = Optional.empty();
+        if (acquireLockLogicalPlan != null)
+        {
+            acquireLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(acquireLockLogicalPlan));
+        }
+
 
         // schema evolution
         Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.empty();
@@ -229,6 +253,8 @@ public abstract class RelationalGeneratorAbstract
 
         return GeneratorResult.builder()
             .preActionsSqlPlan(preActionsSqlPlan)
+            .initializeLockSqlPlan(initializeLockSqlPlan)
+            .acquireLockSqlPlan(acquireLockSqlPlan)
             .schemaEvolutionSqlPlan(schemaEvolutionSqlPlan)
             .schemaEvolutionDataset(schemaEvolutionDataset)
             .ingestSqlPlan(ingestSqlPlan)

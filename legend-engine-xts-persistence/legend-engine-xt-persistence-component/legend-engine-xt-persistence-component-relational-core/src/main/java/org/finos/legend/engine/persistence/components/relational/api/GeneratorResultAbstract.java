@@ -42,6 +42,10 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan preActionsSqlPlan();
 
+    public abstract Optional<SqlPlan> initializeLockSqlPlan();
+
+    public abstract Optional<SqlPlan> acquireLockSqlPlan();
+
     public abstract Optional<SqlPlan> schemaEvolutionSqlPlan();
 
     public abstract Optional<Dataset> schemaEvolutionDataset();
@@ -61,6 +65,16 @@ public abstract class GeneratorResultAbstract
     public List<String> preActionsSql()
     {
         return preActionsSqlPlan().getSqlList();
+    }
+
+    public List<String> initializeLockSql()
+    {
+        return initializeLockSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+    }
+
+    public List<String> acquireLockSql()
+    {
+        return acquireLockSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public List<String> schemaEvolutionSql()

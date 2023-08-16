@@ -30,7 +30,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -87,6 +90,12 @@ public abstract class Planner
         {
             return false;
         }
+
+        @Default
+        default boolean enableConcurrentSafety()
+        {
+            return false;
+        }
     }
 
     private final Datasets datasets;
@@ -123,6 +132,11 @@ public abstract class Planner
         return datasets.metadataDataset();
     }
 
+    protected Optional<LockInfoDataset> lockInfoDataset()
+    {
+        return datasets.lockInfoDataset();
+    }
+
     protected IngestMode ingestMode()
     {
         return ingestMode;
@@ -137,6 +151,26 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
+        return null;
+    }
+
+    public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)
+    {
+        if (options().enableConcurrentSafety())
+        {
+            LockInfoUtils lockInfoUtils = new LockInfoUtils(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new));
+            return LogicalPlan.of(Collections.singleton(lockInfoUtils.initializeLockInfo(BatchStartTimestampAbstract.INSTANCE)));
+        }
+        return null;
+    }
+
+    public LogicalPlan buildLogicalPlanForAcquireLock(Resources resources)
+    {
+        if (options().enableConcurrentSafety())
+        {
+            LockInfoUtils lockInfoUtils = new LockInfoUtils(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new));
+            return LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfo(BatchStartTimestampAbstract.INSTANCE)));
+        }
         return null;
     }
 

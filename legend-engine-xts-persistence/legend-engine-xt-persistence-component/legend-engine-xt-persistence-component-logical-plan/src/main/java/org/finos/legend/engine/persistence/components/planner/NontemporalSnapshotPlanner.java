@@ -132,6 +132,10 @@ class NontemporalSnapshotPlanner extends Planner
         {
             operations.add(Create.of(true, stagingDataset()));
         }
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
         return LogicalPlan.of(operations);
     }
 

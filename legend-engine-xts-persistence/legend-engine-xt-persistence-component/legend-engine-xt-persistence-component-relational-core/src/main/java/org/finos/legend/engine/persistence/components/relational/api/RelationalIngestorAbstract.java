@@ -144,6 +144,12 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
+    public boolean enableConcurrentSafety()
+    {
+        return false;
+    }
+
+    @Default
     public Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet()
     {
         return Collections.emptySet();
@@ -163,6 +169,7 @@ public abstract class RelationalIngestorAbstract
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
+            .enableConcurrentSafety(enableConcurrentSafety())
             .build();
     }
 
@@ -208,6 +215,7 @@ public abstract class RelationalIngestorAbstract
     {
         init(datasets);
         createAllDatasets();
+        initializeLock();
         return this.enrichedDatasets;
     }
 
@@ -296,6 +304,22 @@ public abstract class RelationalIngestorAbstract
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
     }
 
+    private void initializeLock()
+    {
+        if (enableConcurrentSafety())
+        {
+            executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new));
+        }
+    }
+
+    private void acquireLock()
+    {
+        if (enableConcurrentSafety())
+        {
+            executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new));
+        }
+    }
+
     private List<IngestorResult> ingest(List<DataSplitRange> dataSplitRanges)
     {
         if (enrichedIngestMode instanceof BulkLoad)
@@ -318,6 +342,7 @@ public abstract class RelationalIngestorAbstract
         if (createDatasets())
         {
             createAllDatasets();
+            initializeLock();
         }
 
         // Evolve Schema
@@ -353,7 +378,7 @@ public abstract class RelationalIngestorAbstract
         }
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
-        enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
+        enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
 
         // 2. Initialize transformer
         transformer = new RelationalTransformer(relationalSink(), transformOptions());
@@ -414,6 +439,7 @@ public abstract class RelationalIngestorAbstract
          List<IngestorResult> results = new ArrayList<>();
          int dataSplitIndex = 0;
          int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
+         acquireLock();
          do
          {
              Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));

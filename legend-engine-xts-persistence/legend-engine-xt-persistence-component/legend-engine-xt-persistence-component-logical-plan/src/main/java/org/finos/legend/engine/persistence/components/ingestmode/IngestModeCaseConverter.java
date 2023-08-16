@@ -162,6 +162,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .digestField(applyCase(bulkLoad.digestField()))
                 .digestUdfName(bulkLoad.digestUdfName())
                 .generateDigest(bulkLoad.generateDigest())
+                .lineageField(applyCase(bulkLoad.lineageField()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
                 .build();
     }
