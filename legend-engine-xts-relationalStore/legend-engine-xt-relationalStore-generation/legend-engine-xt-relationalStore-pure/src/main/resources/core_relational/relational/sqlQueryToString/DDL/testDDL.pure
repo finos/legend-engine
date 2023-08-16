@@ -119,7 +119,8 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
   let records ='default\n'+
                 'personTable\n'+
                 'id, firstName, lastName, age, addressId, firmId, managerId\n'+
-                '1, Peter,  "I\'m Smith, Jr",23,1,1,2';
+                '1, Peter,  "I\'m Smith, Jr",23,1,1,2\n' + 
+                '1, James,"I\'m Johnson, Jr",23,1,1,2';
 
   let sqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbInc, meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.H2));
   
@@ -150,6 +151,7 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
    'Drop table if exists validPersonTable;',
    'Create Table validPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
+   'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\' James\',\'I\'\'m Johnson, Jr\',23,1,1,2);', 
    'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\' Peter\',\'  "I\'\'m Smith, Jr"\',23,1,1,2);'
    ];
   assertSameElements($sqls,$expectedSqls);
