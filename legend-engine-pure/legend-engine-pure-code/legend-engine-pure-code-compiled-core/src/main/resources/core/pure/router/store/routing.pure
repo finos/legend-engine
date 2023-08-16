@@ -99,7 +99,9 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                   let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
                   let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
                   ^$last(value = $iv);,
-                | if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)])->isPropertyAutoMapped($p, $extensions),
+                | let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
+                  let isPropertyAutoMapped = $srcSets->isPropertyAutoMapped($p, $extensions);
+                  if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $isPropertyAutoMapped,
                       | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
                       | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
 
@@ -145,7 +147,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                   ^$last(
                                     value= $routed
                                   );,
-                                | let srcSets   = $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]);
+                                | 
                                   let foundSets = $p->findMappingsFromProperty($mapping, $srcSets, $v, $extensions);//is this for embedded?
                                   if ($foundSets->isEmpty(),
                                     |^$last(value=^$fe(parametersValues = $newPV)),
@@ -177,18 +179,16 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                                         value = ^$fe(parametersValues = $newPV),
                                                         routingStrategy = $updatedRoutingStrategy
                                                     );
-                                      let shouldStopPropertyRouting       = $srcSets->isPropertyAutoMapped($p, $extensions);
                                       ^$last(
                                           counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
                                           routingStrategy = $updatedRoutingStrategy, 
                                           propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),  
-                                          value= $added,
-                                          shouldBeRouted = $last.shouldBeRouted && !$shouldStopPropertyRouting
+                                          value= $added
                                       );
                                   );
                             );
                         );
-                   ));
+                   ););
    print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
    $res;
 }
