@@ -2571,7 +2571,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelation
   let conn = ^RelationalDatabaseConnection(
                   element = 'database',
                   datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='ALLOY_DEV_WH',databaseName='ALLOY_INTEGRATION_TEST_DB1',accountName = 'sfceawseast1d01'),
-                  authenticationStrategy = ^OAuthAuthenticationStrategy(oauthKey = 'idfs', scopeName = 'SESSION:ROLE:PUBLIC'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
                   type=DatabaseType.Snowflake
               );
   let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
