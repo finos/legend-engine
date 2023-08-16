@@ -30,7 +30,7 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure-ide/legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
+        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
     }
 
     @Override

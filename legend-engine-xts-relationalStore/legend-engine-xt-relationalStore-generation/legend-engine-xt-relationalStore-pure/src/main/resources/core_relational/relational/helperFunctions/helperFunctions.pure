@@ -116,6 +116,7 @@ function <<access.private>> meta::alloy::service::execution::splitWithEmptyValue
 
    $s->meta::alloy::service::execution::replaceWithEmptyValue($delimForEmptyCsvField)
         ->meta::alloy::service::execution::splitCsvRow(',')
+        ->map(csv_val| if($csv_val->contains(',') && $csv_val->startsWith('"') && $csv_val->endsWith('"'), | $csv_val->substring(1, $csv_val->length()-1) ,| $csv_val))
         ->map(csv_val| if($csv_val == $delimForEmptyCsvField, | '' ,| $csv_val));
 }
 

@@ -14,16 +14,17 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-import org.eclipse.collections.api.RichIterable;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_coreExtensions;
-import org.finos.legend.pure.m3.execution.ExecutionSupport;
-
 public class CorePureCoreExtension implements PureCoreExtension
 {
     @Override
-    public RichIterable<? extends Root_meta_pure_extension_Extension> extraPureCoreExtensions(ExecutionSupport es)
+    public String functionFile()
     {
-        return core_coreExtensions.Root_meta_pure_extension_configuration_coreExtensions__Extension_MANY_(es);
+        return "core/coreExtensions.pure";
+    }
+
+    @Override
+    public String functionSignature()
+    {
+        return "meta::pure::extension::configuration::coreExtensions__Extension_MANY_";
     }
 }
