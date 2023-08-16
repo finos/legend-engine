@@ -36,7 +36,8 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
      meta::pure::executionPlan::platformBinding::platformBindingExtension([
             meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
                // Bindings
-               meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+               meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+               meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
                   meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
                ])
             ])
