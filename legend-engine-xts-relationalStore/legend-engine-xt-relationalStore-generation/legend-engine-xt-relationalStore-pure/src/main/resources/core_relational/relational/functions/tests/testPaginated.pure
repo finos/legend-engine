@@ -111,29 +111,5 @@ function <<test.Test>> meta::relational::tests::query::paginate::testPaginatedBy
 
    let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} rows fetch next ${4?number} rows only', $s);
-   
-   let s3 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} limit ${4?number}', $s3);   
-   
-   let s7 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset ${((1?number - 1?number)?number * 4?number)} rows fetch next ${4?number} rows only', $s7);   
-
-   // Second type of function - tds sort
-   
-   let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->paginated(3, 5);};
-   
-   let s4 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit ${((3?number - 1?number)?number * 5?number)},${5?number}', $s4);
-
-   // Third type of function - subQuery
-   
-   let f3 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->paginated(2, 3);};
-   
-   let s5 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "firstName" as "firstName" from (select "limitoffset_via_window_subquery"."firstName" as "firstName", "limitoffset_via_window_subquery"."lastName" as "lastName" from '
-                + '(select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", row_number() OVER (Order By "root".FIRSTNAME) as "row_number" from personTable as "root") '
-                + 'as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number <= 50) as "subselect" order by "firstName" limit ${((2?number - 1?number)?number * 3?number)},${3?number}', $s5);   
-
-  // Fourth type of function - with restrict function is not allowed right now, as isolating subselect is written keepping slice in mind, needs a change in logic
 }
 

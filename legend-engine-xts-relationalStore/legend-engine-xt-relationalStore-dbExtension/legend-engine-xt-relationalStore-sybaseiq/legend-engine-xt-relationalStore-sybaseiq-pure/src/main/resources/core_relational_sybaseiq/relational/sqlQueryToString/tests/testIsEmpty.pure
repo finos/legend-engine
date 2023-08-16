@@ -17,6 +17,16 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 
+function <<test.BeforePackage>> meta::relational::tests::query::function::sybaseIQ::setUp():Boolean[1]
+{
+   let rt = meta::relational::tests::testRuntime();
+   let connection = $rt.connections->at(0)->cast(@meta::relational::runtime::DatabaseConnection);
+   dropAndCreateTableInDb(TestDB, 'testTable', $connection);
+   executeInDb('insert into testTable (id, value) values (1, \'Bla\');', $connection);
+   executeInDb('insert into testTable (id, value) values (2, null);', $connection);
+   true;
+}
+
 function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testDerivedWithIsEmpty2():Boolean[1]
 {
    let result = execute(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

@@ -39,7 +39,7 @@ public class DatabricksGrammarParserExtension implements IRelationalGrammarParse
     {
         return Collections.singletonList(code ->
         {
-            if ("Redshift".equals(code.getType()))
+            if ("Databricks".equals(code.getType()))
             {
                 return IRelationalGrammarParserExtension.parse(code, DatabricksLexerGrammar::new, DatabricksParserGrammar::new,
                         p -> visitDatabricksDatasourceSpecification(code, p.databricksDatasourceSpecification()));
