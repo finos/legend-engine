@@ -27,6 +27,24 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Postgres - Execution - Tests</name>
 
+    <build>
+        <plugins>
+            <!-- Block running the integration tests by default (They should be setup to run as Integration Tests).
+            However, if you think they are light enough to run as part of regular builds, pls comment out this section -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <excludes>
+                        <exclude>**/ExternalIntegration*.java</exclude>
+                        <exclude>**/Test_Relational_DbSpecific_Postgres_UsingPureClientTestSuite.java</exclude>
+                    </excludes>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <!-- LEGEND ENGINE -->
         <dependency>
