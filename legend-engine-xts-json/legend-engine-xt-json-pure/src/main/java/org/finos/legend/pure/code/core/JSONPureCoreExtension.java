@@ -25,20 +25,15 @@ import java.lang.reflect.Method;
 public class JSONPureCoreExtension implements PureCoreExtension
 {
     @Override
-    public RichIterable<? extends Root_meta_pure_extension_Extension> extraPureCoreExtensions(ExecutionSupport es)
+    public String functionFile()
     {
-        try
-        {
-            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_external_format_json_externalFormatContract");
-            Method m = cl.getMethod("Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_", ExecutionSupport.class);
-            Root_meta_pure_extension_Extension ext = (Root_meta_pure_extension_Extension) m.invoke(null, es);
-            return Lists.mutable.with(ext);
-        }
-        catch (Exception e)
-        {
-            // Silent at build time
-            return Lists.mutable.empty();
-        }
+        return "core_external_format_json/externalFormatContract.pure";
+    }
+
+    @Override
+    public String functionSignature()
+    {
+        return "meta::external::format::json::extension::jsonSchemaFormatExtension__Extension_1_";
     }
 }
 
