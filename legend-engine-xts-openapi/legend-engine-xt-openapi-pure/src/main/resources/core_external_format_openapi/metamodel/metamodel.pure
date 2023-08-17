@@ -15,9 +15,9 @@
 // Reference document : https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md
 // Below metamodel is based on OpenApi Spec 3.0.3
 
-import meta::external::format::openapi::metamodel::*;
+import meta::external::function::description::openapi::metamodel::*;
 
-Class meta::external::format::openapi::metamodel::OpenApi
+Class meta::external::function::description::openapi::metamodel::OpenApi
 {
   openapi       : String[1];
   info          : Info[1];
@@ -25,11 +25,11 @@ Class meta::external::format::openapi::metamodel::OpenApi
   paths         : Map<String, PathItem>[1];
   components    : Components[0..1];
   security      : SecurityRequirement[*];
-  tags          : meta::external::format::openapi::metamodel::Tag[*];
+  tags          : meta::external::function::description::openapi::metamodel::Tag[*];
   externalDocs  : ExternalDocumentation[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Info
+Class meta::external::function::description::openapi::metamodel::Info
 {
   title         : String[1];
   description   : String[0..1];
@@ -39,27 +39,27 @@ Class meta::external::format::openapi::metamodel::Info
   version       : String[1];
 }
 
-Class meta::external::format::openapi::metamodel::Contact
+Class meta::external::function::description::openapi::metamodel::Contact
 {
   name          : String[0..1];
   url           : String[0..1];
   email         : String[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::License
+Class meta::external::function::description::openapi::metamodel::License
 {
   name          : String[1];
   url           : String[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Server
+Class meta::external::function::description::openapi::metamodel::Server
 {
   url           : String[1];
   description   : String[0..1];
   variables     : Map<String, ServerVariable>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::ServerVariable
+Class meta::external::function::description::openapi::metamodel::ServerVariable
 [
   defaultValueIsValid : $this.enum->isEmpty() || $this.default->in($this.enum)
 ]
@@ -69,7 +69,7 @@ Class meta::external::format::openapi::metamodel::ServerVariable
   description   : String[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Components
+Class meta::external::function::description::openapi::metamodel::Components
 {
   schemas       : Map<String, SchemaOrReference>[0..1];
   responses     : Map<String, ResponseOrReference>[0..1];
@@ -82,7 +82,7 @@ Class meta::external::format::openapi::metamodel::Components
   callbacks     : Map<String, CallbackOrReference>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::PathItem
+Class meta::external::function::description::openapi::metamodel::PathItem
 {
   ref           : String[0..1];
   summary       : String[0..1];
@@ -99,7 +99,7 @@ Class meta::external::format::openapi::metamodel::PathItem
   parameters    : ParameterOrReference[*];
 }
 
-Class meta::external::format::openapi::metamodel::Operation
+Class meta::external::function::description::openapi::metamodel::Operation
 {
   tags          : String[*];
   summary       : String[0..1];
@@ -115,13 +115,13 @@ Class meta::external::format::openapi::metamodel::Operation
   servers       : Server[*];
 }
 
-Class meta::external::format::openapi::metamodel::ExternalDocumentation
+Class meta::external::function::description::openapi::metamodel::ExternalDocumentation
 {
   description   : String[0..1];
   url           : String[1];
 }
 
-Class meta::external::format::openapi::metamodel::Parameter extends ParameterOrReference
+Class meta::external::function::description::openapi::metamodel::Parameter extends ParameterOrReference
 [
   if ($this.in == In.path, |assert(!$this.required->isEmpty() && $this.required->toOne(),'path is required'), |true),
   if ($this.in == In.body, |assert(!$this.schema->isEmpty(), 'schema should not be empty'),|true)
@@ -143,7 +143,7 @@ Class meta::external::format::openapi::metamodel::Parameter extends ParameterOrR
   content       : Map<String, MediaType>[0..1];
 }
 
-Enum meta::external::format::openapi::metamodel::In
+Enum meta::external::function::description::openapi::metamodel::In
 {
   query,
   header,
@@ -152,7 +152,7 @@ Enum meta::external::format::openapi::metamodel::In
   body      //TODO: check this
 }
 
-Enum meta::external::format::openapi::metamodel::Style
+Enum meta::external::function::description::openapi::metamodel::Style
 {
   matrix,
   label,
@@ -163,14 +163,14 @@ Enum meta::external::format::openapi::metamodel::Style
   deepObject
 }
 
-Class meta::external::format::openapi::metamodel::RequestBody extends RequestBodyOrReference
+Class meta::external::function::description::openapi::metamodel::RequestBody extends RequestBodyOrReference
 {
   description  : String[0..1];
   content      : Map<String, MediaType>[1];
   required     : Boolean[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::MediaType
+Class meta::external::function::description::openapi::metamodel::MediaType
 {
   schema       : SchemaOrReference[0..1];
   example      : Any[0..1];
@@ -178,7 +178,7 @@ Class meta::external::format::openapi::metamodel::MediaType
   encoding     : Map<String, Encoding>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Encoding
+Class meta::external::function::description::openapi::metamodel::Encoding
 {
   contentType  : String[0..1];
   headers      : Map<String, HeaderOrReference>[0..1];
@@ -187,7 +187,7 @@ Class meta::external::format::openapi::metamodel::Encoding
   allowReserved : Boolean[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Response extends ResponseOrReference
+Class meta::external::function::description::openapi::metamodel::Response extends ResponseOrReference
 {
   description  : String[1];
   headers      : Map<String, HeaderOrReference>[0..1];
@@ -195,11 +195,11 @@ Class meta::external::format::openapi::metamodel::Response extends ResponseOrRef
   links        : Map<String, LinkOrReference>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Callback extends Map<String, PathItem>, CallbackOrReference
+Class meta::external::function::description::openapi::metamodel::Callback extends Map<String, PathItem>, CallbackOrReference
 {
 }
 
-Class meta::external::format::openapi::metamodel::Example extends ExampleOrReference
+Class meta::external::function::description::openapi::metamodel::Example extends ExampleOrReference
 {
   summary      : String[0..1];
   description  : String[0..1];
@@ -207,7 +207,7 @@ Class meta::external::format::openapi::metamodel::Example extends ExampleOrRefer
   externalValue: String[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Link extends LinkOrReference
+Class meta::external::function::description::openapi::metamodel::Link extends LinkOrReference
 {
   operationRef : String[0..1];
   operationId  : String[0..1];
@@ -217,7 +217,7 @@ Class meta::external::format::openapi::metamodel::Link extends LinkOrReference
   server       : Server[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Header extends HeaderOrReference
+Class meta::external::function::description::openapi::metamodel::Header extends HeaderOrReference
 {
   description   : String[0..1];
   required      : Boolean[0..1];
@@ -231,14 +231,14 @@ Class meta::external::format::openapi::metamodel::Header extends HeaderOrReferen
   content       : Map<String, MediaType>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Tag
+Class meta::external::function::description::openapi::metamodel::Tag
 {
   name          : String[1];
   description   : String[0..1];
   externalDocs  : ExternalDocumentation[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Schema extends SchemaOrReference
+Class meta::external::function::description::openapi::metamodel::Schema extends SchemaOrReference
 {
   title         : String[0..1];
   name          : String[0..1];
@@ -290,13 +290,13 @@ Class meta::external::format::openapi::metamodel::Schema extends SchemaOrReferen
   example       : Any[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Discriminator
+Class meta::external::function::description::openapi::metamodel::Discriminator
 {
   propertyName  : String[1];
   mapping       : Map<String, String>[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::Xml
+Class meta::external::function::description::openapi::metamodel::Xml
 {
   name          : String[0..1];
   namespace     : String[0..1];
@@ -305,12 +305,12 @@ Class meta::external::format::openapi::metamodel::Xml
   wrapped       : Boolean[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::SecurityRequirement extends Map<String, List<String>>
+Class meta::external::function::description::openapi::metamodel::SecurityRequirement extends Map<String, List<String>>
 {
 
 }
 
-Class meta::external::format::openapi::metamodel::SecurityScheme extends SecuritySchemeOrReference
+Class meta::external::function::description::openapi::metamodel::SecurityScheme extends SecuritySchemeOrReference
 [
   apiKeyScheme : if($this.type == SecuritySchemeType.apiKey, | $this.name->isNotEmpty() && $this.in->isNotEmpty(), | true),
   httpScheme : if($this.type == SecuritySchemeType.http, | $this.scheme->isNotEmpty(), | true),
@@ -328,7 +328,7 @@ Class meta::external::format::openapi::metamodel::SecurityScheme extends Securit
   openIdConnectUrl : String[0..1];
 }
 
-Enum meta::external::format::openapi::metamodel::SecuritySchemeType
+Enum meta::external::function::description::openapi::metamodel::SecuritySchemeType
 {
   apiKey,
   http,
@@ -337,7 +337,7 @@ Enum meta::external::format::openapi::metamodel::SecuritySchemeType
   mutualTLS
 }
 
-Class meta::external::format::openapi::metamodel::OAuthFlows
+Class meta::external::function::description::openapi::metamodel::OAuthFlows
 [
   implicit : $this.implicit->isEmpty() || $this.implicit.authorizationUrl->isNotEmpty(),
   password : $this.password->isEmpty() || $this.password.tokenUrl->isNotEmpty(),
@@ -351,7 +351,7 @@ Class meta::external::format::openapi::metamodel::OAuthFlows
   authorizationCode: OAuthFlow[0..1];
 }
 
-Class meta::external::format::openapi::metamodel::OAuthFlow
+Class meta::external::function::description::openapi::metamodel::OAuthFlow
 {
   authorizationUrl: String[0..1];
   tokenUrl      : String[0..1];
@@ -359,43 +359,43 @@ Class meta::external::format::openapi::metamodel::OAuthFlow
   scopes        : Map<String, String>[1];
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::CallbackOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::CallbackOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::ExampleOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ExampleOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::HeaderOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::HeaderOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::LinkOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::LinkOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::ParameterOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ParameterOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::RequestBodyOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::RequestBodyOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::ResponseOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::ResponseOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::SecuritySchemeOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::SecuritySchemeOrReference
 {
 }
 
-Class <<typemodifiers.abstract>> meta::external::format::openapi::metamodel::SchemaOrReference
+Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::SchemaOrReference
 {
 }
 
-Class meta::external::format::openapi::metamodel::Reference extends CallbackOrReference,ExampleOrReference,HeaderOrReference,LinkOrReference,ParameterOrReference,RequestBodyOrReference,ResponseOrReference,SecuritySchemeOrReference,SchemaOrReference
+Class meta::external::function::description::openapi::metamodel::Reference extends CallbackOrReference,ExampleOrReference,HeaderOrReference,LinkOrReference,ParameterOrReference,RequestBodyOrReference,ResponseOrReference,SecuritySchemeOrReference,SchemaOrReference
 {
   ref: String[1];
 }
