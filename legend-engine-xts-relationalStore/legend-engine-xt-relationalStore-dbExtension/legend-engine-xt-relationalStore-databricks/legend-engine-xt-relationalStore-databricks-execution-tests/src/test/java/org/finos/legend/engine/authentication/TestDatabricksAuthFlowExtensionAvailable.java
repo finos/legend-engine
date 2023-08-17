@@ -12,25 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.authentication;
+
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.DatabricksProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestExtensionAvailable
+public class TestDatabricksAuthFlowExtensionAvailable
 {
     @Test
-    public void testProtocolExtensionAvailable()
+    public void testDatabaseAuthenticationFlowProviderExtensionsAvailable()
     {
-        MutableList<Class<?>> pureProtocolExtensions = Lists.mutable.empty();
-        ServiceLoader.load(PureProtocolExtension.class).forEach(e ->
-        {
-            pureProtocolExtensions.add(e.getClass());
-        });
-        Assert.assertTrue(pureProtocolExtensions.contains(DatabricksProtocolExtension.class));
+        MutableList<DatabaseAuthenticationFlowProvider> databaseAuthenticationFlowProviderExtensions = Lists.mutable.withAll(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class));
+        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(DatabricksTestDatabaseAuthenticationFlowProvider.class));
     }
 }

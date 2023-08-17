@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.plan.execution.stores.relational;
+
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.junit.Assert;
@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestConnectionExtensionsAvailable
+public class TestDatabricksConnectionExtensionsAvailable
 {
     @Test
     public void testConnectionExtensionsAvailable()

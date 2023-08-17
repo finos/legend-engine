@@ -35,6 +35,7 @@ function meta::relational::functions::sqlQueryToString::postgres::runTestCaseByI
 
 function meta::relational::functions::sqlQueryToString::postgres::testCasesForDocGeneration():TestCase[*]
 {
+   [
       ^TestCase(
          id ='testTakePostgres',
          query = |Person.all()->project([#/Person/firstName!name#])->take(0),

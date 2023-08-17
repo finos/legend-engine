@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.test;
+package org.finos.legend.engine.language.pure.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestGrammarExtensionsAvailable
+public class TestDatabricksGrammarExtensionsAvailable
 {
     @Test
     public void testCompilerExtensionAvailable()
