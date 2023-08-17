@@ -49,6 +49,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::serializati
           | $entity.info->toOne()->mappedEntityInfoToJSON()
     )),
     newJSONKeyValue('path', ^JSONString(value=$entity.path)),
+    newJSONKeyValue('classPath', ^JSONString(value=$entity.classPath)),
     newJSONKeyValue('properties', ^JSONArray(values=$entity.properties->map(v | $v->mappedPropertyToJSON())))
   ])
 }

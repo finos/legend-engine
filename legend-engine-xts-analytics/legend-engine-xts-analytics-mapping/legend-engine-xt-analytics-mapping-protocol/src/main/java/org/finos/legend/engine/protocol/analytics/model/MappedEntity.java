@@ -19,6 +19,7 @@ import java.util.List;
 public class MappedEntity
 {
     public String path;
+    public String classPath;
     public List<MappedProperty> properties;
     public MappedEntityInfo info;
 }
