@@ -39,8 +39,8 @@ function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runti
 
    let dbConfig = createDbConfig($conn.type->toOne());
    if($dbConfig.dbExtension.preAndFinallyExecutionSQLQuery->isNotEmpty(),
-                | let sqlPairs = if($conn->isNotEmpty() && $conn->toOne()->instanceOf(RelationalDatabaseConnection),
-                                      |$dbConfig.preAndFinallyExecutionSQLQuery($conn->toOne()->cast(@RelationalDatabaseConnection).datasourceSpecification),
+                | let sqlPairs = if($conn->isNotEmpty() && $conn->toOne()->instanceOf(DatabaseConnection),
+                                      |$dbConfig.preAndFinallyExecutionSQLQuery($conn->toOne()->cast(@DatabaseConnection)),
                                       |[]);
                   if($sqlPairs->isNotEmpty(),
                     | let executionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).preQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));

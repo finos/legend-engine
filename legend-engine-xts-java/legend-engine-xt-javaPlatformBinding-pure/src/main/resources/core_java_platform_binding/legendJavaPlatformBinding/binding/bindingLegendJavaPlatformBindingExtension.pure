@@ -22,7 +22,7 @@ import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::extension::*;
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(formatDescriptors: ExternalFormatLegendJavaPlatformBindingDescriptor[*]): LegendJavaPlatformBindingExtension[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
 {
    ^LegendJavaPlatformBindingExtension
    (
@@ -87,20 +87,47 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
             }
          )
 
-      ]->concatenate($formatDescriptors)
+      ]
 
       // ----------------------------------------------------------- Adhoc extensions
    )
 }
 
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension(formatDescriptors: ExternalFormatLegendJavaPlatformBindingDescriptor[*]): LegendJavaPlatformBindingExtension[1]
+{
+   ^LegendJavaPlatformBindingExtension
+   (
+      platformId = legendJavaPlatformBindingId(),
+
+      id = 'BindingLegendJavaPlatformBindingExtension_'  + $formatDescriptors->map(fd | $fd.externalFormatContract.id)->joinStrings('_'),
+
+      // Adhoc extensions -----------------------------------------------------------      
+
+      adhocExtensions = $formatDescriptors
+
+      // ----------------------------------------------------------- Adhoc extensions
+   )
+}
+
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsJavaPlatformBinding(): Extension[1]
+{
+  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension()
+    ])
+  ]) 
+}
+
+// Used for tests
 function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
-   meta::pure::extension::defaultExtensions()->concatenate(
-      meta::pure::executionPlan::platformBinding::platformBindingExtension([
-         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
-            meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
-            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension($externalFormatDescriptors)
-         ])
-      ]) 
-   )
+  meta::pure::extension::defaultExtensions()->concatenate(
+    meta::pure::executionPlan::platformBinding::platformBindingExtension([
+      meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+        meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+        meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+        meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($externalFormatDescriptors)
+      ])
+    ]) 
+   ) 
 }

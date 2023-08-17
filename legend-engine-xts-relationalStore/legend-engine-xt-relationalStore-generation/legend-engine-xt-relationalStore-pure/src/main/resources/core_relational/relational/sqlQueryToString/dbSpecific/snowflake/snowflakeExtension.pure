@@ -38,7 +38,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      preAndFinallyExecutionSQLQuery = preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__DatasourceSpecification_1__PreAndFinallyExecutionSQLQuery_MANY_,
+      preAndFinallyExecutionSQLQuery = preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__DatabaseConnection_1__PreAndFinallyExecutionSQLQuery_MANY_,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       processTempTableName = processTempTableNameSnowflake_String_1__String_1_
    );
@@ -325,9 +325,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
        | '%s limit %s'->format($size));
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1], ds: DatasourceSpecification[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
+function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1], dc: DatabaseConnection[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
 {
-  if($ds->instanceOf(SnowflakeDatasourceSpecification) && ($ds->cast(@SnowflakeDatasourceSpecification).enableQueryTags->isEmpty() || $ds->cast(@SnowflakeDatasourceSpecification).enableQueryTags == true),
+  if(!($dc->instanceOf(RelationalDatabaseConnection) && $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(SnowflakeDatasourceSpecification) && $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).enableQueryTags == false),
     | let set = ^AlterSQL(object = ^Session(), operation = [^SetOperation(propertyName = 'QUERY_TAG', propertyValue = ^Literal(value = '{"executionTraceID" : "${execID}", "engineUser" : "${userId}", "referer" : "${referer}"}'))]);
       let setSQL =  $set.object->match([
                           s:Session[1] | 'ALTER SESSION SET ' + $set.operation->map(o | $o->cast(@SetOperation).propertyName + ' = ' + $o->cast(@SetOperation).propertyValue.value->processLiteralValue($dbConfig))->makeString('',', ', ';')
