@@ -14,17 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.result.transformer;
 
-import org.junit.Test;
-
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TestSetImplTransformers
 {
     public SetImplTransformers testBooleanTransformerSetup()
     {
         List<TransformerInput<Integer>> testTransformerInput = new ArrayList<>();
-        testTransformerInput.add(new TransformerInput<Integer>(1, "Boolean", o -> false, null));
+        testTransformerInput.add(new TransformerInput<>(1, "Boolean", o -> false, null));
         return new SetImplTransformers(testTransformerInput);
     }
 
@@ -33,12 +34,12 @@ public class TestSetImplTransformers
     {
         SetImplTransformers s = testBooleanTransformerSetup();
         Object trueValue = s.transformers.get(0).valueOf(true);
-        assert (trueValue instanceof Boolean);
-        assert ((Boolean) trueValue);
+        Assert.assertTrue(trueValue instanceof Boolean);
+        Assert.assertTrue((Boolean) trueValue);
 
         Object falseValue = s.transformers.get(0).valueOf(false);
-        assert (falseValue instanceof Boolean);
-        assert (!(Boolean) falseValue);
+        Assert.assertTrue(falseValue instanceof Boolean);
+        Assert.assertFalse((Boolean) falseValue);
     }
 
     @Test
@@ -46,12 +47,12 @@ public class TestSetImplTransformers
     {
         SetImplTransformers s = testBooleanTransformerSetup();
         Object trueValue = s.transformers.get(0).valueOf("true");
-        assert (trueValue instanceof Boolean);
-        assert ((Boolean) trueValue);
+        Assert.assertTrue(trueValue instanceof Boolean);
+        Assert.assertTrue((Boolean) trueValue);
 
         Object falseValue = s.transformers.get(0).valueOf("false");
-        assert (falseValue instanceof Boolean);
-        assert (!(Boolean) falseValue);
+        Assert.assertTrue(falseValue instanceof Boolean);
+        Assert.assertFalse((Boolean) falseValue);
     }
 
     @Test
@@ -59,12 +60,12 @@ public class TestSetImplTransformers
     {
         SetImplTransformers s = testBooleanTransformerSetup();
         Object trueValue = s.transformers.get(0).valueOf(1L);
-        assert (trueValue instanceof Boolean);
-        assert ((Boolean) trueValue);
+        Assert.assertTrue(trueValue instanceof Boolean);
+        Assert.assertTrue((Boolean) trueValue);
 
         Object falseValue = s.transformers.get(0).valueOf(0L);
-        assert (falseValue instanceof Boolean);
-        assert (!(Boolean) falseValue);
+        Assert.assertTrue(falseValue instanceof Boolean);
+        Assert.assertFalse((Boolean) falseValue);
     }
 
     @Test
@@ -72,12 +73,12 @@ public class TestSetImplTransformers
     {
         SetImplTransformers s = testBooleanTransformerSetup();
         Object trueValue = s.transformers.get(0).valueOf(1);
-        assert (trueValue instanceof Boolean);
-        assert ((Boolean) trueValue);
+        Assert.assertTrue(trueValue instanceof Boolean);
+        Assert.assertTrue((Boolean) trueValue);
 
         Object falseValue = s.transformers.get(0).valueOf(0);
-        assert (falseValue instanceof Boolean);
-        assert (!(Boolean) falseValue);
+        Assert.assertTrue(falseValue instanceof Boolean);
+        Assert.assertFalse((Boolean) falseValue);
     }
 
     @Test
@@ -85,11 +86,80 @@ public class TestSetImplTransformers
     {
         SetImplTransformers s = testBooleanTransformerSetup();
         Object trueValue = s.transformers.get(0).valueOf(1.0);
-        assert (trueValue instanceof Boolean);
-        assert ((Boolean) trueValue);
+        Assert.assertTrue(trueValue instanceof Boolean);
+        Assert.assertTrue((Boolean) trueValue);
 
         Object falseValue = s.transformers.get(0).valueOf(0.0);
-        assert (falseValue instanceof Boolean);
-        assert (!(Boolean) falseValue);
+        Assert.assertTrue(falseValue instanceof Boolean);
+        Assert.assertFalse((Boolean) falseValue);
+    }
+
+    public SetImplTransformers testFloatTransformerSetup()
+    {
+        List<TransformerInput<Integer>> testTransformerInput = new ArrayList<>();
+        testTransformerInput.add(new TransformerInput<>(1, "Float", o -> false, null));
+        return new SetImplTransformers(testTransformerInput);
+    }
+
+    @Test
+    public void testFloatTransformerFromDouble()
+    {
+        SetImplTransformers s = testFloatTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(1.0d);
+        Assert.assertTrue(val instanceof Double);
+        Assert.assertEquals(1.0,  val);
+    }
+
+    @Test
+    public void testFloatTransformerFromInteger()
+    {
+        SetImplTransformers s = testFloatTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(1L);
+        Assert.assertTrue(val instanceof Double);
+        Assert.assertEquals(1.0,  val);
+    }
+
+    @Test
+    public void testFloatTransformerFromBigDecimal()
+    {
+        SetImplTransformers s = testFloatTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(new BigDecimal("0.000"));
+        Assert.assertTrue(val instanceof Double);
+        Assert.assertEquals(0.0,  val);
+    }
+
+
+    public SetImplTransformers testIntegerTransformerSetup()
+    {
+        List<TransformerInput<Integer>> testTransformerInput = new ArrayList<>();
+        testTransformerInput.add(new TransformerInput<>(1, "Integer", o -> false, null));
+        return new SetImplTransformers(testTransformerInput);
+    }
+
+    @Test
+    public void testIntegerTransformerFromInt()
+    {
+        SetImplTransformers s = testIntegerTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(1);
+        Assert.assertTrue(val instanceof Long);
+        Assert.assertEquals(1L,  val);
+    }
+
+    @Test
+    public void testIntegerTransformerFromLong()
+    {
+        SetImplTransformers s = testIntegerTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(1L);
+        Assert.assertTrue(val instanceof Long);
+        Assert.assertEquals(1L,  val);
+    }
+
+    @Test
+    public void testIntegerTransformerFromBigDecimal()
+    {
+        SetImplTransformers s = testIntegerTransformerSetup();
+        Object val = s.transformers.get(0).valueOf(new BigDecimal("123456"));
+        Assert.assertTrue(val instanceof Long);
+        Assert.assertEquals(123456L,  val);
     }
 }
