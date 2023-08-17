@@ -147,7 +147,7 @@ public class GraphQLGrammarComposer
             {
                 return (operationDefinition.type == null ? "" : operationDefinition.type.name()) + " " + operationDefinition.name
                         + (operationDefinition.variables.isEmpty() ? "" : "(" + ListIterate.collect(operationDefinition.variables, v -> render(v)).makeString(", ") + ")")
-                        + (operationDefinition.directives.isEmpty() ? "" : " " + ListIterate.collect(operationDefinition.directives, v -> render(v)).makeString(" "))
+                        + (operationDefinition.directives.isEmpty() ? "" : " " + ListIterate.collect(operationDefinition.directives, v -> renderDirective(v)).makeString(" "))
                         + " {\n" +
                                 renderSelectionSet(operationDefinition.selectionSet, "  ") +
                             "\n}";
@@ -182,9 +182,10 @@ public class GraphQLGrammarComposer
         return v.name + ": " + renderType(v.type) + (v.defaultValue == null ? "" : " = " + renderValue(v.defaultValue));
     }
 
-    private Object render(Directive v)
+    private Object renderDirective(Directive directive)
     {
-        return "@" + v.name;
+        return "@" + directive.name
+                + (directive.arguments.isEmpty() ? "" : "(" + ListIterate.collect(directive.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")");
     }
 
     public String renderSelectionSet(List<Selection> selectionSet, String space)
@@ -215,7 +216,7 @@ public class GraphQLGrammarComposer
     {
         return field.name
                 + (field.arguments.isEmpty() ? "" : "(" + ListIterate.collect(field.arguments, a -> a.name + ": " + renderValue(a.value)).makeString(", ") + ")")
-                + (field.directives.isEmpty() ? "" : " " + ListIterate.collect(field.directives, this::render).makeString(" "));
+                + (field.directives.isEmpty() ? "" : " " + ListIterate.collect(field.directives, this::renderDirective).makeString(" "));
     }
 
     public String renderField(FieldDefinition fieldDefinition)

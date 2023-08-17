@@ -151,7 +151,7 @@ public class TestGraphQLRoundtrip
     public void testQueryWithDirectiveRoundtrip()
     {
         check("query getUserWithProjects($a: INT = 1) @cool {\n" +
-                "  user(id: 2) @totalCount {\n" +
+                "  user(id: 2) @totalCount @directiveWithParams(param1: \"dummy\", param2: \"dummy value\") {\n" +
                 "    firstname(x: null, x: $ok)\n" +
                 "    lastname(test: true)\n" +
                 "    projects(other: \"oo\") {\n" +

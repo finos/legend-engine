@@ -282,8 +282,6 @@ public class GraphQLExecute extends GraphQL
         {
             return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-        Future<Map<String, ?>> extensionsObject = executor.submit(() -> computeExtensionsField(graphQLQuery));
         List<SerializedNamedPlans> finalPlanWithSerialized = planWithSerialized;
         return Response.ok(
                 (StreamingOutput) outputStream ->
@@ -322,27 +320,8 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        while (!extensionsObject.isDone())
-                        {
-                            try
-                            {
-                                Thread.sleep(10);
-                            }
-                            catch (Exception e)
-                            {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        Map<String, ?> extensions = null;
-                        try
-                        {
-                            extensions = extensionsObject.get();
-                        }
-                        catch (Exception e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                        if (extensions != null && !extensions.isEmpty())
+                        Map<String, ?> extensions = computeExtensionsField(graphQLQuery);
+                        if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
                             generator.writeObject(extensions);
