@@ -16,7 +16,6 @@ package org.finos.legend.engine.ide;
 
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.PlatformCodeRepository;
 
 import java.util.regex.Pattern;
 
@@ -32,6 +31,6 @@ public class LibCodeRepository extends CodeRepository
     @Override
     public boolean isVisible(CodeRepository other)
     {
-        return (this == other) || CodeRepositoryProviderHelper.isCoreRepository(other) || (other instanceof PlatformCodeRepository);
+        return this.equals(other) || CodeRepositoryProviderHelper.isCoreRepository(other);
     }
 }
