@@ -87,9 +87,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedResult.json')->toOne(), $result);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedWithSubType():Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedWithMultipleSubTypes():Boolean[1]
 {
-    let tree    = #{meta::external::format::json::executionPlan::test::constraints::Firm {
+  let tree    = #{meta::external::format::json::executionPlan::test::constraints::Firm {
                     name, 
                     ranking,
                     addresses{
@@ -118,22 +118,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                         road
                       }
                     }
-                  }}#;
-  let query1  = {data:Byte[*] | Firm->fromJson($data)->graphFetchChecked($tree)->toJson(checked($tree, 'application/json'))};
+                }}#;
+
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchChecked($tree)->toJson(checked($tree, 'application/json'))};
 
   let input  =  '[{"name":"Name A", "ranking" : 1, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
                 '{"name":"Name B", "ranking" : 2, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
                 '{"name":"Name C", "ranking" : 3, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 0 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Road", "address": {"firstLine": "road2FirstLine", "road" : "road2", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Street", "address": {"firstLine": "street2FirstLine", "street" : "street2", "streetLength" : 0 , "@type":"Street"}}]}]';
 
-  let result1 = executeLegendQuery($query1, pair('data', convertStringToBytes($input)), jsonExtensions());
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
 
-  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedWithSubtypes.json')->toOne(), $result1);
-
-  let query2  = {data:Byte[*] | Firm->fromJson($data)->graphFetchCheckedUnexpanded($tree)->toJson(checked($tree, 'application/json'))};
-
-  let result2 = executeLegendQuery($query2, pair('data', convertStringToBytes($input)), jsonExtensions());
-
-  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedWithSubTypes.json')->toOne(), $result2);
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedWithSubtypes.json')->toOne(), $result);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedOnASuperClass():Boolean[1]
@@ -191,6 +186,49 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   
   // Execution should not complain on Firm.addresses multiplicity, descriptionLength, lastNameLength & addressesLength constraints, it should complain on validEmployeesSize, validRanking, highRankValidRanking & firstNameLength constraints
   assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedOnSupertypeResult.json')->toOne(), $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::constraints::testInternalizeWithGraphFetchCheckedUnexpandedWithMultipleSubTypes():Boolean[1]
+{
+  let tree    = #{meta::external::format::json::executionPlan::test::constraints::Firm {
+                    name, 
+                    ranking,
+                    addresses{
+                      address{
+                        firstLine,
+                        secondLine
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType1){
+                      addressSubType1,
+                      address->subType(@Street) {
+                        street
+                      },
+                      address->subType(@Road) {
+                        road,
+                        roadLength
+                      }
+                    },
+                    addresses->subType(@AddressUseSubType2){
+                      addressSubType2,
+                      address->subType(@Street) {
+                        street,
+                        streetLength
+                      },
+                      address->subType(@Road) {
+                        road
+                      }
+                    }
+                }}#;
+  let query  = {data:Byte[*] | Firm->fromJson($data)->graphFetchCheckedUnexpanded($tree)->toJson(checked($tree, 'application/json'))};
+
+  let input  =  '[{"name":"Name A", "ranking" : 1, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name B", "ranking" : 2, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 2 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 2 , "@type":"Road"}}]},' +
+                '{"name":"Name C", "ranking" : 3, "addresses": [{"addressType": "Home", "address": {"firstLine": "firstLine", "secondLine" : "secondLine"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Street", "address": {"firstLine": "street1FirstLine", "street" : "street1", "streetLength" : 0 , "@type":"Street"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Road", "address": {"firstLine": "road1FirstLine", "road" : "road1", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType1", "addressSubType1":"Road", "address": {"firstLine": "road2FirstLine", "road" : "road2", "roadLength" : 0 , "@type":"Road"}}, {"addressType": "Home", "@type":"AddressUseSubType2", "addressSubType2":"Street", "address": {"firstLine": "street2FirstLine", "street" : "street2", "streetLength" : 0 , "@type":"Street"}}]}]';
+
+  let result = executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+
+  assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/graphFetchCheckedUnexpandedWithSubTypes.json')->toOne(), $result);
 }
 
 
