@@ -52,6 +52,11 @@ public interface LockInfoDatasetAbstract
         return "last_used_ts_utc";
     }
 
+    @Value.Default
+    default String tableNameField()
+    {
+        return "table_name";
+    }
 
     @Value.Derived
     default Dataset get()
@@ -63,6 +68,7 @@ public interface LockInfoDatasetAbstract
             .schema(SchemaDefinition.builder()
                 .addFields(Field.builder().name(insertTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(lastUsedTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).unique(true).build())
                 .build())
             .build();
     }

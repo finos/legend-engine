@@ -57,10 +57,10 @@ public class BaseTest
 {
     public static final String TEST_SCHEMA = "TEST";
     public static final String TEST_DATABASE = "TEST_DB";
-    private static final String H2_JDBC_URL = "jdbc:h2:mem:" + TEST_DATABASE +
+    protected static final String H2_JDBC_URL = "jdbc:h2:mem:" + TEST_DATABASE +
         ";DATABASE_TO_UPPER=false;mode=mysql;LOCK_TIMEOUT=10000;BUILTIN_ALIAS_OVERRIDE=TRUE";
-    private static final String H2_USER_NAME = "sa";
-    private static final String H2_PASSWORD = "";
+    protected static final String H2_USER_NAME = "sa";
+    protected static final String H2_PASSWORD = "";
     public static JdbcHelper h2Sink;
 
     protected final ZonedDateTime fixedExecutionZonedDateTime1 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);

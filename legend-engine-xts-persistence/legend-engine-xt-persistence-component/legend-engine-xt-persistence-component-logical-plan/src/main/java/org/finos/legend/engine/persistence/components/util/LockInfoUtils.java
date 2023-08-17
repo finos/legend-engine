@@ -39,12 +39,13 @@ public class LockInfoUtils
         this.dataset = lockInfoDataset.get();
     }
 
-    public Insert initializeLockInfo(BatchStartTimestamp batchStartTimestamp)
+    public Insert initializeLockInfo(String tableName, BatchStartTimestamp batchStartTimestamp)
     {
         DatasetReference metaTableRef = this.dataset.datasetReference();
         FieldValue insertTimeField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.insertTimeField()).build();
-        List<Value> insertFields = Arrays.asList(insertTimeField);
-        List<Value> selectFields = Arrays.asList(batchStartTimestamp);
+        FieldValue tableNameField = FieldValue.builder().datasetRef(metaTableRef).fieldName(lockInfoDataset.tableNameField()).build();
+        List<Value> insertFields = Arrays.asList(insertTimeField, tableNameField);
+        List<Value> selectFields = Arrays.asList(batchStartTimestamp, StringValue.of(tableName));
         Condition condition = Not.of(Exists.of(Selection.builder().addFields(All.INSTANCE).source(dataset).build()));
         return Insert.of(dataset, Selection.builder().addAllFields(selectFields).condition(condition).build(), insertFields);
     }
@@ -52,7 +53,7 @@ public class LockInfoUtils
     public Update updateLockInfo(BatchStartTimestamp batchStartTimestamp)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = new ArrayList<>();
-        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.insertTimeField()).build(), batchStartTimestamp));
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(lockInfoDataset.lastUsedTimeField()).build(), batchStartTimestamp));
         Update update = Update.builder().dataset(dataset).addAllKeyValuePairs(keyValuePairs).build();
         return update;
     }

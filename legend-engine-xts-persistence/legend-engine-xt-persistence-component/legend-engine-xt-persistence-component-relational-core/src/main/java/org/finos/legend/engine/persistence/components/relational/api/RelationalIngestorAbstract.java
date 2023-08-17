@@ -310,7 +310,15 @@ public abstract class RelationalIngestorAbstract
         {
             Map<String, String> placeHolderKeyValues = new HashMap<>();
             placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
-            executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+            try
+            {
+                executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+            }
+            catch (Exception e)
+            {
+                // Ignore this exception
+                // In race condition: multiple jobs will try to insert same row
+            }
         }
     }
 
