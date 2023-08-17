@@ -20,7 +20,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.pure.code.core.PureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.pure.code.core.JSONJavaBindingPureCoreExtension;
-import org.finos.legend.pure.code.core.M2MJavaBindingPureCoreExtension;
 import org.junit.Assert;
 import org.junit.Test;
 

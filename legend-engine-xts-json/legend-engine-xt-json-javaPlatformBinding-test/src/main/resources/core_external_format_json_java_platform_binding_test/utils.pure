@@ -29,7 +29,8 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::external::format::json::t
     bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
 
         let legendJavaPlatformBindings     = [inMemoryLegendJavaPlatformBindingExtension(),
-                                              bindingLegendJavaPlatformBindingExtension(jsonSchemaJavaBindingDescriptor())];
+                                              bindingLegendJavaPlatformBindingExtension(),
+                                              externalFormatLegendJavaPlatformBindingExtension(jsonSchemaJavaBindingDescriptor())];
         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([legendJavaPlatformBinding($legendJavaPlatformBindings)]));
 
         // Using LegendJava as the default for local platform binding
