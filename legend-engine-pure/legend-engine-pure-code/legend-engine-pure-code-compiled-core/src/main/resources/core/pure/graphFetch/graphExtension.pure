@@ -324,7 +324,10 @@ function meta::pure::graphFetch::ensureFunctionRequirementsFromLambda(node:Graph
       {| 
          let updatedProcessed          = $processed->add($class);
          let newSubTrees = $updatedForClass.subTrees->map({st| 
-            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            let returns = if($st->cast(@PropertyGraphFetchTree).subType->isEmpty(),
+                            | $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne(),
+                            | $st->cast(@PropertyGraphFetchTree).subType->toOne()
+                            );
             if($returns->instanceOf(Class) && !$updatedProcessed->contains($returns),
                | $st->ensureFunctionRequirementsFromLambda($returns->cast(@Class<Any>), $f, $updatedProcessed, $ensureConstraintsForSubTrees),
                | $st
@@ -352,7 +355,10 @@ function meta::pure::graphFetch::ensureFunctionRequirements(node:GraphFetchTree[
    if($ensureConstraintsForSubTrees,
       {| 
          let newSubTrees = $updatedForClass.subTrees->map({st| 
-            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            let returns = if($st->cast(@PropertyGraphFetchTree).subType->isEmpty(),
+                            | $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne(),
+                            | $st->cast(@PropertyGraphFetchTree).subType->toOne()
+                            );
             if($returns->instanceOf(Class) && !$updatedProcessed->contains($returns),
                | $st->ensureFunctionRequirements($returns->cast(@Class<Any>), $f, $updatedProcessed, $ensureConstraintsForSubTrees),
                | $st
@@ -798,4 +804,3 @@ function <<access.private>> meta::pure::graphFetch::removeDummyProperties(tree:G
                                );
    ])
 }
-
