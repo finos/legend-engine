@@ -150,41 +150,6 @@ public class TestGraphQLAPI
     }
 
     @Test
-    public void testGraphQLExecuteDevAPI_EchoDirective() throws Exception
-    {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
-        Query query = new Query();
-        query.query = "query Query {\n" +
-                "  firms: allFirms @echo {\n" +
-                "      legalName\n" +
-                "    }\n" +
-                "  }";
-        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-
-        String expected = "{" +
-                "\"data\":{" +
-                    "\"allFirms\":[" +
-                        "{\"legalName\":\"Firm X\"}," +
-                        "{\"legalName\":\"Firm A\"}," +
-                        "{\"legalName\":\"Firm B\"}" +
-                    "]" +
-                "}," +
-                "\"extensions\":{" +
-                    "\"allFirms\":{" +
-                        "\"echo\":true" +
-                    "}" +
-                "}" +
-            "}";
-
-        Assert.assertEquals(expected, responseAsString(response));
-    }
-
-    @Test
     public void testGraphQLExecuteDevAPI_BiTemporalMilestoning_Root() throws Exception
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
@@ -687,6 +652,41 @@ public class TestGraphQLAPI
         Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
 
         Assert.assertEquals("{\"data\":{\"firmByLegalName\":{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\",\"address\":{\"line1\":\"Fabrice address\"}}]}}}", responseAsString(response2));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_EchoDirective() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  firms: allFirms @echo {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                    "\"allFirms\":[" +
+                        "{\"legalName\":\"Firm X\"}," +
+                        "{\"legalName\":\"Firm A\"}," +
+                        "{\"legalName\":\"Firm B\"}" +
+                    "]" +
+                "}," +
+                "\"extensions\":{" +
+                    "\"allFirms\":{" +
+                        "\"echo\":true" +
+                    "}" +
+                "}" +
+            "}";
+
+        Assert.assertEquals(expected, responseAsString(response));
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
