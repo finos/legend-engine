@@ -104,3 +104,29 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutio
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
    assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, []);
 }
+
+function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnWithQueryTag():Boolean[1]
+{
+  let conn = ^RelationalDatabaseConnection(
+                  element = 'database',
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='ALLOY_DEV_WH',databaseName='ALLOY_INTEGRATION_TEST_DB1',accountName = 'sfceawseast1d01'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
+  let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
+  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnDisableQueryTag():Boolean[1]
+{
+  let conn = ^RelationalDatabaseConnection(
+                  element = 'database',
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='DEMO_WH',databaseName='SNOWFLAKE_SAMPLE_DATA',accountName = 'sfceawseast1d01', enableQueryTags = false),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
+  let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
+  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
