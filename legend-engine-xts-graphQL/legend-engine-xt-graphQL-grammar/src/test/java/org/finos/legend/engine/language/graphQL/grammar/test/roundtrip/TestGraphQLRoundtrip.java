@@ -165,6 +165,29 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testDirectiveParsingError()
+    {
+        try
+        {
+            GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
+            parser.parseDocument(
+                    "query {\n" +
+                    "  user @directiveWithParams(param1: ) {\n" +
+                    "    firstname\n" +
+                    "  }\n" +
+                    "}"
+            );
+            Assert.fail();
+        }
+        catch (GraphQLParserException e)
+        {
+            Assert.assertEquals(37, e.getSourceInformation().startColumn);
+            Assert.assertEquals(2, e.getSourceInformation().startLine);
+            Assert.assertEquals("Unexpected token", e.getMessage());
+        }
+    }
+
+    @Test
     public void testMutationRoundtrip()
     {
         check("mutation setUserWithProjects($a: INT) {\n" +
