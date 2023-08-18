@@ -49,6 +49,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.generated.core_service_service_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -60,6 +62,8 @@ import java.util.function.Function;
 
 public class ServicePlanGenerator
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServicePlanGenerator.class);
+
     public static ExecutionPlan generateServiceExecutionPlan(Service service, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         return generateServiceExecutionPlan(service, context, pureModel, clientVersion, platform, null, extensions, transformers);
@@ -72,25 +76,12 @@ public class ServicePlanGenerator
 
     public static ExecutionPlan generateServiceExecutionPlan(Service service, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
     {
-        return generateExecutionPlan(service.execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
+        return generateExecutionPlan(service.getPath(), service.execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
     }
 
     public static ExecutionPlan generateExecutionPlan(Execution execution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
-        return generateExecutionPlan(execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, null);
-    }
-
-    public static ExecutionPlan generateExecutionPlan(Execution execution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
-    {
-        if (execution instanceof PureSingleExecution)
-        {
-            return generateSingleExecutionPlan((PureSingleExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
-        }
-        if (execution instanceof PureMultiExecution)
-        {
-            return generateCompositeExecutionPlan((PureMultiExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
-        }
-        throw new IllegalArgumentException("Unsupported execution type: " + execution);
+        return generateExecutionPlan(null, execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, null);
     }
 
     public static SingleExecutionPlan generateSingleExecutionPlan(PureSingleExecution singleExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
@@ -106,18 +97,40 @@ public class ServicePlanGenerator
         return getSingleExecutionPlan(singleExecution.executionOptions, context, pureModel, clientVersion, platform, planId, extensions, transformers, mapping, runtime, lambda);
     }
 
+    public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        return generateCompositeExecutionPlan(multiExecution, context, pureModel, clientVersion, platform, null, extensions, transformers);
+    }
+
+    public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    {
+        return generateCompositeExecutionPlan(null, multiExecution, context, pureModel, clientVersion, platform, planId, extensions, transformers, null);
+    }
+
+    // Helpers
+
+    private static ExecutionPlan generateExecutionPlan(String servicePath, Execution execution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
+    {
+        if (execution instanceof PureSingleExecution)
+        {
+            return generateSingleExecutionPlan((PureSingleExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
+        }
+        if (execution instanceof PureMultiExecution)
+        {
+            return generateCompositeExecutionPlan(servicePath, (PureMultiExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
+        }
+        throw new IllegalArgumentException("Unsupported execution type: " + execution);
+    }
+
     private static SingleExecutionPlan getSingleExecutionPlan(List<ExecutionOption> executionOptions, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, Mapping mapping, Root_meta_pure_runtime_Runtime runtime, LambdaFunction<?> lambda)
     {
-        if (executionOptions != null)
-        {
-            return PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, getExecutionOptionContext(executionOptions, pureModel), pureModel, clientVersion, platform, planId, extensions, transformers);
-        }
-        return PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, context, pureModel, clientVersion, platform, planId, extensions, transformers);
+        return PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, (executionOptions == null) ? context : getExecutionOptionContext(executionOptions, pureModel), pureModel, clientVersion, platform, planId, extensions, transformers);
     }
 
     private static Root_meta_pure_executionPlan_ExecutionOptionContext getExecutionOptionContext(List<ExecutionOption> executionOptions, PureModel pureModel)
     {
-        return new Root_meta_pure_executionPlan_ExecutionOptionContext_Impl("", null, pureModel.getClass("meta::pure::executionPlan::ExecutionOptionContext"))._executionOptions(ListIterate.collect(executionOptions, option -> processExecutionOption(option, pureModel.getContext())));
+        return new Root_meta_pure_executionPlan_ExecutionOptionContext_Impl("", null, pureModel.getClass("meta::pure::executionPlan::ExecutionOptionContext"))
+                ._executionOptions(ListIterate.collect(executionOptions, option -> processExecutionOption(option, pureModel.getContext())));
     }
 
     private static Root_meta_pure_executionPlan_ExecutionOption processExecutionOption(ExecutionOption executionOption, CompileContext context)
@@ -129,17 +142,7 @@ public class ServicePlanGenerator
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution option type '" + executionOption.getClass() + "'"));
     }
 
-    public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
-    {
-        return generateCompositeExecutionPlan(multiExecution, context, pureModel, clientVersion, platform, null, extensions, transformers);
-    }
-
-    public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
-    {
-        return generateCompositeExecutionPlan(multiExecution, context, pureModel, clientVersion, platform, planId, extensions, transformers, null);
-    }
-
-    public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
+    private static CompositeExecutionPlan generateCompositeExecutionPlan(String servicePath, PureMultiExecution multiExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, ForkJoinPool pool)
     {
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(multiExecution.func.body, multiExecution.func.parameters, pureModel.getContext());
         if (multiExecution.executionParameters != null && !multiExecution.executionParameters.isEmpty())
@@ -149,6 +152,7 @@ public class ServicePlanGenerator
                     ServicePlanGenerator::getExecutionKey,
                     (ep, key, i) -> getSingleExecutionPlan(ep.executionOptions, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + i : null), extensions, transformers, pureModel.getMapping(ep.mapping), HelperRuntimeBuilder.buildPureRuntime(ep.runtime, pureModel.getContext()), lambda),
                     multiExecution.executionKey,
+                    servicePath,
                     pool);
         }
         else
@@ -163,30 +167,78 @@ public class ServicePlanGenerator
                     (ep, key, i) -> getSingleExecutionPlan(null, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + i : null), extensions, transformers, null, null,
                             (LambdaFunction<?>) core_service_service_helperFunctions.Root_meta_legend_service_assignValueInFunctionDefinitionForKey_FunctionDefinition_1__String_1__FunctionDefinition_1_(lambda, key, pureModel.getExecutionSupport())),
                     execKey,
+                    servicePath,
                     pool);
         }
     }
 
-    private static <P> CompositeExecutionPlan generateCompositeExecutionPlan(List<P> execParams, Function<? super P, ? extends String> keyFn, SingleExecutionPlanGenerator<? super P> planFn, String execKey, ForkJoinPool pool)
+    private static <P> CompositeExecutionPlan generateCompositeExecutionPlan(List<P> execParams, Function<? super P, ? extends String> keyFn, SingleExecutionPlanGenerator<? super P> planFn, String execKey, String servicePath, ForkJoinPool pool)
     {
         if (pool != null)
         {
-            return pool.invoke(new MultiExecutionRecursiveTask<>(execParams, keyFn, planFn, execKey));
+            return pool.invoke(new MultiExecutionRecursiveTask<>(execParams, keyFn, planFn, execKey, servicePath));
         }
 
+        long start = System.nanoTime();
+        if (servicePath != null)
+        {
+            LOGGER.debug("Generating {} plans for {}", execParams.size(), servicePath);
+        }
         MutableMap<String, SingleExecutionPlan> plans = Maps.mutable.ofInitialCapacity(execParams.size());
         MutableList<String> keys = Lists.mutable.ofInitialCapacity(execParams.size());
         ListIterate.forEachWithIndex(execParams, (ep, i) ->
         {
-            String key = keyFn.apply(ep);
+            long planStart = System.nanoTime();
+            if (servicePath != null)
+            {
+                LOGGER.debug("Generating {} plan {}", servicePath, i);
+            }
+
+            String key;
+            try
+            {
+                key = keyFn.apply(ep);
+            }
+            catch (Throwable t)
+            {
+                if (servicePath != null)
+                {
+                    LOGGER.error("Error generating {} plan {} key", servicePath, i, t);
+                }
+                throw t;
+            }
             keys.add(key);
 
-            SingleExecutionPlan plan = planFn.generate(ep, key, i);
+            SingleExecutionPlan plan;
+            try
+            {
+                plan = planFn.generate(ep, key, i);
+            }
+            catch (Throwable t)
+            {
+                if (servicePath != null)
+                {
+                    LOGGER.error("Error generating {} plan {}, key '{}'", servicePath, i, key, t);
+                }
+                throw t;
+            }
             if (plans.put(key, plan) != null)
             {
-                throw new IllegalStateException("Conflict for key: " + key);
+                throw new IllegalStateException("Conflict for key '" + key + "' for " + servicePath);
+            }
+
+            if ((servicePath != null) && LOGGER.isDebugEnabled())
+            {
+                long planEnd = System.nanoTime();
+                LOGGER.debug("Finished generating {} plan {}, key '{}' ({})", servicePath, i, key, formatNanoDurationForLogging(planStart, planEnd));
             }
         });
+
+        if ((servicePath != null) && LOGGER.isDebugEnabled())
+        {
+            long end = System.nanoTime();
+            LOGGER.debug("Finished generating {} plans for {} ({})", execParams.size(), servicePath, formatNanoDurationForLogging(start, end));
+        }
         return new CompositeExecutionPlan(plans, execKey, keys);
     }
 
@@ -224,15 +276,17 @@ public class ServicePlanGenerator
         private final Function<? super P, ? extends String> keyFn;
         private final SingleExecutionPlanGenerator<? super P> planFn;
         private final String execKey;
+        private final String servicePath;
         private final AtomicReferenceArray<SingleExecutionPlan> plans;
         private final AtomicReferenceArray<String> keys;
 
-        private MultiExecutionRecursiveTask(List<P> executionParameters, Function<? super P, ? extends String> keyFn, SingleExecutionPlanGenerator<? super P> planFn, String execKey)
+        private MultiExecutionRecursiveTask(List<P> executionParameters, Function<? super P, ? extends String> keyFn, SingleExecutionPlanGenerator<? super P> planFn, String execKey, String servicePath)
         {
             this.executionParameters = executionParameters;
             this.keyFn = keyFn;
             this.planFn = planFn;
             this.execKey = execKey;
+            this.servicePath = servicePath;
             this.plans = new AtomicReferenceArray<>(this.executionParameters.size());
             this.keys = new AtomicReferenceArray<>(this.executionParameters.size());
         }
@@ -240,7 +294,13 @@ public class ServicePlanGenerator
         @Override
         protected CompositeExecutionPlan compute()
         {
+            long start = System.nanoTime();
+
             int size = this.executionParameters.size();
+            if (shouldLog())
+            {
+                LOGGER.debug("Generating {} plans for {}", size, this.servicePath);
+            }
             computeForRange(0, size);
             MutableMap<String, SingleExecutionPlan> planMap = Maps.mutable.ofInitialCapacity(size);
             MutableList<String> keyList = Lists.mutable.ofInitialCapacity(size);
@@ -252,8 +312,13 @@ public class ServicePlanGenerator
                 SingleExecutionPlan plan = this.plans.get(i);
                 if (planMap.put(key, plan) != null)
                 {
-                    throw new IllegalStateException("Conflict for key: " + key);
+                    throw new IllegalStateException("Conflict for key '" + key + "' for " + this.servicePath);
                 }
+            }
+            if (shouldLog() && LOGGER.isDebugEnabled())
+            {
+                long end = System.nanoTime();
+                LOGGER.debug("Finished generating {} plans for {} ({})", size, this.servicePath, formatNanoDurationForLogging(start, end));
             }
             return new CompositeExecutionPlan(planMap, this.execKey, keyList);
         }
@@ -274,11 +339,53 @@ public class ServicePlanGenerator
 
         private void computeForIndex(int index)
         {
+            long start = System.nanoTime();
+            if (shouldLog())
+            {
+                LOGGER.debug("Generating {} plan {}", this.servicePath, index);
+            }
             P executionParameter = this.executionParameters.get(index);
-            String key = this.keyFn.apply(executionParameter);
-            SingleExecutionPlan plan = this.planFn.generate(executionParameter, key, index);
+
+            String key;
+            try
+            {
+                key = this.keyFn.apply(executionParameter);
+            }
+            catch (Throwable t)
+            {
+                if (shouldLog())
+                {
+                    LOGGER.error("Error generating {} plan key {}", this.servicePath, index, t);
+                }
+                throw t;
+            }
+
+            SingleExecutionPlan plan;
+            try
+            {
+                plan = this.planFn.generate(executionParameter, key, index);
+            }
+            catch (Throwable t)
+            {
+                if (shouldLog())
+                {
+                    LOGGER.error("Error generating {} plan {} ({})", this.servicePath, index, key, t);
+                }
+                throw t;
+            }
+
             this.keys.set(index, key);
             this.plans.set(index, plan);
+            if (shouldLog() && LOGGER.isDebugEnabled())
+            {
+                long end = System.nanoTime();
+                LOGGER.debug("Finished generating {} plan {}, key {} ({})", this.servicePath, index, key, formatNanoDurationForLogging(start, end));
+            }
+        }
+
+        private boolean shouldLog()
+        {
+            return this.servicePath != null;
         }
 
         private class RangeTask extends RecursiveAction
@@ -303,5 +410,15 @@ public class ServicePlanGenerator
     private interface SingleExecutionPlanGenerator<P>
     {
         SingleExecutionPlan generate(P executionParameter, String key, int index);
+    }
+
+    private static String formatNanoDurationForLogging(long startNanos, long endNanos)
+    {
+        return formatNanoDurationForLogging(endNanos - startNanos);
+    }
+
+    private static String formatNanoDurationForLogging(long durationNanos)
+    {
+        return (durationNanos == 0) ? "0s" : String.format("%.9fs", durationNanos / 1_000_000_000.0);
     }
 }
