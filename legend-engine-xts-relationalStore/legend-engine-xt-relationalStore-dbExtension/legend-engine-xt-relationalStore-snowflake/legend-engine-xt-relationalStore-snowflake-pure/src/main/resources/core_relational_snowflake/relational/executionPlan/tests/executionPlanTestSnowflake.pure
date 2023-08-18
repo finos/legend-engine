@@ -105,7 +105,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutio
    assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, []);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnWithQueryTag():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelationalDatabaseConnWithQueryTag():Boolean[1]
 {
   let conn = ^RelationalDatabaseConnection(
                   element = 'database',
@@ -118,7 +118,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelation
   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnDisableQueryTag():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelationalDatabaseConnDisableQueryTag():Boolean[1]
 {
   let conn = ^RelationalDatabaseConnection(
                   element = 'database',
