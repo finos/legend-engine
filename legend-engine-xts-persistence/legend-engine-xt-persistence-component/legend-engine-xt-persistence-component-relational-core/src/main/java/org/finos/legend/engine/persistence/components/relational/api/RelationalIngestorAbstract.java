@@ -239,12 +239,23 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
+    - Perform cleanup of temporary tables
+    */
+    public Datasets cleanUp(Datasets datasets)
+    {
+        init(datasets);
+        postCleanup();
+        return this.enrichedDatasets;
+    }
+
+    /*
     Perform full ingestion from Staging to Target table based on the Ingest mode
     Full Ingestion covers:
     1. Export external dataset
     2. Create tables
     3. Evolves Schema
     4. Ingestion from staging to main dataset in a transaction
+    5. Clean up of temporary tables
      */
     public IngestorResult performFullIngestion(RelationalConnection connection, Datasets datasets)
     {
@@ -332,6 +343,14 @@ public abstract class RelationalIngestorAbstract
         }
     }
 
+    private void postCleanup()
+    {
+        if (generatorResult.postCleanupSqlPlan().isPresent())
+        {
+            executor.executePhysicalPlan(generatorResult.postCleanupSqlPlan().get());
+        }
+    }
+
     private List<IngestorResult> ingest(List<DataSplitRange> dataSplitRanges)
     {
         if (enrichedIngestMode instanceof BulkLoad)
@@ -377,6 +396,10 @@ public abstract class RelationalIngestorAbstract
         {
             executor.close();
         }
+
+        // post Cleanup
+        postCleanup();
+
         return result;
     }
 

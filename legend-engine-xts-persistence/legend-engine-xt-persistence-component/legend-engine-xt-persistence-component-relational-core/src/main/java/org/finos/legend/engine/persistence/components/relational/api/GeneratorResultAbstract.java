@@ -58,6 +58,8 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan postActionsSqlPlan();
 
+    public abstract Optional<SqlPlan> postCleanupSqlPlan();
+
     public abstract Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan();
 
     public abstract Map<StatisticName, SqlPlan> postIngestStatisticsSqlPlan();
@@ -100,6 +102,11 @@ public abstract class GeneratorResultAbstract
     public List<String> postActionsSql()
     {
         return postActionsSqlPlan().getSqlList();
+    }
+
+    public List<String> postCleanupSql()
+    {
+        return postCleanupSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public Map<StatisticName, String> preIngestStatisticsSql()

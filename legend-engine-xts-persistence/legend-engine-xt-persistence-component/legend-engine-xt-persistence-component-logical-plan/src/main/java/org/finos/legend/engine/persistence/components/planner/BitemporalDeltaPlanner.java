@@ -46,6 +46,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ope
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.UpdateAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
@@ -57,7 +58,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBin
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +89,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private Dataset stagingDataset;
     private Dataset tempDataset;
     private Dataset tempDatasetWithDeleteIndicator;
+    private Optional<Dataset> stagingDatasetWithoutDuplicates;
 
     private FieldValue sourceValidDatetimeFrom;
     private FieldValue targetValidDatetimeFrom;
@@ -111,6 +112,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
         {
             this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets);
+            this.stagingDatasetWithoutDuplicates = Optional.of(this.stagingDataset);
         }
         else
         {
@@ -334,6 +336,24 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     {
         Dataset sink2 = getMainDatasetWithProvidedAlias("sink2");
         return getRowsUpdated(alias, getPrimaryKeyFieldsAndFromFieldFromMain(), sink2);
+    }
+
+    public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)
+        {
+            operations.add(Drop.of(true, tempDataset, true));
+            if (deleteIndicatorField.isPresent())
+            {
+                operations.add(Drop.of(true, tempDatasetWithDeleteIndicator, true));
+            }
+            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates && stagingDatasetWithoutDuplicates.isPresent())
+            {
+                operations.add(Drop.of(true, stagingDatasetWithoutDuplicates.get(), true));
+            }
+        }
+        return LogicalPlan.of(operations);
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()

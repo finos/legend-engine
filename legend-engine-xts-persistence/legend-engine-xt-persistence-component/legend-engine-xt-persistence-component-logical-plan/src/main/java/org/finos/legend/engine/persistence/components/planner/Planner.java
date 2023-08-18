@@ -191,6 +191,11 @@ public abstract class Planner
         return LogicalPlan.of(operations);
     }
 
+    public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
+    {
+        return null;
+    }
+
     public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
     {
         return Collections.emptyMap();

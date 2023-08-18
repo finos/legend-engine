@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode.mixed;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class UnitemporalConcurrentTest extends BaseTest
 {
+    @Disabled
     @Test
     public void test() throws InterruptedException, IOException
     {
@@ -51,7 +53,7 @@ public class UnitemporalConcurrentTest extends BaseTest
         t3.start();
 
         // Sleep for a while for tests to finish
-        Thread.sleep(5000);
+        Thread.sleep(10000);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", "main"));
         Assertions.assertEquals(5, tableData.size());

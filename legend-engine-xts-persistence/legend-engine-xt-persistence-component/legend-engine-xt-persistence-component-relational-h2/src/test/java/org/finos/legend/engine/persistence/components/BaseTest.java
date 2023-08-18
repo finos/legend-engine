@@ -170,6 +170,7 @@ public class BaseTest
                 .collectStatistics(options.collectStatistics())
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
+                .enableConcurrentSafety(true)
                 .build();
 
         IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);

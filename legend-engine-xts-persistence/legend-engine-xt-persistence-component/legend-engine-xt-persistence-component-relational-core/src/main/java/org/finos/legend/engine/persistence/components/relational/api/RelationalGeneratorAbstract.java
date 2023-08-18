@@ -243,6 +243,13 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
         SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);
 
+        LogicalPlan postCleanupLogicalPlan = planner.buildLogicalPlanForPostCleanup(resources);
+        Optional<SqlPlan> postCleanupSqlPlan = Optional.empty();
+        if (postCleanupLogicalPlan != null)
+        {
+            postCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(postCleanupLogicalPlan));
+        }
+
         // post-run statistics
         Map<StatisticName, LogicalPlan> postIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPostRunStatistics(resources);
         Map<StatisticName, SqlPlan> postIngestStatisticsSqlPlan = new HashMap<>();
@@ -259,6 +266,7 @@ public abstract class RelationalGeneratorAbstract
             .schemaEvolutionDataset(schemaEvolutionDataset)
             .ingestSqlPlan(ingestSqlPlan)
             .postActionsSqlPlan(postActionsSqlPlan)
+            .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)

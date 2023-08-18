@@ -23,6 +23,9 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
+
 public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBatchIdBasedTestCases
 {
     String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
@@ -37,6 +40,8 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> initializeLockSql = operations.initializeLockSql();
+        List<String> acquireLockSql = operations.acquireLockSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
@@ -54,10 +59,15 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(3));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+
+        Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
+        Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
+
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
 
