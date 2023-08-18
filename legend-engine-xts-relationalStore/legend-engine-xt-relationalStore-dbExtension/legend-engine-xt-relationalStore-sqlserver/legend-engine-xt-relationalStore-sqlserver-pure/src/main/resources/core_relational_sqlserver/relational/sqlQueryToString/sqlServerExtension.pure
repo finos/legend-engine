@@ -83,6 +83,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stdev(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(getdate() as date)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('variancePopulation',     $allStates,           ^ToSql(format='varp(%s)')),
+    dynaFnToSql('varianceSample',         $allStates,           ^ToSql(format='var(%s)')),    
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(wk, %s)'))
   ];

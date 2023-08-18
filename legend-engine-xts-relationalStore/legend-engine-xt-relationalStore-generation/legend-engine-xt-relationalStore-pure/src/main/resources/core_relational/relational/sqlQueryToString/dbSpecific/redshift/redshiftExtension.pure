@@ -52,6 +52,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(hour, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),

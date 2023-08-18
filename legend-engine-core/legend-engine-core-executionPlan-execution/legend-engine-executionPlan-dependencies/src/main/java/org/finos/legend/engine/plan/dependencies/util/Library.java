@@ -229,6 +229,42 @@ public class Library
         return firstDayOfYear(today());
     }
 
+    public static PureDate firstHourOfDay(PureDate date)
+    {
+        return PureDate.newPureDate(date.getYear(),
+                date.hasMonth() ? date.getMonth() : 1,
+                date.hasDay() ? date.getDay() : 1,
+                0, 0, 0);
+    }
+
+
+    public static PureDate firstMinuteOfHour(PureDate date)
+    {
+        return PureDate.newPureDate(date.getYear(),
+                date.hasMonth() ? date.getMonth() : 1,
+                date.hasDay() ? date.getDay() : 1,
+                date.hasHour() ? date.getHour() : 0, 0, 0);
+    }
+
+    public static PureDate firstSecondOfMinute(PureDate date)
+    {
+        return PureDate.newPureDate(date.getYear(),
+                date.hasMonth() ? date.getMonth() : 1,
+                date.hasDay() ? date.getDay() : 1,
+                date.hasHour() ? date.getHour() : 0,
+                date.hasMinute() ? date.getMinute() : 0, 0);
+    }
+
+    public static PureDate firstMillisecondOfSecond(PureDate date)
+    {
+        return PureDate.newPureDate(date.getYear(),
+                date.hasMonth() ? date.getMonth() : 1,
+                date.hasDay() ? date.getDay() : 1,
+                date.hasHour() ? date.getHour() : 0,
+                date.hasMinute() ? date.getMinute() : 0,
+                date.hasSecond() ? date.getSecond() : 0);
+    }
+
     public static long weekOfYear(PureDate date)
     {
         if (!date.hasDay())
@@ -1489,6 +1525,11 @@ public class Library
         return result;
     }
 
+    public static String repeatString(String s, int times)
+    {
+        return String.join("", Collections.nCopies(times, s));
+    }
+
     public static String toUpperFirstCharacter(String s)
     {
         if (s == null)
@@ -1566,6 +1607,21 @@ public class Library
         return Math.sqrt(variance(values, isBiasCorrected));
     }
 
+    public static Number variance(List<Number> list, boolean isBiasCorrected)
+    {
+        if (list == null || list.isEmpty())
+        {
+            throw new RuntimeException("Unable to process empty list");
+        }
+        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
+        double[] values = new double[javaNumbers.size()];
+        for (int i = 0; i < javaNumbers.size(); i++)
+        {
+            values[i] = javaNumbers.get(i).doubleValue();
+        }
+        return variance(values, isBiasCorrected);
+    }
+
     public static double variance(double[] values, boolean isBiasCorrected)
     {
         int length = values.length;
@@ -1615,5 +1671,10 @@ public class Library
             sum += values[i];
         }
         return sum / length;
+    }
+
+    public static double coTangent(double input)
+    {
+        return 1.0 / Math.tan(input);
     }
 }

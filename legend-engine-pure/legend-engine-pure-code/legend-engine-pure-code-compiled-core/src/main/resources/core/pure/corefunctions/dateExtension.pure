@@ -204,6 +204,34 @@ function meta::pure::functions::date::firstDayOfWeek(date:Date[1]):Date[1]
    $date->mostRecentDayOfWeek(DayOfWeek.Monday);
 }
 
+function meta::pure::functions::date::firstHourOfDay(date:Date[1]):DateTime[1]
+{
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 0, 0, 0);
+}
+
+function meta::pure::functions::date::firstMinuteOfHour(date:Date[1]):DateTime[1]
+{
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 
+    if ($date->hasHour(), | $date->hour(), | 0), 
+    0, 0);
+}
+
+function meta::pure::functions::date::firstSecondOfMinute(date:Date[1]):DateTime[1]
+{
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 
+    if ($date->hasHour(), | $date->hour(), | 0), 
+    if ($date->hasMinute(), | $date->minute(), | 0),
+    0 );
+}
+
+function meta::pure::functions::date::firstMillisecondOfSecond(date:Date[1]):DateTime[1]
+{
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 
+    if ($date->hasHour(), | $date->hour(), | 0), 
+    if ($date->hasMinute(), | $date->minute(), | 0),
+    if ($date->hasSecond(), | $date->second(), | 0))
+}
+
 function meta::pure::functions::date::datePart(d:Date[0..1]):Date[0..1]
 {
     $d->toOne()->datePart();
