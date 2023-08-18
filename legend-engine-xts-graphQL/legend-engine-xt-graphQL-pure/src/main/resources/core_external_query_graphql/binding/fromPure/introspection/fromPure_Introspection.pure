@@ -33,7 +33,8 @@ function meta::external::query::graphQL::binding::fromPure::introspection::build
   ^BaseGraphQLType(
     __schema = ^__Schema(
                   queryType = $res->filter(c|$c.name == $cl.name)->toOne(),
-                  types = $res
+                  types = $res,
+                  directives = [^__Directive(name='echo', description='A preliminary test directive to ensure the working of directives in a query',locations=[__DirectiveLocation.FIELD])]
                 )
   );
 }
