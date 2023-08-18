@@ -1,0 +1,154 @@
+[
+  {
+    "defects": [
+      {
+        "id": "validEmployeesSize",
+        "externalId": null,
+        "message": "Constraint :[validEmployeesSize] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      }
+    ],
+    "source": {
+      "number": 1,
+      "record": "{\"name\":\"Name A\",\"ranking\":1,\"addresses\":[{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\",\"secondLine\":\"secondLine\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType1\",\"addressSubType1\":\"Street\",\"address\":{\"firstLine\":\"street1FirstLine\",\"street\":\"street1\",\"streetLength\":2,\"@type\":\"Street\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType2\",\"addressSubType2\":\"Road\",\"address\":{\"firstLine\":\"road1FirstLine\",\"road\":\"road1\",\"roadLength\":2,\"@type\":\"Road\"}}]}"
+    },
+    "value": {
+      "name": "Name A",
+      "ranking": 1,
+      "addresses": [
+        { "address": { "firstLine": "firstLine", "secondLine": "secondLine" } },
+        { "addressSubType1": ["Street"], "address": { "street": "street1" } },
+        { "addressSubType2": ["Road"], "address": { "road": "road1" } }
+      ]
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "validEmployeesSize",
+        "externalId": null,
+        "message": "Constraint :[validEmployeesSize] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      },
+      {
+        "id": "subTypeValidation1",
+        "externalId": null,
+        "message": "Constraint :[subTypeValidation1] violated in the Class AddressUseSubType1",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::AddressUseSubType1",
+        "path": [{ "propertyName": "addresses", "index": 1 }]
+      },
+      {
+        "id": "subTypeValidation2",
+        "externalId": null,
+        "message": "Constraint :[subTypeValidation2] violated in the Class AddressUseSubType2",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::AddressUseSubType2",
+        "path": [{ "propertyName": "addresses", "index": 2 }]
+      }
+    ],
+    "source": {
+      "number": 2,
+      "record": "{\"name\":\"Name B\",\"ranking\":2,\"addresses\":[{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\",\"secondLine\":\"secondLine\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType1\",\"address\":{\"firstLine\":\"street1FirstLine\",\"street\":\"street1\",\"streetLength\":2,\"@type\":\"Street\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType2\",\"address\":{\"firstLine\":\"road1FirstLine\",\"road\":\"road1\",\"roadLength\":2,\"@type\":\"Road\"}}]}"
+    },
+    "value": {
+      "name": "Name B",
+      "ranking": 2,
+      "addresses": [
+        { "address": { "firstLine": "firstLine", "secondLine": "secondLine" } },
+        { "addressSubType1": [], "address": { "street": "street1" } },
+        { "addressSubType2": [], "address": { "road": "road1" } }
+      ]
+    }
+  },
+  {
+    "defects": [
+      {
+        "id": "validEmployeesSize",
+        "externalId": null,
+        "message": "Constraint :[validEmployeesSize] violated in the Class Firm",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Firm",
+        "path": []
+      },
+      {
+        "id": "validStreetLength",
+        "externalId": null,
+        "message": "Constraint :[validStreetLength] violated in the Class Street",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Street",
+        "path": [
+          { "propertyName": "addresses", "index": 1 },
+          { "propertyName": "address", "index": null }
+        ]
+      },
+      {
+        "id": "validRoadLength",
+        "externalId": null,
+        "message": "Constraint :[validRoadLength] violated in the Class Road",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Road",
+        "path": [
+          { "propertyName": "addresses", "index": 2 },
+          { "propertyName": "address", "index": null }
+        ]
+      },
+      {
+        "id": "validRoadLength",
+        "externalId": null,
+        "message": "Constraint :[validRoadLength] violated in the Class Road",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Road",
+        "path": [
+          { "propertyName": "addresses", "index": 3 },
+          { "propertyName": "address", "index": null }
+        ]
+      },
+      {
+        "id": "validStreetLength",
+        "externalId": null,
+        "message": "Constraint :[validStreetLength] violated in the Class Street",
+        "enforcementLevel": "Error",
+        "ruleType": "ClassConstraint",
+        "ruleDefinerPath": "meta::external::format::json::executionPlan::test::constraints::Street",
+        "path": [
+          { "propertyName": "addresses", "index": 4 },
+          { "propertyName": "address", "index": null }
+        ]
+      }
+    ],
+    "source": {
+      "number": 3,
+      "record": "{\"name\":\"Name C\",\"ranking\":3,\"addresses\":[{\"addressType\":\"Home\",\"address\":{\"firstLine\":\"firstLine\",\"secondLine\":\"secondLine\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType1\",\"addressSubType1\":\"Street\",\"address\":{\"firstLine\":\"street1FirstLine\",\"street\":\"street1\",\"streetLength\":0,\"@type\":\"Street\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType2\",\"addressSubType2\":\"Road\",\"address\":{\"firstLine\":\"road1FirstLine\",\"road\":\"road1\",\"roadLength\":0,\"@type\":\"Road\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType1\",\"addressSubType1\":\"Road\",\"address\":{\"firstLine\":\"road2FirstLine\",\"road\":\"road2\",\"roadLength\":0,\"@type\":\"Road\"}},{\"addressType\":\"Home\",\"@type\":\"AddressUseSubType2\",\"addressSubType2\":\"Street\",\"address\":{\"firstLine\":\"street2FirstLine\",\"street\":\"street2\",\"streetLength\":0,\"@type\":\"Street\"}}]}"
+    },
+    "value": {
+      "name": "Name C",
+      "ranking": 3,
+      "addresses": [
+        { "address": { "firstLine": "firstLine", "secondLine": "secondLine" } },
+        { "addressSubType1": ["Street"], "address": { "street": "street1" } },
+        { "addressSubType2": ["Road"], "address": { "road": "road1" } },
+        {
+          "addressSubType1": ["Road"],
+          "address": { "road": "road2", "roadLength": 0 }
+        },
+        {
+          "addressSubType2": ["Street"],
+          "address": { "street": "street2", "streetLength": 0 }
+        }
+      ]
+    }
+  }
+]

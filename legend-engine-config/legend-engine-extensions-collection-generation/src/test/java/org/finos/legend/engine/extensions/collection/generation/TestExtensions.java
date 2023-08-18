@@ -389,6 +389,7 @@ public class TestExtensions
                 .with(CorePureCoreExtension.class)
                 .with(JSONPureCoreExtension.class)
                 .with(RelationalPureCoreExtension.class)
+                .with(BindingJavaBindingPureCoreExtension.class)
                 .with(M2MJavaBindingPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingPureCoreExtension.class)
                 .with(ServiceStorePureCoreExtension.class)

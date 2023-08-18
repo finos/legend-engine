@@ -29,6 +29,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
 import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -359,6 +360,11 @@ public class ServiceTestRunner
                         Boolean assertResult = (Boolean) assertsClass.getMethod(testName, Root_meta_pure_mapping_Result.class, ExecutionSupport.class).invoke(null, pureResult, pureModel.getExecutionSupport());
                         testResult = assertResult ? TestResult.SUCCESS : TestResult.FAILURE;
                         scope.span().setTag(testName + "_assert", assertResult);
+                        if (!assertResult)
+                        {
+                            String lambdaGrammar = tc.getOne()._assert.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
+                            LOGGER.error("[{}][{}] - Assertion lambda failed: {}", this.service.getPath(), tc.getTwo(), lambdaGrammar);
+                        }
                     }
                     catch (Exception e)
                     {

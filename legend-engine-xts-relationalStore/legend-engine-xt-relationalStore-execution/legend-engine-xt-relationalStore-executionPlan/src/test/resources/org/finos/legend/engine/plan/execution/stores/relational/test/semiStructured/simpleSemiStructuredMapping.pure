@@ -385,6 +385,24 @@ function simple::semiStructuredPropertyAccessAtNestedProperty(): TabularDataSet[
     ])
 }
 
+function simple::semiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions(): TabularDataSet[1]
+{
+    simple::model::Person.all()
+        ->project([
+            x | $x.firstName,
+            x | $x.firm.legalName,
+            x | $x.manager.firm.legalName,
+            x | $x.manager.manager.firm.legalName,
+            x | $x.manager.manager.manager.firm.legalName
+        ], [
+            'First Name',
+            'Firm Name',
+            'Manager Firm Name',
+            'Manager Manager Firm Name',
+            'Manager Manager Manager Firm Name'
+        ])
+}
+
 function simple::filterWithSemiStructuredPropertyAccessAtNestedProperty(): TabularDataSet[1]
 {
     simple::model::Person.all()
@@ -415,6 +433,15 @@ function simple::filterOnEnumPropertyWithStringConst(): TabularDataSet[1]
 {
     simple::model::Person.all()
         ->filter(x | $x.firm.entityType == 'Organization')
+        ->project([
+            col(x | $x.firstName, 'First Name')
+        ])
+}
+
+function simple::filterOnEnumPropertyWithIfElseLogicEnum(): TabularDataSet[1]
+{
+    simple::model::Person.all()
+        ->filter(x | if($x.firstName == 'John', |$x.firm.entityType, |$x.firm.entityType) == 'Organization')
         ->project([
             col(x | $x.firstName, 'First Name')
         ])

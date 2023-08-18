@@ -306,7 +306,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
 
         let secondPassPre = $secondPassResults->tail()->evaluateAndDeactivate();
 
-        let secondPass = if($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]),  // TODO: cleanup needed
+        let secondPass = if($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]) && $secondPassPre->at(0).shouldBeRouted,  // TODO: cleanup needed
                             | let first = $secondPassPre->at(0);
                               let second = $secondPassPre->at(1);
                               let firstValue = $first.value->toOne()->cast(@ValueSpecification);
