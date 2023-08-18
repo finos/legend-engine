@@ -116,7 +116,8 @@ public class TestGraphQLAPI
         server.stop();
     }
 
-    private GraphQLExecute getGraphQLExecute() {
+    private GraphQLExecute getGraphQLExecute()
+    {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
