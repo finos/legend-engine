@@ -385,7 +385,6 @@ class AppendOnlyTest extends BaseTest
                 .ingestMode(ingestMode)
                 .relationalSink(H2Sink.get())
                 .createDatasets(false)
-                .enableConcurrentSafety(true)
                 .build();
         try
         {
@@ -394,7 +393,7 @@ class AppendOnlyTest extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertTrue(e.getMessage().contains("not found"));
+            Assertions.assertTrue(e.getMessage().contains("Table \"main\" not found"));
         }
     }
 }

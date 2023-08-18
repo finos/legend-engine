@@ -348,9 +348,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 operations.add(Drop.of(true, tempDatasetWithDeleteIndicator, true));
             }
-            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates && stagingDatasetWithoutDuplicates.isPresent())
+            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
             {
-                operations.add(Drop.of(true, stagingDatasetWithoutDuplicates.get(), true));
+                operations.add(Drop.of(true, stagingDatasetWithoutDuplicates.orElseThrow(IllegalStateException::new), true));
             }
         }
         return LogicalPlan.of(operations);

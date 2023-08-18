@@ -159,6 +159,7 @@ public class DatasetCaseConverter
                 .name(strategy.apply(lockInfoDataset.name()))
                 .insertTimeField(strategy.apply(lockInfoDataset.insertTimeField()))
                 .lastUsedTimeField(strategy.apply(lockInfoDataset.lastUsedTimeField()))
+                .tableNameField(strategy.apply(lockInfoDataset.tableNameField()))
                 .build();
     }
 }
