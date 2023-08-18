@@ -12,26 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.engine.authentication;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.engine.authentication.RedshiftTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestCodeRepositoryProviderAvailable
+public class TestRedshiftAuthFlowExtensionAvailable
 {
     @Test
-    public void testCodeRepositoryProviderAvailable()
+    public void testDatabaseAuthenticationFlowProviderExtensionsAvailable()
     {
-        MutableList<Class<?>> codeRepositoryProviders = Lists.mutable.empty();
-        ServiceLoader.load(CodeRepositoryProvider.class).forEach(e ->
+        MutableList<Class<?>> databaseAuthenticationFlowProviderExtensions = Lists.mutable.empty();
+        ServiceLoader.load(DatabaseAuthenticationFlowProvider.class).forEach(e ->
         {
-            codeRepositoryProviders.add(e.getClass());
+            databaseAuthenticationFlowProviderExtensions.add(e.getClass());
         });
-        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalPostgresCodeRepositoryProvider.class));
+        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(RedshiftTestDatabaseAuthenticationFlowProvider.class));
     }
 }

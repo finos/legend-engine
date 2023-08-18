@@ -12,25 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.pure.code.core;
+
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.RedshiftProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestExtensionAvailable
+public class TestDatabricksCodeRepositoryProviderAvailable
 {
     @Test
-    public void testProtocolExtensionAvailable()
+    public void testCodeRepositoryProviderAvailable()
     {
-        MutableList<Class<?>> pureProtocolExtensions = Lists.mutable.empty();
-        ServiceLoader.load(PureProtocolExtension.class).forEach(e ->
+        MutableList<Class<?>> codeRepositoryProviders = Lists.mutable.empty();
+        ServiceLoader.load(CodeRepositoryProvider.class).forEach(e ->
         {
-            pureProtocolExtensions.add(e.getClass());
+            codeRepositoryProviders.add(e.getClass());
         });
-        Assert.assertTrue(pureProtocolExtensions.contains(RedshiftProtocolExtension.class));
+        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalDatabricksCodeRepositoryProvider.class));
     }
 }

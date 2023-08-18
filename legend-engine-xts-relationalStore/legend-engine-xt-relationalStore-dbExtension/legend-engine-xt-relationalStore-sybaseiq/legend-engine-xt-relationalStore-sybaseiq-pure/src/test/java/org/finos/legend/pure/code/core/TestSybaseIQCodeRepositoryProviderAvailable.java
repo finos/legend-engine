@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestCodeRepositoryProviderAvailable
+public class TestSybaseIQCodeRepositoryProviderAvailable
 {
     @Test
     public void testCodeRepositoryProviderAvailable()
@@ -32,6 +32,6 @@ public class TestCodeRepositoryProviderAvailable
         {
             codeRepositoryProviders.add(e.getClass());
         });
-        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalSnowflakeCodeRepositoryProvider.class));
+        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalSybaseIQCodeRepositoryProvider.class));
     }
 }

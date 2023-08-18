@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestCodeRepositoryProviderAvailable
+public class TestPostgresCodeRepositoryProviderAvailable
 {
     @Test
     public void testCodeRepositoryProviderAvailable()
@@ -32,6 +32,6 @@ public class TestCodeRepositoryProviderAvailable
         {
             codeRepositoryProviders.add(e.getClass());
         });
-        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalDatabricksCodeRepositoryProvider.class));
+        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalPostgresCodeRepositoryProvider.class));
     }
 }

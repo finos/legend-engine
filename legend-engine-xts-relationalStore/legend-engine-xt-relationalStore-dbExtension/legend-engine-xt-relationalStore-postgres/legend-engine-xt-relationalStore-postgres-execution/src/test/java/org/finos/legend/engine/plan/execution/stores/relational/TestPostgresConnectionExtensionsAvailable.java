@@ -16,17 +16,15 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.SnowflakeConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestConnectionExtensionsAvailable
+public class TestPostgresConnectionExtensionsAvailable
 {
     @Test
     public void testConnectionExtensionsAvailable()
@@ -36,20 +34,13 @@ public class TestConnectionExtensionsAvailable
         {
             connectionExtensions.add(e.getClass());
         });
-        Assert.assertTrue(connectionExtensions.contains(SnowflakeConnectionExtension.class));
-
-        MutableList<Class<?>> strategicConnectionExtensions = Lists.mutable.empty();
-        ServiceLoader.load(StrategicConnectionExtension.class).forEach(e ->
-        {
-            strategicConnectionExtensions.add(e.getClass());
-        });
-        Assert.assertTrue(strategicConnectionExtensions.contains(SnowflakeConnectionExtension.class));
+        Assert.assertTrue(connectionExtensions.contains(PostgresConnectionExtension.class));
 
         MutableList<Class<?>> relationalConnectionExtensions = Lists.mutable.empty();
         ServiceLoader.load(RelationalConnectionExtension.class).forEach(e ->
         {
             relationalConnectionExtensions.add(e.getClass());
         });
-        Assert.assertTrue(relationalConnectionExtensions.contains(SnowflakeConnectionExtension.class));
+        Assert.assertTrue(relationalConnectionExtensions.contains(PostgresConnectionExtension.class));
     }
 }

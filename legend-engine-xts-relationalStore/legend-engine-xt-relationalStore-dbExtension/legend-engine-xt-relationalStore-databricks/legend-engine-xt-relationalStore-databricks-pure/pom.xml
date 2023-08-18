@@ -36,9 +36,6 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>core</repository>
-                        <repository>core_relational</repository>
                         <repository>core_relational_databricks</repository>
                     </repositories>
                     <extraRepositories>
