@@ -46,7 +46,7 @@ public class UnitemporalConcurrentTest extends BaseTest
         Thread t2 = new Thread(r2);
         t2.start();
 
-        // Thread 2
+        // Thread 3
         String path3 = "src/test/resources/data/unitemporal-incremental-milestoning/input/batch_id_and_time_based/without_delete_ind/staging_data_pass3.csv";
         Runnable r3 = new UnitemporalDeltaRunner(path3, "_thread3", H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL, fixedClock_2000_01_01, maxBatchIdCounter);
         Thread t3 = new Thread(r3);
