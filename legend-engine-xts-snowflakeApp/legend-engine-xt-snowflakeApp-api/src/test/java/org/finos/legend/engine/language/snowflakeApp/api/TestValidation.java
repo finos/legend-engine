@@ -87,7 +87,7 @@ public class TestValidation
         Assert.assertEquals(1, info.size());
         Assert.assertEquals("Snowflake App", info.get(0).name);
         Assert.assertEquals("Create a SnowflakeApp that can activate the function in Snowflake. It then can be used in SQL expressions and be shared with other accounts", info.get(0).description);
-        Assert.assertEquals("meta::protocols::pure::vX_X_X::metamodel::functionActivator::snowflakeApp::SnowflakeApp", info.get(0).configuration.topElement);
+        Assert.assertEquals("meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp", info.get(0).configuration.topElement);
         Assert.assertEquals(8, info.get(0).configuration.model.size());
     }
 }

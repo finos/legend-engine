@@ -69,7 +69,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
         return new FunctionActivatorInfo(
                 "Snowflake App",
                 "Create a SnowflakeApp that can activate the function in Snowflake. It then can be used in SQL expressions and be shared with other accounts",
-                "meta::protocols::pure::" + version + "::metamodel::functionActivator::snowflakeApp::SnowflakeApp",
+                "meta::protocols::pure::" + version + "::metamodel::function::activator::snowflakeApp::SnowflakeApp",
                 SnowflakeAppProtocolExtension.packageJSONType,
                 pureModel);
     }

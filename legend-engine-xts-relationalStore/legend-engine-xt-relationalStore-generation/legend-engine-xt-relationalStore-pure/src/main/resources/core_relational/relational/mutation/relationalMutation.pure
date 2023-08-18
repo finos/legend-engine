@@ -20,8 +20,8 @@ import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::executionPlan::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
 
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;

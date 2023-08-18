@@ -44,7 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_BooleanTypeReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference_Impl;
@@ -370,7 +370,7 @@ public class HelperServiceStoreBuilder
         else if (typeReference instanceof ComplexTypeReference)
         {
             Root_meta_external_store_service_metamodel_ComplexTypeReference complexTypeReference = new Root_meta_external_store_service_metamodel_ComplexTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ComplexTypeReference"));
-            Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding(((ComplexTypeReference) typeReference).binding, context);
+            Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding(((ComplexTypeReference) typeReference).binding, context);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(((ComplexTypeReference) typeReference).type);
 
             if (!core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()).contains(pureClass))

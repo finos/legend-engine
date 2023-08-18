@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class <<typemodifiers.abstract>> meta::external::shared::format::binding::validation::BindingDetail
+Class <<typemodifiers.abstract>> meta::external::format::shared::binding::validation::BindingDetail
 {
 }
 
-Class meta::external::shared::format::binding::validation::FailedBindingDetail extends meta::external::shared::format::binding::validation::BindingDetail
+Class meta::external::format::shared::binding::validation::FailedBindingDetail extends meta::external::format::shared::binding::validation::BindingDetail
 {
    errorMessages: String[*];
 }
 
-Class meta::external::shared::format::binding::validation::SuccessfulBindingDetail extends meta::external::shared::format::binding::validation::BindingDetail
+Class meta::external::format::shared::binding::validation::SuccessfulBindingDetail extends meta::external::format::shared::binding::validation::BindingDetail
 {
    fetchMappedPropertiesForClass : Function<{Class<Any>[1] -> AbstractProperty<Any>[*]}>[1];
 

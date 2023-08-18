@@ -37,7 +37,7 @@ public class Address implements IReferencedObject, IExternalData
 
         public String getPureClassName()
         {
-            return "meta::external::shared::testpack::simple::Address";
+            return "meta::external::format::shared::testpack::simple::Address";
         }
     };
 
@@ -194,23 +194,23 @@ public class Address implements IReferencedObject, IExternalData
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.firstLineSize < 1L || this.firstLineSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firstLine: expected [1] found [" + this.firstLineSize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firstLine: expected [1] found [" + this.firstLineSize + "]", "meta::external::format::shared::testpack::simple::Address"));
         }
         if (this.secondLineSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for secondLine: expected [0..1] found [" + this.secondLineSize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for secondLine: expected [0..1] found [" + this.secondLineSize + "]", "meta::external::format::shared::testpack::simple::Address"));
         }
         if (this.citySize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for city: expected [0..1] found [" + this.citySize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for city: expected [0..1] found [" + this.citySize + "]", "meta::external::format::shared::testpack::simple::Address"));
         }
         if (this.regionSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for region: expected [0..1] found [" + this.regionSize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for region: expected [0..1] found [" + this.regionSize + "]", "meta::external::format::shared::testpack::simple::Address"));
         }
         if (this.countrySize < 1L || this.countrySize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for country: expected [1] found [" + this.countrySize + "]", "meta::external::shared::testpack::simple::Address"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for country: expected [1] found [" + this.countrySize + "]", "meta::external::format::shared::testpack::simple::Address"));
         }
         return defects;
     }

@@ -32,20 +32,20 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_transformation_fromPure_ModelToFlatDataConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_transformation_toPure_FlatDataToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 
 import java.util.stream.Collectors;
 
 public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, ModelToFlatDataConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, FlatDataToModelConfiguration>
 {
-    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> flatDataContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData>) core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_contract_flatDataFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> flatDataContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData>) core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_contract_flatDataFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = flatDataContract._id();
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract()
     {
         return flatDataContract;
     }
@@ -77,7 +77,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(FlatDataToModelConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(FlatDataToModelConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_flatdata_transformation_toPure_FlatDataToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::flatdata::transformation::toPure::FlatDataToModelConfiguration"))
                 ._targetPackage(configuration.targetPackage)
@@ -86,7 +86,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToFlatDataConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToFlatDataConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_flatdata_transformation_fromPure_ModelToFlatDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::flatdata::transformation::fromPure::ModelToFlatDataConfiguration"))
                 ._targetSchemaSet(configuration.targetSchemaSet);

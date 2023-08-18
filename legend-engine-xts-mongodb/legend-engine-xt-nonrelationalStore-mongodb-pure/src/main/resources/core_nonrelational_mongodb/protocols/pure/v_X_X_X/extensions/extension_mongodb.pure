@@ -64,7 +64,7 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
                     resultType        = $mdIntern.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                     resultSizeRange   = $mdIntern.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
                 ),
-              exfin: meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode[1] |
+              exfin: meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode[1] |
                 ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(
                   _type             = 'externalFormatInternalize',
                   resultType        = $exfin.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),

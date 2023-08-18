@@ -22,19 +22,19 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_transformation_toPure_XsdToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
 
 public class XsdExternalFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration>
 {
-    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> xsdContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> xsdContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = xsdContract._id();
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()
     {
         return xsdContract;
     }
@@ -53,7 +53,7 @@ public class XsdExternalFormatExtension implements ExternalFormatModelGeneration
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(XsdToModelConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(XsdToModelConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_xml_transformation_toPure_XsdToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::xml::transformation::toPure::XsdToModelConfiguration"))
                 ._sourceSchemaId(configuration.sourceSchemaId)
@@ -63,7 +63,7 @@ public class XsdExternalFormatExtension implements ExternalFormatModelGeneration
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
+    public Root_meta_external_format_shared_binding_validation_BindingDetail bindDetails(Root_meta_external_format_shared_binding_Binding binding, CompileContext context)
     {
         // TODO XSD Correlation
         return null;

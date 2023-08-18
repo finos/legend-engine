@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStubMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.StringValuePattern;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ServiceRequestPattern;
@@ -140,7 +140,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
     private Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition compileServiceResponseDefinition(ServiceResponseDefinition serviceResponseDefinition)
     {
         Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition pureServiceResponseDefinition = new Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::data::ServiceResponseDefinition"));
-        pureServiceResponseDefinition._body((Root_meta_external_shared_format_metamodel_data_ExternalFormatData) serviceResponseDefinition.body.accept(new EmbeddedDataFirstPassBuilder(this.context, this.processingContext)));
+        pureServiceResponseDefinition._body((Root_meta_external_format_shared_metamodel_data_ExternalFormatData) serviceResponseDefinition.body.accept(new EmbeddedDataFirstPassBuilder(this.context, this.processingContext)));
 
         return pureServiceResponseDefinition;
     }

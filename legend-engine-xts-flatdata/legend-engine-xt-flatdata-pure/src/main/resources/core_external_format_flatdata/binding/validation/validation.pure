@@ -15,9 +15,9 @@
 import meta::external::format::flatdata::binding::validation::*;
 import meta::external::format::flatdata::metamodel::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::utils::*;
 
 import meta::pure::model::unit::*;
 

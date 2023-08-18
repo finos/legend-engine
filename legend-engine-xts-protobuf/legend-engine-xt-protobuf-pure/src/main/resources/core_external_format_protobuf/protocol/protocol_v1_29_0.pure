@@ -29,7 +29,7 @@ import meta::protocols::pure::v1_29_0::invocation::externalFormat::protobuf::*;
 
 import meta::pure::model::unit::*;
 
-function meta::protocols::pure::v1_29_0::invocation::externalFormat::protobuf::legendGenerateProtobuf(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1], host:String[1], port:Integer[1], version:String[1]):meta::external::shared::format::metamodel::data::SchemaData[*]
+function meta::protocols::pure::v1_29_0::invocation::externalFormat::protobuf::legendGenerateProtobuf(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1], host:String[1], port:Integer[1], version:String[1]):meta::external::format::shared::metamodel::data::SchemaData[*]
 {
    let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/external/format/generateSchema'),
                                  HTTPMethod.POST,
@@ -49,7 +49,7 @@ function meta::protocols::pure::v1_29_0::invocation::externalFormat::protobuf::l
    let jsonRes = $resp.entity->parseJSON()->cast(@JSONObject);
    let schemas = $jsonRes->navigateArray('elements').values->at(0)->cast(@JSONObject)->navigateArray('schemas').values;
    $schemas->cast(@JSONObject)->map(s|
-      ^meta::external::shared::format::metamodel::data::SchemaData
+      ^meta::external::format::shared::metamodel::data::SchemaData
       (
         location = $s->navigateString('location').value,
         content = $s->navigateString('content').value

@@ -16,7 +16,7 @@ import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 import meta::external::format::json::executionPlan::model::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
@@ -246,7 +246,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
 ###Pure
 import meta::legend::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
 Class meta::external::format::json::executionPlan::test::simple::RefinedPerson

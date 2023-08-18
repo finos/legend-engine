@@ -56,7 +56,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
             return new Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl(
                         app.name,
                         null,
-                        context.pureModel.getClass("meta::external::functionActivator::snowflakeApp::SnowflakeApp")
+                        context.pureModel.getClass("meta::external::function::activator::snowflakeApp::SnowflakeApp")
                         )
                         ._applicationName(app.applicationName)
                         ._function(func)

@@ -109,7 +109,7 @@ public class TestXmlDeserializer
 
         IDefect defect = firms.get(1).getDefects().get(0);
         Assert.assertEquals("Invalid long value: 'A' at /world[1]/firms[1]/firm[2][@ranking]", defect.getMessage());
-        Assert.assertEquals("meta::external::shared::testpack::simple::Firm", defect.getRuleDefinerPath());
+        Assert.assertEquals("meta::external::format::shared::testpack::simple::Firm", defect.getRuleDefinerPath());
 
         List<XmlDataRecord> sources = firms.stream().map(IChecked::getSource).map(XmlDataRecord.class::cast).collect(Collectors.toList());
         Assert.assertEquals(Arrays.asList("<firm name=\"Acme Inc.\" ranking=\"2\"/>", "<firm name=\"Widget Engineering\" ranking=\"A\"/>", "<firm name=\"Globex Corp\"/>"), sources.stream().map(XmlDataRecord::getRecord).collect(Collectors.toList()));

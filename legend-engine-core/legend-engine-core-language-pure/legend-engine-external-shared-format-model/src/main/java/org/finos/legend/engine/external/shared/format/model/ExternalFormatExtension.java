@@ -21,9 +21,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_BindingDetail;
 
 import java.util.List;
 
@@ -40,7 +40,7 @@ public interface ExternalFormatExtension<Metamodel>
     /**
      * Returns the contract for this external format written in PURE
      */
-    Root_meta_external_shared_format_ExternalFormatContract<Metamodel> getExternalFormatContract();
+    Root_meta_external_format_shared_ExternalFormatContract<Metamodel> getExternalFormatContract();
 
     /**
      * Called to compile an external format schema set of this format.  This should verify the schema contents
@@ -94,11 +94,11 @@ public interface ExternalFormatExtension<Metamodel>
     /**
      * Called as part of Binding compilation to verify that the model and schema match such that serialization and deserialization
      * can occur.  This provides early warning to the user as they change the schema and model of changes that would break data flows.
-     * The compilation fails if the result returned is a meta_external_shared_format_binding_validation_FailedBindingDetail.
+     * The compilation fails if the result returned is a meta_external_format_shared_binding_validation_FailedBindingDetail.
      */
-    default Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
+    default Root_meta_external_format_shared_binding_validation_BindingDetail bindDetails(Root_meta_external_format_shared_binding_Binding binding, CompileContext context)
     {
-        Root_meta_external_shared_format_ExternalFormatContract<Metamodel> externalFormatContract = getExternalFormatContract();
+        Root_meta_external_format_shared_ExternalFormatContract<Metamodel> externalFormatContract = getExternalFormatContract();
 
         if (externalFormatContract._externalFormatBindingValidator() == null)
         {
