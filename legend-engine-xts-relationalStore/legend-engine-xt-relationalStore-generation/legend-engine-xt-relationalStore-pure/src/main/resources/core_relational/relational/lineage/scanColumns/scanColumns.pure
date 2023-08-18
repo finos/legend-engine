@@ -112,6 +112,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
    let targetSetImplementationId = $pm->match([
       i: InlineEmbeddedRelationalInstanceSetImplementation[1]|
       $m->allSubSetImplementationIds($i.inlineSetImplementationId)->removeDuplicates(),
+      s:SemiStructuredRelationalPropertyMapping[1] | [],
       p:PropertyMapping[1]|
       let targetSiId = $p.targetSetImplementationId;
       let nIdToSet = $targetSiId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m->classMappingById($sid))))->newMap())}, $state.idToSet);
@@ -122,6 +123,8 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
                |$m->_classMappingByClass($possiblePropertyTargetClasses->filter(c|$c->_subTypeOf($targetClass->toOne()))->toOne())->map(s|$s->resolveOperation($m)).id, |[]),
       | $targetSiId;);
                                            ]);
+
+   let columnsFromSemiStructuredMappings = $pm->match([s:SemiStructuredRelationalPropertyMapping[1] | $s->getColumns(), a:Any[*]|[]->cast(@ColumnWithContext)]);
 
    let potentialColumnsFromJoin = $pm->match([
       r:RelationalPropertyMapping[1]|
@@ -136,7 +139,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
    let columnsFromChildren = meta::pure::lineage::scanColumns::manageQualifiers($p.children, [])
    ->map(c|$c->scanColumns($m, $targetSetImplementationId->map(id|$nIdToSet->get($id).values->toOne()), $state.classToSets, $nIdToSet, false, $debug));
 
-   ^ColResWithState(colRes=^ColRes(columns = $state.colRes.columns->concatenate($potentialColumnsFromJoin)->concatenate($columnsFromChildren.colRes.columns), sets=$targetSetImplementationId->map(id|$nIdToSet->get($id).values)),
+   ^ColResWithState(colRes=^ColRes(columns = $state.colRes.columns->concatenate($potentialColumnsFromJoin)->concatenate($columnsFromSemiStructuredMappings)->concatenate($columnsFromChildren.colRes.columns), sets=$targetSetImplementationId->map(id|$nIdToSet->get($id).values)),
                     classToSets=$columnsFromChildren.classToSets->map(n|$n->keyValues())->newMap(),
                     idToSet=$columnsFromChildren.idToSet->map(n|$n->keyValues())->newMap());
 }

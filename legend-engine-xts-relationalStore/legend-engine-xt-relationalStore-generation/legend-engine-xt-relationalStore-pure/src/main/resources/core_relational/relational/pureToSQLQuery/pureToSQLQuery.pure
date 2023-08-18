@@ -2226,13 +2226,9 @@ function meta::relational::functions::pureToSqlQuery::processNoOp(f:FunctionExpr
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessAt(f:FunctionExpression[1]):Boolean[1]
 {
-   // Can process 'at' in the context of semi structured set implementations
+   // Can process 'at' in the context of semi structured mappings (which are not routed)
    let params = $f.parametersValues->evaluateAndDeactivate();
-   if(($params->size() == 2) && ($params->at(0)->instanceOf(StoreMappingRoutedValueSpecification)),
-      | let firstParam = $params->at(0)->cast(@StoreMappingRoutedValueSpecification);
-        ($firstParam.sets->size() == 1) && ($firstParam.sets->at(0)->instanceOf(SemiStructuredRelationalInstanceSetImplementation));,
-      | false
-   );
+   ($params->size() == 2) && (!$params->at(0)->instanceOf(RoutedValueSpecification) || $params->at(0)->instanceOf(NoSetRoutedValueSpecification));
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processAt(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -3050,7 +3046,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    print(if(!$context.debug, |'',
             | $context.space+'  Found '+$distinctTransformers->size()->toString()+' distinct transformers\n'));
 
-   let foundEnumPropertyMapping = $propertyMappings->at(0);
+   let foundEnumPropertyMapping = $propertyMappings->head();
    let isEnumConstantSide = {l:LambdaFunction<Any>[1] |
          $l.expressionSequence->match([
             sfe : SimpleFunctionExpression[1]| $sfe.func == extractEnumValue_Enumeration_1__String_1__T_1_,

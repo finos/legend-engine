@@ -80,6 +80,15 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
             }
       ),
      supportsNativeJoinAmongElements = true,
+     isPropertyAutoMapped = {prop: Property<Nil,Any|*>[1], set: InstanceSetImplementation[1] | 
+        $set->match([
+          r: RelationalInstanceSetImplementation[1] | $r->_propertyMappingsByPropertyName($prop.name->toOne())->match([
+            s: SemiStructuredRelationalPropertyMapping[1] | true,
+            a: Any[*] | false
+          ]),
+          a: Any[*] | false
+        ])
+     },
      reprocessConnection = {connection:Connection[1] |
                               $connection->match(
                                   [
