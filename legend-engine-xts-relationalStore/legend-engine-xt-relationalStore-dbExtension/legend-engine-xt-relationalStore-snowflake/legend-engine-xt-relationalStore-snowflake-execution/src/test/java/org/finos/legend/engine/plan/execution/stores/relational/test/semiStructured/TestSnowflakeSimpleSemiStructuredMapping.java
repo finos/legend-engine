@@ -312,6 +312,23 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
     }
 
     @Test
+    public void testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions()
+    {
+        String queryFunction = "simple::semiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                        "    (\n" +
+                        "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n" +
+                        "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Manager Firm Name\", \"\"), (\"Manager Manager Firm Name\", \"\"), (\"Manager Manager Manager Firm Name\", \"\")]\n" +
+                        "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Manager Firm Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_2\".MANAGERID = \"person_table_3\".ID)\n" +
+                        "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                        "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+    }
+
+    @Test
     public void testFilterWithSemiStructuredPropertyAccessAtNestedProperty()
     {
         String queryFunction = "simple::filterWithSemiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_";
@@ -375,6 +392,23 @@ public class TestSnowflakeSimpleSemiStructuredMapping extends AbstractTestSnowfl
                 "      sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where \"root\".FIRM_DETAILS['entityType']::varchar = 'Organization'\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+    }
+
+    @Test
+    public void testFilterOnEnumPropertyWithWithIfElseLogicEnum()
+    {
+        String queryFunction = "simple::filterOnEnumPropertyWithIfElseLogicEnum__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                        "    (\n" +
+                        "      type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
+                        "      resultColumns = [(\"First Name\", VARCHAR(100))]\n" +
+                        "      sql = select \"root\".FIRSTNAME as \"First Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" where case when \"root\".FIRSTNAME = 'John' then \"root\".FIRM_DETAILS['entityType']::varchar else \"root\".FIRM_DETAILS['entityType']::varchar end = 'Organization'\n" +
+                        "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                        "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
