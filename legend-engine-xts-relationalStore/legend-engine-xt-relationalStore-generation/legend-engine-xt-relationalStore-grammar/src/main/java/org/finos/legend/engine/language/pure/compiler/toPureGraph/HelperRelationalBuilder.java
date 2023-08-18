@@ -87,8 +87,7 @@ import org.finos.legend.pure.generated.Root_meta_relational_mapping_GroupByMappi
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_InlineEmbeddedRelationalInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_OtherwiseEmbeddedRelationalInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_mapping_RelationalPropertyMapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_SemiStructuredRelationalInstanceSetImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_mapping_SemiStructuredEmbeddedRelationalInstanceSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Column_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_DynaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Filter_Impl;
@@ -96,7 +95,6 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_LiteralLis
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Literal_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_MultiGrainFilter_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElementWithJoin_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SQLNull_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Schema_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAliasColumn_Impl;
@@ -966,7 +964,7 @@ public class HelperRelationalBuilder
         Property property = resolvePropertyForRelationalPropertyMapping(propertyMapping, immediateParent, context);
         if (propertyMapping.bindingTransformer != null)
         {
-            return buildSemiStructuredPropertyMapping(property, propertyMapping, immediateParent, aliasMap, context);
+            return buildSemiStructuredPropertyMapping(property, propertyMapping, immediateParent, (RootRelationalInstanceSetImplementation) topParent, aliasMap, context);
         }
         org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping res = rpm
                 ._property(property)
@@ -1571,7 +1569,7 @@ public class HelperRelationalBuilder
         });
     }
 
-    private static PropertyMapping buildSemiStructuredPropertyMapping(Property<?, ?> property, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation parent, MutableMap<String, TableAlias> aliasMap, CompileContext context)
+    private static PropertyMapping buildSemiStructuredPropertyMapping(Property<?, ?> property, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation parent, RootRelationalInstanceSetImplementation topParent, MutableMap<String, TableAlias> aliasMap, CompileContext context)
     {
         Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding(propertyMapping.bindingTransformer.binding, context);
         List<? extends Class<?>> bindingClasses = FastList.newList(core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()));
@@ -1589,15 +1587,19 @@ public class HelperRelationalBuilder
             throw new EngineException("Class: " + Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        Sets.mutable.withAll(bindingClasses).forEach(clazz -> addSemiStructuredSetImplementation(parent._parent(), clazz, binding._contentType(), (RootRelationalInstanceSetImplementation) parent, context));
-
         Class<?> classifier = context.pureModel.getClass("meta::external::shared::format::binding::BindingTransformer");
         GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(classifier)
                 ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(propertyReturnType)));
-        return new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredRelationalPropertyMapping"))
+        String setId = "semi_structured_generated_embedded_" + parent._id() + "_" + property._name();
+        return new Root_meta_relational_mapping_SemiStructuredEmbeddedRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation"))
+                ._id(setId)
+                ._root(false)
+                ._class(propertyReturnType)
+                ._parent(parent._parent())
+                ._setMappingOwner(topParent)
                 ._sourceSetImplementationId(parent._id())
-                ._targetSetImplementationId(generateTargetSetImplementationIdForProperty(property, parent._id(), context))
+                ._targetSetImplementationId(setId)
                 ._property(property)
                 ._owner(parent)
                 ._relationalOperationElement(processRelationalOperationElement(propertyMapping.relationalOperation, context, aliasMap, FastList.newList()))
@@ -1607,83 +1609,5 @@ public class HelperRelationalBuilder
                                 ._classifierGenericType(genericType)
                                 ._class(propertyReturnType)
                 );
-    }
-
-    private static String generateTargetSetImplementationIdForProperty(Property<?, ?> property, String rootSetId, CompileContext context)
-    {
-        boolean isPrimitiveProperty = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(property, context.getExecutionSupport());
-        return isPrimitiveProperty ? "" : generatedSemiStructuredMappingId((Class<?>) property._genericType()._rawType(), rootSetId, context);
-    }
-
-    private static String generatedSemiStructuredMappingId(Class<?> clazz, String rootSetId, CompileContext context)
-    {
-        String elementPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(clazz, "_", context.getExecutionSupport());
-        return "semi_structured_generated_" + rootSetId + "_" + elementPath;
-    }
-
-    private static void addSemiStructuredSetImplementation(Mapping mapping, Class<?> clazz, String bindingContentType, RootRelationalInstanceSetImplementation rootSet, CompileContext context)
-    {
-        String rootSetId = rootSet._id();
-        String setId = generatedSemiStructuredMappingId(clazz, rootSetId, context);
-
-        if (mapping._classMappings().select(cm -> setId.equals(cm._id())).isEmpty())
-        {
-            SemiStructuredRelationalInstanceSetImplementation setImpl = new Root_meta_relational_mapping_SemiStructuredRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredRelationalInstanceSetImplementation"))
-                    ._root(false)
-                    ._class(clazz)
-                    ._id(setId)
-                    ._parent(mapping)
-                    ._userDefinedPrimaryKey(false)
-                    ._mainTableAlias(rootSet._mainTableAlias());
-
-            core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_hierarchicalProperties_Class_1__Property_MANY_(clazz, context.getExecutionSupport()).forEach(p ->
-            {
-                boolean isPrimitiveProperty = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(p, context.getExecutionSupport());
-
-                if (isPrimitiveProperty)
-                {
-                    setImpl._propertyMappingsAdd(
-                            new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredRelationalPropertyMapping"))
-                                    ._sourceSetImplementationId(setId)
-                                    ._targetSetImplementationId("")
-                                    ._property(p)
-                                    ._owner(setImpl)
-                                    ._relationalOperationElement(
-                                            new Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::operation::SemiStructuredPropertyAccess"))
-                                                    ._operand(new Root_meta_relational_metamodel_RelationalOperationElement_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::RelationalOperationElement")))
-                                                    ._contentType(bindingContentType)
-                                                    ._returnType(p._genericType()._rawType())
-                                                    ._property(new Root_meta_relational_metamodel_Literal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(p._name()))
-                                    )
-                    );
-                }
-                else
-                {
-                    Class<?> propertyReturnType = (Class<?>) p._genericType()._rawType();
-                    MutableSet<Class<?>> allClasses = Sets.mutable.empty();
-                    allClasses.add(propertyReturnType);
-                    core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_allSpecializations_Class_1__Class_MANY_(propertyReturnType, context.getExecutionSupport()).forEach(allClasses::add);
-
-                    allClasses.forEach(cl ->
-                            setImpl._propertyMappingsAdd(
-                                    new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredRelationalPropertyMapping"))
-                                            ._sourceSetImplementationId(setId)
-                                            ._targetSetImplementationId(generatedSemiStructuredMappingId(cl, rootSetId, context))
-                                            ._property(p)
-                                            ._owner(setImpl)
-                                            ._relationalOperationElement(
-                                                    new Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::operation::SemiStructuredPropertyAccess"))
-                                                            ._operand(new Root_meta_relational_metamodel_RelationalOperationElement_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::RelationalOperationElement")))
-                                                            ._contentType(bindingContentType)
-                                                            ._returnType(cl)
-                                                            ._property(new Root_meta_relational_metamodel_Literal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(p._name()))
-                                            )
-                            )
-                    );
-                }
-            });
-
-            mapping._classMappingsAdd(setImpl);
-        }
     }
 }
