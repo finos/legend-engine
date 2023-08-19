@@ -31,7 +31,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::external::format::json::t
         let legendJavaPlatformBindings     = [inMemoryLegendJavaPlatformBindingExtension(),
                                               bindingLegendJavaPlatformBindingExtension(),
                                               externalFormatLegendJavaPlatformBindingExtension(jsonSchemaJavaBindingDescriptor())];
-        let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([legendJavaPlatformBinding($legendJavaPlatformBindings)]));
+        let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - InMemory, ExternalFormatCore, ExternalFormatJSON', [legendJavaPlatformBinding($legendJavaPlatformBindings)]));
 
         // Using LegendJava as the default for local platform binding
         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);

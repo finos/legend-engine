@@ -28,7 +28,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    (
       platformId = legendJavaPlatformBindingId(),
 
-      id = 'BindingLegendJavaPlatformBindingExtension',
+      id = 'ExternalFormatLegendJavaPlatformBindingExtension_Core',
 
       // Node based extensions ------------------------------------------------------
 
@@ -99,7 +99,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    (
       platformId = legendJavaPlatformBindingId(),
 
-      id = 'BindingLegendJavaPlatformBindingExtension_'  + $formatDescriptors->map(fd | $fd.externalFormatContract.id)->joinStrings('_'),
+      id = 'ExternalFormatLegendJavaPlatformBindingExtension_'  + $formatDescriptors->map(fd | $fd.externalFormatContract.id)->joinStrings('_'),
 
       // Adhoc extensions -----------------------------------------------------------      
 
@@ -111,7 +111,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
 
 function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsJavaPlatformBinding(): Extension[1]
 {
-  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - ExternalFormatCore', [
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension()
     ])
@@ -122,7 +122,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
 function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
   meta::pure::extension::defaultExtensions()->concatenate(
-    meta::pure::executionPlan::platformBinding::platformBindingExtension([
+    meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, ExternalFormatCore, ' + $externalFormatDescriptors->map(fd | 'ExternalFormat' + $fd.externalFormatContract.id)->joinStrings(', '), [
       meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
         meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
         meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),

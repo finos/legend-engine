@@ -26,7 +26,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatf
 
 
 Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBinding extends PlatformBinding [
-   idIsLegendJava: $this.id == legendJavaPlatformBindingId(),
+   idIsLegendJava: $this.platformId == legendJavaPlatformBindingId(),
    allLegendJavaExtensions: $this.platformBindingExtensions->forAll(e | $e->instanceOf(LegendJavaPlatformBindingExtension))
 ]
 {
@@ -76,7 +76,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatf
 {
    ^LegendJavaPlatformBinding
    (
-      id = legendJavaPlatformBindingId(),
+      platformId = legendJavaPlatformBindingId(),
       platformBindingExtensions = $platformBindingExtensions,
       bindPlanToPlatform = bindPlanToLegendJavaPlatform_ExecutionPlan_1__PlatformBindingConfig_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_
    )
