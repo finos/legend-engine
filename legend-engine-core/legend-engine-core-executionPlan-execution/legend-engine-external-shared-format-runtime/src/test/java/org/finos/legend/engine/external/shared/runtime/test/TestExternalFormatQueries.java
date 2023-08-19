@@ -155,35 +155,6 @@ public abstract class TestExternalFormatQueries
                 "}\n";
     }
 
-    protected String urlStreamRuntime(String mapping, String binding)
-    {
-        return "###Runtime\n" +
-                "Runtime test::runtime\n" +
-                "{\n" +
-                "  mappings:\n" +
-                "  [\n" +
-                "    " + mapping + "\n" +
-                "  ];\n" +
-                "  connections:\n" +
-                "  [\n" +
-                "    " + binding + ":\n" +
-                "    [\n" +
-                "      c1:\n" +
-                "      #{\n" +
-                "        ExternalFormatConnection\n" +
-                "        {\n" +
-                "          source: UrlStream\n" +
-                "          {\n" +
-                "            url: 'executor:default';\n" +
-                "          };\n" +
-                "        }\n" +
-                "      }#\n" +
-                "    ]\n" +
-                "  ];\n" +
-                "}\n";
-
-    }
-
     protected String firmTree()
     {
         return "#{test::firm::model::Firm {name, ranking}}#";

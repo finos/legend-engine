@@ -21,24 +21,6 @@ import meta::pure::executionPlan::*;
 
 import meta::pure::extension::*;
 
-function <<doc.deprecated>> meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource(externalSource:ExternalSource[1]): ExecutionNode[1]
-{
-   $externalSource->match([
-      u:UrlStreamExternalSource[1]     | generateUrlStreamExecutionNode($u),
-      e:ExternalSource[1]              | fail('External source format not supported !!'); @ExecutionNode;
-   ]);
-}
-
-function <<access.private>> meta::external::shared::format::executionPlan::generateUrlStreamExecutionNode(externalSource:UrlStreamExternalSource[1]): ExecutionNode[1]
-{
-   let sourceUrl = $externalSource->cast(@UrlStreamExternalSource).url;
-   
-   ^UrlStreamExecutionNode(
-      resultType = ^DataTypeResultType(type = String),
-      url        = $sourceUrl
-   );
-}
-
 // ------------------------------------------------------------------------------------------------------------------------
 // Execution Nodes
 // ------------------------------------------------------------------------------------------------------------------------
@@ -46,29 +28,4 @@ function <<access.private>> meta::external::shared::format::executionPlan::gener
 Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
 {
    url : String[1];
-}
-
-// ------------------------------------------------------------------------------------------------------------------------
-// External Source
-// ------------------------------------------------------------------------------------------------------------------------
-
-Class <<typemodifiers.abstract>> meta::external::shared::format::executionPlan::ExternalSource
-{
-}
-
-Class meta::external::shared::format::executionPlan::UrlStreamExternalSource extends ExternalSource
-{
-   url : String[1];
-}
-
-// ------------------------------------------------------------------------------------------------------------------------
-// Connections - Deprecated to be replaced by internalize
-// ------------------------------------------------------------------------------------------------------------------------
-
-Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends Connection
-[
-   $this.element->instanceOf(Binding)
-]
-{
-   externalSource : ExternalSource[1];
 }
