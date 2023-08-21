@@ -10,10 +10,28 @@
     }
   ],
   "paths": {
-    "/service/testOpenApi": {
+    "/service/testOpenApi/{firstName}": {
       "get": {
         "tags": [
           "definition"
+        ],
+        "parameters": [
+          {
+            "name": "firstName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "age",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -25,8 +43,12 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "First Name",
                         "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
                       }
                     ]
                   }
@@ -50,8 +72,12 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "First Name",
                         "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
                       }
                     ]
                   }
@@ -65,20 +91,6 @@
   },
   "components": {
     "schemas": {
-      "TDSRow": {
-        "type": "object",
-        "properties": {
-          "parent": {
-            "$ref": "#/components/schemas/TabularDataSet"
-          },
-          "values": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Any"
-            }
-          }
-        }
-      },
       "TabularDataSet": {
         "type": "object",
         "properties": {
@@ -107,15 +119,6 @@
       "TDSColumn": {
         "type": "object",
         "properties": {
-          "documentation": {
-            "type": "string"
-          },
-          "offset": {
-            "type": "integer"
-          },
-          "type": {
-            "$ref": "#/components/schemas/DataType"
-          },
           "enumMappingId": {
             "type": "string"
           },
@@ -124,6 +127,29 @@
           },
           "name": {
             "type": "string"
+          },
+          "documentation": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DataType"
+          }
+        }
+      },
+      "TDSRow": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
+          },
+          "parent": {
+            "$ref": "#/components/schemas/TabularDataSet"
           }
         }
       }

@@ -393,6 +393,7 @@ Class <<typemodifiers.abstract>> meta::external::function::description::openapi:
 
 Class <<typemodifiers.abstract>> meta::external::function::description::openapi::metamodel::SchemaOrReference
 {
+  specificationExtensions: Map<String, Any>[0..1];
 }
 
 Class meta::external::function::description::openapi::metamodel::Reference extends CallbackOrReference,ExampleOrReference,HeaderOrReference,LinkOrReference,ParameterOrReference,RequestBodyOrReference,ResponseOrReference,SecuritySchemeOrReference,SchemaOrReference

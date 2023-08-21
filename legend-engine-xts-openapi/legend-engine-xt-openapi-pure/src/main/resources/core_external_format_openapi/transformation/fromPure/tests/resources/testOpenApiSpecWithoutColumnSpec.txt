@@ -10,10 +10,20 @@
     }
   ],
   "paths": {
-    "/service/testOpenApi": {
+    "/service/test": {
       "get": {
         "tags": [
           "definition"
+        ],
+        "parameters": [
+          {
+            "name": "firstName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -25,8 +35,12 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "First Name",
                         "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
                       }
                     ]
                   }
@@ -50,8 +64,12 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "First Name",
                         "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
                       }
                     ]
                   }
