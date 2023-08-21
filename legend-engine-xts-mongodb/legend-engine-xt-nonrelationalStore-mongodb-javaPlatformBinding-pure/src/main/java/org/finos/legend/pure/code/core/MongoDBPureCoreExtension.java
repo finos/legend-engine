@@ -14,30 +14,19 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.pure.code.core.PureCoreExtension;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.m3.execution.ExecutionSupport;
-
-import java.lang.reflect.Method;
 
 public class MongoDBPureCoreExtension implements PureCoreExtension
 {
     @Override
-    public RichIterable<? extends Root_meta_pure_extension_Extension> extraPureCoreExtensions(ExecutionSupport es)
+    public String functionFile()
     {
-        try
-        {
-            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension");
-            Method m = cl.getMethod("Root_meta_external_store_mongodb_executionPlan_platformBinding_legendJava_mongoDBOnlyLegendJavaPlatformBindingExtensions__Extension_MANY_", ExecutionSupport.class);
-            RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> ext = (RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension>) m.invoke(null, es);
-            return ext;
-        }
-        catch (Exception e)
-        {
-            // Silent at build time
-            return Lists.mutable.empty();
-        }
+        return "core_nonrelational_mongodb_java_platform_binding/mongodbStoreLegendJavaPlatformBindingExtension.pure";
+    }
+
+    @Override
+    public String functionSignature()
+    {
+        return "meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBOnlyLegendJavaPlatformBindingExtensions__Extension_MANY_";
     }
 }

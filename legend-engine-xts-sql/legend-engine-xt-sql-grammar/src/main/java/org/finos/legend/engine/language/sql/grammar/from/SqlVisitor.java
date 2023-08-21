@@ -1662,9 +1662,23 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitMaybeParametrizedDataType(SqlBaseParser.MaybeParametrizedDataTypeContext context)
     {
         StringLiteral name = (StringLiteral) visit(context.baseDataType());
-        //TODO handle parameters
+
+        List<Long> parameters = ListIterate.collect(visitCollection(context.integerLiteral(), Node.class), n ->
+        {
+            if (n instanceof IntegerLiteral)
+            {
+                return Long.valueOf(((IntegerLiteral) n).value);
+            }
+            else if (n instanceof LongLiteral)
+            {
+                return ((LongLiteral) n).value;
+            }
+            throw new UnsupportedOperationException("Invalid cast parameter");
+        });
+
         ColumnType columnType = new ColumnType();
         columnType.name = name.value;
+        columnType.parameters = parameters;
 
         return columnType;
     }

@@ -14,30 +14,19 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.pure.code.core.PureCoreExtension;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.m3.execution.ExecutionSupport;
-
-import java.lang.reflect.Method;
 
 public class FlatDataPureCoreExtension implements PureCoreExtension
 {
     @Override
-    public RichIterable<? extends Root_meta_pure_extension_Extension> extraPureCoreExtensions(ExecutionSupport es)
+    public String functionFile()
     {
-        try
-        {
-            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract");
-            Method m = cl.getMethod("Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_", ExecutionSupport.class);
-            Root_meta_pure_extension_Extension ext = (Root_meta_pure_extension_Extension) m.invoke(null, es);
-            return Lists.mutable.with(ext);
-        }
-        catch (Exception e)
-        {
-            // Silent at build time
-            return Lists.mutable.empty();
-        }
+        return "core_external_format_flatdata/externalFormatContract.pure";
+    }
+
+    @Override
+    public String functionSignature()
+    {
+        return "meta::external::format::flatdata::extension::flatDataFormatExtension__Extension_1_";
     }
 }

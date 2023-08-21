@@ -91,9 +91,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -132,17 +134,19 @@ public class SqlExecute
     @ApiOperation(value = "Execute a SQL query using sql string")
     @Path("executeQueryString")
     @Consumes({MediaType.TEXT_PLAIN})
-    public Response executeSql(@Context HttpServletRequest request, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response executeSql(@Context HttpServletRequest request, String sql, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat")SerializationFormat format,
+                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         Query query = (Query) parser.parseStatement(sql);
-        return executeSql(request, query, pm, uriInfo);
+        return executeSql(request, query, format, pm, uriInfo);
     }
 
     @POST
     @ApiOperation(value = "Execute a SQL query using protocol model")
     @Path("executeQuery")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response executeSql(@Context HttpServletRequest request, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response executeSql(@Context HttpServletRequest request, Query query, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
@@ -155,7 +159,7 @@ public class SqlExecute
         MetricsHandler.observe("execute", start, System.currentTimeMillis());
         try (Scope ignored = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
-            return manageResult(profiles, result, SerializationFormat.defaultFormat, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+            return manageResult(profiles, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
     }
 

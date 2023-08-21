@@ -118,6 +118,30 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0
    );
 }
 
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedPropertyAllVersions(): Boolean[1]
+{
+   let tree = #{
+      Order {
+         id,
+         productAllVersions{
+            name,
+            type
+         }
+      }
+   }#;
+   let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+    '[{"id":1, "productAllVersions":[{"name":"ProductName","type":"STOCK"}]},'+
+     '{"id":2,"productAllVersions":[{"name":"ProductName1","type":"STOCK"},{"name":"ProductName2","type":"STOCK"}]}]',
+      $result
+   );
+}
+
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootWithFilter(): Boolean[1]
 {
    let tree = #{
@@ -137,6 +161,52 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
       $result
    );
 }
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootWithMilestonedPropertyAllVersions(): Boolean[1]
+{
+   let tree = #{ meta::relational::tests::milestoning::Product{
+                    id,
+                    name,
+                    synonymsAllVersions{
+                      synonym
+                    }
+                  }}#;
+   let query = {|Product.all(%2023-10-15T00:00:00)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"id":2,"name":"ProductName2","synonymsAllVersions":[{"synonym":"GS-Mod-S0"},{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S2"},{"synonym":"GS-Mod-S3"}]},' + 
+      ' {"id":3,"name":"ProductName3","synonymsAllVersions":[]}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMilestonedRootAndMilestonedProperty(): Boolean[1]
+{
+  let tree = #{ meta::relational::tests::milestoning::Product{
+                    id,
+                    name,
+                    synonyms(%2023-10-15T00:00:00)
+                    {
+                      synonym
+                    }
+                  }}#;
+   let query = {|Product.all(%2023-10-15T00:00:00)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let runtime = meta::relational::tests::testRuntime();
+   
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' + 
+    ' {"id":3,"name":"ProductName3","synonyms(2023-10-15T00:00:00+0000)":[]}]"'
+    ,$result);
+}
+
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::milestoning::testMultiLevelMilestoning(): Boolean[1]
 {
@@ -434,4 +504,125 @@ function  <<test.ToFix>> meta::relational::graphFetch::tests::milestoning::testM
       '{"id":2,"product(2015-10-16)":[{"name":"ProductName2","classificationTypeStr()":"STOCK","type":"STOCK"}]}]',
       $result
    );
+}
+
+// Milestoning date Propagation 
+//> following are only supported in engine compiler, Pure ide compiler raises compilation error that property needs date-arg
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetch(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      // ' ->from(meta::relational::tests::milestoning::milestoningmap ,meta::relational::graphFetch::tests::milestoning::getLegendTestRuntime())\n'+    //fix legendCompile to work correctly with pure ide
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}'; 
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+  
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' + 
+    ' {"id":3,"name":"ProductName3","synonyms(2023-10-15T00:00:00+0000)":[]}]',
+    $result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty_WithPropertyAliasing(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetch(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        \'synonyms\':synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        \'synonyms\': synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}'; 
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+  
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"id":2,"name":"ProductName2","synonyms":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]},' + 
+    ' {"id":3,"name":"ProductName3","synonyms":[]}]',
+    $result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::milestoning::testDatePropagationFromMilestonedRootToMilestonedProperty_Checked(): Boolean[1]
+{
+  let mapping = meta::relational::tests::milestoning::milestoningmap;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let queryString = 'function my::func():String[1]{\n'+
+                    'meta::relational::tests::milestoning::Product.all(%2023-10-15T00:00:00)\n'+
+                      '->graphFetchChecked(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#)\n'+
+                      ' ->serialize(#{ \n'+
+                      '    meta::relational::tests::milestoning::Product\n'+
+                      '    {\n'+
+                      '        id,\n'+
+                      '        name,\n'+
+                      '        synonyms()\n'+
+                      '        {\n'+
+                      '            synonym\n'+
+                      '        }\n'+
+                      '    } \n'+
+                      '  }#);'+
+                  '}'; 
+  let query = meta::legend::compileLegendGrammar($queryString)->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+  
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+  assertJsonStringsEqual(
+    '[{"defects":[],"value":{"name":"ProductName2","id":2,"synonyms(2023-10-15T00:00:00+0000)":[{"synonym":"GS-Mod-S1"},{"synonym":"GS-Mod-S3"}]}},'+
+     '{"defects":[],"value":{"name":"ProductName3","id":3,"synonyms(2023-10-15T00:00:00+0000)":[]}}]',
+    $result);
 }

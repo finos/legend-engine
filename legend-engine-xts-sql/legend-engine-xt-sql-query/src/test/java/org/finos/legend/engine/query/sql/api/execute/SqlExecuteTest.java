@@ -27,6 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -146,6 +147,17 @@ public class SqlExecuteTest
 
         Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
         Assert.assertEquals(filteredExpected, OM.readValue(filtered, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithCSVFormat()
+    {
+        String results = resources.target("sql/v1/execution/executeQueryString")
+                .queryParam("serializationFormat", SerializationFormat.CSV)
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForNames') ORDER BY Name")).readEntity(String.class);
+
+        Assert.assertEquals("Name\r\nAlice\r\nBob\r\nCurtis\r\nDanielle\r\n", results);
     }
 
     @Test

@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.23.1-SNAPSHOT</version>
+    <version>4.24.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -107,8 +107,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.10</legend.pure.version>
-        <legend.shared.version>0.23.8</legend.shared.version>
+        <legend.pure.version>4.5.11</legend.pure.version>
+        <legend.shared.version>0.24.0</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -695,6 +695,11 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-extensions</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1986,6 +1991,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-extensions-collection-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-extensions-collection-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

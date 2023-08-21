@@ -51,7 +51,6 @@ import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGramm
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatConnectionGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension;
@@ -303,7 +302,6 @@ public class TestExtensions
                 .with(DataSpaceParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
-                .with(ExternalFormatConnectionGrammarParserExtension.class)
                 .with(ExternalFormatGrammarParserExtension.class)
                 .with(GenerationParserExtension.class)
                 .with(MasteryParserExtension.class)
@@ -389,6 +387,7 @@ public class TestExtensions
                 .with(CorePureCoreExtension.class)
                 .with(JSONPureCoreExtension.class)
                 .with(RelationalPureCoreExtension.class)
+                .with(BindingJavaBindingPureCoreExtension.class)
                 .with(M2MJavaBindingPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingPureCoreExtension.class)
                 .with(ServiceStorePureCoreExtension.class)

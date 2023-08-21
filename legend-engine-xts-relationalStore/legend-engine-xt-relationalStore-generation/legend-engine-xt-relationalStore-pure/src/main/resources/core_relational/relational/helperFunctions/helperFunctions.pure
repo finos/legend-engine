@@ -116,6 +116,7 @@ function <<access.private>> meta::alloy::service::execution::splitWithEmptyValue
 
    $s->meta::alloy::service::execution::replaceWithEmptyValue($delimForEmptyCsvField)
         ->meta::alloy::service::execution::splitCsvRow(',')
+        ->map(csv_val| if($csv_val->contains(',') && $csv_val->startsWith('"') && $csv_val->endsWith('"'), | $csv_val->substring(1, $csv_val->length()-1) ,| $csv_val))
         ->map(csv_val| if($csv_val == $delimForEmptyCsvField, | '' ,| $csv_val));
 }
 
@@ -245,11 +246,50 @@ function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]
             ])
 }
 
+function <<access.private>> meta::relational::mapping::buildSemiStructuredPropertyMapping(property:AbstractProperty<Any>[1], parentSet: SemiStructuredEmbeddedRelationalInstanceSetImplementation[1]): SemiStructuredRelationalPropertyMapping[1]
+{
+  let bindingTransformer = $parentSet.transformer->cast(@meta::external::shared::format::binding::BindingTransformer<Any>);
+
+  let relOp = ^meta::relational::metamodel::operation::SemiStructuredPropertyAccess(
+    operand = $parentSet.relationalOperationElement,
+    property = ^Literal(value = $property.name->toOne()),
+    returnType = $property->functionReturnType().rawType,
+    contentType = $bindingTransformer.binding.contentType
+  );
+
+  if ($property->isPrimitiveValueProperty(),
+      | ^SemiStructuredRelationalPropertyMapping
+        (
+          sourceSetImplementationId = $parentSet.id,
+          targetSetImplementationId = '',
+          owner = $parentSet,
+          property = $property->cast(@Property<Nil,Any|*>),
+          relationalOperationElement = $relOp
+        ),
+
+      | let newSetId = $parentSet.id + '_' + $property.name->toOne();
+        ^SemiStructuredEmbeddedRelationalInstanceSetImplementation
+        (
+          id = $newSetId,
+          root = false,
+          class = $property->functionReturnType().rawType->toOne()->cast(@Class<Any>),
+          parent = $parentSet.parent,
+          setMappingOwner = $parentSet.setMappingOwner,
+          sourceSetImplementationId = $parentSet.id,
+          targetSetImplementationId = $newSetId,
+          owner = $parentSet,
+          property = $property->cast(@Property<Nil,Any|*>),
+          relationalOperationElement = $relOp,
+          transformer = $bindingTransformer
+        );
+  );
+}
+
 function meta::relational::mapping::findPropertyMapping(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], mapping:Mapping[1],debug:DebugContext[1]):PropertyMapping[*]
 {
    let propertyName = $property.name->toOne();
    let propertyMappings = if($currentPropertyMapping->size() >= 1  && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-         | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c->_propertyMappingsByPropertyName($propertyName));
+         | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c->match([s:SemiStructuredEmbeddedRelationalInstanceSetImplementation[1]|$property->buildSemiStructuredPropertyMapping($s), a:Any[*]|$c->_propertyMappingsByPropertyName($propertyName)]));
 
            let result = if( !$embeddedPropertyMapping->isEmpty()
                          ,|$embeddedPropertyMapping
