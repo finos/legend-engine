@@ -159,7 +159,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
 {
    [
       meta::relational::extension::relationalExtension(),
-      meta::pure::executionPlan::platformBinding::platformBindingExtension([
+      meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, Relational, ExternalFormatCore, ' + $externalFormatDescriptors->map(fd | 'ExternalFormat' + $fd.externalFormatContract.id)->joinStrings(', '), [
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
             meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
@@ -172,7 +172,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
 
 function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionJavaPlatformBinding(): Extension[1]
 {
-    meta::pure::executionPlan::platformBinding::platformBindingExtension([
+    meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - Relational', [
         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
         ])
@@ -197,7 +197,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::relational::executionPlan
       
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
          
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([legendJavaPlatformBinding([relationalLegendJavaPlatformBindingExtension()])]));
+         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - Relational', [legendJavaPlatformBinding([relationalLegendJavaPlatformBindingExtension()])]));
 
          // Using LegendJava as the default for local platform binding
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);

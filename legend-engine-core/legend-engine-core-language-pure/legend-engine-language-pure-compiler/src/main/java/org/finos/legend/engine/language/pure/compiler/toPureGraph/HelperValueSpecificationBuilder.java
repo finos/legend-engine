@@ -228,7 +228,7 @@ public class HelperValueSpecificationBuilder
                 {
                     MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression) result, foundProperty, sourceInformation, processingContext);
                 }
-                MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, processingContext, context, (SimpleFunctionExpression) result);
+                MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, (ListIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>) ((SimpleFunctionExpression) result)._parametersValues(),processingContext, context);
             }
         }
         processingContext.pop();
@@ -288,22 +288,28 @@ public class HelperValueSpecificationBuilder
     private static GraphFetchTree buildPropertyGraphFetchTree(PropertyGraphFetchTree propertyGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         AbstractProperty<?> property;
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> pureParameters = Lists.mutable.empty();
-        if (!propertyGraphFetchTree.parameters.isEmpty())
-        {
-            Variable thisVariable = new Variable("this", HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport()), new Multiplicity(1, 1));
-            property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(Lists.mutable.<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>with(thisVariable).withAll(propertyGraphFetchTree.parameters)), propertyGraphFetchTree.property);
+        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> pureParameters = Lists.mutable.empty();
 
-            processingContext.push("PropertyTree");
-            processingContext.addInferredVariables("this", HelperModelBuilder.createThisVariableForClass(context, HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport())));
-            pureParameters = ListIterate.collect(propertyGraphFetchTree.parameters, x -> x.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
-            processingContext.flushVariable("this");
-            processingContext.pop();
+        Variable thisVariable = new Variable("this", HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport()), new Multiplicity(1, 1));
+        MutableList<ValueSpecification> originalParams = Lists.mutable.<ValueSpecification>with(thisVariable).withAll(propertyGraphFetchTree.parameters);
+        property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.of(originalParams), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
+        processingContext.push("PropertyTree");
+        processingContext.addInferredVariables("this", HelperModelBuilder.createThisVariableForClass(context, HelperModelBuilder.getElementFullPath(parentClass, context.pureModel.getExecutionSupport())));
+        MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> originalPureParameters = ListIterate.collect(originalParams, x -> x.accept(new ValueSpecificationBuilder(context, openVariables, processingContext)));
+        processingContext.flushVariable("this");
+
+        if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates(property, context, originalPureParameters.size()))   // add count for property owner parameter
+        {
+            pureParameters = MilestoningDatePropagationHelper.getMilestoningDatesFromMilestoningContext(property, originalPureParameters, processingContext);
         }
         else
         {
-            property = HelperModelBuilder.getAppliedProperty(context, parentClass, Optional.empty(), propertyGraphFetchTree.property, propertyGraphFetchTree.sourceInformation);
+            pureParameters = originalPureParameters;
         }
+        MilestoningDatePropagationHelper.updateMilestoningContext(property, pureParameters, processingContext, context);
+        processingContext.pop();
+
+        pureParameters.remove(0);        //remove this variable before putting in property tree
         Class<?> subType = propertyGraphFetchTree.subType == null ? null : context.resolveClass(propertyGraphFetchTree.subType, propertyGraphFetchTree.sourceInformation);
         Type returnType = subType == null ? property._genericType()._rawType() : subType;
 

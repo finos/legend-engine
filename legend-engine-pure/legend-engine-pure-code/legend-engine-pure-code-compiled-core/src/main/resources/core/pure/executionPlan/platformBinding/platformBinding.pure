@@ -34,12 +34,12 @@ Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::Pla
 
 
 Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::PlatformBinding [
-   extensionIdsMatchPlatformBindingId : $this.platformBindingExtensions->forAll(x | $x.platformId == $this.id),
+   extensionIdsMatchPlatformBindingId : $this.platformBindingExtensions->forAll(x | $x.platformId == $this.platformId),
    uniqueExtensionIds : $this.platformBindingExtensions.id->size() == $this.platformBindingExtensions.id->distinct()->size()
 ]
 {
    {doc.doc = 'Platform Id'}
-   id: String[1];
+   platformId: String[1];
 
    {doc.doc = 'Extensions for platform binding'}
    platformBindingExtensions: PlatformBindingExtension[*];
@@ -59,7 +59,7 @@ function meta::pure::executionPlan::platformBinding::extractPlatformBindingById(
    // Ideally, platform binding extension should be built at one place
    // However, at present, its built at many places. Hence, collecting all extensions
 
-   let platformBindings = $extensions.availablePlatformBindings->filter(p | $p.id == $platformId);
+   let platformBindings = $extensions.availablePlatformBindings->filter(p | $p.platformId == $platformId);
    assert($platformBindings->size() > 0, | 'Found no platform binding with id: ' +  $platformId);
    let first = $platformBindings->at(0);
    ^$first(platformBindingExtensions = $platformBindings.platformBindingExtensions->removeDuplicates(x|$x.id, {a,b|$a==$b}));
@@ -68,17 +68,22 @@ function meta::pure::executionPlan::platformBinding::extractPlatformBindingById(
 
 function meta::pure::executionPlan::platformBinding::extractPlatformBindingByIdOptional(extensions: Extension[*], platformId: String[1]): PlatformBinding[0..1]
 {
-   if ($extensions.availablePlatformBindings->exists(p | $p.id == $platformId),
+   if ($extensions.availablePlatformBindings->exists(p | $p.platformId == $platformId),
        | $extensions->extractPlatformBindingById($platformId),
        | []
    )
 }
 
-function meta::pure::executionPlan::platformBinding::platformBindingExtension(platformBindings: PlatformBinding[*]): Extension[1]
+function <<doc.deprecated>> meta::pure::executionPlan::platformBinding::platformBindingExtension(platformBindings: PlatformBinding[*]): Extension[1]
+{
+   platformBindingExtension('PlatformBindingExtension', $platformBindings)
+}
+
+function meta::pure::executionPlan::platformBinding::platformBindingExtension(id: String[1], platformBindings: PlatformBinding[*]): Extension[1]
 {
    ^meta::pure::extension::Extension
    (
-      type = 'PlatformBindingExtension',
+      type = $id,
       availablePlatformBindings = $platformBindings
    )
 }
