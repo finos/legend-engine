@@ -58,11 +58,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                     fieldNames,
                     field,
                     "Field [" + field + "] from partitionFields not present in incoming dataset"));
-            // All partitionValuesByField must be present in staging dataset
-            ingestMode.partitionValuesByField().keySet().forEach(field -> validateExistence(
-                fieldNames,
-                field,
-                "Field [" + field + "] from partitionValuesByField not present in incoming dataset"));
         }
     }
 
@@ -80,7 +75,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         List<Operation> operations = new ArrayList<>();
         if (resources.stagingDataSetEmpty())
         {
-            // Step 1: Milestone all Records in main table
+            // Step 1: Empty Batch Handling: Milestone (all/all within partition) records in main table
             if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty())
             {
                 return LogicalPlan.of(operations);

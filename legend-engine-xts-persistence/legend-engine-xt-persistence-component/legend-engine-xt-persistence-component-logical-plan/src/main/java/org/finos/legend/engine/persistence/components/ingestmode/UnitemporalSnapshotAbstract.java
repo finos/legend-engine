@@ -60,7 +60,7 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     @Value.Check
     default void validate()
     {
-        // All the keys in partitionValuesByField must be present in partitionFields
+        // All the keys in partitionValuesByField must exactly match the fields in partitionFields
         if (!partitionValuesByField().isEmpty())
         {
             if (partitionFields().size() != partitionValuesByField().size())
