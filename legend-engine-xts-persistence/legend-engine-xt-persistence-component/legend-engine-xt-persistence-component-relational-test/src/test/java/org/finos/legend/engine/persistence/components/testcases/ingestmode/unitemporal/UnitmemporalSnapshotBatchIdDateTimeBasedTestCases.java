@@ -103,6 +103,22 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithPartitionNoDataSplits(GeneratorResult operations);
 
     @Test
+    void testUnitemporalSnapshotWithPartitionForEmptyBatch()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionForEmptyBatch(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionForEmptyBatch(GeneratorResult operations);
+
+    @Test
     void testUnitemporalSnapshotWithPartitionFiltersNoDataSplits()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
@@ -117,6 +133,22 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     }
 
     public abstract void verifyUnitemporalSnapshotWithPartitionFiltersNoDataSplits(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFiltersForEmptyBatch()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(operations);
+    }
+
+    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithCleanStagingData()
@@ -218,6 +250,31 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
             Assertions.assertEquals("Field \"batch_id_in\" must be a primary key", e.getMessage());
         }
     }
+
+    @Test
+    void testUnitemporalSnapshotPartitionKeysValidation()
+    {
+        try
+        {
+            UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                    .digestField(digestField)
+                    .transactionMilestoning(BatchIdAndDateTime.builder()
+                            .batchIdInName(batchIdInField)
+                            .batchIdOutName(batchIdOutField)
+                            .dateTimeInName(batchTimeInField)
+                            .dateTimeOutName(batchTimeOutField)
+                            .build())
+                    .addAllPartitionFields(Arrays.asList("business_date"))
+                    .putAllPartitionValuesByField(partitionFilter)
+                    .build();
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Can not build UnitemporalSnapshot, partitionKey: [biz_date] not specified in partitionFields", e.getMessage());
+        }
+    }
+
 
     public abstract RelationalSink getRelationalSink();
 }

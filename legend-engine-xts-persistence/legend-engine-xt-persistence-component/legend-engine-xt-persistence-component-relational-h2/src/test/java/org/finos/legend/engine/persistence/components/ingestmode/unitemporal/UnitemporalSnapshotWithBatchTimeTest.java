@@ -156,7 +156,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 6);
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
     }
 

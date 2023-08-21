@@ -126,6 +126,18 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     }
 
     @Override
+    public void verifyUnitemporalSnapshotWithPartitionForEmptyBatch(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQuery, preActionsSql.get(0));
+        Assertions.assertTrue(milestoningSql.isEmpty());
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
     public void verifyUnitemporalSnapshotWithPartitionFiltersNoDataSplits(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
@@ -151,6 +163,25 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
+                "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1,sink.\"batch_time_out\" = '2000-01-01 00:00:00' " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) " +
+                "AND (sink.\"biz_date\" IN ('2000-01-01 00:00:00','2000-01-02 00:00:00'))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
     }
 

@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
+import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -54,5 +55,25 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
         return visitor.visitUnitemporalSnapshot(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        // All the keys in partitionValuesByField must be present in partitionFields
+        if (!partitionValuesByField().isEmpty())
+        {
+            if (partitionFields().size() != partitionValuesByField().size())
+            {
+                throw new IllegalStateException("Can not build UnitemporalSnapshot, size of partitionValuesByField must be same as partitionFields");
+            }
+            for (String partitionKey: partitionValuesByField().keySet())
+            {
+                if (!partitionFields().contains(partitionKey))
+                {
+                    throw new IllegalStateException(String.format("Can not build UnitemporalSnapshot, partitionKey: [%s] not specified in partitionFields", partitionKey));
+                }
+            }
+        }
     }
 }

@@ -53,6 +53,12 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         if (ingestMode.partitioned())
         {
             List<String> fieldNames = stagingDataset().schema().fields().stream().map(Field::name).collect(Collectors.toList());
+            // All partitionFields must be present in staging dataset
+            ingestMode.partitionFields().forEach(field -> validateExistence(
+                    fieldNames,
+                    field,
+                    "Field [" + field + "] from partitionFields not present in incoming dataset"));
+            // All partitionValuesByField must be present in staging dataset
             ingestMode.partitionValuesByField().keySet().forEach(field -> validateExistence(
                 fieldNames,
                 field,
@@ -75,6 +81,10 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         if (resources.stagingDataSetEmpty())
         {
             // Step 1: Milestone all Records in main table
+            if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty())
+            {
+                return LogicalPlan.of(operations);
+            }
             operations.add(sqlToMilestoneAllRows(keyValuePairs));
         }
         else
@@ -230,9 +240,19 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         "batch_id_out" = {TABLE_BATCH_ID} - 1,
          "batch_out_time" = {BATCH_TIME}"
    where "batch_id_out" = {MAX_BATCH_ID_VALUE}
+   // OPTIONAL : when partition values are provided
+   and sink.partition_key in [VALUE1, VALUE2, ...]
    */
     protected Update sqlToMilestoneAllRows(List<Pair<FieldValue, Value>> values)
     {
-        return UpdateAbstract.of(mainDataset(), values, openRecordCondition);
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(openRecordCondition);
+
+        // Handle Partition Values
+        if (ingestMode().partitioned() && !(ingestMode().partitionValuesByField().isEmpty()))
+        {
+            conditions.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+        }
+        return UpdateAbstract.of(mainDataset(), values, And.of(conditions));
     }
 }

@@ -157,7 +157,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 7);
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
@@ -213,7 +213,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 3);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
