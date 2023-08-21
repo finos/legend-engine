@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.authentication;
+package org.finos.legend.engine.protocol.pure.v1.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.protocol.pure.v1.DatabricksProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestSnowflakeExtensionAvailable
+public class TestDatabricksProtocolExtensionAvailable
 {
     @Test
-    public void testDatabaseAuthenticationFlowProviderExtensionsAvailable()
+    public void testProtocolExtensionAvailable()
     {
-        MutableList<Class<?>> databaseAuthenticationFlowProviderExtensions = Lists.mutable.empty();
-        ServiceLoader.load(DatabaseAuthenticationFlowProvider.class).forEach(e ->
-        {
-            databaseAuthenticationFlowProviderExtensions.add(e.getClass());
-        });
-        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(SnowflakeTestDatabaseAuthenticationFlowProvider.class));
+        MutableList<Class<?>> pureProtocolExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(PureProtocolExtension.class))
+                        .collect(Object::getClass);
+        Assert.assertTrue(pureProtocolExtensions.contains(DatabricksProtocolExtension.class));
     }
 }

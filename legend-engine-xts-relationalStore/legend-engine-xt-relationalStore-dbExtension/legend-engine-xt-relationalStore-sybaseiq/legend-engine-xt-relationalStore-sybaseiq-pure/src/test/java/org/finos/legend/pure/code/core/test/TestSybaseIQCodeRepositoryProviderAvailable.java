@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.pure.code.core.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.pure.code.core.CoreRelationalSybaseIQCodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,11 +28,9 @@ public class TestSybaseIQCodeRepositoryProviderAvailable
     @Test
     public void testCodeRepositoryProviderAvailable()
     {
-        MutableList<Class<?>> codeRepositoryProviders = Lists.mutable.empty();
-        ServiceLoader.load(CodeRepositoryProvider.class).forEach(e ->
-        {
-            codeRepositoryProviders.add(e.getClass());
-        });
+        MutableList<Class<?>> codeRepositoryProviders =
+                Lists.mutable.withAll(ServiceLoader.load(CodeRepositoryProvider.class))
+                        .collect(Object::getClass);
         Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalSybaseIQCodeRepositoryProvider.class));
     }
 }

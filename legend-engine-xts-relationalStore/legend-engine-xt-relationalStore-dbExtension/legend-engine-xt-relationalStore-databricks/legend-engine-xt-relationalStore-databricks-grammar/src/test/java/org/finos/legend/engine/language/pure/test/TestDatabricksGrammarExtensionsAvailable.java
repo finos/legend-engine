@@ -32,33 +32,27 @@ public class TestDatabricksGrammarExtensionsAvailable
     @Test
     public void testCompilerExtensionAvailable()
     {
-        MutableList<Class<?>> compilerExtensions = Lists.mutable.empty();
-        ServiceLoader.load(CompilerExtension.class).forEach(e ->
-        {
-            compilerExtensions.add(e.getClass());
-        });
+        MutableList<Class<?>> compilerExtensions =
+        Lists.mutable.withAll(ServiceLoader.load(CompilerExtension.class))
+                        .collect(Object::getClass);
         Assert.assertTrue(compilerExtensions.contains(DatabricksCompilerExtension.class));
     }
 
     @Test
     public void testGrammarParserExtensionAvailable()
     {
-        MutableList<Class<?>> relationalGrammarParserExtensions = Lists.mutable.empty();
-        ServiceLoader.load(IRelationalGrammarParserExtension.class).forEach(e ->
-        {
-            relationalGrammarParserExtensions.add(e.getClass());
-        });
+        MutableList<Class<?>> relationalGrammarParserExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(IRelationalGrammarParserExtension.class))
+                        .collect(Object::getClass);
         Assert.assertTrue(relationalGrammarParserExtensions.contains(DatabricksGrammarParserExtension.class));
     }
 
     @Test
     public void testGrammarComposerExtensionAvailable()
     {
-        MutableList<Class<?>> pureGrammarComposerExtensions = Lists.mutable.empty();
-        ServiceLoader.load(PureGrammarComposerExtension.class).forEach(e ->
-        {
-            pureGrammarComposerExtensions.add(e.getClass());
-        });
+        MutableList<Class<?>> pureGrammarComposerExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(PureGrammarComposerExtension.class))
+                        .collect(Object::getClass);
         Assert.assertTrue(pureGrammarComposerExtensions.contains(DatabricksGrammarComposerExtension.class));
     }
 }

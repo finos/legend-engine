@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.engine.protocol.pure.v1.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.engine.protocol.pure.v1.SnowflakeProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestHiveCodeRepositoryProviderAvailable
+public class TestSnowflakeProtocolExtensionAvailable
 {
     @Test
-    public void testCodeRepositoryProviderAvailable()
+    public void testProtocolExtensionAvailable()
     {
-        MutableList<Class<?>> codeRepositoryProviders = Lists.mutable.empty();
-        ServiceLoader.load(CodeRepositoryProvider.class).forEach(e ->
-        {
-            codeRepositoryProviders.add(e.getClass());
-        });
-        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalHiveCodeRepositoryProvider.class));
+        MutableList<Class<?>> pureProtocolExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(PureProtocolExtension.class))
+                        .collect(Object::getClass);
+        Assert.assertTrue(pureProtocolExtensions.contains(SnowflakeProtocolExtension.class));
     }
 }

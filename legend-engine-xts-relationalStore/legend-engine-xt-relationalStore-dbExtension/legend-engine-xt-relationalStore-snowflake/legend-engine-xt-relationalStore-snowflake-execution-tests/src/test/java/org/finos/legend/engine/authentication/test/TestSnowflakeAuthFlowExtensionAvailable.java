@@ -12,27 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.authentication;
+package org.finos.legend.engine.authentication.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.authentication.RedshiftTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.SnowflakeTestDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestRedshiftAuthFlowExtensionAvailable
+public class TestSnowflakeAuthFlowExtensionAvailable
 {
     @Test
     public void testDatabaseAuthenticationFlowProviderExtensionsAvailable()
     {
-        MutableList<Class<?>> databaseAuthenticationFlowProviderExtensions = Lists.mutable.empty();
-        ServiceLoader.load(DatabaseAuthenticationFlowProvider.class).forEach(e ->
-        {
-            databaseAuthenticationFlowProviderExtensions.add(e.getClass());
-        });
-        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(RedshiftTestDatabaseAuthenticationFlowProvider.class));
+        MutableList<Class<?>> databaseAuthenticationFlowProviderExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class))
+                        .collect(Object::getClass);
+        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(SnowflakeTestDatabaseAuthenticationFlowProvider.class));
     }
 }

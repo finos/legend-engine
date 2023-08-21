@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.engine.authentication.test;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.engine.authentication.DatabricksTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ServiceLoader;
 
-public class TestSybaseCodeRepositoryProviderAvailable
+public class TestDatabricksAuthFlowExtensionAvailable
 {
     @Test
-    public void testCodeRepositoryProviderAvailable()
+    public void testDatabaseAuthenticationFlowProviderExtensionsAvailable()
     {
-        MutableList<Class<?>> codeRepositoryProviders = Lists.mutable.empty();
-        ServiceLoader.load(CodeRepositoryProvider.class).forEach(e ->
-        {
-            codeRepositoryProviders.add(e.getClass());
-        });
-        Assert.assertTrue(codeRepositoryProviders.contains(CoreRelationalSybaseCodeRepositoryProvider.class));
+        MutableList<Class<?>> databaseAuthenticationFlowProviderExtensions =
+                Lists.mutable.withAll(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class))
+                        .collect(Object::getClass);
+        Assert.assertTrue(databaseAuthenticationFlowProviderExtensions.contains(DatabricksTestDatabaseAuthenticationFlowProvider.class));
     }
 }
