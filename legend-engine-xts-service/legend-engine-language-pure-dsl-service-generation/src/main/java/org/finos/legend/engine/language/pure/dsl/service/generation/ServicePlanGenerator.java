@@ -279,6 +279,7 @@ public class ServicePlanGenerator
         private final String servicePath;
         private final AtomicReferenceArray<SingleExecutionPlan> plans;
         private final AtomicReferenceArray<String> keys;
+        private volatile boolean terminated;
 
         private MultiExecutionRecursiveTask(List<P> executionParameters, Function<? super P, ? extends String> keyFn, SingleExecutionPlanGenerator<? super P> planFn, String execKey, String servicePath)
         {
@@ -292,6 +293,27 @@ public class ServicePlanGenerator
         }
 
         @Override
+        public void reinitialize()
+        {
+            this.terminated = false;
+            super.reinitialize();
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
+            this.terminated = true;
+            return super.cancel(mayInterruptIfRunning);
+        }
+
+        @Override
+        public void completeExceptionally(Throwable ex)
+        {
+            this.terminated = true;
+            super.completeExceptionally(ex);
+        }
+
+        @Override
         protected CompositeExecutionPlan compute()
         {
             long start = System.nanoTime();
@@ -301,18 +323,72 @@ public class ServicePlanGenerator
             {
                 LOGGER.debug("Generating {} plans for {}", size, this.servicePath);
             }
+
+            // Compute plans
             computeForRange(0, size);
+            if (this.terminated)
+            {
+                if (isCompletedAbnormally())
+                {
+                    return null;
+                }
+
+                // This should never happen: terminated should only be true if there was abnormal completion (exception or cancellation)
+                if (shouldLog())
+                {
+                    LOGGER.warn("Plan generation for {} terminated without abnormal completion", this.servicePath);
+                }
+                StringBuilder builder = new StringBuilder("Unknown error during multi-execution plan generation");
+                if (this.servicePath != null)
+                {
+                    builder.append(" of ").append(this.servicePath);
+                }
+                throw new IllegalStateException(builder.toString());
+            }
+
+            // Assemble result
             MutableMap<String, SingleExecutionPlan> planMap = Maps.mutable.ofInitialCapacity(size);
             MutableList<String> keyList = Lists.mutable.ofInitialCapacity(size);
             for (int i = 0; i < size; i++)
             {
                 String key = this.keys.get(i);
+                if (key == null)
+                {
+                    if (shouldLog())
+                    {
+                        LOGGER.warn("No key for plan {} of {}", i, this.servicePath);
+                    }
+                    StringBuilder builder = new StringBuilder("No key generated for plan ").append(i);
+                    if (this.servicePath != null)
+                    {
+                        builder.append(" of ").append(this.servicePath);
+                    }
+                    throw new IllegalStateException(builder.toString());
+                }
                 keyList.add(key);
 
                 SingleExecutionPlan plan = this.plans.get(i);
+                if (plan == null)
+                {
+                    if (shouldLog())
+                    {
+                        LOGGER.warn("No plan generated for key {} ({}) of {}", i, key, this.servicePath);
+                    }
+                    StringBuilder builder = new StringBuilder("No plan generated for key ").append(i).append(" (").append(key).append(")");
+                    if (this.servicePath != null)
+                    {
+                        builder.append(" of ").append(this.servicePath);
+                    }
+                    throw new IllegalStateException(builder.toString());
+                }
                 if (planMap.put(key, plan) != null)
                 {
-                    throw new IllegalStateException("Conflict for key '" + key + "' for " + this.servicePath);
+                    StringBuilder builder = new StringBuilder("Conflict for key '").append(key).append("'");
+                    if (this.servicePath != null)
+                    {
+                        builder.append(" of ").append(this.servicePath);
+                    }
+                    throw new IllegalStateException(builder.toString());
                 }
             }
             if (shouldLog() && LOGGER.isDebugEnabled())
@@ -325,15 +401,28 @@ public class ServicePlanGenerator
 
         private void computeForRange(int start, int end)
         {
-            int length = end - start;
-            if (length == 1)
+            if (this.terminated)
             {
-                computeForIndex(start);
+                return;
             }
-            else
+
+            try
             {
-                int midPoint = start + (length / 2);
-                invokeAll(new RangeTask(start, midPoint), new RangeTask(midPoint, end));
+                int length = end - start;
+                if (length == 1)
+                {
+                    computeForIndex(start);
+                }
+                else
+                {
+                    int midPoint = start + (length / 2);
+                    invokeAll(new RangeTask(start, midPoint), new RangeTask(midPoint, end));
+                }
+            }
+            catch (Throwable t)
+            {
+                this.terminated = true;
+                throw t;
             }
         }
 
