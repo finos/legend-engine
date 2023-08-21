@@ -30,6 +30,6 @@ public class TestExtensionAvailable
     {
         MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
         Assert.assertEquals(1, extensions.selectInstancesOf(JSONJavaBindingPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
-        Assert.assertEquals("PlatformBindingExtension", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
+        Assert.assertEquals("PlatformBinding - LegendJava - ExternalFormatJSON", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
     }
 }

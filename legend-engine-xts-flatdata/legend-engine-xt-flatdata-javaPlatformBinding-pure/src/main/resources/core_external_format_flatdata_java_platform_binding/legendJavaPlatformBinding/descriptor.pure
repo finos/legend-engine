@@ -35,7 +35,7 @@ function meta::external::format::flatdata::executionPlan::platformBinding::legen
 
 function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
 {
-  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - ExternalFormatFlatData', [
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       // Bindings
       meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([

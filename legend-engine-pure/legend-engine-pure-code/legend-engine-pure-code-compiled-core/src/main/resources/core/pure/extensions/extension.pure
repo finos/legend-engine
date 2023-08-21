@@ -141,3 +141,111 @@ Class meta::pure::extension::ModuleExtension
 {
     module : String[1];
 }
+
+
+
+
+// Extension printing ------------------------------------------------------------------------------
+
+###Pure
+import meta::pure::extension::*;
+import meta::pure::extension::print::*;
+import meta::pure::store::*;
+import meta::external::shared::format::*;
+import meta::pure::executionPlan::platformBinding::*;
+
+
+function meta::pure::extension::print::printExtensions(extensions: Extension[*]): String[1]
+{
+  $extensions->sortBy(x | $x.type->toLower())->map(ext | $ext->printExtension(1))->joinStrings('[\n', ',\n\n', '\n]')
+}
+
+function <<access.private>> meta::pure::extension::print::printExtension(extension: Extension[1], depth: Integer[1]): String[1]
+{
+  let indent = indent($depth);
+
+  let storeDetails = 
+    if ($extension.availableStores->isEmpty(),
+        | '',
+        | $extension.availableStores
+            ->map(s | $s->printStoreContract($depth + 2))
+            ->joinStrings(indent($depth + 1) + 'Store Contracts: [\n', ',\n', '\n' + indent($depth + 1) + ']\n')
+    );
+
+  let externalFormatDetails =
+    if ($extension.availableExternalFormats->isEmpty(),
+        | '',
+        | $extension.availableExternalFormats
+            ->map(c | $c->printExternalFormatContract($depth + 2))
+            ->joinStrings(indent($depth + 1) + 'External Format Contracts: [\n', ',\n', '\n' + indent($depth + 1) + ']\n')
+    );
+
+  let featureDetails = 
+    if ($extension.availableFeatures->isEmpty(),
+        | '',
+        | $extension.availableFeatures
+            ->map(f | $f->printFeatureExtension($depth + 2))
+            ->joinStrings(indent($depth + 1) + 'Feature Extensions: [\n', ',\n', '\n' + indent($depth + 1) + ']\n')
+    );
+
+  let platformBindingDetails = 
+    if ($extension.availablePlatformBindings->isEmpty(),
+        | '',
+        | $extension.availablePlatformBindings
+            ->map(p | $p->printPlatformBinding($depth + 2))
+            ->joinStrings(indent($depth + 1) + 'Platform Bindings: [\n', ',\n', '\n' + indent($depth + 1) + ']\n')
+    );
+
+  $indent + $extension.type + '\n' +
+  $indent + '(\n' +
+    $storeDetails +
+    $externalFormatDetails +
+    $featureDetails +
+    $platformBindingDetails +
+  $indent + ')';
+}
+
+function <<access.private>> meta::pure::extension::print::printStoreContract(contract: StoreContract[1], depth: Integer[1]): String[1]
+{
+  indent($depth) + $contract.id
+}
+
+function <<access.private>> meta::pure::extension::print::printExternalFormatContract(contract: ExternalFormatContract<Any>[1], depth: Integer[1]): String[1]
+{
+  let indent = indent($depth);
+  
+  $indent + $contract.id + '\n' + 
+  $indent + '(\n' +
+    $contract.contentTypes
+      ->map(t | indent($depth + 2) + $t)
+      ->joinStrings(indent($depth + 1) + 'ContentTypes: [\n', ',\n', '\n' + indent($depth + 1) + ']\n') +
+  $indent + ')';
+}
+
+function <<access.private>> meta::pure::extension::print::printFeatureExtension(feature: FeatureExtension[1], depth: Integer[1]): String[1]
+{
+  indent($depth) + $feature.id
+}
+
+function <<access.private>> meta::pure::extension::print::printPlatformBinding(platformBinding: PlatformBinding[1], depth: Integer[1]): String[1]
+{
+  let indent = indent($depth);
+  
+  $indent + $platformBinding.platformId + '\n' + 
+  $indent + '(\n' +
+    $platformBinding.platformBindingExtensions
+      ->map(e | indent($depth + 2) + $e.id)
+      ->joinStrings(indent($depth + 1) + 'Extensions: [\n', ',\n', '\n' + indent($depth + 1) + ']\n') +
+  $indent + ')';
+}
+
+
+function <<access.private>> meta::pure::extension::print::space(): String[1]
+{
+  '  '
+}
+
+function <<access.private>> meta::pure::extension::print::indent(depth: Integer[1]): String[1]
+{
+  range($depth)->map(x | space())->joinStrings()
+}
