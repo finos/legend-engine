@@ -52,7 +52,7 @@ public class MilestoningDatePropagationHelper
 
     private static final String ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
     private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
-    private static final ImmutableList<String> MILESTONING_DATE_SOURCE_TYPES = Lists.immutable.of("getAll", "exists", "project", "filter", "subType", "map");
+    private static final ImmutableList<String> MILESTONING_DATE_SOURCE_TYPES = Lists.immutable.of("getAll", "exists", "project", "filter", "subType", "map", "graphFetch", "graphFetchChecked","serialize", "serializeChecked");
 
     public static boolean isGetAllFunctionWithMilestoningContext(SimpleFunctionExpression func)
     {
@@ -104,13 +104,13 @@ public class MilestoningDatePropagationHelper
         }
     }
 
-    public static void updateMilestoningPropagationContext(SimpleFunctionExpression property, ProcessingContext processingContext)
+    public static void updateMilestoningPropagationContext(AbstractProperty<?> property, ListIterable<? extends ValueSpecification> parameterValues, ProcessingContext processingContext)
     {
-        if (!property._func()._functionName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX) && !property._func()._functionName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
+        if (!property.getName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX) && !property.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX))
         {
             Class target = (Class) property._genericType()._rawType();
             MilestoningStereotype targetTypeMilestoningStereotype = Milestoning.temporalStereotypes(target._stereotypes());
-            setMilestoningDates(property._parametersValues().toList(), targetTypeMilestoningStereotype, processingContext);
+            setMilestoningDates(parameterValues, targetTypeMilestoningStereotype, processingContext);
         }
         else
         {
@@ -134,7 +134,7 @@ public class MilestoningDatePropagationHelper
         }
     }
 
-    public static void updateMilestoningContext(AbstractProperty<?> property, ProcessingContext processingContext, CompileContext context, SimpleFunctionExpression func)
+    public static void updateMilestoningContext(AbstractProperty<?> property, ListIterable<? extends ValueSpecification> parameterValues, ProcessingContext processingContext, CompileContext context)
     {
         if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
         {
@@ -142,7 +142,7 @@ public class MilestoningDatePropagationHelper
             {
                 processingContext.popMilestoningDatePropagationContext();
             }
-            updateMilestoningPropagationContext(func, processingContext);
+            updateMilestoningPropagationContext(property, parameterValues, processingContext);
         }
         else if (property instanceof QualifiedProperty || property.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || property.getName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX))
         {
@@ -171,41 +171,19 @@ public class MilestoningDatePropagationHelper
         }
     }
 
-    public static boolean isAllVersionsInRangeProperty(AbstractProperty<?> property, CompileContext context)
-    {
-        return isGeneratedMilestoningProperty(property, context) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
-    }
-
-    public static boolean isGeneratedMilestoningProperty(AbstractProperty<?> property, CompileContext context)
-    {
-        String stereotype = String.valueOf(Milestoning.GeneratedMilestoningStereotype.generatedmilestoningproperty);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = context.pureModel.getProfile("meta::pure::profiles::milestoning");
-        Stereotype milestoningStereotype = (Stereotype) Profile.findStereotype(profile, stereotype);
-        RichIterable<? extends Stereotype> stereotypes = property._stereotypes();
-        return stereotypes.detect(s -> s != null && milestoningStereotype.equals(s)) != null;
-    }
 
     public static boolean isGeneratedQualifiedPropertyWithDatePropagationSupported(AbstractProperty<?> property, CompileContext context)
     {
-        return property instanceof QualifiedProperty && isGeneratedMilestoningProperty(property, context) && !isAllVersionsInRangeProperty(property, context);
+        return Milestoning.isGeneratedMilestoningQualifiedProperty(property) && !Milestoning.isAllVersionsInRangeGeneratedMilestoningQualifiedProperty(property);
     }
 
-    private static int getCountOfParametersSatisfyingMilestoningDateRequirments(QualifiedProperty milestonedQualifiedProperty, CompileContext context)
-    {
-        if (!isGeneratedMilestoningProperty(milestonedQualifiedProperty, context))
-        {
-            throw new EngineException("Unable to get milestoning date parameters for non milestoned QualifiedProperty: " + milestonedQualifiedProperty.getName());
-        }
-        Class returnType = (Class) milestonedQualifiedProperty._genericType()._rawType();
-        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(returnType._stereotypes());
-        return 1 + milestoningStereotype.getTemporalDatePropertyNames().size();
-    }
+
 
     public static boolean isGeneratedMilestonedQualifiedPropertyWithMissingDates(AbstractProperty<?> property, CompileContext context, Integer parametersCount)
     {
         if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
         {
-            return parametersCount != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty) property, context);
+            return parametersCount != Milestoning.getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty) property);
         }
         return false;
     }
@@ -272,15 +250,13 @@ public class MilestoningDatePropagationHelper
         return parameterValues.size() == 1;
     }
 
-    public static void applyPropertyFunctionExpressionMilestonedDates(FunctionExpression fe, AbstractProperty<?> func, SourceInformation sourceInformation, ProcessingContext processingContext)
+    public static MutableList<? extends ValueSpecification> getMilestoningDatesFromMilestoningContext(AbstractProperty<?> func, MutableList<? extends ValueSpecification> parametersValues, ProcessingContext processingContext)
     {
         Pair<MilestoningStereotype, MilestoningStereotype> sourceTargetMilestoningStereotypes = getSourceTargetMilestoningStereotypes(func);
         MilestoningStereotype sourceTypeMilestoning = sourceTargetMilestoningStereotypes.getOne();
         MilestoningStereotype targetTypeMilestoning = sourceTargetMilestoningStereotypes.getTwo();
-        String propertyName = func.getName();
-        MutableList<? extends ValueSpecification> parametersValues = fe._parametersValues().toList();
         ValueSpecification[] milestoningDateParameters = new ValueSpecification[targetTypeMilestoning.getTemporalDatePropertyNames().size()];
-        fe._originalMilestonedPropertyParametersValues(fe._parametersValues());
+
         MilestoningDatePropagationContext propagationContext = processingContext.milestoningDatePropagationContext.size() == 0 ? new MilestoningDatePropagationContext(null, null) : processingContext.peekMilestoningDatePropagationContext();
 
         if (isBiTemporal(targetTypeMilestoning))
@@ -336,21 +312,22 @@ public class MilestoningDatePropagationHelper
         }
         if (!ArrayIterate.isEmpty(milestoningDateParameters) && !ArrayIterate.contains(milestoningDateParameters, null))
         {
-            parametersValues = LazyIterate.concatenate(FastList.<ValueSpecification>newListWith(parametersValues.get(0)), FastList.newListWith(milestoningDateParameters)).toList();
-            fe._parametersValues(parametersValues);
+            return LazyIterate.concatenate(FastList.<ValueSpecification>newListWith(parametersValues.get(0)), FastList.newListWith(milestoningDateParameters)).toList();
+        }
+        else
+        {
+            return parametersValues;
         }
     }
 
     public static void updateFunctionExpressionWithMilestoningDateParams(FunctionExpression functionExpression, AbstractProperty<?> propertyFunc, SourceInformation sourceInformation, ProcessingContext processingContext)
     {
-        applyPropertyFunctionExpressionMilestonedDates(functionExpression, propertyFunc, sourceInformation, processingContext);
-        String propertyName = propertyFunc._name();
-        Class owner = (Class) getMilestonedPropertyOwningType(propertyFunc);
-        Object prop = ListIterate.select(owner._qualifiedProperties().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
-        if (prop == null)
-        {
-            prop = ListIterate.select(owner._qualifiedPropertiesFromAssociations().toList(), p -> p instanceof QualifiedProperty && ((QualifiedProperty) p)._name() == propertyName).getFirst();
-        }
-        functionExpression._func((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>) prop);
+        functionExpression._originalMilestonedPropertyParametersValues(functionExpression._parametersValues());
+
+        MutableList<ValueSpecification> newParametersValues  = (MutableList<ValueSpecification>) getMilestoningDatesFromMilestoningContext(propertyFunc, functionExpression._parametersValues().toList(), processingContext);
+        functionExpression._parametersValues(newParametersValues);
+
+        functionExpression._func(propertyFunc);
     }
+
 }
