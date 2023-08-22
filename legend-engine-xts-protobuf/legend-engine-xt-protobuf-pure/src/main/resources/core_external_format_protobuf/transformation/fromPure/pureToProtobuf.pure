@@ -15,9 +15,9 @@
 import meta::external::format::protobuf::metamodel::*;
 import meta::external::format::protobuf::transformation::fromPure::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::transformation::fromPure::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::transformation::fromPure::*;
 
 import meta::pure::generation::metamodel::*;
 
@@ -112,15 +112,15 @@ function <<Generation.Configuration>>  meta::external::format::protobuf::transfo
   meta::pure::generation::describeConfiguration(ModelToProtobufDataConfiguration, meta::external::format::protobuf::transformation::fromPure::defaultConfig__ModelToProtobufDataConfiguration_1_, []);
 }
 
-function meta::external::format::protobuf::transformation::fromPure::transform(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1]):meta::external::shared::format::metamodel::data::SchemaData[*]
+function meta::external::format::protobuf::transformation::fromPure::transform(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1]):meta::external::format::shared::metamodel::data::SchemaData[*]
 {
    meta::legend::test::mayExecuteLegendTest(
        {clientVersion, serverVersion, serializationKind, host, port|
          let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::externalFormat::protobuf::legendGenerateProtobuf_ModelUnit_1__ModelToProtobufDataConfiguration_1__String_1__Integer_1__String_1__SchemaData_MANY_';
-         let xf = $fStr->pathToElement()->cast(@Function<{ModelUnit[1], ModelToProtobufDataConfiguration[1], String[1], Integer[1], String[1]->meta::external::shared::format::metamodel::data::SchemaData[*]}>);
-         $xf->evaluate([$modelUnit, $input, $host, $port, $serverVersion]->map(v|list($v)))->toOneMany()->cast(@meta::external::shared::format::metamodel::data::SchemaData);},
+         let xf = $fStr->pathToElement()->cast(@Function<{ModelUnit[1], ModelToProtobufDataConfiguration[1], String[1], Integer[1], String[1]->meta::external::format::shared::metamodel::data::SchemaData[*]}>);
+         $xf->evaluate([$modelUnit, $input, $host, $port, $serverVersion]->map(v|list($v)))->toOneMany()->cast(@meta::external::format::shared::metamodel::data::SchemaData);},
        | generateProtobufFromPure($modelUnit->resolve().classes(), $input)->map(x|
-         ^meta::external::shared::format::metamodel::data::SchemaData
+         ^meta::external::format::shared::metamodel::data::SchemaData
          (
            location = $x.fileName,
            content = $x.file->meta::external::format::protobuf::metamodel::serialization::toString()

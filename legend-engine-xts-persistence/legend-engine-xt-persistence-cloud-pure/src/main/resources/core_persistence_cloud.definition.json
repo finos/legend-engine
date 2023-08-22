@@ -1,6 +1,6 @@
 {
   "name": "core_persistence_cloud",
-  "pattern": "(meta::external::persistence)(::.*)?",
+  "pattern": "(meta::pure::persistence)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

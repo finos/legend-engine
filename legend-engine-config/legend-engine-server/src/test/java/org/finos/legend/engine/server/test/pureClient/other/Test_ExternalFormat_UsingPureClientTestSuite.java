@@ -39,7 +39,7 @@ public class Test_ExternalFormat_UsingPureClientTestSuite
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::yaml", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::language", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::shared", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::shared", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::store", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
                 }

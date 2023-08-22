@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ###Diagram
-Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=0.0)
+Diagram meta::pure::persistence::aws::Persistence_Diagram(width=0.0, height=0.0)
 {
     TypeView cview_7(
         type=meta::pure::persistence::metamodel::Persistence,
@@ -76,7 +76,7 @@ Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=
         lineWidth=1.0)
 
     TypeView cview_19(
-        type=meta::external::persistence::aws::metamodel::connection::AwsS3Connection,
+        type=meta::pure::persistence::aws::metamodel::connection::AwsS3Connection,
         position=(433.87482, 361.77329),
         width=153.03125,
         height=72.00000,
@@ -100,7 +100,7 @@ Diagram meta::external::persistence::aws::Persistence_Diagram(width=0.0, height=
         lineWidth=1.0)
 
     TypeView cview_17(
-        type=meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform,
+        type=meta::pure::persistence::aws::metamodel::AwsGluePersistencePlatform,
         position=(1113.41174, 365.15287),
         width=229.33789,
         height=58.00000,

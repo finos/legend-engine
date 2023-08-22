@@ -23,11 +23,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_FailedBindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_FailedBindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ModelUnit;
 import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ModelUnit_Impl;
@@ -39,7 +39,7 @@ import java.util.Map;
 public class BindingCompiler
 {
     private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
-    private final MutableMap<String, Root_meta_external_shared_format_binding_Binding> bindingIndex = Maps.mutable.empty();
+    private final MutableMap<String, Root_meta_external_format_shared_binding_Binding> bindingIndex = Maps.mutable.empty();
     private final MutableMap<String, ExternalFormatSchemaSet> srcSchemaIndex = Maps.mutable.empty();
 
     public BindingCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
@@ -52,7 +52,7 @@ public class BindingCompiler
         return Processor.newProcessor(Binding.class, Collections.singletonList(ExternalFormatSchemaSet.class), this::firstPass, this::secondPass, this::thirdPass, this::fourthPass);
     }
 
-    public Root_meta_external_shared_format_binding_Binding getCompiledBinding(String fullPath)
+    public Root_meta_external_format_shared_binding_Binding getCompiledBinding(String fullPath)
     {
         return bindingIndex.get(fullPath);
     }
@@ -60,9 +60,9 @@ public class BindingCompiler
     // First pass - create and index schemas
     private PackageableElement firstPass(Binding srcSchemaOp, CompileContext context)
     {
-        Root_meta_external_shared_format_binding_Binding binding = new Root_meta_external_shared_format_binding_Binding_Impl(srcSchemaOp.name)
+        Root_meta_external_format_shared_binding_Binding binding = new Root_meta_external_format_shared_binding_Binding_Impl(srcSchemaOp.name)
                 ._name(srcSchemaOp.name)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::external::shared::format::binding::Binding")));
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::external::format::shared::binding::Binding")));
 
         String path = context.pureModel.buildPackageString(srcSchemaOp._package, srcSchemaOp.name);
         this.bindingIndex.put(path, binding);
@@ -73,13 +73,13 @@ public class BindingCompiler
     private void secondPass(Binding srcBinding, CompileContext context)
     {
         String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
-        Root_meta_external_shared_format_binding_Binding compiled = bindingIndex.get(path);
+        Root_meta_external_format_shared_binding_Binding compiled = bindingIndex.get(path);
 
         compiled._contentType(srcBinding.contentType);
 
         if (srcBinding.schemaSet != null)
         {
-            Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet(srcBinding.schemaSet, srcBinding.sourceInformation, context);
+            Root_meta_external_format_shared_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet(srcBinding.schemaSet, srcBinding.sourceInformation, context);
             if (srcBinding.schemaId != null && schemaSet._schemas().noneSatisfy(s -> srcBinding.schemaId.equals(s._id())))
             {
                 throw new EngineException("ID '" + srcBinding.schemaId + "' does not exist in SchemaSet '" + srcBinding.schemaSet + "'", srcBinding.sourceInformation, EngineErrorType.COMPILATION);
@@ -100,7 +100,7 @@ public class BindingCompiler
     private void thirdPass(Binding srcBinding, CompileContext context)
     {
         String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
-        Root_meta_external_shared_format_binding_Binding compiled = bindingIndex.get(path);
+        Root_meta_external_format_shared_binding_Binding compiled = bindingIndex.get(path);
 
         if (compiled._schemaId() != null && compiled._schemaSet()._schemas().noneSatisfy(s -> compiled._schemaId().equals(s._id())))
         {
@@ -118,18 +118,18 @@ public class BindingCompiler
     private void fourthPass(Binding srcBinding, CompileContext context)
     {
         String path = context.pureModel.buildPackageString(srcBinding._package, srcBinding.name);
-        Root_meta_external_shared_format_binding_Binding compiled = bindingIndex.get(path);
+        Root_meta_external_format_shared_binding_Binding compiled = bindingIndex.get(path);
 
         ExternalFormatExtension<?> schemaExtension = getExtension(compiled, srcBinding);
-        Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(compiled, context);
-        if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_FailedBindingDetail)
+        Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(compiled, context);
+        if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_FailedBindingDetail)
         {
-            Root_meta_external_shared_format_binding_validation_FailedBindingDetail failed = (Root_meta_external_shared_format_binding_validation_FailedBindingDetail) bindingDetail;
+            Root_meta_external_format_shared_binding_validation_FailedBindingDetail failed = (Root_meta_external_format_shared_binding_validation_FailedBindingDetail) bindingDetail;
             throw new EngineException("Model and schema are mismatched:\n" + failed._errorMessages().makeString("\n"), srcBinding.sourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
-    private ExternalFormatExtension<?> getExtension(Root_meta_external_shared_format_binding_Binding binding, Binding srcBinding)
+    private ExternalFormatExtension<?> getExtension(Root_meta_external_format_shared_binding_Binding binding, Binding srcBinding)
     {
         return externalFormatExtensions.values().stream()
                 .filter(ext -> ext.getContentTypes().contains(binding._contentType()))

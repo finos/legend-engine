@@ -3,10 +3,10 @@ import meta::external::format::flatdata::executionPlan::test::*;
 import meta::external::format::flatdata::metamodel::*;
 import meta::external::format::flatdata::binding::validation::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::functions::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::functions::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::executionPlan::toString::*;

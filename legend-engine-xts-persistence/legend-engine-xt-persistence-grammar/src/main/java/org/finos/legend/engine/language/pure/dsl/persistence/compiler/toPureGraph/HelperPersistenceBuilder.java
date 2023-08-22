@@ -120,7 +120,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
@@ -622,15 +622,15 @@ public class HelperPersistenceBuilder
         throw new EngineException(String.format("Database '%s' is not defined", database), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
+    public static Root_meta_external_format_shared_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
     {
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
 
         PackageableElement packageableElement = context.pureModel.getOrCreatePackage(bindingPath)._children().detect(c -> bindingName.equals(c._name()));
-        if (packageableElement instanceof Root_meta_external_shared_format_binding_Binding)
+        if (packageableElement instanceof Root_meta_external_format_shared_binding_Binding)
         {
-            return (Root_meta_external_shared_format_binding_Binding) packageableElement;
+            return (Root_meta_external_format_shared_binding_Binding) packageableElement;
         }
 
         throw new EngineException(String.format("Binding '%s' is not defined", binding), sourceInformation, EngineErrorType.COMPILATION);

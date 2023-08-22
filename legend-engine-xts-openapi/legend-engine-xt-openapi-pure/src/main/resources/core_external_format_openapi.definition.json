@@ -1,6 +1,6 @@
 {
   "name": "core_external_format_openapi",
-  "pattern": "(meta::external::format::openapi)(::.*)?",
+  "pattern": "(meta::external::function::description::openapi)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

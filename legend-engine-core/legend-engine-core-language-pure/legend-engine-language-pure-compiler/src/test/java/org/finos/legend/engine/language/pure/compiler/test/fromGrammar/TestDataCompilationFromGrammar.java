@@ -96,8 +96,8 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
         Assert.assertTrue(element instanceof Root_meta_pure_data_DataElement);
         Root_meta_pure_data_DataElement dataElement = (Root_meta_pure_data_DataElement) element;
 
-        Assert.assertTrue(dataElement._data() instanceof Root_meta_external_shared_format_metamodel_data_ExternalFormatData);
-        Root_meta_external_shared_format_metamodel_data_ExternalFormatData externalFormatData = (Root_meta_external_shared_format_metamodel_data_ExternalFormatData) dataElement._data();
+        Assert.assertTrue(dataElement._data() instanceof Root_meta_external_format_shared_metamodel_data_ExternalFormatData);
+        Root_meta_external_format_shared_metamodel_data_ExternalFormatData externalFormatData = (Root_meta_external_format_shared_metamodel_data_ExternalFormatData) dataElement._data();
 
         Assert.assertEquals("application/json", externalFormatData._contentType());
         Assert.assertEquals("{\"some\":\"data\"}", externalFormatData._data());
@@ -203,7 +203,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
         PackageableElement address = result.getTwo().getPackageableElement("my::Address");
         Assert.assertEquals(address, modelEmbeddedData._model());
         Root_meta_pure_data_EmbeddedData addressData = (Root_meta_pure_data_EmbeddedData) modelEmbeddedData._data();
-        Root_meta_external_shared_format_metamodel_data_ExternalFormatData externalFormatAddress = (Root_meta_external_shared_format_metamodel_data_ExternalFormatData) addressData;
+        Root_meta_external_format_shared_metamodel_data_ExternalFormatData externalFormatAddress = (Root_meta_external_format_shared_metamodel_data_ExternalFormatData) addressData;
         Assert.assertEquals("application/json", externalFormatAddress._contentType());
 
 

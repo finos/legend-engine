@@ -25,19 +25,19 @@ import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamo
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_transformation_fromPure_ModelToProtobufDataConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration;
 import org.finos.legend.pure.generated.core_external_format_protobuf_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_protobuf_metamodel_metamodel_serialization;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_protobuf_metamodel_ProtobufSchema, ModelToProtobufConfiguration>
 {
-    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> protobufContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> protobufContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = protobufContract._id();
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()
     {
         return protobufContract;
     }
@@ -62,7 +62,7 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToProtobufConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToProtobufConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_protobuf_transformation_fromPure_ModelToProtobufDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration"))
                 ._targetSchemaSet(configuration.targetSchemaSet)

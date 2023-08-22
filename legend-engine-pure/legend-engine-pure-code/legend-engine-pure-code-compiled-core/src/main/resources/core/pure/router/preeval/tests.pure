@@ -15,8 +15,8 @@
 // Press F9 to execute the 'go' function...
 // Press F10 to run the full test suite
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;

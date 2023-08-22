@@ -18,7 +18,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -194,9 +194,9 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
 
         Root_meta_pure_persistence_metamodel_context_PersistencePlatform persistencePlatform = context._platform();
         assertNotNull(persistencePlatform);
-        assertTrue(persistencePlatform instanceof Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform);
+        assertTrue(persistencePlatform instanceof Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform);
 
-        Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform awsGluePlatform = (Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform) persistencePlatform;
+        Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform awsGluePlatform = (Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform) persistencePlatform;
         assertEquals(10, awsGluePlatform._dataProcessingUnits());
     }
 

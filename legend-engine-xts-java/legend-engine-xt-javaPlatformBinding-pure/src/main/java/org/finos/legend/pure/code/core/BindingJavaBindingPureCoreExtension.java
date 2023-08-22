@@ -27,6 +27,6 @@ public class BindingJavaBindingPureCoreExtension implements PureCoreExtension
     @Override
     public String functionSignature()
     {
-        return "meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsJavaPlatformBinding__Extension_1_";
+        return "meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsJavaPlatformBinding__Extension_1_";
     }
 }

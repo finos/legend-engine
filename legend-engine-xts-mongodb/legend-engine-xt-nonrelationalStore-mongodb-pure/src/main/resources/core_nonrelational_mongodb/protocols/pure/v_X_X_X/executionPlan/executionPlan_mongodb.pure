@@ -32,5 +32,5 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::M
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
    tree              : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[0..1];
-   //config            : meta::external::shared::format::MongoDBDocumentInternalizeInternalizeConfig[0..1];
+   //config            : meta::external::format::shared::MongoDBDocumentInternalizeInternalizeConfig[0..1];
 }
