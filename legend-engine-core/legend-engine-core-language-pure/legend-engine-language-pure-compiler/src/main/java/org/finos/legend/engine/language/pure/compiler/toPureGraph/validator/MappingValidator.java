@@ -259,7 +259,7 @@ public class MappingValidator
         {
             if (cm instanceof PropertyMappingsImplementation && !(cm instanceof EmbeddedSetImplementation))
             {
-                return ((PropertyMappingsImplementation) cm)._propertyMappings().select(p -> !(p instanceof EmbeddedSetImplementation)).flatCollect(pm ->
+                return ((PropertyMappingsImplementation) cm)._propertyMappings().select(p -> !(p instanceof EmbeddedSetImplementation) && validateEnumPropertyHasEnumMapping(pureModel, p)).flatCollect(pm ->
                         Lists.mutable.withAll(checkId(pureModel, mapping, ids, pm, pm._sourceSetImplementationId()))
                                 .withAll(checkId(pureModel, mapping, ids, pm, pm._targetSetImplementationId()))
                 );
@@ -270,6 +270,17 @@ public class MappingValidator
             }
         }));
     }
+
+    
+    private boolean validateEnumPropertyHasEnumMapping(PureModel pureModel, PropertyMapping pm)
+    {
+        if (pm._property()._genericType()._rawType().getClassifier() != null && pm._property()._genericType()._rawType().getClassifier().equals(pureModel.getType("meta::pure::metamodel::type::Enumeration")) && (pm.getValueForMetaPropertyToOne("transformer") == null))
+        {
+            pureModel.addWarnings(Lists.mutable.with(new Warning(org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Missing an EnumerationMapping for the enum property '" + pm._property()._name() + "'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.")));
+        }
+        return true;
+    }
+    
 
     private Iterable<Warning> checkId(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Set<String> ids, PropertyMapping pm, String id)
     {
