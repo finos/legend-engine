@@ -287,6 +287,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                                                                   $agg.mapFn->functionReturnType(),
                                                                                                                                                   $agg.aggregateFn->functionReturnType()]
                                                                                                                     )->evaluateAndDeactivate();,
+                                                                      s:SortInformation[1] |$s,    
                                                                       i:Integer[1]|$i,
                                                                       s:String[1]|$s,
                                                                       d:Date[1]|$d,
