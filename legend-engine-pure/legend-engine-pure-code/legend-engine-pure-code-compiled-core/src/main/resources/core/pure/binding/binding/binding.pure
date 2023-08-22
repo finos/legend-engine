@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::metamodel::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::model::unit::*;
 
-Class meta::external::shared::format::binding::Binding extends PackageableElement
+Class meta::external::format::shared::binding::Binding extends PackageableElement
 {
    schemaSet    : SchemaSet[0..1];
    schemaId     : String[0..1];
@@ -25,7 +25,7 @@ Class meta::external::shared::format::binding::Binding extends PackageableElemen
    modelUnit    : ModelUnit[1];
 }
 
-function meta::external::shared::format::binding::toString::bindingToString(binding:Binding[1]): String[1]
+function meta::external::format::shared::binding::toString::bindingToString(binding:Binding[1]): String[1]
 {
    'Binding ' + printStereotypes($binding) + printTaggedValues($binding) + if($binding.name->isEmpty(), |'', |' ' + elementToPath($binding)) + '\n' +
    '{\n' +

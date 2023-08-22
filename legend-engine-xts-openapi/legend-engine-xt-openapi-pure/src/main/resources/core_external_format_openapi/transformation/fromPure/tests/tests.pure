@@ -15,21 +15,21 @@
 ###Pure
 import meta::legend::service::metamodel::*;
 
-import meta::external::format::openapi::metamodel::*;
-import meta::external::format::openapi::transformation::fromPure::*;
-import meta::external::format::openapi::transformation::fromPure::tests::*;
+import meta::external::function::description::openapi::metamodel::*;
+import meta::external::function::description::openapi::transformation::fromPure::*;
+import meta::external::function::description::openapi::transformation::fromPure::tests::*;
 
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 
-Class meta::external::format::openapi::transformation::fromPure::tests::Person
+Class meta::external::function::description::openapi::transformation::fromPure::tests::Person
 {
   firstName : String[1];
   lastName  : String[1];
   age: Integer[1];
 }
 
-function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::transformation::fromPure::tests::simpleServiceWithGraphFetch():Service[1]
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithGraphFetch():Service[1]
 {
   let tree = #{Person{firstName,lastName}}#;
   let func = {|Person.all()->graphFetchChecked($tree)->serialize($tree)};
@@ -62,7 +62,7 @@ function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.Open
   );
 }
 
-function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::transformation::fromPure::tests::simpleService():Service[1]
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleService():Service[1]
 {
   ^Service
   (
@@ -94,14 +94,14 @@ function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.Open
 }
 
 
-function <<test.Test>> meta::external::format::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1] 
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
   let openapi = simpleService()->serviceToOpenApi(^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
-function <<test.Test>> meta::external::format::openapi::transformation::fromPure::tests::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1] 
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
   let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testGraphFetchOpenApiSpec.txt')->toOne();
@@ -111,9 +111,9 @@ function <<test.Test>> meta::external::format::openapi::transformation::fromPure
 
 
 ###Mapping
-import meta::external::format::openapi::transformation::fromPure::tests::*;
+import meta::external::function::description::openapi::transformation::fromPure::tests::*;
 
-Mapping meta::external::format::openapi::transformation::fromPure::tests::personMapping
+Mapping meta::external::function::description::openapi::transformation::fromPure::tests::personMapping
 (
   Person : Pure
   {

@@ -16,8 +16,8 @@ import meta::external::format::json::executionPlan::test::*;
 import meta::external::format::json::executionPlan::test::types::*;
 import meta::external::format::json::functions::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::functions::*;
 
 import meta::legend::*;
 

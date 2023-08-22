@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::pure::functions::io::http::*;
 import meta::external::store::service::metamodel::*;
 

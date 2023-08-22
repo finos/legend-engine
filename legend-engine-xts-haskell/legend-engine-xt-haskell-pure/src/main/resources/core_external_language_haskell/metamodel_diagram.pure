@@ -1,0 +1,595 @@
+###Diagram
+Diagram meta::external::language::haskell::Haskell_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_9(
+        type=meta::external::language::haskell::metamodel::Field,
+        position=(273.00000, -199.00000),
+        width=137.49091,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::external::language::haskell::metamodel::NamedConstructor,
+        position=(48.00000, -218.00000),
+        width=128.69091,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::language::haskell::metamodel::RecordTypeConstructor,
+        position=(64.00000, -125.00000),
+        width=157.12727,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::external::language::haskell::metamodel::Text,
+        position=(316.00000, 176.00000),
+        width=43.78182,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::language::haskell::metamodel::Bool,
+        position=(356.00000, 108.00000),
+        width=46.65454,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::external::language::haskell::metamodel::Num,
+        position=(384.00000, 144.00000),
+        width=46.67273,
+        height=38.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::language::haskell::metamodel::Double,
+        position=(394.00000, 194.00000),
+        width=60.65454,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::language::haskell::metamodel::Float,
+        position=(450.00000, 113.00000),
+        width=48.65454,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::language::haskell::metamodel::Decimal,
+        position=(465.00000, 156.00000),
+        width=66.01818,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::language::haskell::metamodel::Integer,
+        position=(511.00000, 196.00000),
+        width=60.00000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::language::haskell::metamodel::Int,
+        position=(554.00000, 155.00000),
+        width=34.65455,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::language::haskell::metamodel::DateTime,
+        position=(582.00000, 117.00000),
+        width=73.80000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::language::haskell::metamodel::ModuleElement,
+        position=(429.00000, -229.00000),
+        width=108.65455,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::language::haskell::metamodel::HaskellModule,
+        position=(638.00000, -244.00000),
+        width=110.90909,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::language::haskell::metamodel::Import,
+        position=(828.00000, -235.00000),
+        width=101.83636,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::external::language::haskell::metamodel::NamedTypeRef,
+        position=(214.00000, 104.00000),
+        width=124.25455,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::language::haskell::metamodel::DataTypeConstructor,
+        position=(-48.00000, -85.00000),
+        width=141.80000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::external::language::haskell::metamodel::TupleType,
+        position=(185.00000, 170.00000),
+        width=78.20000,
+        height=50.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::language::haskell::metamodel::HaskellType,
+        position=(257.00000, -109.00000),
+        width=425.41818,
+        height=167.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::language::haskell::metamodel::ListType,
+        position=(641.00000, 155.00000),
+        width=68.43636,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::language::haskell::metamodel::DataType,
+        position=(918.00000, -46.00000),
+        width=101.83636,
+        height=45.50000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::language::haskell::metamodel::Deriving,
+        position=(759.00000, -51.00000),
+        width=68.00000,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::language::haskell::metamodel::AnnotatedElement,
+        position=(259.00000, -320.00000),
+        width=163.63636,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_9,
+        target=cview_1,
+        points=[(341.74545,-170.00000),(340.81818,-298.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_2,
+        target=cview_12,
+        points=[(379.32727,123.00000),(379.41818,51.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_12,
+        points=[(604.41818,128.50000),(603.62727,50.75000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_12,
+        points=[(518.41818,160.50000),(519.41818,54.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_8,
+        target=cview_12,
+        points=[(441.41818,199.50000),(441.41818,52.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_10,
+        target=cview_12,
+        points=[(474.32727,128.00000),(473.41818,50.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_14,
+        target=cview_12,
+        points=[(571.32727,170.00000),(570.41818,44.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_15,
+        target=cview_12,
+        points=[(541.00000,211.00000),(540.41818,50.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_16,
+        target=cview_12,
+        points=[(664.41818,163.50000),(661.91818,39.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_17,
+        target=cview_1,
+        points=[(483.32727,-214.00000),(482.62727,-237.25000),(407.62727,-250.25000),(407.62727,-277.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_3,
+        target=cview_17,
+        points=[(968.91818,-23.25000),(968.62727,-134.25000),(483.41818,-164.50000),(483.32727,-214.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_4,
+        target=cview_18,
+        points=[(55.00000,-80.00000),(56.00000,-181.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_18,
+        target=cview_1,
+        points=[(112.34546,-196.00000),(113.62727,-227.25000),(285.62727,-249.25000),(285.62727,-285.25000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_19,
+        target=cview_12,
+        points=[(321.41818,111.50000),(321.41818,48.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_20,
+        target=cview_12,
+        points=[(415.41818,152.50000),(415.41818,55.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_21,
+        target=cview_18,
+        points=[(142.56364,-110.00000),(143.00000,-181.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_22,
+        target=cview_12,
+        points=[(349.41818,180.50000),(349.41818,54.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_23,
+        target=cview_12,
+        points=[(199.41818,176.50000),(198.41818,96.50000),(282.62727,83.75000),(282.91818,52.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::language::haskell::metamodel::DataType.deriving,
+        source=cview_3,
+        target=cview_7,
+        points=[(925.41818,-36.50000),(793.00000,-36.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::language::haskell::metamodel::DataTypeConstructor.types,
+        source=cview_4,
+        target=cview_12,
+        points=[(22.90000,-63.00000),(292.91818,-63.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::language::haskell::metamodel::Deriving.types,
+        source=cview_7,
+        target=cview_12,
+        points=[(793.00000,-36.00000),(671.62727,-35.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::language::haskell::metamodel::Field.type,
+        source=cview_9,
+        target=cview_12,
+        points=[(402.62727,-146.25000),(530.62727,-145.25000),(530.62727,-123.25000),(760.62727,-121.25000),(760.62727,-88.25000),(679.62727,-87.25000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::language::haskell::metamodel::HaskellModule.imports,
+        source=cview_11,
+        target=cview_13,
+        points=[(693.45455,-215.00000),(878.91818,-213.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::language::haskell::metamodel::ListType.type,
+        source=cview_16,
+        target=cview_12,
+        points=[(675.21818,170.00000),(734.41818,170.50000),(732.41818,34.50000),(667.91818,35.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::language::haskell::metamodel::HaskellModule.elements,
+        source=cview_11,
+        target=cview_17,
+        points=[(693.45455,-215.00000),(483.32727,-214.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::language::haskell::metamodel::DataType.constructors,
+        source=cview_3,
+        target=cview_18,
+        points=[(924.41818,-8.50000),(893.62727,-8.25000),(894.41818,238.50000),(-66.58182,241.50000),(-66.58182,-195.50000),(112.34546,-196.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::language::haskell::metamodel::RecordTypeConstructor.fields,
+        source=cview_21,
+        target=cview_9,
+        points=[(142.56364,-110.00000),(250.00000,-110.00000),(250.00000,-169.00000),(341.74545,-170.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::language::haskell::metamodel::TupleType.first,
+        source=cview_23,
+        target=cview_12,
+        points=[(195.41818,211.50000),(124.41818,211.50000),(123.41818,-6.50000),(288.91818,-6.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::language::haskell::metamodel::TupleType.second,
+        source=cview_23,
+        target=cview_12,
+        points=[(187.41818,183.50000),(154.41818,183.50000),(155.41818,50.50000),(278.91818,51.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

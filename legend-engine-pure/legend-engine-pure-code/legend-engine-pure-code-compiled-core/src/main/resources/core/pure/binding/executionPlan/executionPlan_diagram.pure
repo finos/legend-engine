@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ###Diagram
-Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedExecutionNodeDiagram(width=0.0, height=0.0)
+Diagram meta::external::format::shared::executionPlan::diagram::ExternalSharedExecutionNodeDiagram(width=0.0, height=0.0)
 {
     TypeView cview_1(
         type=meta::pure::executionPlan::ExecutionNode,
@@ -28,7 +28,7 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
         lineWidth=1.0)
 
     TypeView cview_11(
-        type=meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode,
+        type=meta::external::format::shared::executionPlan::ExternalFormatExternalizeExecutionNode,
         position=(324.86328, 791.75000),
         width=258.73438,
         height=72.00000,
@@ -40,7 +40,7 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
         lineWidth=1.0)
 
     TypeView cview_12(
-        type=meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode,
+        type=meta::external::format::shared::executionPlan::ExternalFormatInternalizeExecutionNode,
         position=(963.86328, 779.75000),
         width=257.14453,
         height=100.00000,

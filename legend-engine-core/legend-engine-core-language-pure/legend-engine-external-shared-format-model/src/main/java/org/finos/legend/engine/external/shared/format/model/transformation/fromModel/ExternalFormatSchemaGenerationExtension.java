@@ -36,14 +36,14 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
     /**
      * Called to compile an external format ModelToSchemaConfiguration.
      */
-    Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(SchemaGenConfig configuration, PureModel pureModel);
+    Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(SchemaGenConfig configuration, PureModel pureModel);
 
     /**
      * Provides the properties used to configure model generation.
      */
     default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
     {
-        Root_meta_external_shared_format_ExternalFormatFromPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
@@ -54,14 +54,14 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
     /**
      * Called when a PURE model is used to generate an external schema of this format.
      */
-    default Root_meta_external_shared_format_metamodel_SchemaSet generateSchema(SchemaGenConfig config, ModelUnit sourceModelUnit, PureModel pureModel)
+    default Root_meta_external_format_shared_metamodel_SchemaSet generateSchema(SchemaGenConfig config, ModelUnit sourceModelUnit, PureModel pureModel)
     {
-        Root_meta_external_shared_format_ExternalFormatFromPureDescriptor descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatFromPureDescriptor descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
         }
-        Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration configuration = compileModelToSchemaConfiguration(config, pureModel);
+        Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration configuration = compileModelToSchemaConfiguration(config, pureModel);
 
         Root_meta_pure_model_unit_ModelUnit modelUnit = new Root_meta_pure_model_unit_ModelUnit_Impl("")
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(pureModel.getType("meta::pure::model::unit::ModelUnit")))

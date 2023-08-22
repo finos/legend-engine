@@ -18,8 +18,8 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperExternalFormat;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ public class TestExternalFormatCompilation
                         "    { id: s2; location: 'e2.schema'; content: 'example2'; }\n" +
                         "  ];\n" +
                         "}\n");
-        Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet("meta::firm::SchemaSet", compiledGraph.getTwo().getContext());
+        Root_meta_external_format_shared_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet("meta::firm::SchemaSet", compiledGraph.getTwo().getContext());
         Assert.assertEquals("SchemaSet", schemaSet._name());
         Assert.assertEquals("firm", schemaSet._package().getName());
     }
@@ -108,7 +108,7 @@ public class TestExternalFormatCompilation
                         "  modelExcludes: [ meta::firm::Person ];\n" +
                         "}\n"
         );
-        Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding("meta::firm::Binding", compiledGraph.getTwo().getContext());
+        Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding("meta::firm::Binding", compiledGraph.getTwo().getContext());
         Assert.assertEquals("Binding", binding._name());
         Assert.assertEquals("firm", binding._package().getName());
         Assert.assertEquals("SchemaSet", binding._schemaSet()._name());
@@ -140,7 +140,7 @@ public class TestExternalFormatCompilation
                         "  modelExcludes: [ meta::firm::Person ];\n" +
                         "}\n"
         );
-        Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding("meta::firm::Binding", compiledGraph.getTwo().getContext());
+        Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding("meta::firm::Binding", compiledGraph.getTwo().getContext());
         Assert.assertEquals("Binding", binding._name());
         Assert.assertEquals("firm", binding._package().getName());
         Assert.assertEquals("text/example", binding._contentType());

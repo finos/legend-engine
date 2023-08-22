@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::external::format::json::metamodel::internalize::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::pure::metamodel::path::*;
 
 import meta::pure::graphFetch::*;
@@ -25,7 +25,7 @@ Class meta::external::format::json::metamodel::internalize::JsonPathReference
   path    : String[1];
 }
 
-Class meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig extends meta::external::shared::format::ExternalFormatInternalizeConfig
+Class meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig extends meta::external::format::shared::ExternalFormatInternalizeConfig
 {
   pathReference : JsonPathReference[0..1];
   typeKeyName   : String[1] = '@type';

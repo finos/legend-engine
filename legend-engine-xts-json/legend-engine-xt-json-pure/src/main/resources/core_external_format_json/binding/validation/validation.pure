@@ -17,9 +17,9 @@ import meta::external::format::json::metamodel::*;
 import meta::external::format::json::transformation::fromPure::*;
 import meta::external::format::json::transformation::toPure::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::utils::*;
 
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::model::unit::*;

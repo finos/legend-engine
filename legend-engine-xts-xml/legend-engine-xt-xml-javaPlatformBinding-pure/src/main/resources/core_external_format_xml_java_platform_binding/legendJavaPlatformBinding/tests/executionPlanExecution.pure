@@ -14,7 +14,7 @@
 
 import meta::external::format::xml::executionPlan::test::*;
 import meta::external::format::xml::executionPlan::platformBinding::legendJava::test::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 
 import meta::legend::*;
 

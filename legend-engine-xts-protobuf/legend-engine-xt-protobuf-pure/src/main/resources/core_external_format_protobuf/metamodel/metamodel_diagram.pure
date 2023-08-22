@@ -175,7 +175,7 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
         type=meta::external::format::protobuf::metamodel::Field,
         position=(581.84654, 155.18060),
         width=131.25146,
-        height=86.00000,
+        height=100.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -198,7 +198,7 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     TypeView cview_6(
         type=meta::external::format::protobuf::metamodel::ProtoItemDefinition,
         position=(357.21718, -107.61307),
-        width=131.32813,
+        width=131.33334,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -291,7 +291,7 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     GeneralizationView gview_9(
         source=Enumeration_$_11,
         target=cview_6,
-        points=[(630.49054,324.05263),(422.88124,-85.61307)],
+        points=[(630.49054,324.05263),(422.88384,-85.61307)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -300,7 +300,7 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     GeneralizationView gview_10(
         source=cview_4,
         target=cview_6,
-        points=[(647.47227,198.18060),(422.88124,-85.61307)],
+        points=[(647.47227,205.18060),(422.88384,-85.61307)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -309,7 +309,7 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     GeneralizationView gview_11(
         source=cview_5,
         target=cview_6,
-        points=[(199.18642,14.38693),(422.88124,-85.61307)],
+        points=[(199.18642,14.38693),(422.88384,-85.61307)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -318,8 +318,8 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     PropertyView pview_0(
         property=meta::external::format::protobuf::metamodel::Enumeration.values,
         source=Enumeration_$_11,
-        target=Enum_$_8
-,        points=[(630.49055,324.05263),(633.35461,429.89474)],
+        target=Enum_$_8,
+        points=[(630.49055,324.05263),(633.35461,429.89474)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -332,8 +332,8 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     PropertyView pview_1(
         property=meta::external::format::protobuf::metamodel::Field.type,
         source=cview_4,
-        target=ProtoBufType_$_14
-,        points=[(647.47227,198.18060),(958.07904,97.00000)],
+        target=ProtoBufType_$_14,
+        points=[(647.47227,205.18060),(958.07904,97.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -346,8 +346,8 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     PropertyView pview_2(
         property=meta::external::format::protobuf::metamodel::ProtoFile.topLevelDefs,
         source=cview_2,
-        target=cview_6
-,        points=[(298.43966,224.12797),(422.88124,-85.61307)],
+        target=cview_6,
+        points=[(298.43966,224.12797),(422.88384,-85.61307)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -360,8 +360,8 @@ Diagram meta::external::format::protobuf::Protobuf_Diagram(width=0.0, height=0.0
     PropertyView pview_3(
         property=meta::external::format::protobuf::metamodel::Message.content,
         source=cview_5,
-        target=cview_6
-,        points=[(199.18642,14.38693),(422.88124,-85.61307)],
+        target=cview_6,
+        points=[(199.18642,14.38693),(422.88384,-85.61307)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
