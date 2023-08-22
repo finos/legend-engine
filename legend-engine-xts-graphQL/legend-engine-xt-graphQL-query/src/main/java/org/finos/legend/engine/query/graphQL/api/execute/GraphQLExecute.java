@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
@@ -40,9 +42,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
-import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
-import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
@@ -123,15 +123,21 @@ public class GraphQLExecute extends GraphQL
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
     private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final GraphQLPlanCache graphQLPlanCache;
+    private final GraphQLExecuteExtension graphQLExecuteExtension;
 
-    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache)
+    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache, GraphQLExecuteExtension graphQLExecuteExtension)
     {
         super(modelManager, metadataserver);
         this.planExecutor = planExecutor;
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
+        this.graphQLExecuteExtension = graphQLExecuteExtension;
+    }
 
+    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache)
+    {
+        this(modelManager, planExecutor, metadataserver, extensionsFunc, transformers, planCache, new GraphQLExecuteExtension(new GraphQLPlanCache(ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().build())),extensionsFunc,transformers,planExecutor));
     }
 
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers)
@@ -237,12 +243,12 @@ public class GraphQLExecute extends GraphQL
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = findQuery(document);
-
+        PureModel pureModel = null;
         try
         {
             if (isQueryIntrospection(graphQLQuery))
             {
-                PureModel pureModel = modelLoader.call();
+                pureModel = modelLoader.call();
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
                 org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
 
@@ -258,7 +264,7 @@ public class GraphQLExecute extends GraphQL
                     if (planWithSerialized == null) //cache miss, generate the plan and add to the cache
                     {
                         LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
-                        PureModel pureModel = modelLoader.call();
+                        pureModel = modelLoader.call();
                         planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
@@ -269,7 +275,7 @@ public class GraphQLExecute extends GraphQL
                 }
                 else   //no cache so we generate the plan
                 {
-                    PureModel pureModel = modelLoader.call();
+                    pureModel = modelLoader.call();
                     planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
 
                 }
@@ -279,6 +285,7 @@ public class GraphQLExecute extends GraphQL
         {
             return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
+        final PureModel pureModel1 = pureModel;
         List<SerializedNamedPlans> finalPlanWithSerialized = planWithSerialized;
         return Response.ok(
                 (StreamingOutput) outputStream ->
@@ -297,8 +304,7 @@ public class GraphQLExecute extends GraphQL
                             JsonStreamingResult result = null;
                             try
                             {
-                                Map<String, Result> parameterMap = new HashMap<>();
-                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+                                Map<String, Result> parameterMap = getParameterMap(graphQLQuery, p.propertyName);
 
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
@@ -317,7 +323,7 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        Map<String, ?> extensions = computeExtensionsField(graphQLQuery);
+                        Map<String, ?> extensions = this.graphQLExecuteExtension.computeExtensionsField(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel1, graphQLCacheKey, profiles);
                         if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
@@ -349,31 +355,6 @@ public class GraphQLExecute extends GraphQL
 
         return plans;
     }
-
-    private Map<String, ?> computeExtensionsField(OperationDefinition operationDefinition)
-    {
-        List<Directive> directives = ((Field)(operationDefinition.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
-        if (directives.isEmpty())
-        {
-            return new HashMap<>();
-        }
-        String fieldName = ((Field)(operationDefinition.selectionSet.get(0))).name;
-        Map<String, Map<String,Object>> m = new HashMap<>();
-        m.put(fieldName, new HashMap<>());
-        directives.forEach(directive ->
-        {
-            if (directive.name.equals("echo"))
-            {
-                m.get(fieldName).put("echo",true);
-            }
-            else
-            {
-                throw new RuntimeException("Directive not supported: " + directive.name);
-            }
-        });
-        return m;
-    }
-
 
     @POST
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", notes = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")

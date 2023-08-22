@@ -28,10 +28,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -44,12 +46,14 @@ import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+
+import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.argumentValueToObject;
+import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.extractFieldByName;
 
 public abstract class GraphQL
 {
@@ -73,6 +77,13 @@ public abstract class GraphQL
         return subject == null ?
                 getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace) :
                 Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+    }
+
+    protected Map<String, Result> getParameterMap(OperationDefinition graphQLQuery, String fieldName)
+    {
+        Map<String, Result> parameterMap = new HashMap<>();
+        extractFieldByName(graphQLQuery, fieldName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+        return parameterMap;
     }
 
     private static class SDLCProjectDependency

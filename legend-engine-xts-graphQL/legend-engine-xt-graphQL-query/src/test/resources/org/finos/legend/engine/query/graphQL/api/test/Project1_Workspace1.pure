@@ -43,6 +43,8 @@ Class simple::model::Query
     let pd = $processingDate->parseDate();
     simple::model::AddressProcessingTemporal.all($pd);
   }: simple::model::AddressProcessingTemporal[*];
+  allFirmsCount() {Firm.all().legalName->count()}: Integer[1];
+  allFirmsCountWithFilters(legalName: String[1]) {Firm.all()->filter(f|$f.legalName == $legalName).legalName->count()}: Integer[1];
 }
 
 Class simple::model::Firm

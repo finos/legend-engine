@@ -156,6 +156,69 @@ public class TestGraphQLAPI
     }
 
     @Test
+    public void testGraphQLExecuteDevAPI_TotalCountDirective() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  firms: allFirms @totalCount {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                    "\"allFirms\":[" +
+                        "{\"legalName\":\"Firm X\"}," +
+                        "{\"legalName\":\"Firm A\"}," +
+                        "{\"legalName\":\"Firm B\"}" +
+                    "]" +
+                    "}," +
+                    "\"extensions\":{" +
+                        "\"allFirms\":{" +
+                            "\"totalCount\":3" +
+                        "}" +
+                    "}" +
+                "}";
+
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_TotalCountDirective_WithALimitingFunction() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  selectEmployees(offset: 1,limit: 2) @totalCount {\n" +
+                "    firstName,\n" +
+                "    lastName\n" +
+                "  }\n" +
+                "}";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                    "\"data\":{" +
+                        "\"selectEmployees\":[" +
+                            "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                            "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
+                        "]" +
+                    "}," +
+                    "\"extensions\":{" +
+                        "\"selectEmployees\":{" +
+                            "\"totalCount\":7" +
+                        "}" +
+                    "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
     public void testGraphQLExecuteDevAPI_BiTemporalMilestoning_Root() throws Exception
     {
         GraphQLExecute graphQLExecute = getGraphQLExecute();

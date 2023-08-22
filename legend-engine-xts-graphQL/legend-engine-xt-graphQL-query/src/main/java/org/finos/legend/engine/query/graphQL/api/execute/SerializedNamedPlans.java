@@ -18,6 +18,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 
 public class SerializedNamedPlans
 {
-    String propertyName;
-    SingleExecutionPlan serializedPlan;
+    public String propertyName;
+    public SingleExecutionPlan serializedPlan;
 }
