@@ -38,7 +38,7 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_6(
-        type=meta::external::shared::format::metamodel::data::ExternalFormatData,
+        type=meta::external::format::shared::metamodel::data::ExternalFormatData,
         position=(1649.31128, 384.00000),
         width=138.35742,
         height=58.00000,

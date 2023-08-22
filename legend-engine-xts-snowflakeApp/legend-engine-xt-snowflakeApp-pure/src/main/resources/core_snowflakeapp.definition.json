@@ -1,6 +1,6 @@
 {
   "name": "core_snowflakeapp",
-  "pattern": "(meta::external::functionActivator::snowflakeApp|meta::protocols)(::.*)?",
+  "pattern": "(meta::external::function::activator::snowflakeApp|meta::protocols)(::.*)?",
   "dependencies": [
     "platform",
     "core_function_activator"

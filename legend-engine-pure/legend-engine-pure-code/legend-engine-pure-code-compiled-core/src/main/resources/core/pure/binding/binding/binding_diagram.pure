@@ -1,8 +1,8 @@
 ###Diagram
-Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, height=0.0)
+Diagram meta::external::format::shared::binding::BindingDiagram(width=0.0, height=0.0)
 {
     TypeView cview_4(
-        type=meta::external::shared::format::binding::validation::BindingDetail,
+        type=meta::external::format::shared::binding::validation::BindingDetail,
         position=(451.00000, 83.00000),
         width=97.38477,
         height=44.00000,
@@ -14,7 +14,7 @@ Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, heigh
         lineWidth=1.0)
 
     TypeView cview_6(
-        type=meta::external::shared::format::binding::validation::SuccessfulBindingDetail,
+        type=meta::external::format::shared::binding::validation::SuccessfulBindingDetail,
         position=(230.00000, 235.00000),
         width=279.79443,
         height=58.00000,
@@ -26,7 +26,7 @@ Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, heigh
         lineWidth=1.0)
 
     TypeView cview_5(
-        type=meta::external::shared::format::binding::validation::FailedBindingDetail,
+        type=meta::external::format::shared::binding::validation::FailedBindingDetail,
         position=(568.00000, 233.00000),
         width=150.21143,
         height=44.00000,
@@ -38,7 +38,7 @@ Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, heigh
         lineWidth=1.0)
 
     TypeView cview_2(
-        type=meta::external::shared::format::binding::BindingTransformer,
+        type=meta::external::format::shared::binding::BindingTransformer,
         position=(833.00000, 156.00000),
         width=149.59375,
         height=72.00000,
@@ -50,7 +50,7 @@ Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, heigh
         lineWidth=1.0)
 
     TypeView cview_1(
-        type=meta::external::shared::format::binding::Binding,
+        type=meta::external::format::shared::binding::Binding,
         position=(1121.00000, 151.00000),
         width=171.63135,
         height=86.00000,
@@ -80,7 +80,7 @@ Diagram meta::external::shared::format::binding::BindingDiagram(width=0.0, heigh
         lineStyle=SIMPLE)
 
     PropertyView pview_0(
-        property=meta::external::shared::format::binding::BindingTransformer.binding,
+        property=meta::external::format::shared::binding::BindingTransformer.binding,
         source=cview_2,
         target=cview_1
 ,        points=[(907.79688,192.00000),(1206.81567,194.00000)],

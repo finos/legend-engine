@@ -10,11 +10,11 @@ Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer
   document : meta::external::query::graphQL::metamodel::sdl::Document[1];
 }
 
-Class meta::external::query::graphQL::binding::fromPure::sdl::ModelToGraphQLConfig extends meta::external::shared::format::transformation::fromPure::ModelToSchemaConfiguration
+Class meta::external::query::graphQL::binding::fromPure::sdl::ModelToGraphQLConfig extends meta::external::format::shared::transformation::fromPure::ModelToSchemaConfiguration
 {
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::pureToGraphQLSDL(modelUnit: ModelUnit[1], config: ModelToGraphQLConfig[1]): meta::external::shared::format::metamodel::SchemaSet[1]
+function meta::external::query::graphQL::binding::fromPure::sdl::pureToGraphQLSDL(modelUnit: ModelUnit[1], config: ModelToGraphQLConfig[1]): meta::external::format::shared::metamodel::SchemaSet[1]
 {
   let packageableElements = $modelUnit->resolve().packageableElements;
   let document = 
@@ -29,13 +29,13 @@ function meta::external::query::graphQL::binding::fromPure::sdl::pureToGraphQLSD
   );
   let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
   let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
-  let schemaSet = ^meta::external::shared::format::metamodel::SchemaSet(
+  let schemaSet = ^meta::external::format::shared::metamodel::SchemaSet(
       package = pathToPackage($schemaSetPkgName, true),
       name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
       format  = meta::external::query::graphQL::contract::graphQLSdlContractID()
    );
   let schema = 
-  ^meta::external::shared::format::metamodel::Schema(
+  ^meta::external::format::shared::metamodel::Schema(
     set = $schemaSet,
     location = 'types.graphql',
     detail = $sdlcContainer

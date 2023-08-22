@@ -92,6 +92,29 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 ')\n';  assertEquals($expected, $result);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testPreeavalOnSort():Boolean[1]
+{
+  let result = meta::pure::executionPlan::executionPlan(
+            {|meta::relational::tests::m2m2r::Entitlement.all()
+              ->project([x|$x.name,x|$x.prop1], ['name','prop1'])
+              ->sort(asc('name'))}
+            ->meta::pure::router::preeval::preval(meta::relational::extension::relationalExtensions()),
+        meta::relational::tests::m2m2r::AxionToModelMapping,
+        meta::relational::tests::m2m2r::runtime(),
+        meta::relational::extension::relationalExtensions(),
+        noDebug()
+      )->planToString( meta::relational::extension::relationalExtensions());
+
+  let expected =  'Relational\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, "", ""), (prop1, Boolean, "", "")]\n'+
+                  '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n'+
+                  '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) order by "name"\n'+
+                  '  connection = RelationalDatabaseConnection(type = "H2")\n'+
+                  ')\n';
+  assertEquals($expected, $result);
+}
+
 function meta::relational::tests::m2m2r::runtimeSimple():meta::pure::runtime::Runtime[1]
 {
   meta::pure::runtime::getRuntimeWithModelConnection(meta::relational::tests::m2m2r::Entitlement,[])

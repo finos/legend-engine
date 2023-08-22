@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::transformation::*;
+import meta::external::format::shared::transformation::*;
 
-Class meta::external::shared::format::transformation::GenerationConfiguration
+Class meta::external::format::shared::transformation::GenerationConfiguration
 {
   format : String[1];
 }
 
-Class meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration extends GenerationConfiguration
+Class meta::external::format::shared::transformation::toPure::SchemaToModelConfiguration extends GenerationConfiguration
 {
   {doc.doc='The id of the schema within the SchemaSet that will drive the generation'}
   sourceSchemaId  : String[0..1];
@@ -27,7 +27,7 @@ Class meta::external::shared::format::transformation::toPure::SchemaToModelConfi
   targetPackage   : String[1];
 }
 
-Class meta::external::shared::format::transformation::fromPure::ModelToSchemaConfiguration extends GenerationConfiguration
+Class meta::external::format::shared::transformation::fromPure::ModelToSchemaConfiguration extends GenerationConfiguration
 [
   validTargetSchemaName: $this.targetSchemaSet->matches('[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+')   
 ]

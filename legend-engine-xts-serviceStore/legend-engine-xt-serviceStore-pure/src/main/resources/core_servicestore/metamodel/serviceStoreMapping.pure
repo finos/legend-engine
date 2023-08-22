@@ -14,7 +14,7 @@
 
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::metamodel::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 

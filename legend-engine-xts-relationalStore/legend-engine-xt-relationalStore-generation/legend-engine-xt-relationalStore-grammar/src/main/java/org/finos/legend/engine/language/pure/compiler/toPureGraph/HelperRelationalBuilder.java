@@ -71,8 +71,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_BindingTransformer_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_BindingTransformer_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MappingClass_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
@@ -1571,7 +1571,7 @@ public class HelperRelationalBuilder
 
     private static PropertyMapping buildSemiStructuredPropertyMapping(Property<?, ?> property, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation parent, RootRelationalInstanceSetImplementation topParent, MutableMap<String, TableAlias> aliasMap, CompileContext context)
     {
-        Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding(propertyMapping.bindingTransformer.binding, context);
+        Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding(propertyMapping.bindingTransformer.binding, context);
         List<? extends Class<?>> bindingClasses = FastList.newList(core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()));
 
         Type propertyType = property._genericType()._rawType();
@@ -1587,7 +1587,7 @@ public class HelperRelationalBuilder
             throw new EngineException("Class: " + Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        Class<?> classifier = context.pureModel.getClass("meta::external::shared::format::binding::BindingTransformer");
+        Class<?> classifier = context.pureModel.getClass("meta::external::format::shared::binding::BindingTransformer");
         GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(classifier)
                 ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(propertyReturnType)));
@@ -1604,7 +1604,7 @@ public class HelperRelationalBuilder
                 ._owner(parent)
                 ._relationalOperationElement(processRelationalOperationElement(propertyMapping.relationalOperation, context, aliasMap, FastList.newList()))
                 ._transformer(
-                        new Root_meta_external_shared_format_binding_BindingTransformer_Impl<>("", null, classifier)
+                        new Root_meta_external_format_shared_binding_BindingTransformer_Impl<>("", null, classifier)
                                 ._binding(binding)
                                 ._classifierGenericType(genericType)
                                 ._class(propertyReturnType)

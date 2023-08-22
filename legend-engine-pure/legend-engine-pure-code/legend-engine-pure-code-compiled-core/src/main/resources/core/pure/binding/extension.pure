@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::executionPlan::toString::*;
+import meta::external::format::shared::executionPlan::toString::*;
 import meta::pure::extension::*;
 
 // TO BE REMOVED
 
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::binding::*;
 
-function meta::external::shared::format::externalFormatExtension(): Extension[1]
+function meta::external::format::shared::externalFormatExtension(): Extension[1]
 {
-  meta::external::shared::format::externalFormatExtension('externalFormat')
+  meta::external::format::shared::externalFormatExtension('externalFormat')
 }
 
-function <<access.private>> meta::external::shared::format::externalFormatExtension(type:String[1]) : Extension[1]
+function <<access.private>> meta::external::format::shared::externalFormatExtension(type:String[1]) : Extension[1]
 {
    let shared = ^Extension(
       type = $type,
@@ -35,11 +35,11 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
                                      id = 'ExternalFormat',
                                      printPlanNodeToString = {space:String[1], extensions:Extension[*] | printPlanNodeToString($space, $extensions)}
                                   ),
-      serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_
+      serializerExtension      = meta::external::format::shared::serializerExtensionName_String_1__String_1_
    )
 }
 
-function <<access.private>> meta::external::shared::format::serializerExtensionName(version:String[1]): String[1]
+function <<access.private>> meta::external::format::shared::serializerExtensionName(version:String[1]): String[1]
 {
    'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'
 }
