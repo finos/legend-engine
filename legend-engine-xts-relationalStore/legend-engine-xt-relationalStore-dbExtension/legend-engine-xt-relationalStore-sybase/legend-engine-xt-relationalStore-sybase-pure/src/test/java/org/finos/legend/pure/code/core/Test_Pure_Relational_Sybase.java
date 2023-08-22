@@ -16,14 +16,11 @@ package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
-import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-import org.junit.runner.RunWith;
 
-@RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
-public class Test_Pure_Relational_DbSpecific_Sybase
+public class Test_Pure_Relational_Sybase
 {
     public static TestSuite suite()
     {
