@@ -6250,22 +6250,14 @@ function meta::relational::functions::pureToSqlQuery::buildJoinStrings(strings:S
                 |manageAggregation($strings, $js, $operation, $state, $nodeId, $aggFromMap, $context, $extensions);,
                 |^$operation(
                    select = $inFilter->if(
-                                           |^SelectSQLQuery(
-                                             columns = $operation.select.columns,
-                                             data = $strings.data,
-                                             filteringOperation = $js,
-                                             extraFilteringOperation = $strings.extraFilteringOperation,
-                                             savedFilteringOperation = $strings.savedFilteringOperation,
-                                             orderBy = $strings.orderBy
-                                            );,
-                                           |^SelectSQLQuery(
-                                             columns = $js,
-                                             data = $strings.data,
-                                             filteringOperation = $operation.select.filteringOperation,
-                                             extraFilteringOperation = $strings.extraFilteringOperation,
-                                             savedFilteringOperation = $strings.savedFilteringOperation,
-                                             orderBy = $strings.orderBy
-                                            );
+                                           |^$strings(
+                                              	columns = $operation.select.columns,
+                                        	filteringOperation = $js
+                                              );,
+                                           |^$strings(
+                                            	columns = $js,
+                                            	filteringOperation = $operation.select.filteringOperation
+                                             );
                                        ),
                    currentTreeNode = [],
                    positionBeforeLastApplyJoinTreeNode = []
