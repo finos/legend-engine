@@ -10,10 +10,23 @@
     }
   ],
   "paths": {
-    "/service/testOpenApi": {
+    "/test/service/with/extend": {
       "get": {
         "tags": [
           "definition"
+        ],
+        "parameters": [
+          {
+            "name": "planningAreas",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -25,7 +38,15 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "kerberos",
+                        "type": "string"
+                      },
+                      {
+                        "column": "planningArea",
+                        "type": "integer"
+                      },
+                      {
+                        "column": "ageString",
                         "type": "string"
                       }
                     ]
@@ -50,7 +71,15 @@
                   "specificationExtensions": {
                     "x-tdsResultColumns": [
                       {
-                        "column": "firstName",
+                        "column": "kerberos",
+                        "type": "string"
+                      },
+                      {
+                        "column": "planningArea",
+                        "type": "integer"
+                      },
+                      {
+                        "column": "ageString",
                         "type": "string"
                       }
                     ]
@@ -96,11 +125,11 @@
           }
         }
       },
-      "DataType": {
+      "Any": {
         "type": "object",
         "properties": {}
       },
-      "Any": {
+      "DataType": {
         "type": "object",
         "properties": {}
       },
