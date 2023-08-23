@@ -21,7 +21,6 @@ import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-
 /**
  * TODO?: @akphi - This is a temporary hack!
  * We probably need to have a mechanism to control the connection pool
