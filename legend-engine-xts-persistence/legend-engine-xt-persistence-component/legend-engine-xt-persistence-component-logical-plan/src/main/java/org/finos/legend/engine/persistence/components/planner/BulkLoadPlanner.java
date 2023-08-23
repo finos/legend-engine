@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -104,8 +105,7 @@ class BulkLoadPlanner extends Planner
             fieldsToSelect.add(StringValue.of(lineageValue));
         }
 
-
-        Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
+        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
         return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
