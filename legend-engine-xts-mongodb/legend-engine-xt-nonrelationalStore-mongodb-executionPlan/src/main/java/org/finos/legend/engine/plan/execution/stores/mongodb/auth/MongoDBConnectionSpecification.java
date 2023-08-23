@@ -15,8 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
 import com.mongodb.ServerAddress;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.connection.ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 
 import java.util.List;

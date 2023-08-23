@@ -14,8 +14,17 @@
 
 package org.finos.legend.engine.datapush.server.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.datapush.server.ConnectionFactoryConfiguration;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 
 public class DataPushServerConfiguration extends BaseServerConfiguration
 {
+    @JsonProperty("connection")
+    private ConnectionFactoryConfiguration connectionFactoryConfiguration;
+
+    public ConnectionFactoryConfiguration getConnectionFactoryConfiguration()
+    {
+        return connectionFactoryConfiguration;
+    }
 }
