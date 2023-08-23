@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::format::openapi::tostring::*;
-import meta::external::format::openapi::metamodel::*;
+import meta::external::function::description::openapi::tostring::*;
+import meta::external::function::description::openapi::metamodel::*;
 import meta::json::*;
 import meta::pure::mapping::*;
 
-Class meta::external::format::openapi::tostring::JSONResult<T|m> extends ServiceResult<T|m>
+Class meta::external::function::description::openapi::tostring::JSONResult<T|m> extends ServiceResult<T|m>
 {
     extraSerializers: Function<{Nil[1], JSONState[1]->JSONElement[1]}>[*];
     max: Integer[0..1];
@@ -25,12 +25,12 @@ Class meta::external::format::openapi::tostring::JSONResult<T|m> extends Service
     config: Config[0..1];
 }
 
-function meta::external::format::openapi::tostring::asString(o:OpenApi[1]):String[*]
+function meta::external::function::description::openapi::tostring::asString(o:OpenApi[1]):String[*]
 {
   $o->openApiJSONResult()->serviceResultToString();
 }
 
-function {service.contentType='application/json'} meta::external::format::openapi::tostring::serviceResultToString(v: ServiceResult<Any|*>[1]):String[*]
+function {service.contentType='application/json'} meta::external::function::description::openapi::tostring::serviceResultToString(v: ServiceResult<Any|*>[1]):String[*]
 {
   $v->match(
       j: JSONResult<Any|*>[1]| let conf = if($j.config->isEmpty(),|defaultConfig(), |$j.config->toOne());
@@ -52,12 +52,12 @@ function {service.contentType='application/json'} meta::external::format::openap
     )
 }
 
-function meta::external::format::openapi::tostring::isToOneNonStrict(multiplicity:Multiplicity[1]):Boolean[1]
+function meta::external::function::description::openapi::tostring::isToOneNonStrict(multiplicity:Multiplicity[1]):Boolean[1]
 {
     $multiplicity->hasUpperBound() && eq($multiplicity->getUpperBound(),1);
 }
 
-function meta::external::format::openapi::tostring::openApiJSONResult(o:OpenApi[1]):JSONResult<OpenApi|1>[1]
+function meta::external::function::description::openapi::tostring::openApiJSONResult(o:OpenApi[1]):JSONResult<OpenApi|1>[1]
 {
   ^JSONResult<OpenApi|1>
   (
@@ -71,12 +71,12 @@ function meta::external::format::openapi::tostring::openApiJSONResult(o:OpenApi[
   );
 }
 
-function <<access.private>> meta::external::format::openapi::tostring::processOpenApiSchema(p:Schema[1], full:Boolean[1], s:JSONState[1]):JSONElement[1]
+function <<access.private>> meta::external::function::description::openapi::tostring::processOpenApiSchema(p:Schema[1], full:Boolean[1], s:JSONState[1]):JSONElement[1]
 {
   $p->anyToJSON($s,100000,defaultConfig());
 }
 
-function <<test.Test>> meta::external::format::openapi::tostring::serializationTest():Boolean[1]
+function <<test.Test>> meta::external::function::description::openapi::tostring::serializationTest():Boolean[1]
 {
   assertEquals('[]', ^JSONResult<Any|*>()->serviceResultToString());
   assertEquals('[1]', ^JSONResult<Any|*>(value=1)->serviceResultToString());

@@ -19,8 +19,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
@@ -48,15 +48,15 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         );
     }
 
-    public Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp buildSnowflakeApp(SnowflakeApp app, CompileContext context)
+    public Root_meta_external_function_activator_snowflakeApp_SnowflakeApp buildSnowflakeApp(SnowflakeApp app, CompileContext context)
     {
         try
         {
             PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function), app.sourceInformation);
-            return new Root_meta_external_functionActivator_snowflakeApp_SnowflakeApp_Impl(
+            return new Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl(
                         app.name,
                         null,
-                        context.pureModel.getClass("meta::external::functionActivator::snowflakeApp::SnowflakeApp")
+                        context.pureModel.getClass("meta::external::function::activator::snowflakeApp::SnowflakeApp")
                         )
                         ._applicationName(app.applicationName)
                         ._function(func)

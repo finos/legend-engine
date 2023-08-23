@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::pure::mapping::*;
 
-Class meta::external::shared::format::binding::BindingTransformer<T> extends ValueTransformer<T>
+Class meta::external::format::shared::binding::BindingTransformer<T> extends ValueTransformer<T>
 {
    binding : Binding[1];
    class   : Class<T>[1];

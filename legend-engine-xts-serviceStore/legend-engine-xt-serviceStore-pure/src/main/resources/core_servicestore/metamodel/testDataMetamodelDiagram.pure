@@ -110,7 +110,7 @@ Diagram meta::external::store::service::metamodel::data::ServiceStoreTestDataMet
         lineWidth=1.0)
 
     TypeView cview_10(
-        type=meta::external::shared::format::metamodel::data::ExternalFormatData,
+        type=meta::external::format::shared::metamodel::data::ExternalFormatData,
         position=(1210.00000, 155.00000),
         width=138.35742,
         height=58.00000,

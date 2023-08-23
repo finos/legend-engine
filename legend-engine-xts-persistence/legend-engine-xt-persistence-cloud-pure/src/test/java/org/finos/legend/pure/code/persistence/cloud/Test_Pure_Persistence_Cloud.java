@@ -26,7 +26,7 @@ public class Test_Pure_Persistence_Cloud
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::persistence", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::persistence", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }

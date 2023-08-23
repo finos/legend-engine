@@ -62,13 +62,13 @@ Class meta::pure::data::StoreTestData
     store: meta::pure::store::Store[1];
 }
 
-Class meta::external::shared::format::metamodel::data::ExternalFormatData extends EmbeddedData
+Class meta::external::format::shared::metamodel::data::ExternalFormatData extends EmbeddedData
 {
   contentType : String[1];
   data        : String[1];
 }
 
-Class meta::external::shared::format::metamodel::data::SchemaData         // TODO: TO BE REMOVED
+Class meta::external::format::shared::metamodel::data::SchemaData         // TODO: TO BE REMOVED
 {
   location : String[1];
   content  : String[1];

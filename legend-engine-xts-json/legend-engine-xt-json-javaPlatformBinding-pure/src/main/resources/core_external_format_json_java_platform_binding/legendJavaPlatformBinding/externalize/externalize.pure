@@ -20,8 +20,8 @@ import meta::pure::graphFetch::*;
 
 import meta::external::language::java::factory::project::*;
 
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
 
 import meta::external::format::json::metamodel::externalize::*;
 import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::*;

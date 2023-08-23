@@ -73,7 +73,7 @@
     import meta::external::store::mongodb::executionTest::testCase::utils::*;
     import meta::external::store::mongodb::extension::*;
     import meta::pure::mapping::*;
-    import meta::external::shared::format::metamodel::*;
+    import meta::external::format::shared::metamodel::*;
     import meta::legend::*;
     import meta::pure::functions::tests::collection::*;
     import meta::pure::graphFetch::execution::*;

@@ -37,7 +37,7 @@ public class AddressUse implements IReferencedObject, IExternalData
 
         public String getPureClassName()
         {
-            return "meta::external::shared::testpack::simple::AddressUse";
+            return "meta::external::format::shared::testpack::simple::AddressUse";
         }
     };
 
@@ -82,11 +82,11 @@ public class AddressUse implements IReferencedObject, IExternalData
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.addressTypeSize < 1L || this.addressTypeSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for addressType: expected [1] found [" + this.addressTypeSize + "]", "meta::external::shared::testpack::simple::AddressUse"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for addressType: expected [1] found [" + this.addressTypeSize + "]", "meta::external::format::shared::testpack::simple::AddressUse"));
         }
         if (this.addressSize < 1L || this.addressSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for address: expected [1] found [" + this.addressSize + "]", "meta::external::shared::testpack::simple::AddressUse"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for address: expected [1] found [" + this.addressSize + "]", "meta::external::format::shared::testpack::simple::AddressUse"));
         }
         return defects;
     }

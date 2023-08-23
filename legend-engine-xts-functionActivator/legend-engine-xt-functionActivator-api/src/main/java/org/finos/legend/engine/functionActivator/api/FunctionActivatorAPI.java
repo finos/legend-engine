@@ -37,7 +37,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.Root_meta_external_functionActivator_FunctionActivator;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -90,8 +90,8 @@ public class FunctionActivatorAPI
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
-            Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator, DeploymentResult> service = getActivatorService(activator, pureModel);
+            Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.validate(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -113,8 +113,8 @@ public class FunctionActivatorAPI
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
-            Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator, DeploymentResult> service = getActivatorService(activator,pureModel);
+            Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentResult> service = getActivatorService(activator,pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -136,8 +136,8 @@ public class FunctionActivatorAPI
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
-            Root_meta_external_functionActivator_FunctionActivator activator = (Root_meta_external_functionActivator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator, DeploymentResult> service = getActivatorService(activator, pureModel);
+            Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.renderArtifact(pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -147,9 +147,9 @@ public class FunctionActivatorAPI
         }
     }
 
-    public FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator, DeploymentResult> getActivatorService(Root_meta_external_functionActivator_FunctionActivator activator, PureModel pureModel)
+    public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
     {
-        FunctionActivatorService<Root_meta_external_functionActivator_FunctionActivator, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
         if (service == null)
         {
             throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");

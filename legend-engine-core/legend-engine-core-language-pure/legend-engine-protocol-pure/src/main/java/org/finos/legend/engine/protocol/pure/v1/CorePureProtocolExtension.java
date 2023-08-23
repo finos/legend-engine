@@ -155,8 +155,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(Profile.class, "meta::pure::metamodel::extension::Profile")
                 .withKeyValue(Unit.class, "meta::pure::metamodel::type::Unit")
                 .withKeyValue(DataElement.class, "meta::pure::data::DataElement")
-                .withKeyValue(ExternalFormatSchemaSet.class, "meta::external::shared::format::metamodel::SchemaSet")
-                .withKeyValue(Binding.class, "meta::external::shared::format::binding::Binding")
+                .withKeyValue(ExternalFormatSchemaSet.class, "meta::external::format::shared::metamodel::SchemaSet")
+                .withKeyValue(Binding.class, "meta::external::format::shared::binding::Binding")
                 .withKeyValue(SectionIndex.class, "meta::pure::metamodel::section::SectionIndex");
     }
 }

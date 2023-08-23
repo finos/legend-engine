@@ -28,6 +28,16 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAsc():B
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscWithPreval():Boolean[1]
+{
+   let result = execute({|Person.all()->project([#/Person/firstName!name#])->sort(asc('name'))}
+                          ->meta::pure::router::preeval::preval(meta::relational::extension::relationalExtensions()),
+               simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(','));
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name"', $result->sqlRemoveFormatting());
+} 
+
 function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscInputToProject():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(#/Person/lastName#)

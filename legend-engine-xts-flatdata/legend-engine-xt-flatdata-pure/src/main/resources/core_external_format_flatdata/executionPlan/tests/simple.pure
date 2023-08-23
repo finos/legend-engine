@@ -14,12 +14,12 @@
 
 import meta::external::format::flatdata::executionPlan::test::*;
 import meta::external::format::flatdata::metamodel::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::tests::*;
-import meta::external::shared::format::functions::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::functions::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::tests::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::functions::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
@@ -281,7 +281,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
 ###Pure
 import meta::legend::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 
 Class meta::external::format::flatdata::executionPlan::test::Person
 [
