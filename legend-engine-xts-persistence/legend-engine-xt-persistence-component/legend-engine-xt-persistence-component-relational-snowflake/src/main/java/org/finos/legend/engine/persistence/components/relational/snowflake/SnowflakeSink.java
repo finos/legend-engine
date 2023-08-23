@@ -25,8 +25,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
-import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
@@ -58,7 +57,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
@@ -120,8 +119,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(DatasetAdditionalProperties.class, new DatasetAdditionalPropertiesVisitor());
         logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
-        logicalPlanVisitorByClass.put(StagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
-        logicalPlanVisitorByClass.put(SnowflakeStagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());

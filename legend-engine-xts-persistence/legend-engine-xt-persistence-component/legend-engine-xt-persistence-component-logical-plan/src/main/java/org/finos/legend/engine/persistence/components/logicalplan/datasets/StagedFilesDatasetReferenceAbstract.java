@@ -14,9 +14,21 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.immutables.value.Value;
+
 import java.util.List;
 
-public interface StagedFilesDatasetProperties
+@Value.Immutable
+@Value.Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface StagedFilesDatasetReferenceAbstract extends DatasetReference
 {
-    List<String> files();
+    StagedFilesDatasetProperties properties();
+
+    List<String> columns();
 }
