@@ -30,7 +30,7 @@ function meta::external::format::json::executionPlan::test::executeJsonSchemaBin
 function meta::external::format::json::executionPlan::test::jsonExtensions(): Extension[*]
 {
   [
-    meta::external::shared::format::externalFormatExtension(),
+    meta::external::format::shared::externalFormatExtension(),
     meta::external::format::json::extension::jsonSchemaFormatExtension()
   ]
 }

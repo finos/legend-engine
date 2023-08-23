@@ -116,7 +116,7 @@ public abstract class AbstractTestSemiStructured
                         pureModel.getExecutionSupport()
                 )
         );
-        extensions.add(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+        extensions.add(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
         extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
 
         return extensions;

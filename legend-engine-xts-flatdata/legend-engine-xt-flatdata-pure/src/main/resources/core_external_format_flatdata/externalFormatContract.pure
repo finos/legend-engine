@@ -21,8 +21,8 @@ import meta::external::format::flatdata::metamodel::*;
 import meta::external::format::flatdata::transformation::fromPure::*;
 import meta::external::format::flatdata::transformation::toPure::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::extension::*;
 

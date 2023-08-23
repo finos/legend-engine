@@ -15,10 +15,10 @@
 import meta::external::format::flatdata::metamodel::*;
 import meta::external::format::flatdata::transformation::fromPure::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::transformation::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::transformation::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::utils::*;
 
 import meta::pure::generation::metamodel::*;
 
@@ -43,7 +43,7 @@ function meta::external::format::flatdata::transformation::fromPure::flatDataFro
 // Configuration 
 // ========================================================================================================================================================
 
-Class meta::external::format::flatdata::transformation::fromPure::ModelToFlatDataConfiguration extends meta::external::shared::format::transformation::fromPure::ModelToSchemaConfiguration
+Class meta::external::format::flatdata::transformation::fromPure::ModelToFlatDataConfiguration extends meta::external::format::shared::transformation::fromPure::ModelToSchemaConfiguration
 {
 }
 

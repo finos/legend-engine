@@ -19,6 +19,6 @@ function meta::pure::extension::configuration::coreExtensions(): Extension[*]
 {
    [
       meta::pure::extension::defaultExtensions()->toOne(),
-      meta::external::shared::format::externalFormatExtension()
+      meta::external::format::shared::externalFormatExtension()
    ]
 }

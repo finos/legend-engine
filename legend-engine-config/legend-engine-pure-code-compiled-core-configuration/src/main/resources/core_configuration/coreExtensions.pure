@@ -54,14 +54,14 @@ function <<access.private>> meta::pure::extension::configuration::localPlatformB
       meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
 
       // Bindings
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
          meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor()
       ]),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
          meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
       ]),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
          meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor()
       ])
    ])

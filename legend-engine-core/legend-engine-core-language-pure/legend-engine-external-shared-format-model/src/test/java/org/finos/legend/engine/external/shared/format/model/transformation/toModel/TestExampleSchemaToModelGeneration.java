@@ -29,8 +29,8 @@ public class TestExampleSchemaToModelGeneration extends SchemaToModelGenerationT
 
         PureModelContextData model = generateModel(schemaCode, config());
 
-        String expected = ">>>meta::external::shared::format::transformation::tests::ExampleSchema\n" +
-                "Class meta::external::shared::format::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
+        String expected = ">>>meta::external::format::shared::transformation::tests::ExampleSchema\n" +
+                "Class meta::external::format::shared::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
                 "{\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
@@ -45,8 +45,8 @@ public class TestExampleSchemaToModelGeneration extends SchemaToModelGenerationT
 
         PureModelContextData model = generateModel(schemaCode, config(), true, "test::gen::TargetBinding");
 
-        String expected = ">>>meta::external::shared::format::transformation::tests::ExampleSchema\n" +
-                "Class meta::external::shared::format::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
+        String expected = ">>>meta::external::format::shared::transformation::tests::ExampleSchema\n" +
+                "Class meta::external::format::shared::transformation::tests::ExampleSchema extends meta::pure::metamodel::type::Any\n" +
                 "{\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
@@ -56,7 +56,7 @@ public class TestExampleSchemaToModelGeneration extends SchemaToModelGenerationT
         Binding genBinding = model.getElementsOfType(Binding.class).get(0);
         Assert.assertEquals("test::gen::TargetBinding", genBinding.getPath());
         Assert.assertEquals("text/example", genBinding.contentType);
-        Assert.assertArrayEquals(new String[] {"meta::external::shared::format::transformation::tests::ExampleSchema"}, genBinding.modelUnit.packageableElementIncludes.toArray());
+        Assert.assertArrayEquals(new String[] {"meta::external::format::shared::transformation::tests::ExampleSchema"}, genBinding.modelUnit.packageableElementIncludes.toArray());
     }
 
     private ExampleSchemaToModelConfiguration config()

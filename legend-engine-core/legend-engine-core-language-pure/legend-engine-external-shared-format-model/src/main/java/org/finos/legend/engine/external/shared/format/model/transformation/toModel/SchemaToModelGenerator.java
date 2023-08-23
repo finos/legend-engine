@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.core_pure_protocol_protocol;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
@@ -70,7 +70,7 @@ public class SchemaToModelGenerator extends Generator
             }
         }
 
-        Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet(sourceSchemaSet, pureModel.getContext());
+        Root_meta_external_format_shared_metamodel_SchemaSet schemaSet = HelperExternalFormat.getSchemaSet(sourceSchemaSet, pureModel.getContext());
 
         ExternalFormatExtension<?> schemaExtension = schemaExtensions.get(schemaSet._format());
         if (schemaExtension == null)

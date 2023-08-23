@@ -21,8 +21,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_Schema;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
 
 import java.util.Map;
 
@@ -56,7 +56,7 @@ public class ModelToSchemaGenerator extends Generator
             throw new UnsupportedOperationException("Schema generation not supported for " + schemaExtension.getFormat());
         }
 
-        Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = ((ExternalFormatSchemaGenerationExtension) schemaExtension).generateSchema(configuration, sourceModelUnit, pureModel);
+        Root_meta_external_format_shared_metamodel_SchemaSet schemaSet = ((ExternalFormatSchemaGenerationExtension) schemaExtension).generateSchema(configuration, sourceModelUnit, pureModel);
         ExternalFormatSchemaSet externalFormatSchemaSet = transformSchemaSet(schemaSet, schemaExtension);
 
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();
@@ -69,13 +69,13 @@ public class ModelToSchemaGenerator extends Generator
         return builder.build();
     }
 
-    private ExternalFormatSchemaSet transformSchemaSet(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, ExternalFormatExtension schemaExtension)
+    private ExternalFormatSchemaSet transformSchemaSet(Root_meta_external_format_shared_metamodel_SchemaSet schemaSet, ExternalFormatExtension schemaExtension)
     {
         ExternalFormatSchemaSet result = new ExternalFormatSchemaSet();
         result.name = schemaSet._name();
         result._package = elementToPath(schemaSet._package());
         result.format = schemaSet._format();
-        for (Root_meta_external_shared_format_metamodel_Schema schema : schemaSet._schemas())
+        for (Root_meta_external_format_shared_metamodel_Schema schema : schemaSet._schemas())
         {
             ExternalFormatSchema externalFormatSchema = new ExternalFormatSchema();
             externalFormatSchema.id = schema._id();

@@ -9,7 +9,7 @@ import meta::external::language::java::generation::featureBased::versions::*;
 import meta::external::language::java::generation::featureBased::pojo::*;
 import meta::external::language::java::generation::featureBased::utils::*;
 
-import meta::external::shared::format::transformation::*;
+import meta::external::format::shared::transformation::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::metamodel::annotations::generated::*;
@@ -17,7 +17,7 @@ import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::utils::*;
 
 
 Class meta::external::language::java::generation::featureBased::metamodel::Feature

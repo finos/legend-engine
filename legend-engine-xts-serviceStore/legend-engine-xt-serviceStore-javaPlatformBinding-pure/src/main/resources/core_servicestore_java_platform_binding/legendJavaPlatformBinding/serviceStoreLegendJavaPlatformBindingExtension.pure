@@ -127,15 +127,15 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
    )
 }
 
-function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    meta::external::store::service::extension::serviceStoreExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, ServiceStore, ExternalFormatCore, ' + $externalFormatDescriptors->map(fd | 'ExternalFormat' + $fd.externalFormatContract.id)->joinStrings(', '), [
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
             meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
-            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
-            meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($externalFormatDescriptors)
+            meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+            meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension($externalFormatDescriptors)
          ])
       ]) 
    )

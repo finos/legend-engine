@@ -15,7 +15,7 @@
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 import meta::external::format::flatdata::executionPlan::test::*;
 import meta::external::format::flatdata::executionPlan::test::multiSection::*;
 
@@ -152,7 +152,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 // =========================================================================================================
 ###Pure
 import meta::legend::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::external::format::flatdata::executionPlan::test::multiSection::*;
 
 function meta::external::format::flatdata::executionPlan::test::multiSection::getWholeLoanPriceFileBinding():Binding[1]

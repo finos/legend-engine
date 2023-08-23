@@ -21,14 +21,14 @@ import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInf
 import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.pure.generated.Root_meta_external_functionActivator_FunctionActivator;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
-public interface FunctionActivatorService<T extends Root_meta_external_functionActivator_FunctionActivator, U extends DeploymentResult>
+public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends DeploymentResult>
 {
     FunctionActivatorInfo info(PureModel pureModel, String version);
 
-    boolean supports(Root_meta_external_functionActivator_FunctionActivator packageableElement);
+    boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);
 
     MutableList<? extends FunctionActivatorError> validate(PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
