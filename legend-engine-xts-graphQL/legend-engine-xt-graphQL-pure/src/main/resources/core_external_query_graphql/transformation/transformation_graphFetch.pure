@@ -149,6 +149,7 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                 )
               )
         );
+}
 
 function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(
                                                                           cl:Class<Any>[1],
