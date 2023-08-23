@@ -63,7 +63,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -126,7 +126,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionForEmptyBatch(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -168,7 +168,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionFiltersWithDeleteTargetDataEmptyDataHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

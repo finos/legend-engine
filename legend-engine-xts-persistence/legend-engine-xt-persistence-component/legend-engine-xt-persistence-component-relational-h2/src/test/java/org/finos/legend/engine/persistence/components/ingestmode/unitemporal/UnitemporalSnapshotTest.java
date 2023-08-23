@@ -53,6 +53,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
     /*
     Scenario: Test milestoning Logic without Partition when staging table pre populated
+    Empty batch handling - default
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
@@ -115,6 +116,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
     /*
     Scenario: Test milestoning Logic with Partition when staging table pre populated
+    Empty Batch Handling : Default
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartition() throws Exception

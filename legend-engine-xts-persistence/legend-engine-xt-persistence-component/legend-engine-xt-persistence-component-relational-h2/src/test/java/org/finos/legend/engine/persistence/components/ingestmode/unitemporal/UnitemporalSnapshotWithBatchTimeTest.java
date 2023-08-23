@@ -18,6 +18,8 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.handling.DeleteTargetData;
+import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -50,6 +52,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
     /*
     Scenario: Test milestoning Logic without Partition when staging table pre populated
+    Empty batch handling - NoOp
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
@@ -69,6 +72,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
+            .emptyDatasetHandling(NoOp.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -101,12 +105,13 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         // 1. Load Staging table
         loadBasicStagingData(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
     }
 
     /*
     Scenario: Test milestoning Logic with Partition when staging table pre populated
+    Empty Batch Handling : NoOp
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartition() throws Exception
@@ -127,6 +132,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
                 .dateTimeOutName(batchTimeOutName)
                 .build())
             .addAllPartitionFields(Collections.singletonList(dateName))
+            .emptyDatasetHandling(NoOp.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

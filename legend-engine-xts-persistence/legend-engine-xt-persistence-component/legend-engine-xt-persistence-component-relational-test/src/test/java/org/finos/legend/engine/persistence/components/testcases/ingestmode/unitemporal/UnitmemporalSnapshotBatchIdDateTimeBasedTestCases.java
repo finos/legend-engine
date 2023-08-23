@@ -17,7 +17,7 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -25,7 +25,6 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
-import org.finos.legend.engine.persistence.components.scenarios.UnitemporalSnapshotBatchIdBasedScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.UnitemporalSnapshotBatchIdDateTimeBasedScenarios;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -54,7 +53,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionForEmptyBatch()
+    void testUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -64,10 +63,10 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(operations);
+        verifyUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer()
@@ -103,7 +102,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithPartitionNoDataSplits(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionForEmptyBatch()
+    void testUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -113,10 +112,36 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionForEmptyBatch(operations);
+        verifyUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionForEmptyBatch(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionWithNoOpEmptyBatchHandling()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .addAllPartitionFields(Arrays.asList(partitionKeys))
+                .emptyDatasetHandling(NoOp.builder().build())
+                .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling(operations);
+    }
 
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersNoDataSplits()
@@ -135,7 +160,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithPartitionFiltersNoDataSplits(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithPartitionFiltersForEmptyBatch()
+    void testUnitemporalSnapshotWithPartitionFiltersWithDeleteTargetDataEmptyDataHandling()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -145,10 +170,37 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(operations);
+        verifyUnitemporalSnapshotWithPartitionFiltersWithDeleteTargetDataEmptyDataHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersForEmptyBatch(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithPartitionFiltersWithDeleteTargetDataEmptyDataHandling(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFiltersWithNoOpEmptyDataHandling()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .addAllPartitionFields(Arrays.asList(partitionKeys))
+                .putAllPartitionValuesByField(partitionFilter)
+                .emptyDatasetHandling(NoOp.builder().build())
+                .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+        verifyUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling(operations);
+    }
 
     @Test
     void testUnitemporalSnapshotWithCleanStagingData()
