@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertThrows;
 
-public class GenerateCastDoubleStringTest extends GenerateCastTestBase
+public class GenerateCastCustomObjectTest extends GenerateCastTestBase
 {
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
@@ -47,10 +47,20 @@ public class GenerateCastDoubleStringTest extends GenerateCastTestBase
                 "        {\n" +
                 "          \"@type\": \"meta::pure::changetoken::AddField\",\n" +
                 "          \"fieldName\": \"abc\",\n" +
-                "          \"fieldType\": \"double[1]\",\n" +
+                "          \"fieldType\": \"Custom[1]\",\n" +
                 "          \"defaultValue\": {\n" +
                 "            \"@type\": \"meta::pure::changetoken::ConstValue\",\n" +
-                "            \"value\": \"123.45\"\n" +
+                "            \"value\": {\n" +
+                "              \"range\": {\n" +
+                "                \"min\": -1,\n" +
+                "                \"max\": 1,\n" +
+                "                \"@type\": \"intMinMax\",\n" +
+                "                \"round\": 0.5\n" +
+                "              },\n" +
+                "              \"@type\": \"Custom\",\n" +
+                "              \"restricted\": true,\n" +
+                "              \"value\": 0\n" +
+                "            }\n" +
                 "          },\n" +
                 "          \"safeCast\": true,\n" +
                 "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
@@ -58,7 +68,7 @@ public class GenerateCastDoubleStringTest extends GenerateCastTestBase
                 "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n");
+                "}");
     }
 
     @Test
@@ -80,12 +90,12 @@ public class GenerateCastDoubleStringTest extends GenerateCastTestBase
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": 123.45\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
                         "}", Map.class); // updated version and new default value field added
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
     }
@@ -98,12 +108,12 @@ public class GenerateCastDoubleStringTest extends GenerateCastTestBase
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": 123.45\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
                         "}", Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
@@ -128,15 +138,15 @@ public class GenerateCastDoubleStringTest extends GenerateCastTestBase
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 123.45}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": 67.89\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.0}, \"value\":1}}\n" +
                         "}", Map.class);
         Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
         InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
-        Assert.assertEquals("Cannot remove non-default value:67.89", re.getCause().getMessage());
+        Assert.assertEquals("Cannot remove non-default value:{@type=Custom, restricted=true, range={min=-1, max=1, @type=intMinMax, round=0.0}, value=1}", re.getCause().getMessage());
     }
 }
