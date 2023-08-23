@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
-function <<test.Test>> meta::relational::tests::sqlQueryToString::snowflake::testTempTableSqlStatementsForSnowflake(): Boolean[*]
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTempTableSqlStatementsForSnowflake(): Boolean[*]
 {
  let actualSqls = getTempTableSqlStatements(DatabaseType.Snowflake);
  let expectedSqls = [

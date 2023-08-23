@@ -19,7 +19,7 @@ import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
-function <<test.Test>> meta::relational::tests::sqlQueryToString::sybaseIQ::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
+function <<test.Test>> meta::relational::tests::sqlToString::sybaseIQ::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
 {
  let actualSqls = getTempTableSqlStatements(DatabaseType.SybaseIQ);
  let expectedSqls = [
