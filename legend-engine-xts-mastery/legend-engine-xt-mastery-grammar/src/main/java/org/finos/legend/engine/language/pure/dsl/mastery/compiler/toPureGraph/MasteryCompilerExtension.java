@@ -14,9 +14,13 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -24,10 +28,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRecordDefinition;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRecordDefinition_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.Collections;
+import java.util.List;
 
-public class MasteryCompilerExtension implements CompilerExtension
+public class MasteryCompilerExtension implements GenerationCompilerExtension
 {
     @Override
     public CompilerExtension build()
@@ -57,5 +63,15 @@ public class MasteryCompilerExtension implements CompilerExtension
                     }
                 }
         ));
+    }
+
+    @Override
+    public List<Function3<String, SourceInformation, CompileContext, PackageableElement>> getExtraModelGenerationSpecificationResolvers()
+    {
+        return Collections.singletonList((path, sourceInformation, context) ->
+        {
+            PackageableElement element = context.resolvePackageableElement(path);
+            return element instanceof Root_meta_pure_mastery_metamodel_MasterRecordDefinition ? element : null;
+        });
     }
 }
