@@ -18,8 +18,8 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.DeleteTargetData;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -107,6 +107,32 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass4 (Empty Batch With FailOnEmptyBatchEnabled) ------------------------
+        UnitemporalSnapshot ingestModeWithFailOnEmptyBatch = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(TransactionDateTime.builder()
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .emptyDatasetHandling(FailEmptyBatch.builder().build())
+                .build();
+
+        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
+        // 1. Load Staging table
+        loadBasicStagingData(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        try
+        {
+            executePlansAndVerifyResults(ingestModeWithFailOnEmptyBatch, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
+            Assertions.fail("Exception was not thrown!");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!", e.getMessage());
+        }
     }
 
     /*

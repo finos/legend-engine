@@ -17,9 +17,10 @@ package org.finos.legend.engine.persistence.components.planner;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.DeleteTargetDataAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.EmptyDatasetHandlingVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOpAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetDataAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -267,7 +268,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         }
 
         @Override
-        public LogicalPlan visitDeleteTargetDataset(DeleteTargetDataAbstract deleteTargetDataAbstract)
+        public LogicalPlan visitDeleteTargetData(DeleteTargetDataAbstract deleteTargetDataAbstract)
         {
             List<Operation> operations = new ArrayList<>();
             if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty())
@@ -276,6 +277,12 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             }
             operations.add(sqlToMilestoneAllRows(keyValuePairs));
             return LogicalPlan.of(operations);
+        }
+
+        @Override
+        public LogicalPlan visitFailEmptyBatch(FailEmptyBatchAbstract failEmptyBatchAbstract)
+        {
+            throw new RuntimeException("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!");
         }
     }
 }

@@ -17,7 +17,8 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -324,6 +325,39 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
         catch (Exception e)
         {
             Assertions.assertEquals("Can not build UnitemporalSnapshot, partitionKey: [biz_date] not specified in partitionFields", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUnitemporalSnapshotFailOnEmptyBatch()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .emptyDatasetHandling(FailEmptyBatch.builder().build())
+                .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+
+        try
+        {
+            GeneratorResult queries = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!", e.getMessage());
         }
     }
 

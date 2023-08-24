@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.ingestmode.handling.DeleteTargetData;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.EmptyDatasetHandling;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.immutables.value.Value;

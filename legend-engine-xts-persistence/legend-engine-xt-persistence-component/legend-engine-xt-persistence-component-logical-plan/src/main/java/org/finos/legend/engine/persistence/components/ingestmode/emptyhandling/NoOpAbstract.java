@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.handling;
+package org.finos.legend.engine.persistence.components.ingestmode.emptyhandling;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;

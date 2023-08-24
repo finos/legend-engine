@@ -16,7 +16,7 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.handling.NoOp;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 
 import java.util.Arrays;
