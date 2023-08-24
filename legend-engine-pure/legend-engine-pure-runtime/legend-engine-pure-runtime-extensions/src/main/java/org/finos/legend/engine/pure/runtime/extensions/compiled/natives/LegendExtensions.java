@@ -36,6 +36,19 @@ public class LegendExtensions extends AbstractNative
         return this.getClass().getCanonicalName() + ".execute(es)";
     }
 
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "        {\n" +
+                "            @Override\n" +
+                "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "            {\n" +
+                "                return " + this.getClass().getCanonicalName() + ".execute(es);\n" +
+                "            }\n" +
+                "        }";
+    }
+
     public static RichIterable<? extends Root_meta_pure_extension_Extension> execute(ExecutionSupport es)
     {
         return PureCoreExtensionLoader.extensions().flatCollect(c -> c.extraPureCoreExtensions(es));

@@ -22,9 +22,12 @@ import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -931,6 +934,30 @@ public class Library
     public static String encodeBase64(String text)
     {
         return Base64.encodeBase64URLSafeString(text.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String decodeUrl(String text, String charset)
+    {
+        try
+        {
+            return URLDecoder.decode(text, charset);
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String encodeUrl(String text, String charset)
+    {
+        try
+        {
+            return URLEncoder.encode(text, charset);
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static <T> Predicate<T> distinctByKey(Function<T, ?> key)

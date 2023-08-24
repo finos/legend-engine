@@ -40,6 +40,20 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithFunctionalInput(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data->decodeUrl())->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+
+  let result1 = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'->encodeUrl()));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result1);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithChecked(): Boolean[1]
 {
   let binding = getTestBinding();

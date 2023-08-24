@@ -27,6 +27,7 @@
     <name>Legend Engine - XT - Relational Store - DB Extension - Postgres</name>
 
     <modules>
+        <module>legend-engine-xt-relationalStore-postgres-connection</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
     </modules>
 </project>

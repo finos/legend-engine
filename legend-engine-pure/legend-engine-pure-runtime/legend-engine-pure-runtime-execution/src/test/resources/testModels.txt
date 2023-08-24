@@ -46,7 +46,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::relational::executionPlan
    (
       overrides = [],
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - InMemory', [legendJavaPlatformBinding([meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()])]));
+         let extensionsWithPlatformBindings = 'meta::pure::extension::runtime::getExtensions__Extension_MANY_'->pathToElement()->cast(@Function<{->Extension[*]}>)->eval();
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
       }
    )

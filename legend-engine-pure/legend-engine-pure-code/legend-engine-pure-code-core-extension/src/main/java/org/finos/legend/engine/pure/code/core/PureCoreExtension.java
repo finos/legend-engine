@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -42,7 +43,7 @@ public interface PureCoreExtension
         }
         try
         {
-            Class<?> cl = Class.forName("org.finos.legend.pure.generated." + functionFile().replace("/", "_").replace(".pure", ""));
+            Class<?> cl = ((CompiledExecutionSupport) es).getClassLoader().loadClass("org.finos.legend.pure.generated." + functionFile().replace("/", "_").replace(".pure", ""));
             Method m = cl.getMethod("Root_" + functionSignature().replace("::", "_"), ExecutionSupport.class);
             Object res = m.invoke(null, es);
             return (res instanceof List) ?

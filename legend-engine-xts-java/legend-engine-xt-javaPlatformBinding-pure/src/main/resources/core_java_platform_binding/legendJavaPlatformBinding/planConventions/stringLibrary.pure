@@ -83,6 +83,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
 
          fc1(decodeBase64_String_1__String_1_,                                   {ctx,str                    | $library->j_invoke('decodeBase64', [$str], javaString())}),         
          fc1(encodeBase64_String_1__String_1_,                                   {ctx,str                    | $library->j_invoke('encodeBase64', [$str], javaString())}),
+         fc2(decodeUrl_String_1__String_1__String_1_,                            {ctx,str,charset            | $library->j_invoke('decodeUrl', [$str, $charset], javaString())}),         
+         fc2(encodeUrl_String_1__String_1__String_1_,                            {ctx,str,charset            | $library->j_invoke('encodeUrl', [$str, $charset], javaString())}),
 
          fc2(hash_String_1__HashType_1__String_1_,                               {ctx,text,hashType          | $library->j_invoke('hash', [$text, $hashType], javaString())})
 

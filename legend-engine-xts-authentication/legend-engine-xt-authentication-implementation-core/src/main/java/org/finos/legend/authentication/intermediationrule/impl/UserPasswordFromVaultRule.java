@@ -34,5 +34,4 @@ public class UserPasswordFromVaultRule extends IntermediationRule<UserPasswordAu
         String password = super.lookupSecret(specification.password);
         return new PlaintextUserPasswordCredential(specification.username, password);
     }
-
 }
