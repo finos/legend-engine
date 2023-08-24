@@ -29,7 +29,6 @@
 
 
     <modules>
-        <module>legend-engine-xt-authentication-experimental</module>
         <module>legend-engine-xt-authentication-grammar</module>
         <module>legend-engine-xt-authentication-implementation-core</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>

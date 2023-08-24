@@ -19,7 +19,9 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.dsl.mastery.extension.IMasteryModelGenerationExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
@@ -370,5 +372,10 @@ public class HelperMasterRecordDefinitionBuilder
             purePartition._tags(ListIterate.collect(protocolPartition.tags, String::toString));
             return purePartition;
         }
+    }
+
+    public static PureModelContextData buildMasterRecordDefinitionGeneratedElements(Root_meta_pure_mastery_metamodel_MasterRecordDefinition masterRecordDefinition, CompileContext compileContext, String version)
+    {
+        return IMasteryModelGenerationExtension.generate(masterRecordDefinition, ListIterate.flatCollect(IMasteryModelGenerationExtension.getExtensions(), IMasteryModelGenerationExtension::getExtraMasteryModelGenerators), compileContext, version);
     }
 }

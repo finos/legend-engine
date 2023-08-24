@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,6 @@
 
 package org.finos.legend.connection;
 
-public abstract class ConnectionSpecification
+public abstract class ConnectionSpecification<T>
 {
 }

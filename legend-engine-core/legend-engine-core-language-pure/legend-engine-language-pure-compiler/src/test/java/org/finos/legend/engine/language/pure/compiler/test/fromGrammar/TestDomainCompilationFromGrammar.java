@@ -2759,4 +2759,26 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   binary: Binary[1];" +
                 "}\n");
     }
+
+    @Test
+    public void testCompilationOfNativeFunctions()
+    {
+        // Compilation of String Native Functions
+
+        // EncodeUrl
+        test(wrapExpressionWithFunctionGrammar("encodeUrl('dummy')"));
+        test(wrapExpressionWithFunctionGrammar("encodeUrl('dummy', 'ascii')"));
+
+        // DecodeUrl
+        test(wrapExpressionWithFunctionGrammar("decodeUrl('dummy')"));
+        test(wrapExpressionWithFunctionGrammar("decodeUrl('dummy', 'ascii')"));
+    }
+
+    private String wrapExpressionWithFunctionGrammar(String exp)
+    {
+        return "function test::testStringNativeFunctionCompilationFromGrammar():Any[*]\n" +
+                "{\n" +
+                exp +
+                "}\n";
+    }
 }

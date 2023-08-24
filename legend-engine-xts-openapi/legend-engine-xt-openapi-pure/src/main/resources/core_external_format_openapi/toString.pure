@@ -65,7 +65,13 @@ function meta::external::function::description::openapi::tostring::openApiJSONRe
     max=1000,
     config = config(false,false,true,true),
     extraSerializers = [
-      {p:Reference[1],s:JSONState[1]|newJSONObject([newJSONKeyValue('$ref',^JSONString(value='#/components/schemas/'+$p.ref))])},
+      {p:Reference[1],s:JSONState[1]| 
+                                      let refJsonSerializer = newJSONKeyValue('$ref',^JSONString(value='#/components/schemas/'+$p.ref));
+                                      if($p.specificationExtensions->isNotEmpty(),
+                                          | newJSONObject([$refJsonSerializer, newJSONKeyValue('specificationExtensions', $p.specificationExtensions->toJSONElement())]),
+                                          | newJSONObject([$refJsonSerializer]) 
+                                        );
+      },
       {p:Schema[1],s:JSONState[1]|$p->processOpenApiSchema(false,$s)}
     ]
   );
