@@ -14,11 +14,21 @@
 
 package org.finos.legend.engine.functionActivator.deployment;
 
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorArtifact;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
+import org.pac4j.core.profile.CommonProfile;
 
-public interface DeploymentManager<T extends FunctionActivatorArtifact, U extends DeploymentConfiguration, V extends DeploymentResult>
+import java.util.List;
+
+public interface DeploymentManager<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends DeploymentConfiguration>
 {
 
-    public V deploy(T artifact, U configuration);
+    public V deploy(MutableList<CommonProfile> profiles, U artifact, T activator);
 
+    public V deploy(MutableList<CommonProfile> profiles, U artifact, T activator, List<W> availableRuntimeConfigurations);
+
+
+    public boolean canDeploy(T activator);
 }

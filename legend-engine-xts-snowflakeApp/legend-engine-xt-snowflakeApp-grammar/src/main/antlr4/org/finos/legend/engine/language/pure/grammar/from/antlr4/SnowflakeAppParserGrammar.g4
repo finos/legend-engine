@@ -13,6 +13,9 @@ identifier:     VALID_STRING | STRING |
                 SNOWFLAKE_APP__DESCRIPTION |
                 SNOWFLAKE_APP__FUNCTION |
                 SNOWFLAKE_APP__OWNER |
+                SNOWFLAKE_APP__ACTIVATION|
+                CONFIGURATION|
+                ACTIVATION_CONNECTION|
                 ALL |
                 LET |
                 ALL_VERSIONS |
@@ -21,7 +24,7 @@ identifier:     VALID_STRING | STRING |
                 ;
 // -------------------------------------- DEFINITION --------------------------------------
 
-definition:                         (snowflakeApp)*
+definition:                         (snowflakeApp| deploymentConfig)*
                                     EOF
 ;
 snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifiedName
@@ -31,6 +34,7 @@ snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifi
                                                 | description
                                                 | function
                                                 | owner
+                                                | activation
                                             )*
                                         BRACE_CLOSE;
 
@@ -46,3 +50,18 @@ description:                    SNOWFLAKE_APP__DESCRIPTION COLON STRING SEMI_COL
 function:                       SNOWFLAKE_APP__FUNCTION COLON functionIdentifier SEMI_COLON;
 
 owner :                         SNOWFLAKE_APP__OWNER COLON STRING SEMI_COLON;
+
+activation:                     SNOWFLAKE_APP__ACTIVATION COLON qualifiedName SEMI_COLON ;
+
+// ----------------------------------- Deployment ------------------------------------------------------
+deploymentConfig:                      CONFIGURATION qualifiedName
+                                            BRACE_OPEN
+                                                (activationConnection | stage)
+                                            BRACE_CLOSE
+;
+
+activationConnection:                   ACTIVATION_CONNECTION COLON qualifiedName SEMI_COLON
+;
+
+stage:                                  DEPLOYMENT_STAGE COLON STRING SEMI_COLON
+;

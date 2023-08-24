@@ -81,7 +81,7 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
     autoActivateUpdates = true,
     execution = ^PureSingleExecution
                 (
-                  func = {|Person.all()->project(col(p|$p.firstName, 'firstName'))},
+                  func = {isin:String[*]|Person.all()->project(col(p|$p.firstName, 'firstName'))},
                   mapping = personMapping,
                   runtime = []
                 ),
