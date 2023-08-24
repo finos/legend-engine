@@ -14,8 +14,8 @@ identifier:     VALID_STRING | STRING |
                 SNOWFLAKE_APP__FUNCTION |
                 SNOWFLAKE_APP__OWNER |
                 SNOWFLAKE_APP__ACTIVATION|
-                CONFIGURATION|
-                ACTIVATION_CONNECTION|
+                CONFIGURATION| DEPLOYMENT_STAGE
+                | ACTIVATION_CONNECTION |
                 ALL |
                 LET |
                 ALL_VERSIONS |
