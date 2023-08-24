@@ -1,0 +1,150 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Legend API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "test"
+    }
+  ],
+  "paths": {
+    "/service/test": {
+      "get": {
+        "tags": [
+          "definition"
+        ],
+        "parameters": [
+          {
+            "name": "firstName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TabularDataSet",
+                  "specificationExtensions": {
+                    "x-tdsResultColumns": [
+                      {
+                        "column": "First Name",
+                        "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "definition"
+        ],
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TabularDataSet",
+                  "specificationExtensions": {
+                    "x-tdsResultColumns": [
+                      {
+                        "column": "First Name",
+                        "type": "string"
+                      },
+                      {
+                        "column": "Age",
+                        "type": "integer"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TDSRow": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/TabularDataSet"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Any"
+            }
+          }
+        }
+      },
+      "TabularDataSet": {
+        "type": "object",
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSColumn"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TDSRow"
+            }
+          }
+        }
+      },
+      "DataType": {
+        "type": "object",
+        "properties": {}
+      },
+      "Any": {
+        "type": "object",
+        "properties": {}
+      },
+      "TDSColumn": {
+        "type": "object",
+        "properties": {
+          "documentation": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "enumMappingId": {
+            "type": "string"
+          },
+          "sourceDataType": {
+            "$ref": "#/components/schemas/Any"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
