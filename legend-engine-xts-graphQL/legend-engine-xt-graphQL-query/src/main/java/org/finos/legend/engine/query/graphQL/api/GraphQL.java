@@ -66,7 +66,7 @@ public abstract class GraphQL
         this.metadataserver = metadataserver;
     }
 
-    protected static org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
+    public static org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
     {
         return new ProtocolToMetamodelTranslator().translate(document, pureModel);
     }

@@ -18,13 +18,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
@@ -33,8 +33,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
@@ -42,6 +40,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
@@ -61,11 +60,13 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemD
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdCacheKey;
+import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.engine.query.graphQL.api.execute.model.PlansResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErrorMain;
@@ -93,6 +94,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -107,8 +109,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.argumentValueToObject;
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.extractFieldByName;
 import static org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper.createCachableGraphQLQuery;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -123,21 +123,19 @@ public class GraphQLExecute extends GraphQL
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
     private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final GraphQLPlanCache graphQLPlanCache;
-    private final GraphQLExecuteExtension graphQLExecuteExtension;
+    private final List<IGraphQLDirectiveExtension> graphQLExecuteExtensions = Lists.mutable.empty();
 
-    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache, GraphQLExecuteExtension graphQLExecuteExtension)
+    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache)
     {
         super(modelManager, metadataserver);
         this.planExecutor = planExecutor;
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
-        this.graphQLExecuteExtension = graphQLExecuteExtension;
-    }
-
-    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache)
-    {
-        this(modelManager, planExecutor, metadataserver, extensionsFunc, transformers, planCache, new GraphQLExecuteExtension(new GraphQLPlanCache(ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().build())),extensionsFunc,transformers,planExecutor));
+        for (IGraphQLDirectiveExtension graphQLExecuteExtension: ServiceLoader.load(IGraphQLDirectiveExtension.class))
+        {
+            this.graphQLExecuteExtensions.add(graphQLExecuteExtension);
+        }
     }
 
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers)
@@ -277,7 +275,6 @@ public class GraphQLExecute extends GraphQL
                 {
                     pureModel = modelLoader.call();
                     planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
-
                 }
             }
         }
@@ -323,7 +320,7 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        Map<String, ?> extensions = this.graphQLExecuteExtension.computeExtensionsField(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel1, graphQLCacheKey, profiles);
+                        Map<String, ?> extensions = this.computeExtensionsField(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel1, graphQLCacheKey, profiles);
                         if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
@@ -332,6 +329,57 @@ public class GraphQLExecute extends GraphQL
                         generator.writeEndObject();
                     }
                 }).build();
+    }
+
+    public Map<String, ?> computeExtensionsField(String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles)
+    {
+        String fieldName = ((Field)(query.selectionSet.get(0))).name;
+        Map<String, Map<String,Object>> m = new HashMap<>();
+        List<Directive> directives = ((Field)(query.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
+        if (directives.isEmpty())
+        {
+            return new HashMap<>();
+        }
+        m.put(fieldName, new HashMap<>());
+        List<SerializedNamedPlans> serializedNamedPlans = graphQLPlanCache == null ? Lists.mutable.empty() : this.graphQLPlanCache.getIfPresent(graphQLCacheKey);
+        directives.forEach(directive -> {
+            List<IGraphQLDirectiveExtension> modifiedListOfExtensions = graphQLExecuteExtensions.stream().filter(
+                graphQLExecuteExtension -> graphQLExecuteExtension.getSupportedDirectives().contains(directive.name)
+            ).collect(Collectors.toList());
+            if (modifiedListOfExtensions.size() == 0)
+            {
+                throw new RuntimeException("No extensions found for " + directive.name);
+            }
+            else if (modifiedListOfExtensions.size() > 1)
+            {
+                throw new RuntimeException("Too many extensions found for " + directive.name);
+            }
+            else {
+                List<SerializedNamedPlans> directivePlans = serializedNamedPlans.stream().filter(serializedNamedPlan -> serializedNamedPlan.propertyName.equals(fieldName + '@' + directive.name)).collect(Collectors.toList());
+                SingleExecutionPlan plan;
+                if (directivePlans.isEmpty())
+                {
+                    plan = (SingleExecutionPlan) modifiedListOfExtensions.get(0).planDirective(
+                            document,
+                            pureModel,
+                            queryClassPath,
+                            mappingPath,
+                            runtimePath,
+                            this.extensionsFunc.apply(pureModel),
+                            this.transformers
+                    );
+                    serializedNamedPlans.add(new SerializedNamedPlans(fieldName + '@' + directive.name,plan));
+                    if (this.graphQLPlanCache != null) this.graphQLPlanCache.put(graphQLCacheKey, serializedNamedPlans);
+                }
+                else {
+                    plan = directivePlans.get(0).serializedPlan;
+                }
+                Map<String, Result> parameterMap = getParameterMap(query, fieldName);
+                Object object = modifiedListOfExtensions.get(0).executeDirective(directive, plan, planExecutor, parameterMap, profiles);
+                m.get(fieldName).put(directive.name, object);
+            }
+        });
+        return m;
     }
 
     private List<SerializedNamedPlans> buildPlanWithParameter(String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
@@ -426,7 +474,7 @@ public class GraphQLExecute extends GraphQL
     }
 
 
-    private OperationDefinition findQuery(Document document)
+    public static OperationDefinition findQuery(Document document)
     {
         Collection<Definition> res = Iterate.select(document.definitions, d -> d.accept(new DefinitionVisitor<Boolean>()
                                                                                         {

@@ -20,4 +20,14 @@ public class SerializedNamedPlans
 {
     public String propertyName;
     public SingleExecutionPlan serializedPlan;
+
+    public SerializedNamedPlans()
+    {
+    }
+
+    public SerializedNamedPlans(String propertyName, SingleExecutionPlan s1)
+    {
+        this.propertyName = propertyName;
+        this.serializedPlan = s1;
+    }
 }
