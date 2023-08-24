@@ -79,8 +79,9 @@ public class RelationalElementAPI
             PureModelContextData modelData = input.getModelData();
             String databasePath = input.getDatabasePath();
             PureModel model = new PureModel(modelData, profiles, this.deploymentMode);
+            String inputTargetPackage = input.getTargetPackage();
             Database database = (Database) model.getStore(databasePath);
-            String targetPackage = getTargetPackageFromDatabasePath(databasePath);
+            String targetPackage = (inputTargetPackage == null || inputTargetPackage.isEmpty()) ? getTargetPackageFromDatabasePath(databasePath) : inputTargetPackage;
             ExecutionSupport executionSupport = model.getExecutionSupport();
             String result = core_relational_relational_autogeneration_relationalToPure.Root_meta_relational_transform_autogen_classesAssociationsAndMappingFromDatabase_Database_1__String_1__String_1_(database, targetPackage, executionSupport);
             return Response.ok(result).type(MediaType.APPLICATION_JSON_TYPE).build();
