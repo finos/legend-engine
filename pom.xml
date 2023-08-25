@@ -134,6 +134,7 @@
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
+        <surefire.reports.directory/>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -399,7 +400,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Used to copy test results into test reports module -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -407,6 +407,8 @@
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
                     <argLine>${argLine} ${surefire.vm.params}</argLine>
+                    <!-- Used to aggregate test reports if required -->
+                    <reportsDirectory>${surefire.reports.directory}</reportsDirectory>
                 </configuration>
             </plugin>
             <plugin>
