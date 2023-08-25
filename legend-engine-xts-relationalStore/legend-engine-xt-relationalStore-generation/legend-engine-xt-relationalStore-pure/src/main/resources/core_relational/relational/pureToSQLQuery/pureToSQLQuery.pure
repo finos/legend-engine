@@ -6040,7 +6040,10 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
     if($hasOnlyEnumValues,
         | ^DynaFunction(name = 'equal', parameters = [$firstVal, $secondVal]->map(v|^Literal(value=$v.processedParam->cast(@Literal).value->toString()))),
         | let enumVar = [$firstVal, $secondVal]->partition(e|$e.processedParam->hasEnumerationVarPlaceHolderValue());
-          let hasEnumVarAndEnumProp = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.currentPropertyMapping->toOne()->map(e|$e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping->isNotEmpty() && $e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(EnumerationMapping))->toOne();
+          let hasEnumVarAndEnumProp = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.currentPropertyMapping->toOne()->map(e| let pm = $e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping;
+                                                                                                                                            $pm->isNotEmpty() &&
+                                                                                                                                            assert($pm->cast(@RelationalPropertyMapping).transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $pm->cast(@RelationalPropertyMapping).property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.') &&
+                                                                                                                                            $pm->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(EnumerationMapping);)->toOne();
           let hasEnumVarAndEnumVal = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.processedParam->toOne()->hasEnumValue();
           if($hasEnumVarAndEnumProp,
               | let enumParamFreeMarker = generateFreeMarkerForEnumParam($enumVar.second.values.currentPropertyMapping->toOne(), $enumVar.first.values.processedParam->toOne());
@@ -6083,7 +6086,8 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
 
     let sourceVal = if ($enumPropMapping->instanceOf(SemiStructuredRelationalPropertyMapping),
                         | $enum->id(),
-                        | $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum)
+                        | assert($enumPropMapping.transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
+                          $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
                     );
 
     if ($sourceVal->size() == 1,
