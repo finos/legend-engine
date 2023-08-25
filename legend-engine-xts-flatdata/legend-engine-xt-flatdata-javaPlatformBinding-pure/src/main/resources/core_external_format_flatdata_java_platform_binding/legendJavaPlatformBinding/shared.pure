@@ -22,17 +22,6 @@ import meta::external::language::java::transform::*;
 
 import meta::pure::graphFetch::*;
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::createFieldVars(fields:FlatDataRecordField[*], recordTypeParam:Code[1], conventions:Conventions[1]): Pair<Code,Code>[*]
-{
-  $fields->toIndexed()->map({indexedField|
-    let var     = j_variable($conventions->className(_FlatDataRecordField), 'field' + $indexedField.first->toString());
-    let lParam  = j_parameter($conventions->className(_FlatDataRecordField), 'f');
-    let lambda  = j_lambda($lParam, $lParam->j_field('label', javaString())->j_invoke('equals', j_string($indexedField.second.label)));                                                            
-    let declare = $var->j_declare($recordTypeParam->j_field('fields', javaList($conventions->className(_FlatDataRecordField)))->j_streamOf()->js_filter($lambda)->js_findFirst()->jo_get());
-    pair($var, $declare);
-  });
-}
-
 function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::createSchema(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], schemaVar:Code[1], conventions:Conventions[1]): Code[*]
 { 
   let schemaDec    = $schemaVar->j_declare(j_new($conventions->className(_FlatData), []));

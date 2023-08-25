@@ -2834,14 +2834,21 @@ function meta::relational::functions::pureToSqlQuery::getPksFromAlias(r:Relation
    ^List<Column>(values=$r->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);));
 }
 
+function meta::relational::functions::pureToSqlQuery::resolveViewSelectSQLQuery(v:ViewSelectSQLQuery[1]):Table[1]
+{
+  let relationalElement = $v->cast(@ViewSelectSQLQuery).selectSQLQuery->cast(@SelectSQLQuery).data.alias.relationalElement;
+  $relationalElement->match([ view:ViewSelectSQLQuery[1]| resolveViewSelectSQLQuery($view),
+                              table:Table[1]| $table]);
+}
+
 function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQuery[1], j:RelationalTreeNode[1], newJoinName:String[1], extensions:Extension[*]):Pair<SelectSQLQuery, List<Pair<JoinTreeNode, JoinTreeNode>>>[1]
 {
    let rootJtn = $j;
    let rootJtnAlias = $rootJtn.alias;
 
-   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([ v:ViewSelectSQLQuery[1]| let mt = $v->cast(@ViewSelectSQLQuery).selectSQLQuery->cast(@SelectSQLQuery).data.alias.relationalElement->cast(@Table);
+   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([ v:ViewSelectSQLQuery[1]| let mt = resolveViewSelectSQLQuery($v);
                                                                                              let pks = getPksFromAlias($v.columns, $mt);
-                                                                                             if($pks->isEmpty(), | fail('There is no primary key defined on the table ' + $mt->toOne().name); false;, | true);
+                                                                                             if($pks->isEmpty() || $pks.values->isEmpty(), | fail('There is no primary key defined on the table ' + $mt->toOne().name); false;, | true);
                                                                                              pair($v.schema.database, $pks);,
                                                                     t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
                                                                     u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
