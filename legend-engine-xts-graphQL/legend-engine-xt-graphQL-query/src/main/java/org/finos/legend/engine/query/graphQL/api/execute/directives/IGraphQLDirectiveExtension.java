@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.query.graphQL.api.execute.directives;
 
-import org.codehaus.commons.nullanalysis.NotNull;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -41,5 +40,5 @@ public interface IGraphQLDirectiveExtension
             String runtimePath,
             RichIterable<? extends Root_meta_pure_extension_Extension> _extensions,
             Iterable<? extends PlanTransformer> transformers);
-    @NotNull Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles);
+    Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles);
 }
