@@ -1,0 +1,12 @@
+
+{
+    "git.branch": "adaptiveBatchingGraphFetch",
+    "git.build.time": "2023-03-30T00:22:02+0530",
+    "git.build.version": "4.17.1-SNAPSHOT",
+    "git.closest.tag.name": "legend-engine-3.9.3",
+    "git.commit.id": "eca3e0423b82a069fa09d5bf50c418b0c8794197",
+    "git.commit.id.abbrev": "eca3e04",
+    "git.commit.time": "2023-07-07T17:08:08+0530",
+    "git.tags": "",
+    "git.total.commit.count": "2006"
+}
