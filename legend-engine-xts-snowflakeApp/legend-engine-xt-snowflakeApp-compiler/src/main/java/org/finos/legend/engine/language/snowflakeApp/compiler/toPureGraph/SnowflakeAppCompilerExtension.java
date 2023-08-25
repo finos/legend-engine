@@ -71,7 +71,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                         ._function(func)
                         ._description(app.description)
                         ._owner(app.owner)
-                        ._activationConfiguration(buildDeploymentConfig((SnowflakeDeploymentConfiguration) app.activationConfiguration, context));
+                        ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
         {
