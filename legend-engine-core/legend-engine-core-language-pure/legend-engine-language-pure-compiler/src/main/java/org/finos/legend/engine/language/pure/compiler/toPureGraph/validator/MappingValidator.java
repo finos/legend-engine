@@ -271,7 +271,6 @@ public class MappingValidator
         }));
     }
 
-
     private Iterable<Warning> checkId(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Set<String> ids, PropertyMapping pm, String id)
     {
         if (!"".equals(id) && !ids.contains(id))
