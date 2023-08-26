@@ -71,12 +71,6 @@
         <!-- ECLIPSE COLLECTIONS -->
 
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -146,6 +140,5 @@
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>
