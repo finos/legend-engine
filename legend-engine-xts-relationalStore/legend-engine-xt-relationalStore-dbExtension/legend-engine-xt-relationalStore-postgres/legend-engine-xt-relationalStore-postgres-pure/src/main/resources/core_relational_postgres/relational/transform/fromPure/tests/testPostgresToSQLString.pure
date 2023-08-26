@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::relational::tests::functions::sqlstring::*;
-import meta::relational::functions::sqlQueryToString::postgres::*;
+import meta::relational::functions::sqlToString::postgres::*;
 import meta::pure::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
@@ -23,9 +23,9 @@ import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
 
-function meta::relational::functions::sqlQueryToString::postgres::runTestCaseById(testCaseId: String[1]): Boolean[1]
+function meta::relational::functions::sqlToString::postgres::runTestCaseById(testCaseId: String[1]): Boolean[1]
 {
-   let filtered = meta::relational::functions::sqlQueryToString::postgres::testCasesForDocGeneration()->filter(c|$c.id==$testCaseId);
+   let filtered = meta::relational::functions::sqlToString::postgres::testCasesForDocGeneration()->filter(c|$c.id==$testCaseId);
    assert($filtered->size()==1, 'Number of test cases found is not 1.');
    let testCase = $filtered->toOne();
 
@@ -33,7 +33,7 @@ function meta::relational::functions::sqlQueryToString::postgres::runTestCaseByI
    assertEquals($testCase.expectedSql, $result, '\nSQL not as expected for \'%s\'\n\nexpected: %s\nactual:   %s', [$testCase.id, $testCase.expectedSql, $result]);
 }
 
-function meta::relational::functions::sqlQueryToString::postgres::testCasesForDocGeneration():TestCase[*]
+function meta::relational::functions::sqlToString::postgres::testCasesForDocGeneration():TestCase[*]
 {
    [
       ^TestCase(
@@ -47,7 +47,7 @@ function meta::relational::functions::sqlQueryToString::postgres::testCasesForDo
       
    ]
 }
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringJoinStrings():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringJoinStrings():Boolean[1]
 {
    let fn = {|Firm.all()->groupBy([f|$f.legalName],
                                      agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
@@ -58,14 +58,14 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $postGresSql);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
 {
    let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\'_\', "root".LASTNAME, Text\'\') as "firstName_lastName" from personTable as "root"', $postGresSql);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringConcatPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringConcatPostgres():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
                                     ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
@@ -75,13 +75,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select concat(Text\'\', "root".FIRSTNAME, Text\' \', "root".LASTNAME, Text\'\') as "fullName" from personTable as "root" where "root".FIRSTNAME = Text\'John\'', $s);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testTakePostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testTakePostgres():Boolean[1]
 {
-   meta::relational::functions::sqlQueryToString::postgres::runTestCaseById('testTakePostgres');
+   meta::relational::functions::sqlToString::postgres::runTestCaseById('testTakePostgres');
 }
 
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testProcessLiteralForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testProcessLiteralForPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | 'String',
@@ -97,21 +97,21 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    true;
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testRoundPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testRoundPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([p | round($p.age->toOne() / 100)], ['round']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 0) as "round" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testRoundToDecimalsPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testRoundToDecimalsPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([p | round(cast($p.age->toOne() / 100, @Decimal), 2)], ['round']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select round((((1.0 * "root".AGE) / 100))::numeric, 2) as "round" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringWithLength():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithLength():Boolean[1]
 {
    [DatabaseType.Postgres]->map(db|
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    );
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringWithPosition():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithPosition():Boolean[1]
 {
    let postgresSql = toSQLString(
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select substring("root".FULLNAME, 0, position(Text\',\' in "root".FULLNAME)-1) as "firstName" from personTable as "root"', $postgresSql);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationIndexOf():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationIndexOf():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select strpos("root".FIRSTNAME, Text\'Jo\') as "index" from personTable as "root"')
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringWithStdDevSample():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithStdDevSample():Boolean[1]
 {
    [DatabaseType.Postgres]->map(db|
       let s = toSQLString(
@@ -158,7 +158,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSQLStringWithStdDevPopulation():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringWithStdDevPopulation():Boolean[1]
 {
    [DatabaseType.Postgres]->map(db|
       let s = toSQLString(
@@ -169,7 +169,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInYears():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInYears():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.YEARS)
@@ -179,7 +179,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMonths():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMonths():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.MONTHS)
@@ -189,7 +189,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select ((DATE_PART(\'year\', Date\'2012-01-01\') - DATE_PART(\'year\', Date\'2011-10-02\')) * 12 + (DATE_PART(\'month\', Date\'2012-01-01\') - DATE_PART(\'month\', Date\'2011-10-02\'))) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInWeeks():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInWeeks():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2012-01-01, %2011-10-02, DurationUnit.WEEKS)
@@ -199,7 +199,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (TRUNC(DATE_PART(\'day\', Date\'2012-01-01\' - Date\'2011-10-02\')/7)) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInDays():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInDays():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2011-12-31T01:00:00.0, %2011-12-29T23:00:00.0, DurationUnit.DAYS)
@@ -209,7 +209,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (DATE_PART(\'day\', Timestamp\'2011-12-31 01:00:00.0\' - Timestamp\'2011-12-29 23:00:00.0\')) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInHours():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInHours():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.HOURS)
@@ -219,7 +219,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select ((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMinutes():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMinutes():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.MINUTES)
@@ -229,7 +229,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInSeconds():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInSeconds():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | dateDiff(%2011-12-30T08:55:00.0, %2011-12-30T09:05:00.0, DurationUnit.SECONDS)
@@ -239,7 +239,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select ((((DATE_PART(\'day\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\')) * 24 + (DATE_PART(\'hour\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'minute\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) * 60 + (DATE_PART(\'second\', Timestamp\'2011-12-30 08:55:00.0\' - Timestamp\'2011-12-30 09:05:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMilliseconds():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testGenerateDateDiffExpressionForPostgresForDifferenceInMilliseconds():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
                                                      t | dateDiff($t.settlementDateTime, now(), DurationUnit.MILLISECONDS)
@@ -249,7 +249,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (((((DATE_PART(\'day\', "root".settlementDateTime - now())) * 24 + (DATE_PART(\'hour\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'minute\', "root".settlementDateTime - now()))) * 60 + (DATE_PART(\'second\', "root".settlementDateTime - now()))) * 1000 + (DATE_PART(\'milliseconds\', "root".settlementDateTime - now()))) as "DiffMilliseconds" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testDayOfYear():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testDayOfYear():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_part(\'doy\', "root".tradeDate) as "doy" from tradeTable as "root"')
@@ -269,7 +269,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testTrim():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testTrim():Boolean[1]
 {
   let common = 'select ltrim("root".FIRSTNAME) as "ltrim", trim("root".FIRSTNAME) as "trim", rtrim("root".FIRSTNAME) as "rtrim" from personTable as "root"';
 
@@ -295,7 +295,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testCbrt():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testCbrt():Boolean[1]
 {
   let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
 
@@ -320,7 +320,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
 }
 
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationForStartsWithFunctionForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationForStartsWithFunctionForPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | $a.firstName->startsWith('tri')
@@ -330,7 +330,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select "root".FIRSTNAME like \'tri%\' as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationForAdjustFunctionUsageInProjectionForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionUsageInProjectionForPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.SECONDS)
@@ -340,7 +340,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationForAdjustFunctionWithHourForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionWithHourForPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30T08:55:00.0->datePart(), %2011-12-30T08:55:00.0->hour(), DurationUnit.HOURS)
@@ -350,7 +350,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationForAdjustStrictDateUsageInProjectionForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustStrictDateUsageInProjectionForPostgres():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
@@ -360,7 +360,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationForAdjustStrictDateUsageInFiltersForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustStrictDateUsageInFiltersForPostgres():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
                                                       a | 'a'
@@ -370,7 +370,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationForAdjustFunctionUsageInFiltersForPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationForAdjustFunctionUsageInFiltersForPostgres():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.DAYS) > %2011-12-30T08:55:00.0)->project([
                                                       a | 'a'
@@ -380,7 +380,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfMonth():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfMonth():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"')
@@ -400,7 +400,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfThisMonth():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfThisMonth():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'month\', CURRENT_DATE) as "date" from tradeTable as "root"')
@@ -420,7 +420,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfYear():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfYear():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"')
@@ -440,7 +440,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfThisYear():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'year\', CURRENT_DATE) as "date" from tradeTable as "root"')
@@ -460,7 +460,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfThisQuarter():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfThisQuarter():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'quarter\', CURRENT_DATE) as "date" from tradeTable as "root"')
@@ -480,12 +480,12 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfQuarter_Postgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfQuarter_Postgres():Boolean[1]
 {
    testToSqlGenerationFirstDayOfQuarter(DatabaseType.Postgres, 'select date_trunc(\'quarter\', "root".tradeDate) as "date" from tradeTable as "root"');
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationFirstDayOfWeek():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationFirstDayOfWeek():Boolean[1]
 {
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"')
@@ -505,7 +505,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToSqlGenerationMinuteSecond():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSqlGenerationMinuteSecond():Boolean[1]
 {
    let expected = [
    pair(DatabaseType.Postgres, 'select date_part(\'minute\', "root".settlementDateTime) as "settlementDateTimeMinute", date_part(\'second\', "root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"')
@@ -528,7 +528,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    )->distinct() == [true];
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testSqlGenerationDivide_AllDBs():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testSqlGenerationDivide_AllDBs():Boolean[1]
 {
    let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
    let expectedSQL = 'select ((1.0 * "root".quantity) / 1000000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#4_d#4_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#4_d#4_m5".trade_id) where "root".ID = 2';
@@ -537,7 +537,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::
    assertSameSQL($expectedSQL, $resultPostgresSQL);
 }
 
-function <<test.Test>> meta::relational::functions::sqlQueryToString::postgres::testToStringOnPostgres():Boolean[1]
+function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToStringOnPostgres():Boolean[1]
 {
    let func = {|Person.all()->project([col(x | $x.firstName, 'FirstName'), col(x | $x.age->toOne()->toString()->toUpper(), 'AgeString')])};
    let sql = toSQLString($func, simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());

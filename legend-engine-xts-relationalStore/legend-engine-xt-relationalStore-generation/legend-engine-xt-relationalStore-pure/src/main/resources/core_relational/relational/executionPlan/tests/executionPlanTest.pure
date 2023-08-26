@@ -467,7 +467,30 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    assertEquals($expected, $result);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThanEqualsWithOptionalParameter_H2():Boolean[1]      
+function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_H2():Boolean[1]
+{
+   let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age>$optionalAgeLowerLimit && ($p.age<=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
+   let expectedPlan ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalAgeLowerLimit:Integer[0..1], optionalAgeHigherLimit:Integer[0..1]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+                     '      resultColumns = [("firstName", VARCHAR(200))]\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}))\n'+
+                     '      connection = DatabaseConnection(type = "H2")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThanEqualsWithOptionalParameter_H2():Boolean[1]
 {  
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age<$optionalAgeLowerLimit && ($p.age>=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
