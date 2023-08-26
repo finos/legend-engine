@@ -2227,4 +2227,40 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  ];\n" +
                 "}\n", null, Collections.singletonList("COMPILATION error at [101:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
     }
+    
+    @Test
+    public void testCompilationMissingEnumMapping() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> res = test(
+                "###Relational\n" +
+                        "Database test::DB\n" +
+                        "(\n" +
+                        "  Table employee\n" +
+                        "  (\n" +
+                        "    type VARCHAR(200)\n" +
+                        "  )\n" +
+                        ")\n" +
+                        "###Pure\n" +
+                        "Enum test::EmployeeType\n" +
+                        "{\n" +
+                        "  FULL_TIME\n" +
+                        "}\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "  type: test::EmployeeType[1];\n" +
+                        "}\n" +
+                        "###Mapping\n" +
+                        "Mapping test::Map\n" +
+                        "(\n" +
+                        "  *test::Employee: Relational\n" +
+                        "  {\n" +
+                        "    ~mainTable [test::DB]employee\n" +
+                        "    type: [test::DB]employee.type\n" +
+                        "  }\n" +
+                        ")", null, Arrays.asList("COMPILATION error at [24:9-33]: Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum."));
+
+        MutableList<Warning> warnings = res.getTwo().getWarnings();
+        Assert.assertEquals(1, warnings.size());
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"test::Map\",\"startLine\":24,\"startColumn\":9,\"endLine\":24,\"endColumn\":33},\"message\":\"Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
+    }
 }
