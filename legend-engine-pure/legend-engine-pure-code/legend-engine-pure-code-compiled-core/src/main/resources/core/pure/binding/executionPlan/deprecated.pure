@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
 
 import meta::pure::runtime::*;
 
@@ -25,7 +25,7 @@ import meta::pure::extension::*;
 // Execution Nodes
 // ------------------------------------------------------------------------------------------------------------------------
 
-Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
+Class meta::external::format::shared::executionPlan::UrlStreamExecutionNode extends ExecutionNode
 {
    url : String[1];
 }

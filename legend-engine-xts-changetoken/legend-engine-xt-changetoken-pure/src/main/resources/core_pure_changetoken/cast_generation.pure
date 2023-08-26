@@ -27,11 +27,15 @@ import meta::json::*;
 function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
 {
   // load Versions()
-  let versions = functionDescriptorToId($versionsFuncName + '():Versions[1]')
+  let versions = $versionsFuncName->generateCastVersions();
+  generateCastFromVersions($versions, $outputClassName);
+}
+
+function meta::pure::changetoken::cast_generation::generateCastVersions(versionsFuncName:String[1]):Versions[1]
+{
+  functionDescriptorToId($versionsFuncName + '():Versions[1]')
     ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
     ->eval();
-
-  generateCastFromVersions($versions, $outputClassName);
 }
 
 function meta::pure::changetoken::cast_generation::generateCastFromJson(jsonString:String[1], outputClassName:String[1]):Project[1]
@@ -40,9 +44,60 @@ function meta::pure::changetoken::cast_generation::generateCastFromJson(jsonStri
   generateCastFromVersions($versions, $outputClassName);
 }
 
+function meta::pure::changetoken::cast_generation::versionsToJson(versions:Versions[1]):String[1]
+{
+  $versions->toJSON([], 100, config(true, true, true, true, '@type', true));
+}
+
 function meta::pure::changetoken::cast_generation::jsonToVersions(jsonString:String[1]):Versions[1]
 {
-  $jsonString->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true));
+  let raw = $jsonString->parseJSON();
+  let input = $raw->zap();
+  $input->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true))->cast(@Versions)->toOne();
+}
+
+function meta::pure::changetoken::cast_generation::zap(input:JSONElement[1]):JSONElement[1]
+{
+  let o = $input->cast(@JSONObject);
+  newJSONObject($o.keyValuePairs->filter(kv|$kv.key.value != 'versions')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value))->concatenate($o.keyValuePairs->filter(kv|$kv.key.value == 'versions')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value->zap_versions()))));
+}
+
+function meta::pure::changetoken::cast_generation::zap_versions(input:JSONElement[1]):JSONElement[1]
+{
+  let a = $input->cast(@JSONArray);
+  ^JSONArray(values=$a.values->map(o|$o->zap_version()));
+}
+
+function meta::pure::changetoken::cast_generation::zap_version(input:JSONElement[1]):JSONElement[1]
+{
+  let o = $input->cast(@JSONObject);
+  newJSONObject($o.keyValuePairs->filter(kv|$kv.key.value != 'changeTokens')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value))->concatenate($o.keyValuePairs->filter(kv|$kv.key.value == 'changeTokens')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value->zap_changeTokens()))));
+}
+
+function meta::pure::changetoken::cast_generation::zap_changeTokens(input:JSONElement[1]):JSONElement[1]
+{
+  let a = $input->cast(@JSONArray);
+  ^JSONArray(values=$a.values->map(o|$o->zap_changeToken()));
+}
+
+function meta::pure::changetoken::cast_generation::zap_changeToken(input:JSONElement[1]):JSONElement[1]
+{
+  let o = $input->cast(@JSONObject);
+  newJSONObject($o.keyValuePairs->filter(kv|$kv.key.value != 'defaultValue')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value))->concatenate($o.keyValuePairs->filter(kv|$kv.key.value == 'defaultValue')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value->zap_defaultValue()))));
+}
+
+function meta::pure::changetoken::cast_generation::zap_defaultValue(input:JSONElement[1]):JSONElement[1]
+{
+  let o = $input->cast(@JSONObject);
+  newJSONObject($o.keyValuePairs->filter(kv|$kv.key.value != 'value')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value))->concatenate($o.keyValuePairs->filter(kv|$kv.key.value == 'value')->map(kv | ^JSONKeyValue(key = $kv.key, value = $kv.value->zap_value()))));
+}
+
+function meta::pure::changetoken::cast_generation::zap_value(input:JSONElement[1]):JSONElement[1]
+{
+  $input->match([
+    o:JSONObject[1] | $input->toJSON([], 100, config(true, true, true, true, '@type', true))->parseJSON(),
+    e:JSONElement[1] | $e
+  ])
 }
 
 function meta::pure::changetoken::cast_generation::generateCastFromVersions(versions:Versions[1], outputClassName:String[1]):Project[1]
@@ -638,10 +693,15 @@ value: Any[1]
      $value->cast(@Map<String, Any>)->map(m | $m->keys()->map(k | _inlineMap($k, $m->get($k)))),
      javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
      |
+     if($value->instanceOf(JSONObject),
+     | javaStream()->j_invoke('of',
+     $value->cast(@meta::json::JSONObject).keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
+     javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()),
+     |
   if($value->instanceOf(String),
      | j_string(stripMatchingQuotes($value->cast(@String))),
     {| fail('Do not know how to build Java object'); j_null();}
-   ));
+   )));
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_inlineMap(

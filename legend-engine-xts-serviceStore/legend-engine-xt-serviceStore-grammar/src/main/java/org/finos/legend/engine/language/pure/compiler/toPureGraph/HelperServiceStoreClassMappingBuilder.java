@@ -35,9 +35,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_BindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_BooleanTypeReference;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ComplexTypeReference;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_FloatTypeReference;
@@ -258,14 +258,14 @@ public class HelperServiceStoreClassMappingBuilder
 
     private static List<PropertyMapping> generatePropertyMappingsForClassMapping(Root_meta_external_store_service_metamodel_mapping_RootServiceInstanceSetImplementation rootClassMapping, List<EmbeddedSetImplementation> embeddedSetImplementations, RootServiceStoreClassMapping serviceStoreClassMapping, Set<Class<?>> processedClasses, CompileContext context)
     {
-        Root_meta_external_shared_format_binding_Binding binding = rootClassMapping._servicesMapping().getAny()._service()._response()._binding();
+        Root_meta_external_format_shared_binding_Binding binding = rootClassMapping._servicesMapping().getAny()._service()._response()._binding();
 
         ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
-        Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
+        Root_meta_external_format_shared_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
-        if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
+        if (bindingDetail instanceof Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail)
         {
-            return generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, rootClassMapping._class(), rootClassMapping._id(), embeddedSetImplementations, rootClassMapping, serviceStoreClassMapping.sourceInformation, processedClasses, context);
+            return generatePropertyMappings((Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail) bindingDetail, rootClassMapping._class(), rootClassMapping._id(), embeddedSetImplementations, rootClassMapping, serviceStoreClassMapping.sourceInformation, processedClasses, context);
         }
         else
         {
@@ -273,7 +273,7 @@ public class HelperServiceStoreClassMappingBuilder
         }
     }
 
-    private static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
+    private static List<PropertyMapping> generatePropertyMappings(Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
     {
         if (processedClasses.contains(pureClass))
         {
@@ -307,7 +307,7 @@ public class HelperServiceStoreClassMappingBuilder
         return propertyMapping;
     }
 
-    private static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
+    private static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
     {
         Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation propertyMapping = new Root_meta_external_store_service_metamodel_mapping_EmbeddedServiceStoreSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::mapping::EmbeddedServiceStoreSetImplementation"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
@@ -439,7 +439,7 @@ public class HelperServiceStoreClassMappingBuilder
         }
     }
 
-    private static ExternalFormatExtension getExtension(Root_meta_external_shared_format_binding_Binding binding)
+    private static ExternalFormatExtension getExtension(Root_meta_external_format_shared_binding_Binding binding)
     {
         return ExternalFormatExtensionLoader.extensions().values().stream()
                 .filter(ext -> ext.getContentTypes().contains(binding._contentType()))

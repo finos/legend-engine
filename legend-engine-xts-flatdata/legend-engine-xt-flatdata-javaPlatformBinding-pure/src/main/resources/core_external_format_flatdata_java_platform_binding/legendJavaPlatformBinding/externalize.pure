@@ -23,12 +23,12 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::engine::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::metamodel::*;
 
 import meta::pure::dataQuality::*;
 
@@ -126,60 +126,82 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
             */
           let recordTypeParam = j_parameter($conventions->className(_FlatDataRecordType), 'recordType');
           let fields          = $section.recordType.fields->filter(f | $node.tree->isEmpty() || $node.tree.subTrees->cast(@PropertyGraphFetchTree).property->contains($fieldToPropertyMap->get($f)->toOne()));
-          let fieldVars       = createFieldVars($fields, $recordTypeParam, $conventions);
+          let pairType        = javaParameterizedType(javaClass('org.eclipse.collections.api.tuple.Pair'), [javaString(), $conventions->className(_FlatDataRecordField)]);
+          let lambdaParam     = j_parameter($conventions->className(_FlatDataRecordField), 'f');
+          let fieldsMap       = $recordTypeParam->j_field('fields', javaList($conventions->className(_FlatDataRecordField)))
+                                                ->j_streamOf()
+                                                ->js_map(j_lambda($lambdaParam, javaClass('org.eclipse.collections.impl.tuple.Tuples')->j_invoke('pair', [$lambdaParam->j_field('label', javaString()), $lambdaParam], $pairType)))
+                                                ->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference($pairType.rawType, 'getOne', javaFunctionType($pairType, javaString())), j_methodReference($pairType.rawType, 'getTwo', javaFunctionType($pairType, $conventions->className(_FlatDataRecordField)))], javaObject())], javaMap(javaString(), $conventions->className(_FlatDataRecordField)));
+          let fieldsMapVar    = j_variable(javaMap(javaString(), $conventions->className(_FlatDataRecordField)), 'fieldsIndexedByLabel');
+          
+          let hasStringValueMap     = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasStringValueMap');
+          let hasBooleanValueMap    = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasBooleanValue');
+          let hasLongValueMap       = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasLongValue');
+          let hasDoubleValueMap     = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasDoubleValue');
+          let hasBigDecimalValueMap = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasBigDecimalValue');
+          let hasLocalDateValueMap  = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasLocalDateValue');
+          let hasInstantValueMap    = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'hasInstantValue');
+
+          let getStringMap          = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaString())), 'getString');
+          let getBooleanMap         = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBoolean())), 'getBoolean');
+          let getLongMap            = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaLong())), 'getLong');
+          let getDoubleMap          = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaDouble())), 'getDouble');
+          let getBigDecimalMap      = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaBigDecimal())), 'getBigDecimal');
+          let getLocalDateMap       = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaLocalDate())), 'getLocalDate');
+          let getInstantMap         = j_variable(javaMap(javaString(), javaFunction($rootInterface, javaInstant())), 'getInstant');
+
           let objectParam     = j_parameter($rootInterface, 'value');
           let fieldParam      = j_parameter($conventions->className(_FlatDataRecordField), 'field');
         
           let parsedFlatDataCodes  = $fields->toIndexed()->fold(
               {indexedField, codes|
-                let fieldVar     = $fieldVars->at($indexedField.first).first;
+                let fieldName    = j_string($indexedField.second.label);
                 let property     = $fieldToPropertyMap->get($indexedField.second)->toOne();
                 let propOptional = !$property.multiplicity->hasLowerBound();
                 let propType     = $property->functionReturnType().rawType->toOne();
                 let propJavaType = $conventions->pureTypeToJavaType($property);
-                let fieldTest    = $fieldParam->j_invoke('equals', $fieldVar);
                 let getter       = $objectParam->j_invoke($conventions->getterName($property), [], $propJavaType);
 
                 if($propType == String,
                     | ^$codes(
-                        hasStringValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getString      += pair($fieldTest, j_return($getter))
+                        hasStringValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getString      += pair($fieldName, $getter)
                       ),
                     |
                 if($propType == Boolean,
                     | ^$codes(
-                        hasBooleanValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getBoolean      += pair($fieldTest, j_return($getter))
+                        hasBooleanValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getBoolean      += pair($fieldName, $getter)
                       ),
                     |
                 if($propType == Integer,
                     | ^$codes(
-                        hasLongValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getLong      += pair($fieldTest, j_return($getter))
+                        hasLongValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getLong      += pair($fieldName, $getter)
                       ),
                     | 
                 if($propType == Float,
                     | ^$codes(
-                        hasDoubleValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getDouble      += pair($fieldTest, j_return($getter))
+                        hasDoubleValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getDouble      += pair($fieldName, $getter)
                       ),
                     | 
                 if($propType == Decimal,
                     | ^$codes(
-                        hasBigDecimalValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getBigDecimal      += pair($fieldTest, j_return($getter))
+                        hasBigDecimalValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getBigDecimal      += pair($fieldName, $getter)
                       ),
                     | 
                 if($propType == StrictDate,
                     | ^$codes(
-                        hasLocalDateValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getLocalDate      += pair($fieldTest, j_return($getter->j_invoke('toLocalDate', [], javaLocalDate())))
+                        hasLocalDateValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getLocalDate      += pair($fieldName, $getter->j_invoke('toLocalDate', [], javaLocalDate()))
                       ),
                     | 
                 if($propType == DateTime,
                     | ^$codes(
-                        hasInstantValue += pair($fieldTest, j_return(if($propOptional, |$getter->j_ne(j_null()), |j_true()))),
-                        getInstant      += pair($fieldTest, j_return($getter->j_invoke('toInstant', [], javaInstant())))
+                        hasInstantValue += pair($fieldName, if($propOptional, |$getter->j_ne(j_null()), |j_true())),
+                        getInstant      += pair($fieldName, $getter->j_invoke('toInstant', [], javaInstant()))
                       ),
                     | fail('Unknown type'); $codes;
                 )))))));
@@ -189,20 +211,20 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
           let anonParsedFlatData = j_newAnon($conventions->className(_ParsedFlatData), [], 
               [
-                j_method('public', javaBoolean(),    'hasStringValue',     $fieldParam, codeHasValue($parsedFlatDataCodes.hasStringValue)),
-                j_method('public', javaBoolean(),    'hasBooleanValue',    $fieldParam, codeHasValue($parsedFlatDataCodes.hasBooleanValue)),
-                j_method('public', javaBoolean(),    'hasLongValue',       $fieldParam, codeHasValue($parsedFlatDataCodes.hasLongValue)),
-                j_method('public', javaBoolean(),    'hasDoubleValue',     $fieldParam, codeHasValue($parsedFlatDataCodes.hasDoubleValue)),
-                j_method('public', javaBoolean(),    'hasBigDecimalValue', $fieldParam, codeHasValue($parsedFlatDataCodes.hasBigDecimalValue)),
-                j_method('public', javaBoolean(),    'hasLocalDateValue',  $fieldParam, codeHasValue($parsedFlatDataCodes.hasLocalDateValue)),
-                j_method('public', javaBoolean(),    'hasInstantValue',    $fieldParam, codeHasValue($parsedFlatDataCodes.hasInstantValue)),
-                j_method('public', javaString(),     'getString',          $fieldParam, codeGetValue($parsedFlatDataCodes.getString,     $fieldParam, 'String')),
-                j_method('public', javaBoolean(),    'getBoolean',         $fieldParam, codeGetValue($parsedFlatDataCodes.getBoolean,    $fieldParam, 'boolean')),
-                j_method('public', javaLong(),       'getLong',            $fieldParam, codeGetValue($parsedFlatDataCodes.getLong,       $fieldParam, 'long')),
-                j_method('public', javaDouble(),     'getDouble',          $fieldParam, codeGetValue($parsedFlatDataCodes.getDouble,     $fieldParam, 'double')),
-                j_method('public', javaBigDecimal(), 'getBigDecimal',      $fieldParam, codeGetValue($parsedFlatDataCodes.getBigDecimal, $fieldParam, 'BigDecimal')),
-                j_method('public', javaLocalDate(),  'getLocalDate',       $fieldParam, codeGetValue($parsedFlatDataCodes.getLocalDate,  $fieldParam, 'LocalDate')),
-                j_method('public', javaInstant(),    'getInstant',         $fieldParam, codeGetValue($parsedFlatDataCodes.getInstant,    $fieldParam, 'Instant'))
+                j_method('public', javaBoolean(),    'hasStringValue',     $fieldParam, codeHasValue($hasStringValueMap,      $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasBooleanValue',    $fieldParam, codeHasValue($hasBooleanValueMap,     $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasLongValue',       $fieldParam, codeHasValue($hasLongValueMap,        $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasDoubleValue',     $fieldParam, codeHasValue($hasDoubleValueMap,      $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasBigDecimalValue', $fieldParam, codeHasValue($hasBigDecimalValueMap,  $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasLocalDateValue',  $fieldParam, codeHasValue($hasLocalDateValueMap,   $fieldParam, $objectParam)),
+                j_method('public', javaBoolean(),    'hasInstantValue',    $fieldParam, codeHasValue($hasInstantValueMap,     $fieldParam, $objectParam)),
+                j_method('public', javaString(),     'getString',          $fieldParam, codeGetValue($getStringMap,           $fieldParam, $objectParam, 'String')),
+                j_method('public', javaBoolean(),    'getBoolean',         $fieldParam, codeGetValue($getBooleanMap,          $fieldParam, $objectParam, 'boolean')),
+                j_method('public', javaLong(),       'getLong',            $fieldParam, codeGetValue($getLongMap,             $fieldParam, $objectParam, 'long')),
+                j_method('public', javaDouble(),     'getDouble',          $fieldParam, codeGetValue($getDoubleMap,           $fieldParam, $objectParam, 'double')),
+                j_method('public', javaBigDecimal(), 'getBigDecimal',      $fieldParam, codeGetValue($getBigDecimalMap,       $fieldParam, $objectParam, 'BigDecimal')),
+                j_method('public', javaLocalDate(),  'getLocalDate',       $fieldParam, codeGetValue($getLocalDateMap,        $fieldParam, $objectParam, 'LocalDate')),
+                j_method('public', javaInstant(),    'getInstant',         $fieldParam, codeGetValue($getInstantMap,          $fieldParam, $objectParam, 'Instant'))
               ]
           );
 
@@ -213,7 +235,23 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
           );
         
           javaMethod('public', $factoryType, $section->sectionFactoryMethodName(), $recordTypeParam,                      
-              $fieldVars.second->concatenate(j_return($anonFactory))
+              [$fieldsMapVar->j_declare($fieldsMap)]
+                ->concatenate([$hasStringValueMap, $hasBooleanValueMap, $hasLongValueMap, $hasDoubleValueMap, $hasBigDecimalValueMap, $hasLocalDateValueMap, $hasInstantValueMap, $getStringMap, $getBooleanMap, $getLongMap, $getDoubleMap, $getBigDecimalMap, $getLocalDateMap, $getInstantMap]->map(v | $v->j_declare(javaHashMap()->j_new([]))))
+                ->concatenate($parsedFlatDataCodes.hasStringValue->map(p | $hasStringValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasBooleanValue->map(p | $hasBooleanValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasLongValue->map(p | $hasLongValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasDoubleValue->map(p | $hasDoubleValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasBigDecimalValue->map(p | $hasBigDecimalValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasLocalDateValue->map(p | $hasLocalDateValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.hasInstantValue->map(p | $hasInstantValueMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getString->map(p | $getStringMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getBoolean->map(p | $getBooleanMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getLong->map(p | $getLongMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getDouble->map(p | $getDoubleMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getBigDecimal->map(p | $getBigDecimalMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getLocalDate->map(p | $getLocalDateMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate($parsedFlatDataCodes.getInstant->map(p | $getInstantMap->j_invoke('put', [$p.first, j_lambda($objectParam, $p.second)], javaVoid())))
+                ->concatenate(j_return($anonFactory))
           );
         });
     })
@@ -234,19 +272,15 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
     });
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeHasValue(clauses:Pair<Code,Code>[*]): Code[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeHasValue(mapVar:Code[1], fieldParam:Code[1], objectParam:Code[1]): Code[1]
 {
-  if($clauses->isEmpty(),
-    | j_return(j_false()),
-    | j_if(list($clauses), j_return(j_false()))
-  );
+  j_return(j_and($mapVar->j_invoke('containsKey', $fieldParam->j_field('label', javaString()), javaBoolean()), $mapVar->j_invoke('get', $fieldParam->j_field('label', javaString()), javaObject())->j_invoke('apply', $objectParam, javaBoolean())))
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeGetValue(clauses:Pair<Code,Code>[*], fieldParam:Code[1], type:String[1]): Code[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeGetValue(mapVar:Code[1], fieldParam:Code[1], objectParam:Code[1], type:String[1]): Code[1]
 {
   let throw = j_throw(j_new(javaIllegalArgumentException(), j_string('Cannot get ' + $type + ' value for field \'')->j_plus($fieldParam->j_field('label', javaString()))->j_plus(j_string('\''))));
-  if($clauses->isEmpty(),
-    | $throw,
-    | j_if(list($clauses), $throw)
-  );
+  j_if($mapVar->j_invoke('containsKey', $fieldParam->j_field('label', javaString()), javaBoolean()),
+       $mapVar->j_invoke('get', $fieldParam->j_field('label', javaString()), javaObject())->j_invoke('apply', $objectParam, javaObject())->j_return(),
+       $throw);
 }

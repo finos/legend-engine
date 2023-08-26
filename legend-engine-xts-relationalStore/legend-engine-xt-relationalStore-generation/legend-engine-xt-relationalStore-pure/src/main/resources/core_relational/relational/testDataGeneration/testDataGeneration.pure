@@ -1151,7 +1151,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
             havingOperation = $viewQueryReprocessed.havingOperation,
             orderBy = $viewQueryReprocessed.orderBy,
             fromRow = $viewQueryReprocessed.fromRow,
-            toRow = $viewQueryReprocessed.toRow
+            toRow = ^Literal(value=20)
          );
 
          let runtime = ^Runtime(connections=$dbConnection);

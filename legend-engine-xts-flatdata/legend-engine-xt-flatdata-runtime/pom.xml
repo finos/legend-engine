@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-flatdata</artifactId>
-        <version>4.24.1-SNAPSHOT</version>
+        <version>4.25.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,7 +44,7 @@
                     <includePluginDependencies>true</includePluginDependencies>
                     <mainClass>org.finos.legend.engine.external.shared.format.test.GeneratePlanDataClasses</mainClass>
                     <arguments>
-                        <argument>meta::external::shared::format::executionPlan::tests::model::firm</argument>
+                        <argument>meta::external::format::shared::executionPlan::tests::model::firm</argument>
                         <argument>org.finos.legend.engine.external.format.test.fixture</argument>
                         <argument>${project.build.directory}/generated-test-sources/</argument>
                     </arguments>

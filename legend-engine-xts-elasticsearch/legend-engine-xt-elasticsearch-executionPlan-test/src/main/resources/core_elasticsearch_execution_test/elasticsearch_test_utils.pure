@@ -31,7 +31,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::elastics
 
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
 
-         let extensionsWithPlatformBindings = $extensions->concatenate(meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]));
+         let extensionsWithPlatformBindings = $extensions->concatenate(meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]));
 
          // Using LegendJava as the default for local platform binding
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);

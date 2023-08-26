@@ -43,7 +43,7 @@ public class Person implements IReferencedObject, IExternalData
 
         public String getPureClassName()
         {
-            return "meta::external::shared::testpack::simple::Person";
+            return "meta::external::format::shared::testpack::simple::Person";
         }
     };
 
@@ -182,27 +182,27 @@ public class Person implements IReferencedObject, IExternalData
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.firstNameSize < 1L || this.firstNameSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firstName: expected [1] found [" + this.firstNameSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firstName: expected [1] found [" + this.firstNameSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         if (this.lastNameSize < 1L || this.lastNameSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for lastName: expected [1] found [" + this.lastNameSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for lastName: expected [1] found [" + this.lastNameSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         if (this.dateOfBirthSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for dateOfBirth: expected [0..1] found [" + this.dateOfBirthSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for dateOfBirth: expected [0..1] found [" + this.dateOfBirthSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         if (this.isAliveSize < 1L || this.isAliveSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for isAlive: expected [1] found [" + this.isAliveSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for isAlive: expected [1] found [" + this.isAliveSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         if (this.heightInMetersSize < 1L || this.heightInMetersSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for heightInMeters: expected [1] found [" + this.heightInMetersSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for heightInMeters: expected [1] found [" + this.heightInMetersSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         if (this.firmSize < 1L || this.firmSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firm: expected [1] found [" + this.firmSize + "]", "meta::external::shared::testpack::simple::Person"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for firm: expected [1] found [" + this.firmSize + "]", "meta::external::format::shared::testpack::simple::Person"));
         }
         return defects;
     }

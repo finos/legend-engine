@@ -13,20 +13,8 @@
 // limitations under the License.
 
 ###Diagram
-Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(width=0.0, height=0.0)
+Diagram meta::external::format::flatdata::FlatData_Diagram(width=0.0, height=0.0)
 {
-    TypeView cview_1(
-        type=meta::external::format::flatdata::metamodel::FlatData,
-        position=(1083.00000, 148.00000),
-        width=167.92529,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_2(
         type=meta::external::format::flatdata::metamodel::FlatDataSection,
         position=(1395.00000, 126.00000),
@@ -39,23 +27,11 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_3(
-        type=meta::external::format::flatdata::metamodel::FlatDataRecordType,
-        position=(1419.00000, 304.00000),
-        width=175.86377,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_4(
-        type=meta::external::format::flatdata::metamodel::FlatDataRecordField,
-        position=(1430.00000, 437.00000),
-        width=156.72119,
-        height=72.00000,
+    TypeView cview_1(
+        type=meta::external::format::flatdata::metamodel::FlatData,
+        position=(1208.00000, 162.00000),
+        width=67.34546,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -65,7 +41,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
 
     TypeView cview_13(
         type=meta::external::format::flatdata::metamodel::FlatDataProperty,
-        position=(1798.00000, 147.00000),
+        position=(1780.00000, 99.00000),
         width=116.69141,
         height=58.00000,
         stereotypesVisible=true,
@@ -75,82 +51,10 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_6(
-        type=meta::external::format::flatdata::metamodel::FlatDataBoolean,
-        position=(1573.00000, 622.00000),
-        width=142.85840,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_10(
-        type=meta::external::format::flatdata::metamodel::FlatDataNumber,
-        position=(1767.00000, 622.00000),
-        width=120.23535,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_14(
-        type=meta::external::format::flatdata::metamodel::FlatDataString,
-        position=(1940.00000, 620.00000),
-        width=102.00781,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_8(
-        type=meta::external::format::flatdata::metamodel::FlatDataTemporal,
-        position=(2099.00000, 619.00000),
-        width=120.46484,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_12(
-        type=meta::external::format::flatdata::metamodel::FlatDataInteger,
-        position=(1701.00000, 749.00000),
-        width=107.35156,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_11(
-        type=meta::external::format::flatdata::metamodel::FlatDataDecimal,
-        position=(1870.00000, 749.00000),
-        width=113.36914,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_9(
-        type=meta::external::format::flatdata::metamodel::FlatDataDateTime,
-        position=(2205.00000, 734.00000),
-        width=134.90381,
+    TypeView cview_3(
+        type=meta::external::format::flatdata::metamodel::FlatDataRecordType,
+        position=(1704.00000, 182.00000),
+        width=175.86377,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -161,9 +65,81 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
 
     TypeView cview_7(
         type=meta::external::format::flatdata::metamodel::FlatDataDate,
-        position=(2052.00000, 742.00000),
-        width=93.35352,
+        position=(1478.00000, 452.00000),
+        width=93.36364,
         height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::format::flatdata::metamodel::FlatDataDateTime,
+        position=(1512.00000, 494.00000),
+        width=134.90381,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::format::flatdata::metamodel::FlatDataString,
+        position=(1392.00000, 351.00000),
+        width=102.00781,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::format::flatdata::metamodel::FlatDataNumber,
+        position=(1328.00000, 397.00000),
+        width=120.23535,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::format::flatdata::metamodel::FlatDataDecimal,
+        position=(1374.00000, 487.00000),
+        width=113.36914,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::format::flatdata::metamodel::FlatDataInteger,
+        position=(1319.00000, 529.00000),
+        width=107.35156,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::flatdata::metamodel::FlatDataBoolean,
+        position=(1177.00000, 396.00000),
+        width=142.85840,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -173,8 +149,32 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
 
     TypeView cview_5(
         type=meta::external::format::flatdata::metamodel::FlatDataDataType,
-        position=(1850.00000, 454.00000),
-        width=128.16846,
+        position=(1239.00000, 275.00000),
+        width=345.45190,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::flatdata::metamodel::FlatDataRecordField,
+        position=(1685.00000, 259.00000),
+        width=156.72119,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::format::flatdata::metamodel::FlatDataTemporal,
+        position=(1506.00000, 375.00000),
+        width=120.46484,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -186,7 +186,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_0(
         source=cview_6,
         target=cview_5,
-        points=[(1644.42920,651.00000),(1914.08423,476.00000)],
+        points=[(1248.42920,425.00000),(1249.45190,308.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -195,7 +195,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_1(
         source=cview_8,
         target=cview_5,
-        points=[(2159.23242,641.00000),(1914.08423,476.00000)],
+        points=[(1566.23242,397.00000),(1566.45190,312.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -204,7 +204,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_2(
         source=cview_7,
         target=cview_8,
-        points=[(2098.67676,757.00000),(2159.23242,641.00000)],
+        points=[(1524.68182,467.00000),(1523.45190,413.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -213,7 +213,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_3(
         source=cview_9,
         target=cview_8,
-        points=[(2272.45190,756.00000),(2159.23242,641.00000)],
+        points=[(1599.45190,503.00000),(1599.45190,410.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -222,7 +222,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_4(
         source=cview_10,
         target=cview_5,
-        points=[(1827.11768,644.00000),(1914.08423,476.00000)],
+        points=[(1356.45190,415.00000),(1356.45190,302.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -231,7 +231,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_5(
         source=cview_11,
         target=cview_10,
-        points=[(1926.68457,764.00000),(1827.11768,644.00000)],
+        points=[(1430.68457,502.00000),(1431.45190,434.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -240,7 +240,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_6(
         source=cview_12,
         target=cview_10,
-        points=[(1754.67578,764.00000),(1827.11768,644.00000)],
+        points=[(1343.45190,534.00000),(1343.45190,433.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -249,7 +249,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
     GeneralizationView gview_7(
         source=cview_14,
         target=cview_5,
-        points=[(1991.00391,635.00000),(1914.08423,476.00000)],
+        points=[(1443.00391,366.00000),(1443.45190,301.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -259,7 +259,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         property=meta::external::format::flatdata::metamodel::FlatData.sections,
         source=cview_1,
         target=cview_2,
-        points=[(1166.96265,177.00000),(1505.86108,176.00000)],
+        points=[(1241.67273,177.00000),(1505.86108,176.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -273,7 +273,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         property=meta::external::format::flatdata::metamodel::FlatDataSection.recordType,
         source=cview_2,
         target=cview_3,
-        points=[(1505.86108,176.00000),(1506.93188,326.00000)],
+        points=[(1603.45190,207.00000),(1727.45190,208.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -287,7 +287,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         property=meta::external::format::flatdata::metamodel::FlatDataRecordType.fields,
         source=cview_3,
         target=cview_4,
-        points=[(1506.93188,326.00000),(1508.36060,473.00000)],
+        points=[(1791.93188,204.00000),(1912.45190,204.00000),(1912.45190,303.00000),(1830.45190,304.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -301,7 +301,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         property=meta::external::format::flatdata::metamodel::FlatDataRecordField.type,
         source=cview_4,
         target=cview_5,
-        points=[(1508.36060,473.00000),(1914.08423,476.00000)],
+        points=[(1763.36060,295.00000),(1411.72595,297.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -315,7 +315,7 @@ Diagram meta::external::format::flatdata::metamodel::diagram::MetamodelDiagram(w
         property=meta::external::format::flatdata::metamodel::FlatDataSection.sectionProperties,
         source=cview_2,
         target=cview_13,
-        points=[(1505.86108,176.00000),(1856.34570,176.00000)],
+        points=[(1566.45190,128.00000),(1838.34570,128.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

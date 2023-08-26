@@ -189,6 +189,12 @@ Database meta::relational::tests::db
         name: Org.name
     )
 
+    View OrgViewOnView
+    (
+        OrgId: OrgView.OrgId,
+        name: OrgView.name
+    )
+
     Schema productSchema
     (
        Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
@@ -220,8 +226,8 @@ Database meta::relational::tests::db
     Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
     Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
     Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
-    Join Org_DeptCat(OrgView.name = Dept.name)
-    Join Org_DeptDiv(OrgView.name = Dept.name)
+    Join Org_DeptCat(OrgViewOnView.name = Dept.name)
+    Join Org_DeptDiv(OrgViewOnView.name = Dept.name)
     Join Dept_Branch(Dept.id = Branch.branchId)
 )
 

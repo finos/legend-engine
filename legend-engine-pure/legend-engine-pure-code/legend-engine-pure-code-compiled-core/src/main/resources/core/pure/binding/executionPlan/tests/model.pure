@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::executionPlan::tests::model::firm::*;
+import meta::external::format::shared::executionPlan::tests::model::firm::*;
 
-Enum meta::external::shared::format::executionPlan::tests::model::firm::AddressType
+Enum meta::external::format::shared::executionPlan::tests::model::firm::AddressType
 {
    Headquarters,
    RegionalOffice,
    Home
 }
 
-Class meta::external::shared::format::executionPlan::tests::model::firm::Firm
+Class meta::external::format::shared::executionPlan::tests::model::firm::Firm
 {
    name      : String[1];
    ranking   : Integer[0..1];
    addresses : AddressUse[1..*];
 }
 
-Class meta::external::shared::format::executionPlan::tests::model::firm::Address
+Class meta::external::format::shared::executionPlan::tests::model::firm::Address
 {
    firstLine  : String[1];
    secondLine : String[0..1];
@@ -38,7 +38,7 @@ Class meta::external::shared::format::executionPlan::tests::model::firm::Address
    position   : GeographicPosition[0..1];
 }
 
-Class meta::external::shared::format::executionPlan::tests::model::firm::GeographicPosition
+Class meta::external::format::shared::executionPlan::tests::model::firm::GeographicPosition
 [
    validLatitude: ($this.latitude >= -90) && ($this.latitude <= 90),
    validLongitude: ($this.longitude >= -180) && ($this.longitude <= 180)
@@ -49,13 +49,13 @@ Class meta::external::shared::format::executionPlan::tests::model::firm::Geograp
 }
 
 
-Class meta::external::shared::format::executionPlan::tests::model::firm::AddressUse
+Class meta::external::format::shared::executionPlan::tests::model::firm::AddressUse
 {
    addressType : AddressType[1];
    address     : Address[1];
 }
 
-Class meta::external::shared::format::executionPlan::tests::model::firm::Person
+Class meta::external::format::shared::executionPlan::tests::model::firm::Person
 {
    firstName      : String[1];
    lastName       : String[1];
@@ -65,7 +65,7 @@ Class meta::external::shared::format::executionPlan::tests::model::firm::Person
    heightInMeters : Float[1];
 }
 
-Association meta::external::shared::format::executionPlan::tests::model::firm::Firm_Person
+Association meta::external::format::shared::executionPlan::tests::model::firm::Firm_Person
 {
    firm      : Firm[1];
    employees : Person[*];

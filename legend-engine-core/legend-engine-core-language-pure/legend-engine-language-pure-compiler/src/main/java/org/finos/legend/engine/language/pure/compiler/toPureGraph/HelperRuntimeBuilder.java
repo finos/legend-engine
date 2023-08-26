@@ -76,7 +76,7 @@ public class HelperRuntimeBuilder
         {
             Store store = getConnectionStore(connection);
             // TODO Identify binding store as ModelStore better than this
-            if (store instanceof Root_meta_external_shared_format_binding_Binding)
+            if (store instanceof Root_meta_external_format_shared_binding_Binding)
             {
                 mappedStores.remove("ModelStore");
             }
@@ -119,7 +119,7 @@ public class HelperRuntimeBuilder
         List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
         List<String> visitedStores = new ArrayList<>();
         Set<String> ids = new HashSet<>();
-        ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_shared_format_binding_Binding)).collect(Collectors.toList()), storeConnections ->
+        ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_format_shared_binding_Binding)).collect(Collectors.toList()), storeConnections ->
         {
             if (!storeConnections.store.path.equals("ModelStore"))
             {

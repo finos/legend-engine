@@ -24,7 +24,7 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::extension::*;
-import meta::external::shared::format::*;
+import meta::external::format::shared::*;
 
 Class meta::pure::extension::Extension
 {
@@ -36,7 +36,7 @@ Class meta::pure::extension::Extension
 
   // External Format Extension ----------------------------------------------------------------
   // TODO: We should change this package to better align with our strategy to have binding as core feature
-  availableExternalFormats : meta::external::shared::format::ExternalFormatContract<Any>[*];
+  availableExternalFormats : meta::external::format::shared::ExternalFormatContract<Any>[*];
   // ---------------------------------------------------------------- External Format Extension
 
   // Feature Extension ------------------------------------------------------------------------
@@ -151,7 +151,7 @@ Class meta::pure::extension::ModuleExtension
 import meta::pure::extension::*;
 import meta::pure::extension::print::*;
 import meta::pure::store::*;
-import meta::external::shared::format::*;
+import meta::external::format::shared::*;
 import meta::pure::executionPlan::platformBinding::*;
 
 

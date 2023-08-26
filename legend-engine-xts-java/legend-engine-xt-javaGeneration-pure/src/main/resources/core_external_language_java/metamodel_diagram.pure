@@ -135,18 +135,6 @@ Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16(
-        type=meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties,
-        position=(-111.66533, 352.77785),
-        width=232.33333,
-        height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView Method_3_9_2_13_7_2_2_2_2_2_15_15_15_15_15_15_14_14_14_14_14_14_14_14_14_14_14_14_14_13_12_$_12(
         type=meta::external::language::java::metamodel::Method,
         position=(1009.50000, 338.33333),
@@ -291,6 +279,18 @@ Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16(
+        type=meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties,
+        position=(-143.66533, 352.77785),
+        width=232.33333,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     GeneralizationView gview_0(
         source=Class_9_6_13_8_4_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_1_$_1,
         target=GenericDeclaration_7_4_11_6_10_12_12_12_14_14_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_7_6_$_6,
@@ -420,7 +420,7 @@ Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_14(
         source=JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16,
         target=Annotation_18_18_18_18_18_17_17_17_17_17_17_17_17_17_17_17_17_17_16_15_$_15,
-        points=[(4.50134,388.77785),(-26.92647,275.00980)],
+        points=[(-27.49866,388.77785),(-26.92647,275.00980)],
         label='',
         color=#000000,
         lineWidth=-1.0,

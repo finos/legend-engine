@@ -22,8 +22,8 @@ import meta::external::format::json::metamodel::internalize::*;
 import meta::external::format::json::transformation::fromPure::*;
 import meta::external::format::json::transformation::toPure::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::extension::*;
 

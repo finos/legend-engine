@@ -55,8 +55,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_BaseType;
@@ -167,7 +167,7 @@ public class MongoDBCompilerHelper
         return pureValidator;
     }
 
-    public static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent)
+    public static List<PropertyMapping> generatePropertyMappings(Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent)
     {
         String classFullPath = HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport());
 
@@ -207,7 +207,7 @@ public class MongoDBCompilerHelper
         return propertyMapping;
     }
 
-    public static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, CompileContext context, boolean fromAssociation)
+    public static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_format_shared_binding_validation_SuccessfulBindingDetail bindingDetail, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, CompileContext context, boolean fromAssociation)
     {
         Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation propertyMapping = new Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
@@ -230,7 +230,7 @@ public class MongoDBCompilerHelper
         return propertyMapping;
     }
 
-    public static Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation createMongoDBSetImplementation(RootMongoDBClassMapping classMapping, CompileContext context, Mapping parentMapping, ClassMapping cm, Root_meta_external_shared_format_binding_Binding binding)
+    public static Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation createMongoDBSetImplementation(RootMongoDBClassMapping classMapping, CompileContext context, Mapping parentMapping, ClassMapping cm, Root_meta_external_format_shared_binding_Binding binding)
     {
         String id = HelperMappingBuilder.getClassMappingId(classMapping, context);
         Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation"));

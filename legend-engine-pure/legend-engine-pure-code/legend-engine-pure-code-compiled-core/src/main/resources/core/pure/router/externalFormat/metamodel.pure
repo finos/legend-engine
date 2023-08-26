@@ -18,15 +18,15 @@ import meta::pure::router::metamodel::clustering::*;
 
 Class meta::pure::router::externalFormat::metamodel::ExternalFormatRoutedValueSpecification extends ExtendedRoutedValueSpecification
 {
-   binding : meta::external::shared::format::binding::Binding[1];
+   binding : meta::external::format::shared::binding::Binding[1];
 }
 
 Class meta::pure::router::externalFormat::metamodel::ExternalFormatRoutingStrategy extends RoutingStrategy
 {
-   binding : meta::external::shared::format::binding::Binding[1];
+   binding : meta::external::format::shared::binding::Binding[1];
 }
 
 Class meta::pure::router::externalFormat::metamodel::clustering::ExternalFormatClusteredValueSpecification extends ClusteredValueSpecification
 {
-   binding : meta::external::shared::format::binding::Binding[1];
+   binding : meta::external::format::shared::binding::Binding[1];
 }

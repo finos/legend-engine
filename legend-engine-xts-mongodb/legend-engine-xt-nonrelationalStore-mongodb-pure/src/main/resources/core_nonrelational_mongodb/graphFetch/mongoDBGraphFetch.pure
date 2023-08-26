@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::metamodel::path::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::metamodel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::*;
 import meta::pure::executionPlan::*;
@@ -29,7 +29,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
-import meta::external::shared::format::executionPlan::*;
+import meta::external::format::shared::executionPlan::*;
 
 function meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
 {

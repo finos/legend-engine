@@ -1,10 +1,10 @@
 import meta::pure::generation::metamodel::*;
-import meta::external::shared::format::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::metamodel::*;
 import meta::pure::model::unit::*;
 import meta::external::language::haskell::transformation::fromPure::*;
 import meta::external::language::haskell::format::*;
-import meta::external::shared::format::transformation::fromPure::*;
+import meta::external::format::shared::transformation::fromPure::*;
 
 Class meta::external::language::haskell::format::HaskellSchema
 {

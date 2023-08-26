@@ -24,12 +24,12 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::engine::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::metamodel::*;
 
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
@@ -141,42 +141,44 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
              */
             let recordTypeParam      = j_parameter($conventions->className(_FlatDataRecordType), 'recordType');         
             let sectionBindingDetail = $bindingDetail.sectionBindingDetails->filter(sc| $sc.section == $section)->toOne();
+            let fieldToPropMap       = $sectionBindingDetail.details->map(d | pair($d.field, $d.property))->newMap();
             let dataClass            = $conventions->dataClass($sectionBindingDetail.class, $path);
             let classTypeInfo        = $context.typeInfos->forClass($sectionBindingDetail.class);
             
-            let fields               = $section.recordType.fields->filter(f| $classTypeInfo.properties->contains($sectionBindingDetail->propertyForField($f)));
-            let fieldVars            = createFieldVars($fields, $recordTypeParam, $conventions);
-
-            let adderVars            = $fields->toIndexed()->map({indexedField|
-               let property  = $sectionBindingDetail.details->filter(c| $c.field == $indexedField.second).property->toOne();
-               let propType  = $property->functionReturnType().rawType->toOne();
-               let adderType = if($propType->instanceOf(meta::pure::metamodel::type::Enumeration),
-                                  | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, $conventions->className($propType)]),
-                                  |
-                               if($propType == String,
-                                  | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaString()]),
-                                  |
-                               if($propType == Boolean,
-                                  | javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $dataClass),
-                                  |
-                               if($propType == Integer,
-                                  | javaParameterizedType($conventions->className(_ExternalDataLongAdder), $dataClass),
-                                  | 
-                               if($propType == Float,
-                                  | javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $dataClass),
-                                  | 
-                               if($propType == Decimal,
-                                  | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaBigDecimal()]),
-                                  | 
-                               if($propType == StrictDate || $propType == DateTime,
-                                  | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaTemporal()]),
-                                  | fail('Unknown type'); javaVoid();
-                               )))))));
-               
-               let var       = j_variable($adderType, 'adder' + $indexedField.first->toString());                                                            
-               let declare   = $var->j_declare($dataClass->j_invoke('_getAdderForProperty', j_string($property.name->toOne()), $conventions->className(_ExternalDataAdder))->j_cast($adderType));
-               pair($var, $declare);
-            });
+            let fields               = $section.recordType.fields->filter(f| $classTypeInfo.properties->contains($fieldToPropMap->get($f)->toOne()));
+            let pairType             = javaParameterizedType(javaClass('org.eclipse.collections.api.tuple.Pair'), [javaString(), $conventions->className(_FlatDataRecordField)]);
+            let lambdaParam          = j_parameter($conventions->className(_FlatDataRecordField), 'f');
+            let fieldsMap            = $recordTypeParam->j_field('fields', javaList($conventions->className(_FlatDataRecordField)))
+                                                       ->j_streamOf()
+                                                       ->js_map(j_lambda($lambdaParam, javaClass('org.eclipse.collections.impl.tuple.Tuples')->j_invoke('pair', [$lambdaParam->j_field('label', javaString()), $lambdaParam], $pairType)))
+                                                       ->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference($pairType.rawType, 'getOne', javaFunctionType($pairType, javaString())), j_methodReference($pairType.rawType, 'getTwo', javaFunctionType($pairType, $conventions->className(_FlatDataRecordField)))], javaObject())], javaMap(javaString(), $conventions->className(_FlatDataRecordField)));
+            let fieldsMapVar         = j_variable(javaMap(javaString(), $conventions->className(_FlatDataRecordField)), 'fieldsIndexedByLabel');
+            
+            let adderExprSupplier    = {property:AbstractProperty<Any>[1], propType:meta::pure::metamodel::type::Type[1] | 
+                                          let adderType = if($propType->instanceOf(meta::pure::metamodel::type::Enumeration),
+                                                                | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, $conventions->className($propType)]),
+                                                                |
+                                                            if($propType == String,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaString()]),
+                                                                |
+                                                            if($propType == Boolean,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $dataClass),
+                                                                |
+                                                            if($propType == Integer,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataLongAdder), $dataClass),
+                                                                | 
+                                                            if($propType == Float,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $dataClass),
+                                                                | 
+                                                            if($propType == Decimal,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaBigDecimal()]),
+                                                                | 
+                                                            if($propType == StrictDate || $propType == DateTime,
+                                                                | javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$dataClass, javaTemporal()]),
+                                                                | fail('Unknown type'); javaVoid();
+                                                            )))))));
+                                          $dataClass->j_invoke('_getAdderForProperty', j_string($property.name->toOne()), $conventions->className(_ExternalDataAdder))->j_cast($adderType);
+                                       };
             
             let factoryType    = javaParameterizedType($conventions->className(_ParsedFlatDataToObject), $dataClass);
             let parsedFlatData = j_parameter($conventions->className(_ParsedFlatData), 'parsedFlatData');
@@ -184,12 +186,12 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
             let defects        = j_variable(javaList($conventions->defectClass()), 'defects');
             
             let addClauses     = $fields->toIndexed()->map({indexedField|
-               let fieldVar  = $fieldVars->at($indexedField.first).first;
-               let adderVar  = $adderVars->at($indexedField.first).first;               
-               let property  = $sectionBindingDetail.details->filter(c| $c.field == $indexedField.second).property->toOne();
+               let fieldVar  = $fieldsMapVar->j_invoke('get', j_string($indexedField.second.label), $conventions->className(_FlatDataRecordField));
+               let property  = $fieldToPropMap->get($indexedField.second)->toOne();
                let propType  = $property->functionReturnType().rawType->toOne();
-               
-               let ex      = j_parameter(javaException(),'e');
+               let adderVar  = $adderExprSupplier->eval($property, $propType);               
+
+               let ex        = j_parameter(javaException(),'e');
                let defectOnException = {code: Code[1]|
                   j_try(
                      $code,
@@ -325,7 +327,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                   );
                   
                   javaMethod('public', javaFunction($recordTypeParam.type, javaParameterizedType($conventions->className(_ParsedFlatDataToObject), javaWildcard())), $section->sectionFactoryMethodName(), $schemaObject, 
-                     j_return(j_lambda($recordTypeParam, $fieldVars.second->concatenate($adderVars.second)->concatenate(j_return($anonResult))->j_block()))
+                     j_return(j_lambda($recordTypeParam, [$fieldsMapVar->j_declare($fieldsMap), j_return($anonResult)]->j_block()))
                   );
                },
                {|
@@ -333,7 +335,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                      [
                         $makeMethod,
                         j_method('public', $checkedType, 'makeChecked', $parsedFlatData,
-                           $declareDefects
+                            $declareDefects
                               ->concatenate($resultVar->j_declare(j_new($dataClass, [])))
                               ->concatenate($addClauses)
                               ->concatenate($returnChecked)
@@ -344,7 +346,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                   );
 
                   javaMethod('public', $factoryType, $section->sectionFactoryMethodName(), $recordTypeParam, 
-                     $fieldVars.second->concatenate($adderVars.second)->concatenate(j_return($anonResult))
+                     [$fieldsMapVar->j_declare($fieldsMap), j_return($anonResult)]
                   );
                }
             );
@@ -395,11 +397,6 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
          
          javaMethod('public', $contextType, 'createContext', [], $body);
       });
-}
-
-function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::propertyForField(bindingDetail:SectionBindingDetail[1], field:FlatDataRecordField[1]): AbstractProperty<Any>[1]
-{
-   $bindingDetail.details->filter(c| $c.field == $field).property->toOne();
 }
 
 function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createSchemaDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext: ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]

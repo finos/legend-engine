@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::utils::*;
 
-function meta::external::shared::format::utils::getExternalFormatContractForContentType(externalFormatContracts:ExternalFormatContract<Any>[*], contentType:String[1]): ExternalFormatContract<Any>[1]
+function meta::external::format::shared::utils::getExternalFormatContractForContentType(externalFormatContracts:ExternalFormatContract<Any>[*], contentType:String[1]): ExternalFormatContract<Any>[1]
 {
    let formatContract = $externalFormatContracts->filter(ext| $ext.contentTypes->contains($contentType));
    assert($formatContract->size() == 1, | 'Expected to find 1 external format contract for ' + $contentType + ', found ' + $formatContract->size()->toString());
    $formatContract->toOne();
 }
 
-function meta::external::shared::format::utils::log(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
+function meta::external::format::shared::utils::log(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
 {
    if($debug.debug,
       | println($debug.space+$message->eval()),
@@ -30,17 +30,17 @@ function meta::external::shared::format::utils::log(debug:DebugContext[1], messa
    );
 }
 
-function meta::external::shared::format::utils::purifyClassName(s:String[1]): String[1]
+function meta::external::format::shared::utils::purifyClassName(s:String[1]): String[1]
 {
    $s->purifyName(false);
 }
 
-function meta::external::shared::format::utils::purifyPropertyName(s:String[1]): String[1]
+function meta::external::format::shared::utils::purifyPropertyName(s:String[1]): String[1]
 {
    $s->purifyName(true);
 }
 
-function meta::external::shared::format::utils::purifyName(s:String[1], firstLower:Boolean[1]): String[1]
+function meta::external::format::shared::utils::purifyName(s:String[1], firstLower:Boolean[1]): String[1]
 {
    let cleaned = $s->splitOnCamelCase()
       ->map(w| $w->handleNonAlphaNumerics())
@@ -54,7 +54,7 @@ function meta::external::shared::format::utils::purifyName(s:String[1], firstLow
    );
 }
 
-function meta::external::shared::format::utils::handleNonAlphaNumerics(word:String[1]): String[*]
+function meta::external::format::shared::utils::handleNonAlphaNumerics(word:String[1]): String[*]
 {
    $word->chunk(1)
       ->fold(
@@ -69,7 +69,7 @@ function meta::external::shared::format::utils::handleNonAlphaNumerics(word:Stri
       .values->filter(w| $w->length() > 0);                         
 }
 
-function <<access.private>> meta::external::shared::format::utils::handleNonAlphaNumeric(ch:String[1]): String[1]
+function <<access.private>> meta::external::format::shared::utils::handleNonAlphaNumeric(ch:String[1]): String[1]
 {
     if($ch=='&', |'and', 
    |if($ch=='%', |'percent', 
@@ -86,14 +86,14 @@ function <<access.private>> meta::external::shared::format::utils::handleNonAlph
 
 // Tests
 
-function <<test.Test>> meta::external::shared::format::utils::tests::testPurifyClassName(): Boolean[1]
+function <<test.Test>> meta::external::format::shared::utils::tests::testPurifyClassName(): Boolean[1]
 {
    assertEquals('Name', purifyClassName('name'));
    assertEquals('Name', purifyClassName('Name'));
    assertEquals('TwoWords', purifyClassName('two WORDS'));
 }
 
-function <<test.Test>> meta::external::shared::format::utils::tests::testPurifyPropertyName(): Boolean[1]
+function <<test.Test>> meta::external::format::shared::utils::tests::testPurifyPropertyName(): Boolean[1]
 {
    assertEquals('name', purifyPropertyName('name'));
    assertEquals('name', purifyPropertyName('Name'));
