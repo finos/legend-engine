@@ -15,20 +15,14 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 import java.io.File;
@@ -73,45 +67,6 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     staticDatasourceSpecification.host,
                     staticDatasourceSpecification.port,
                     staticDatasourceSpecification.databaseName);
-        }
-        else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
-        {
-            DatabricksDatasourceSpecification databricksSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
-            return new DatabricksDataSourceSpecificationKey(
-                    databricksSpecification.hostname,
-                    databricksSpecification.port,
-                    databricksSpecification.protocol,
-                    databricksSpecification.httpPath);
-        }
-        else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
-        {
-            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
-            return new SnowflakeDataSourceSpecificationKey(
-                    snowflakeDatasourceSpecification.accountName,
-                    snowflakeDatasourceSpecification.region,
-                    snowflakeDatasourceSpecification.warehouseName,
-                    snowflakeDatasourceSpecification.databaseName,
-                    snowflakeDatasourceSpecification.cloudType,
-                    connection.quoteIdentifiers,
-                    snowflakeDatasourceSpecification.enableQueryTags,
-                    snowflakeDatasourceSpecification.proxyHost,
-                    snowflakeDatasourceSpecification.proxyPort,
-                    snowflakeDatasourceSpecification.nonProxyHosts,
-                    snowflakeDatasourceSpecification.accountType,
-                    snowflakeDatasourceSpecification.organization,
-                    snowflakeDatasourceSpecification.role);
-        }
-        else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
-        {
-            RedshiftDatasourceSpecification redshiftDataSourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
-            return new RedshiftDataSourceSpecificationKey(
-                    redshiftDataSourceSpecification.host,
-                    redshiftDataSourceSpecification.port,
-                    redshiftDataSourceSpecification.databaseName,
-                    redshiftDataSourceSpecification.clusterID,
-                    redshiftDataSourceSpecification.region,
-                    redshiftDataSourceSpecification.endpointURL
-            );
         }
         return null;
     }

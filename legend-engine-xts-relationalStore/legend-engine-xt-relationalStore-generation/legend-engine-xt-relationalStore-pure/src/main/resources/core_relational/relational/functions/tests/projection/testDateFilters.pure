@@ -23,9 +23,6 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::today
 
    let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date()', $h2Sql);
-   
-   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_date', $prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::now::testNow():Boolean[1]
@@ -34,9 +31,6 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::now::
 
    let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp()', $h2Sql);
-   
-   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp', $prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::adjust::testAdjust():Boolean[1]
@@ -106,8 +100,6 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::recen
    
    let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(current_date()) > 0 then 2 - DAY_OF_WEEK(current_date()) - 7 else 2 - DAY_OF_WEEK(current_date()) end, current_date())', $h2Sql);
-   let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = date_add(\'day\', case when 1 - day_of_week(current_date) > 0 then 1 - day_of_week(current_date) - 7 else 1 - day_of_week(current_date) end, current_date)', $prestoSql);
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testPreviousDayOfWeek():Boolean[1]
