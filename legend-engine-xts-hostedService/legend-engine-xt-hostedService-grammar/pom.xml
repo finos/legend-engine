@@ -72,26 +72,6 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.antlr</groupId>-->
-<!--                <artifactId>antlr4-maven-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>antlr4</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <visitor>true</visitor>-->
-<!--                            <listener>true</listener>-->
-<!--                            <treatWarningsAsErrors>true</treatWarningsAsErrors>-->
-<!--                            <libDirectory>-->
-<!--                                src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4-->
-<!--                            </libDirectory>-->
-<!--                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

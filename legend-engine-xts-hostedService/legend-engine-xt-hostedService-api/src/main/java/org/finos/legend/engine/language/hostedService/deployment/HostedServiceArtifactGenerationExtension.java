@@ -47,15 +47,14 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return element instanceof Root_meta_external_function_activator_hostedService_HostedService;
+        return false;
+       // return element instanceof Root_meta_external_function_activator_hostedService_HostedService;
     }
 
     @Override
     public List<Artifact> generate(PackageableElement element, PureModel pureModel, PureModelContextData data, String clientVersion)
     {
         Root_meta_external_function_activator_hostedService_HostedService activator = (Root_meta_external_function_activator_hostedService_HostedService) element;
-//        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-//        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> generatorExtensions.flatCollect(e -> e.getExtraExtensions(p));
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
         GenerationInfoData result = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);

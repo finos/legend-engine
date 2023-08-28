@@ -37,7 +37,8 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
+        return false;
+       // return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
     }
 
 
