@@ -4242,7 +4242,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::reproce
 function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nestedQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-   let select = $nestedQuery.select->cast(@TdsSelectSqlQuery);
+   let select = $nestedQuery.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
    let groupByColumns = findAliasOrFail($expression, $select,  $vars, $state);
    let noSubSelect = $select.groupBy->isEmpty() && ($select.distinct->isEmpty() || !$select.distinct->toOne()) && $select.orderBy.column->removeAll($groupByColumns)->isEmpty();
    $groupByColumns->map(gc| assert(!$gc.relationalElement->instanceOf(WindowColumn),'Group by columns cannot include window columns'););
