@@ -18,6 +18,8 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -31,20 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.priceName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.entityName;
-import static org.finos.legend.engine.persistence.components.TestUtils.volumeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class UnitemporalSnapshotTest extends BaseTest
 {
@@ -111,6 +100,116 @@ class UnitemporalSnapshotTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicWithoutPartitionWithCaseConversion() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase()};
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP NOT NULL,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,PRIMARY KEY (\"ID\", \"START_TIME\"))");
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "without_partition/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "without_partition/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) Empty Data Handling = Fail ------------------------
+        UnitemporalSnapshot ingestModeWithFailOnEmptyBatchStrategy = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .emptyDatasetHandling(FailEmptyBatch.builder().build())
+                .build();
+
+        options = options.withCleanupStagingData(true);
+
+        String dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
+        // 1. Load Staging table
+        loadBasicStagingDataInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        try
+        {
+            executePlansAndVerifyForCaseConversion(ingestModeWithFailOnEmptyBatchStrategy, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+            Assertions.fail("Exception should be thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!", e.getMessage());
+        }
+
+        // ------------ Perform unitemporal snapshot milestoning Pass5 (Empty Batch) Empty Data Handling = Skip ------------------------
+        UnitemporalSnapshot ingestModeWithSkipEmptyBatchStrategy = UnitemporalSnapshot.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .dateTimeInName(batchTimeInName)
+                        .dateTimeOutName(batchTimeOutName)
+                        .build())
+                .emptyDatasetHandling(NoOp.builder().build())
+                .build();
+
+        options = options.withCleanupStagingData(true);
+
+        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        expectedDataPass3 = basePathForExpected + "without_partition/expected_pass2.csv";
+        // 1. Load Staging table
+        loadBasicStagingDataInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestModeWithSkipEmptyBatchStrategy, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+
+
+        // ------------ Perform unitemporal snapshot milestoning Pass6 (Empty Batch) Empty Data Handling = Skip ------------------------
+        options = options.withCleanupStagingData(true);
+
+        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        expectedDataPass3 = basePathForExpected + "without_partition/expected_pass4.csv";
+        // 1. Load Staging table
+        loadBasicStagingDataInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 
 
