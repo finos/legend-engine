@@ -142,11 +142,17 @@ function meta::relational::functions::sqlQueryToString::default::convertDateToSq
 {
    //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
    let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
-   if($date->hasSecond(),
-      | if ($date->hasSubsecond(),
-            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
-            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)),
-      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
+  
+   if ($date->hasSubsecond(),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
+      | if($date->hasSecond(),
+         | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date),
+         |  if($date->hasMinute(),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}:00',$date),
+            | if($date->hasHour(),
+             | format('%t{[' + $timeZone + ']yyyy-MM-dd HH}:00:00', $date),
+             | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date)
+             ))));
 }
 
 function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
