@@ -18,33 +18,6 @@ import simple::model::*;
 Class simple::model::Query
 {
   allFirms() {Firm.all()}: Firm[*];
-  firmByLegalName(legalName: String[1]) {simple::model::Firm.all()->filter(f|$f.legalName == $legalName)->first()}: simple::model::Firm[0..1];
-  firmByEmployees(firstName: String[1],lastName: String[1]) {simple::model::Firm.all()->filter(f|$f.employees.firstName == $firstName &&  $f.employees.lastName == $lastName )->first()}: simple::model::Firm[0..1];
-  personByNames(firstName: String[0..1],lastName: String[0..1]) {simple::model::Person.all()->filter(f|$f.firstName == $firstName  || $f.lastName == $lastName    )}: simple::model::Person[*];
-  selectEmployees(offset: Integer[1],limit: Integer[1])  {
-                                                           let start = $offset - 1;
-                                                           let end = $start + $limit;
-                                                           Person.all()->slice($start, $end);
-                                                         }: simple::model::Person[*];
-  personsByLastNames(lastNames: String[*]) {simple::model::Person.all()->filter(p|$p.lastName->in($lastNames))}: simple::model::Person[*];
-  addressesBiTemporal(processingDate: String[1], businessDate: String[1])
-  {
-    let pd = $processingDate->parseDate();
-    let bd = $businessDate->parseDate();
-    simple::model::AddressBiTemporal.all($pd, $bd);
-  }: simple::model::AddressBiTemporal[*];
-  addressesBusinessTemporal(businessDate: String[1])
-  {
-    let bd = $businessDate->parseDate();
-    simple::model::AddressBusinessTemporal.all($bd);
-  }: simple::model::AddressBusinessTemporal[*];
-  addressesProcessingTemporal(processingDate: String[1])
-  {
-    let pd = $processingDate->parseDate();
-    simple::model::AddressProcessingTemporal.all($pd);
-  }: simple::model::AddressProcessingTemporal[*];
-  allFirmsCount() {Firm.all().legalName->count()}: Integer[1];
-  allFirmsCountWithFilters(legalName: String[1]) {Firm.all()->filter(f|$f.legalName == $legalName).legalName->count()}: Integer[1];
 }
 
 Class simple::model::Firm

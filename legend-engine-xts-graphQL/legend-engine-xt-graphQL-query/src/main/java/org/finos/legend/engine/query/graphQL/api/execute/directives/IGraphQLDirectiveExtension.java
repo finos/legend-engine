@@ -32,6 +32,7 @@ import java.util.Map;
 public interface IGraphQLDirectiveExtension
 {
     ImmutableList<String> getSupportedDirectives();
+
     ExecutionPlan planDirective(
             Document document,
             PureModel pureModel,
@@ -40,5 +41,6 @@ public interface IGraphQLDirectiveExtension
             String runtimePath,
             RichIterable<? extends Root_meta_pure_extension_Extension> _extensions,
             Iterable<? extends PlanTransformer> transformers);
+
     Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles);
 }

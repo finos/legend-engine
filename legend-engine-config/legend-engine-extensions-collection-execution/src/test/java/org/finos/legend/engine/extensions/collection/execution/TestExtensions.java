@@ -34,9 +34,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecut
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceStoreExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
-import org.finos.legend.engine.query.graphQL.api.execute.TotalCountDirective;
-import org.finos.legend.engine.query.graphQL.api.execute.directives.DefaultGraphQLDirectiveExtension;
-import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -106,19 +103,6 @@ public class TestExtensions
                 .with(ServiceStoreExecutorBuilder.class)
                 .with(org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder.class)
                 .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class);
-    }
-
-    @Test
-    public void testGraphQLDirectiveExtensions()
-    {
-        assertHasExtensions(expectedGraphQLDirectiveExtensions(), IGraphQLDirectiveExtension.class);
-    }
-
-    protected MutableList<Class<? extends IGraphQLDirectiveExtension>> expectedGraphQLDirectiveExtensions()
-    {
-        return Lists.mutable.<Class<? extends IGraphQLDirectiveExtension>>empty()
-                .with(TotalCountDirective.class)
-                .with(DefaultGraphQLDirectiveExtension.class);
     }
 
     @Test

@@ -48,6 +48,12 @@ public class DefaultGraphQLDirectiveExtension implements IGraphQLDirectiveExtens
     @Override
     public Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles)
     {
-        return true;
+        switch (directive.name)
+        {
+            case "echo":
+                return true;
+            default:
+                throw new RuntimeException("Directive not supported " + directive.name);
+        }
     }
 }

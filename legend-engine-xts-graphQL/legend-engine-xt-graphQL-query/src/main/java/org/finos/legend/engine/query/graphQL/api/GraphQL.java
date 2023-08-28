@@ -48,12 +48,7 @@ import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.argumentValueToObject;
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.extractFieldByName;
 
 public abstract class GraphQL
 {
@@ -77,13 +72,6 @@ public abstract class GraphQL
         return subject == null ?
                 getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace) :
                 Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
-    }
-
-    protected Map<String, Result> getParameterMap(OperationDefinition graphQLQuery, String fieldName)
-    {
-        Map<String, Result> parameterMap = new HashMap<>();
-        extractFieldByName(graphQLQuery, fieldName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
-        return parameterMap;
     }
 
     private static class SDLCProjectDependency

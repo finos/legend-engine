@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.query.graphQL.api.execute;
+package org.finos.legend.engine.query.graphQL.extension.relational.directives;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
@@ -31,6 +31,8 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
+import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
@@ -70,15 +72,15 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
                 serializedPlans.serializedPlan = PlanGenerator.stringToPlan(PlanGenerator.serializeToJSON(nPlan, PureClientVersions.production, pureModel, extensions, transformers));
                 return serializedPlans;
             }).collect(Collectors.toList());
-            if (plans == null || plans.size() != 1)
+            if (plans.size() != 1)
             {
-                throw new RuntimeException("Error computing plans for directive " + "totalCount");
+                throw new RuntimeException("Error computing plans for directive @totalCount - more than one execution plan");
             }
             return plans.get(0).serializedPlan;
         }
-        catch(Exception e)
+        catch (Exception e)
         {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

@@ -25,9 +25,9 @@ public class SerializedNamedPlans
     {
     }
 
-    public SerializedNamedPlans(String propertyName, SingleExecutionPlan s1)
+    public SerializedNamedPlans(String propertyName, SingleExecutionPlan serializedPlan)
     {
         this.propertyName = propertyName;
-        this.serializedPlan = s1;
+        this.serializedPlan = serializedPlan;
     }
 }

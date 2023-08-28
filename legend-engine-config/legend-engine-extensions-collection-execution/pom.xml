@@ -134,14 +134,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-graphQL-query</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-graphQL-relational-extension</artifactId>
-        </dependency>
 
         <!-- TEST -->
         <!-- DO NOT ADD ANY FURTHER TEST DEPENDENCIES -->

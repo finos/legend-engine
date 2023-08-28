@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+package org.finos.legend.engine.query.graphQL.extension.relational.directives;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -105,7 +107,7 @@ public class TestTotalCountDirective
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
         query.query = "query Query {\n" +
-                "  firms: allFirms @totalCount {\n" +
+                "  allFirms @totalCount {\n" +
                 "      legalName\n" +
                 "    }\n" +
                 "  }";

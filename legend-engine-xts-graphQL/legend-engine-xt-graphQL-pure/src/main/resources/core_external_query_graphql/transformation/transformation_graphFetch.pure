@@ -183,13 +183,7 @@ function meta::external::query::graphQL::transformation::queryToPure::isALimitin
       drop_T_MANY__Integer_1__T_MANY_,
       limit_T_MANY__Integer_1__T_MANY_,
       take_T_MANY__Integer_1__T_MANY_,
-      paginated_T_MANY__Integer_1__Integer_1__T_MANY_,
-      slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_,
-      drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,
-      limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,
-      limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_,
-      take_TabularDataSet_1__Integer_1__TabularDataSet_1_,
-      paginated_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_
+      paginated_T_MANY__Integer_1__Integer_1__T_MANY_
     ]
   )
 }
@@ -230,7 +224,7 @@ function meta::external::query::graphQL::transformation::queryToPure::functionDe
                             resolvedTypeParameters = ^GenericType(rawType=TabularDataSet, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
                             parametersValues = [
                               $funcWithoutLimitingFunction,
-                              ^InstanceValue(multiplicity=PureZero,genericType=^GenericType(rawType=Nil)),
+                              ^InstanceValue(multiplicity=ZeroMany,genericType=^GenericType(rawType=Function),values=[]),
                               ^InstanceValue(
                                 multiplicity=PureOne,
                                 genericType=^GenericType(rawType=meta::pure::functions::collection::AggregateValue, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
