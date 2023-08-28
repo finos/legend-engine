@@ -20,6 +20,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 
 public class DatabaseToModelGenerationInput
 {
+
+    @JsonProperty
+    private String targetPackage;
+
     @JsonProperty(required = true)
     private String databasePath;
 
@@ -29,10 +33,12 @@ public class DatabaseToModelGenerationInput
     @JsonCreator
     public DatabaseToModelGenerationInput(
             @JsonProperty("databasePath") String databasePath,
-            @JsonProperty("modelData") PureModelContextData modelData)
+            @JsonProperty("modelData") PureModelContextData modelData,
+            @JsonProperty("targetPackage") String targetPackage)
     {
         this.databasePath = databasePath;
         this.modelData = modelData;
+        this.targetPackage = targetPackage;
     }
 
     public String getDatabasePath()
@@ -43,5 +49,10 @@ public class DatabaseToModelGenerationInput
     public PureModelContextData getModelData()
     {
         return this.modelData;
+    }
+
+    public String getTargetPackage()
+    {
+        return targetPackage;
     }
 }
