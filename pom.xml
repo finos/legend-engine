@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.25.3-SNAPSHOT</version>
+    <version>4.26.0</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -134,7 +134,7 @@
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
-        <surefire.reports.directory/>
+        <surefire.reports.directory />
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -227,7 +227,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/finos/legend-engine</developerConnection>
-        <tag>HEAD</tag>
+        <tag>legend-engine-4.26.0</tag>
     </scm>
 
     <build>
