@@ -70,7 +70,7 @@ public class SchemaEvolutionTest extends IngestModeTest
                     {
                         throw new UnsupportedOperationException();
                     },
-                    (v, w, x, y, z) ->
+                    (x, y, z) ->
                     {
                         throw new UnsupportedOperationException();
                     });

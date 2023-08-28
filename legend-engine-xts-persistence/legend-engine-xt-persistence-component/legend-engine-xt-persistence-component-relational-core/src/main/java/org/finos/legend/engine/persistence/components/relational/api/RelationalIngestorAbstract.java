@@ -435,7 +435,7 @@ public abstract class RelationalIngestorAbstract
         mainDatasetExists = executor.datasetExists(enrichedDatasets.mainDataset());
         if (mainDatasetExists && enableSchemaEvolution())
         {
-            enrichedDatasets = enrichedDatasets.withMainDataset(constructDatasetFromDatabase(executor, enrichedDatasets.mainDataset()));
+            enrichedDatasets = enrichedDatasets.withMainDataset(executor.constructDatasetFromDatabase(enrichedDatasets.mainDataset()));
         }
         else
         {
@@ -596,14 +596,6 @@ public abstract class RelationalIngestorAbstract
             .flatMap(t -> t.stream().findFirst())
             .orElseThrow(IllegalStateException::new));
         return !value.equals(TABLE_IS_NON_EMPTY);
-    }
-
-    private Dataset constructDatasetFromDatabase(Executor<SqlGen, TabularData, SqlPlan> executor, Dataset dataset)
-    {
-        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
-        String schemaName = dataset.datasetReference().group().orElse(null);
-        String databaseName = dataset.datasetReference().database().orElse(null);
-        return executor.constructDatasetFromDatabase(tableName, schemaName, databaseName);
     }
 
     private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,

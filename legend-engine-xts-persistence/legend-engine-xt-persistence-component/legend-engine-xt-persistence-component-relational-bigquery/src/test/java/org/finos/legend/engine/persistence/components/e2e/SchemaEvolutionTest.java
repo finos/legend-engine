@@ -83,7 +83,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
         createTable(relationalExecutor, transformer, dataset);
 
         relationalSink.validateMainDatasetSchemaFn().execute(relationalExecutor, bigQueryHelper, dataset);
-        Dataset datasetConstructedFromDb = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, tableName, datasetName, projectId);
+        Dataset datasetConstructedFromDb = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, dataset);
         relationalSink.validateMainDatasetSchemaFn().execute(relationalExecutor, bigQueryHelper, datasetConstructedFromDb);
         Assertions.assertEquals(dataset.withSchema(schemaWithAllColumnsFromDb), datasetConstructedFromDb);
     }
@@ -435,7 +435,7 @@ public class SchemaEvolutionTest extends BigQueryEndToEndTest
                 DatasetDefinition datasetDefinitionStage = list.get(stage);
                 DatasetDefinition datasetDefinitionMain = list.get(main);
                 refreshDataset(relationalExecutor, transformer, datasetDefinitionMain, null);
-                Dataset datasetMain = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, datasetDefinitionMain.name(), datasetName, projectId);
+                Dataset datasetMain = relationalSink.constructDatasetFromDatabaseFn().execute(relationalExecutor, bigQueryHelper, datasetDefinitionMain);
                 FieldType typeStage = datasetDefinitionStage.schema().fields().get(0).type();
                 FieldType typeMain = datasetMain.schema().fields().get(0).type();
                 DataType dataTypeStage = typeStage.dataType();
