@@ -66,6 +66,9 @@ import org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarCompo
 import org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.TextGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.TrinoGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.SnowflakeGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
@@ -271,6 +274,9 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TrinoProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.SnowflakeProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.DatabricksProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.RedshiftProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
@@ -337,6 +343,9 @@ public class TestExtensions
                 .with(BigQueryGrammarComposerExtension.class)
                 .with(SpannerGrammarComposerExtension.class)
                 .with(TrinoGrammarComposerExtension.class)
+                .with(SnowflakeGrammarComposerExtension.class)
+                .with(RedshiftGrammarComposerExtension.class)
+                .with(DatabricksGrammarComposerExtension.class)
                 .with(ServiceGrammarComposerExtension.class)
                 .with(ServiceStoreGrammarComposerExtension.class)
                 .with(GraphQLPureGrammarComposerExtension.class)
@@ -367,6 +376,9 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TrinoCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SnowflakeCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RedshiftCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DatabricksCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
@@ -479,6 +491,14 @@ public class TestExtensions
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
                 .with("core_relational_trino")
+                .with("core_relational_snowflake")
+                .with("core_relational_redshift")
+                .with("core_relational_databricks")
+                .with("core_relational_postgres")
+                .with("core_relational_hive")
+                .with("core_relational_presto")
+                .with("core_relational_sybase")
+                .with("core_relational_sybaseiq")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")

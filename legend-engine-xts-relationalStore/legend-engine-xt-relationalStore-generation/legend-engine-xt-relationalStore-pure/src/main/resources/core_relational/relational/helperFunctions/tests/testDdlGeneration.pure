@@ -69,8 +69,6 @@ function <<test.Test>> meta::relational::tests::ddl::testCreateTempTableStatemen
 {
    let h2 = createTempTableStatement()->eval('tt',  ^Column(name='col', type=^meta::relational::metamodel::datatype::Integer()), DatabaseType.H2 );
    assertEquals('Create LOCAL TEMPORARY TABLE tt(col INT);', $h2);
-   let sybase = createTempTableStatement()->eval('tt',  ^Column(name='col', type=^meta::relational::metamodel::datatype::Integer()), DatabaseType.Sybase );
-   assertEquals('Declare LOCAL TEMPORARY TABLE tt(col INT) on commit preserve rows;', $sybase);
 }
 
 function <<test.Test>> meta::relational::tests::ddl::dropAndCreateTempTable():Boolean[1]

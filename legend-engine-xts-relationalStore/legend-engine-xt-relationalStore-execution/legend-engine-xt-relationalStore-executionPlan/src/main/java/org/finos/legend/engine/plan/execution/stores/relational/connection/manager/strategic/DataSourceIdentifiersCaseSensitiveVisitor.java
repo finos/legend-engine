@@ -14,19 +14,25 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+
+import java.util.Objects;
+import java.util.ServiceLoader;
 
 public class DataSourceIdentifiersCaseSensitiveVisitor implements DatasourceSpecificationVisitor<Boolean>
 {
     public Boolean visit(DatasourceSpecification datasourceSpecification)
     {
-        if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
-        {
-            SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
-            return snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase == null || !snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase;
-        }
-        return null;
+        MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
+        return ListIterate
+                .collect(extensions, extension -> extension.getQuotedIdentifiersIgnoreCase(datasourceSpecification))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElse(null);
     }
 }
