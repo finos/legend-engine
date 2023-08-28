@@ -29,10 +29,10 @@ import org.testcontainers.DockerClientFactory;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 
-public class IceboxTest
+public class IceboxTrinoTest
 {
     @ClassRule
-    public static final Icebox ICEBOX = new Icebox();
+    public static final IceboxTrino ICEBOX = new IceboxTrino();
 
     @Test
     public void testCatalogUpdatedThruTrino() throws Exception

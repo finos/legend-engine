@@ -42,7 +42,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
-public class Icebox extends FailureDetectingExternalResource implements AutoCloseable
+public class IceboxTrino extends FailureDetectingExternalResource implements AutoCloseable
 {
     private static final String LOCALSTACK_DOCKER_IMAGE = "localstack/localstack:2.2.0";
     private static final String TRINO_DOCKER_IMAGE = "trinodb/trino:422";
@@ -56,7 +56,7 @@ public class Icebox extends FailureDetectingExternalResource implements AutoClos
     private S3Client s3;
     private Path trinoFile;
 
-    public Icebox()
+    public IceboxTrino()
     {
 
     }
