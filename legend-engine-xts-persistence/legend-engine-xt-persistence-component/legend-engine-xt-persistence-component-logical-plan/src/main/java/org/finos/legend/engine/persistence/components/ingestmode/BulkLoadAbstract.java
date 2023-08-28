@@ -34,6 +34,8 @@ public interface BulkLoadAbstract extends IngestMode
 
     Optional<String> digestField();
 
+    Optional<String> lineageField();
+
     Auditing auditing();
 
     @Override

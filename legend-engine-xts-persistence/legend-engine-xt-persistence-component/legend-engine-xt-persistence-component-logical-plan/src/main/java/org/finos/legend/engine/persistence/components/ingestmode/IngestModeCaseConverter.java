@@ -111,6 +111,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .transactionMilestoning(unitemporalSnapshot.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .addAllPartitionFields(applyCase(unitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(unitemporalSnapshot.partitionValuesByField()))
+                .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
                 .build();
     }
 
@@ -162,6 +163,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .digestField(applyCase(bulkLoad.digestField()))
                 .digestUdfName(bulkLoad.digestUdfName())
                 .generateDigest(bulkLoad.generateDigest())
+                .lineageField(applyCase(bulkLoad.lineageField()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
                 .build();
     }

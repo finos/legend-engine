@@ -22,11 +22,15 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.List;
 
 public class ApiUtils
 {
+    private static final String LOCK_INFO_DATASET_SUFFIX = "_legend_persistence_lock";
+
     public static Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
     {
         Dataset mainDataset = datasets.mainDataset();
@@ -38,18 +42,21 @@ public class ApiUtils
         return mainDataset;
     }
 
-    public static Datasets applyCase(Datasets datasets, CaseConversion caseConversion)
+    public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
+        MetadataDataset metadataDataset = getMetadataDataset(datasets);
+        LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
+        Datasets enrichedDatasets = datasets.withMetadataDataset(metadataDataset).withLockInfoDataset(lockInfoDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
-            return converter.applyCaseOnDatasets(datasets, String::toUpperCase);
+            return converter.applyCase(enrichedDatasets, String::toUpperCase);
         }
         if (caseConversion == CaseConversion.TO_LOWER)
         {
-            return converter.applyCaseOnDatasets(datasets, String::toLowerCase);
+            return converter.applyCase(enrichedDatasets, String::toLowerCase);
         }
-        return datasets;
+        return enrichedDatasets;
     }
 
     public static IngestMode applyCase(IngestMode ingestMode, CaseConversion caseConversion)
@@ -63,5 +70,40 @@ public class ApiUtils
             return ingestMode.accept(new IngestModeCaseConverter(String::toLowerCase));
         }
         return ingestMode;
+    }
+
+    private static MetadataDataset getMetadataDataset(Datasets datasets)
+    {
+        MetadataDataset metadataset;
+        if (datasets.metadataDataset().isPresent())
+        {
+            metadataset = datasets.metadataDataset().get();
+        }
+        else
+        {
+            metadataset = MetadataDataset.builder().build();
+        }
+        return metadataset;
+    }
+
+    private static LockInfoDataset getLockInfoDataset(Datasets datasets)
+    {
+        Dataset main = datasets.mainDataset();
+        LockInfoDataset lockInfoDataset;
+        if (datasets.lockInfoDataset().isPresent())
+        {
+            lockInfoDataset = datasets.lockInfoDataset().get();
+        }
+        else
+        {
+            String datasetName = main.datasetReference().name().orElseThrow(IllegalStateException::new);
+            String lockDatasetName = datasetName + LOCK_INFO_DATASET_SUFFIX;
+            lockInfoDataset = LockInfoDataset.builder()
+                    .database(main.datasetReference().database())
+                    .group(main.datasetReference().group())
+                    .name(lockDatasetName)
+                    .build();
+        }
+        return lockInfoDataset;
     }
 }

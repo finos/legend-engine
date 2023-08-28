@@ -141,6 +141,31 @@ public class AnsiTestArtifacts
     public static String expectedBaseStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
 
+    public static String expectedLockInfoTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main_legend_persistence_lock\"" +
+            "(\"insert_ts_utc\" DATETIME,\"last_used_ts_utc\" DATETIME,\"table_name\" VARCHAR UNIQUE)";
+
+    public static String expectedLockInfoTableUpperCaseCreateQuery = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\"" +
+            "(\"INSERT_TS_UTC\" DATETIME,\"LAST_USED_TS_UTC\" DATETIME,\"TABLE_NAME\" VARCHAR UNIQUE)";
+
+    public static String lockInitializedQuery = "INSERT INTO \"mydb\".\"main_legend_persistence_lock\" " +
+            "(\"insert_ts_utc\", \"table_name\") " +
+            "(SELECT '2000-01-01 00:00:00','main' " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock)))";
+
+    public static String lockInitializedUpperCaseQuery = "INSERT INTO \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" (\"INSERT_TS_UTC\", \"TABLE_NAME\")" +
+            " (SELECT '2000-01-01 00:00:00','MAIN' WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK)))";
+
+    public static String lockAcquiredQuery = "UPDATE \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock " +
+            "SET main_legend_persistence_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00'";
+
+    public static String lockAcquiredUpperCaseQuery = "UPDATE \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK " +
+            "SET MAIN_LEGEND_PERSISTENCE_LOCK.\"LAST_USED_TS_UTC\" = '2000-01-01 00:00:00'";
+
+    public static String getDropTempTableQuery(String tableName)
+    {
+        return String.format("DROP TABLE IF EXISTS %s CASCADE", tableName);
+    }
+
     public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_update_time\" DATETIME)";
 

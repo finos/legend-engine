@@ -24,7 +24,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -338,6 +340,48 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .mainDataset(mainTableWithBitemporalFromOnlyWithDateTimeBasedSchema)
                 .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
                 .tempDataset(tempTableWithBitemporalFromOnlyWithDateTimeBasedSchema)
+                .build());
+        return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__VALIDITY_FIELDS_SAME_NAME()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromReferenceField)
+                        .dateTimeThruName(validityThroughReferenceField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .build();
+
+        SchemaDefinition bitempSchema = SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(amount)
+                .addFields(digest)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(validityFromReference)
+                .addFields(validityThroughReference)
+                .build();
+
+        Dataset mainTableWithBitemporalSchema = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(bitempSchema)
+                .build();
+
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
                 .build());
         return testScenario;
     }

@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Assertions;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
+
 public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 {
     protected String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
@@ -40,6 +43,8 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> initializeLockSql = operations.initializeLockSql();
+        List<String> acquireLockSql = operations.acquireLockSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
             "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
@@ -58,8 +63,13 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSqlList.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSqlList.get(2));
+
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
+        Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
 
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));

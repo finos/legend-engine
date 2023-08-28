@@ -144,6 +144,12 @@ public abstract class RelationalIngestorAbstract
     }
 
     @Default
+    public boolean enableConcurrentSafety()
+    {
+        return false;
+    }
+
+    @Default
     public Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet()
     {
         return Collections.emptySet();
@@ -163,6 +169,7 @@ public abstract class RelationalIngestorAbstract
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
+            .enableConcurrentSafety(enableConcurrentSafety())
             .build();
     }
 
@@ -208,6 +215,7 @@ public abstract class RelationalIngestorAbstract
     {
         init(datasets);
         createAllDatasets();
+        initializeLock();
         return this.enrichedDatasets;
     }
 
@@ -231,12 +239,23 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
+    - Perform cleanup of temporary tables
+    */
+    public Datasets cleanUp(Datasets datasets)
+    {
+        init(datasets);
+        postCleanup();
+        return this.enrichedDatasets;
+    }
+
+    /*
     Perform full ingestion from Staging to Target table based on the Ingest mode
     Full Ingestion covers:
     1. Export external dataset
     2. Create tables
     3. Evolves Schema
     4. Ingestion from staging to main dataset in a transaction
+    5. Clean up of temporary tables
      */
     public IngestorResult performFullIngestion(RelationalConnection connection, Datasets datasets)
     {
@@ -296,6 +315,42 @@ public abstract class RelationalIngestorAbstract
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
     }
 
+    private void initializeLock()
+    {
+        if (enableConcurrentSafety())
+        {
+            Map<String, String> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            try
+            {
+                executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+            }
+            catch (Exception e)
+            {
+                // Ignore this exception
+                // In race condition: multiple jobs will try to insert same row
+            }
+        }
+    }
+
+    private void acquireLock()
+    {
+        if (enableConcurrentSafety())
+        {
+            Map<String, String> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
+        }
+    }
+
+    private void postCleanup()
+    {
+        if (generatorResult.postCleanupSqlPlan().isPresent())
+        {
+            executor.executePhysicalPlan(generatorResult.postCleanupSqlPlan().get());
+        }
+    }
+
     private List<IngestorResult> ingest(List<DataSplitRange> dataSplitRanges)
     {
         if (enrichedIngestMode instanceof BulkLoad)
@@ -318,6 +373,7 @@ public abstract class RelationalIngestorAbstract
         if (createDatasets())
         {
             createAllDatasets();
+            initializeLock();
         }
 
         // Evolve Schema
@@ -340,6 +396,10 @@ public abstract class RelationalIngestorAbstract
         {
             executor.close();
         }
+
+        // post Cleanup
+        postCleanup();
+
         return result;
     }
 
@@ -353,7 +413,7 @@ public abstract class RelationalIngestorAbstract
         }
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
-        enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
+        enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
 
         // 2. Initialize transformer
         transformer = new RelationalTransformer(relationalSink(), transformOptions());
@@ -375,7 +435,7 @@ public abstract class RelationalIngestorAbstract
         mainDatasetExists = executor.datasetExists(enrichedDatasets.mainDataset());
         if (mainDatasetExists && enableSchemaEvolution())
         {
-            enrichedDatasets = enrichedDatasets.withMainDataset(constructDatasetFromDatabase(executor, enrichedDatasets.mainDataset()));
+            enrichedDatasets = enrichedDatasets.withMainDataset(executor.constructDatasetFromDatabase(enrichedDatasets.mainDataset()));
         }
         else
         {
@@ -414,6 +474,7 @@ public abstract class RelationalIngestorAbstract
          List<IngestorResult> results = new ArrayList<>();
          int dataSplitIndex = 0;
          int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
+         acquireLock();
          do
          {
              Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
@@ -535,14 +596,6 @@ public abstract class RelationalIngestorAbstract
             .flatMap(t -> t.stream().findFirst())
             .orElseThrow(IllegalStateException::new));
         return !value.equals(TABLE_IS_NON_EMPTY);
-    }
-
-    private Dataset constructDatasetFromDatabase(Executor<SqlGen, TabularData, SqlPlan> executor, Dataset dataset)
-    {
-        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
-        String schemaName = dataset.datasetReference().group().orElse(null);
-        String databaseName = dataset.datasetReference().database().orElse(null);
-        return executor.constructDatasetFromDatabase(tableName, schemaName, databaseName);
     }
 
     private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
