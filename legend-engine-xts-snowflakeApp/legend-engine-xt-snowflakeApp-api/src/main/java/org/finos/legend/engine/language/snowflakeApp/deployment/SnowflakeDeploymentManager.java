@@ -14,16 +14,24 @@
 
 package org.finos.legend.engine.language.snowflakeApp.deployment;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
-import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppArtifact;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentResult;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
+import org.pac4j.core.profile.CommonProfile;
+
+import java.util.List;
 
 
-public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentConfiguration, SnowflakeDeploymentResult>
+public class SnowflakeDeploymentManager implements DeploymentManager<Root_meta_external_function_activator_snowflakeApp_SnowflakeApp, SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeDeploymentConfiguration>
 {
-
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
 
     public SnowflakeDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
@@ -31,21 +39,41 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         this.snowflakeAppDeploymentTool = deploymentTool;
     }
 
-    public SnowflakeDeploymentResult deploy(SnowflakeAppArtifact snowflakeAppArtifact, SnowflakeDeploymentConfiguration deploymentConfiguration)
+    @Override
+    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator)
     {
-        try
-        {
-            this.snowflakeAppDeploymentTool.deploy(deploymentConfiguration.datasourceSpecification, deploymentConfiguration.authenticationStrategy, deploymentConfiguration.applicationName);
-            return new SnowflakeDeploymentResult(true);
-        }
-        catch (Exception e)
-        {
-            return new SnowflakeDeploymentResult(Lists.mutable.with(new FunctionActivatorError(e.getMessage())));
-        }
+        return new SnowflakeDeploymentResult(true);
+    }
+
+    @Override
+    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, List<SnowflakeDeploymentConfiguration> availableRuntimeConfigurations)
+    {
+        return null;
+    }
+
+    @Override
+    public boolean canDeploy(Root_meta_external_function_activator_snowflakeApp_SnowflakeApp artifact)
+    {
+        return true;
     }
 
     public SnowflakeAppDeploymentTool getSnowflakeAppDeploymentTool()
     {
         return snowflakeAppDeploymentTool;
     }
+
+
+    public SnowflakeDeploymentResult fakeDeploy(Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification datasourceSpecification, Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy, String applicationName)
+    {
+        try
+        {
+            this.snowflakeAppDeploymentTool.deploy(datasourceSpecification, authenticationStrategy, applicationName);
+            return new SnowflakeDeploymentResult(true);
+        }
+        catch (Exception e)
+        {
+            return new SnowflakeDeploymentResult(Lists.mutable.with(e.getMessage()));
+        }
+    }
+
 }
