@@ -12,18 +12,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.pure.code.core;
+package org.finos.legend.engine;
 
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
-
-public class CoreExternalFormatJsonJavaPlatformBindingTestCodeRepositoryProvider implements CodeRepositoryProvider
+/**
+ * Placeholder class required for sonatype requirements of sources and javadoc jars
+ */
+public class JavaPlaceholder
 {
-    @Override
-    public CodeRepository repository()
-    {
-        return GenericCodeRepository.build("core_external_format_json_java_platform_binding_test.definition.json");
-    }
 }
-
