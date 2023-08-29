@@ -1,4 +1,4 @@
-lexer grammar MasteryLexerGrammar;
+    lexer grammar MasteryLexerGrammar;
 
 import M3LexerGrammar;
 
@@ -9,16 +9,16 @@ TRUE:                                       'true';
 FALSE:                                      'false';
 IMPORT:                                     'import';
 
-// -------------------------------------- MASTERY --------------------------------------------
+//**********
+// MASTERY
+//**********
 MASTER_RECORD_DEFINITION:                       'MasterRecordDefinition';
 
-// -------------------------------------- RECORD SERVICE --------------------------------------
-PARSE_SERVICE:                                  'parseService';
-TRANSFORM_SERVICE:                              'transformService';
-
-// -------------------------------------- RECORD SOURCE --------------------------------------
+//RecordSource
 RECORD_SOURCES:                                 'recordSources';
 RECORD_SOURCE_STATUS:                           'status';
+PARSE_SERVICE:                                  'parseService';
+TRANSFORM_SERVICE:                              'transformService';
 RECORD_SOURCE_SEQUENTIAL:                       'sequentialData';
 RECORD_SOURCE_STAGED:                           'stagedLoad';
 RECORD_SOURCE_CREATE_PERMITTED:                 'createPermitted';
@@ -27,15 +27,12 @@ RECORD_SOURCE_STATUS_DEVELOPMENT:               'Development';
 RECORD_SOURCE_STATUS_TEST_ONLY:                 'TestOnly';
 RECORD_SOURCE_STATUS_PRODUCTION:                'Production';
 RECORD_SOURCE_STATUS_DORMANT:                   'Dormant';
-RECORD_SOURCE_STATUS_DECOMMISSIONED:            'Decommissioned';
-RECORD_SOURCE_DATA_PROVIDER:                    'dataProvider';
-RECORD_SOURCE_TRIGGER:                          'trigger';
-RECORD_SOURCE_SERVICE:                          'recordService';
-RECORD_SOURCE_ALLOW_FIELD_DELETE:               'allowFieldDelete';
-RECORD_SOURCE_AUTHORIZATION:                    'authorization';
+RECORD_SOURCE_STATUS_DECOMMINISSIONED:          'Decomissioned';
 
+//SourcePartitions
+SOURCE_PARTITIONS:                              'partitions';
 
-// -------------------------------------- IDENTITY RESOLUTION --------------------------------------
+//IdentityResolution
 IDENTITY_RESOLUTION:                           'identityResolution';
 RESOLUTION_QUERIES:                             'resolutionQueries';
 RESOLUTION_QUERY_EXPRESSIONS:                   'queries';
@@ -45,7 +42,7 @@ RESOLUTION_QUERY_KEY_TYPE_SUPPLIED_PRIMARY_KEY: 'SuppliedPrimaryKey'; //Validate
 RESOLUTION_QUERY_KEY_TYPE_ALTERNATE_KEY:        'AlternateKey'; //AlternateKey (In an AlternateKey is specified then at least one required in the input record or fail resolution). AlternateKey && (CurationModel field == Create) then the input source is attempting to create a new record (e.g. from UI) block if existing record found
 RESOLUTION_QUERY_KEY_TYPE_OPTIONAL:             'Optional';
 
-// -------------------------------------- PRECEDENCE RULES --------------------------------------
+//PrecedenceRules
 PRECEDENCE_RULES:                               'precedenceRules';
 SOURCE_PRECEDENCE_RULE:                         'SourcePrecedenceRule';
 CONDITIONAL_RULE:                               'ConditionalRule';
@@ -62,19 +59,14 @@ OVERWRITE:                                      'Overwrite';
 BLOCK:                                          'Block';
 RULE_SCOPE:                                     'ruleScope';
 RECORD_SOURCE_SCOPE:                            'RecordSourceScope';
+AGGREGATOR:                                      'Aggregator';
+EXCHANGE:                                       'Exchange';
 
-// -------------------------------------- ACQUISITION PROTOCOL --------------------------------------
-ACQUISITION_PROTOCOL:                           'acquisitionProtocol';
-
-// -------------------------------------- CONNECTION --------------------------------------
-MASTERY_CONNECTION:                             'MasteryConnection';
-
-// -------------------------------------- COMMON --------------------------------------
-
+//*************
+// COMMON
+//*************
 ID:                                             'id';
 MODEL_CLASS:                                    'modelClass';
 DESCRIPTION:                                    'description';
 TAGS:                                           'tags';
 PRECEDENCE:                                     'precedence';
-POST_CURATION_ENRICHMENT_SERVICE:               'postCurationEnrichmentService';
-SPECIFICATION:                                  'specification';
