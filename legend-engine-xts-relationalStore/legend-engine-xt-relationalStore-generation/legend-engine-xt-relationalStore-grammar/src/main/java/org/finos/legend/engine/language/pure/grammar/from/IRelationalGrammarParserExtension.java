@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.postProcessors.PostProcessorSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -57,6 +58,11 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
         return process(code, processors, "Authentication Strategy");
     }
 
+    static <T> T process(RelationalDatabaseConnection dbConn, List<Function<RelationalDatabaseConnection, T>> processors)
+    {
+        return process(dbConn, processors, "Connection Values");
+    }
+
     static PostProcessor process(PostProcessorSpecificationSourceCode code, List<Function<PostProcessorSpecificationSourceCode, PostProcessor>> processors)
     {
         return process(code, processors, "Post Processor");
@@ -74,6 +80,15 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
+    }
+
+    static <T extends RelationalDatabaseConnection, U> U process(T item, List<Function<T, U>> processors, String type)
+    {
+        return ListIterate
+                .collect(processors, processor -> processor.apply(item))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported " + type + " for Db type '" + item.type, EngineErrorType.PARSER));
     }
 
     static <P extends Parser, V> V parse(SpecificationSourceCode code, Function<CharStream, Lexer> lexerFunc, Function<TokenStream, P> parserFunc, Function<P, V> transformer)
@@ -94,7 +109,17 @@ public interface IRelationalGrammarParserExtension extends PureGrammarParserExte
         return Collections.emptyList();
     }
 
+    default List<Function<RelationalDatabaseConnection, DatasourceSpecification>> getExtraLocalModeDataSourceSpecification()
+    {
+        return Collections.emptyList();
+    }
+
     default List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function<RelationalDatabaseConnection, AuthenticationStrategy>> getExtraLocalModeAuthenticationStrategy()
     {
         return Collections.emptyList();
     }

@@ -14,9 +14,9 @@
 
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::model::unit::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
-import meta::external::shared::format::utils::*;
-import meta::external::shared::format::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::utils::*;
+import meta::external::format::shared::*;
 import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
 import meta::external::language::java::factory::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
@@ -38,7 +38,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 
-import meta::external::shared::format::binding::validation::*;
+import meta::external::format::shared::binding::validation::*;
 
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::*;
@@ -427,12 +427,12 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
   [
   meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
   meta::external::format::json::extension::jsonSchemaFormatExtension(),
-  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory, MongoDB, ExternalFormatCore, ExternalFormatJSON', [
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
     ])
   ])
   ]
@@ -444,7 +444,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 // stuff already loaded by core..
   [
   meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
-  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - MongoDB', [
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension()
     ])

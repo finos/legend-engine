@@ -32,7 +32,44 @@ public class GenerateCastMoveTest extends GenerateCastTestBase
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
-        setupSuite("meta::pure::changetoken::tests::getVersionsMove");
+        setupSuiteFromJson("{\n" +
+                "  \"@type\": \"meta::pure::changetoken::Versions\",\n" +
+                "  \"versions\": [\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg123\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg456\",\n" +
+                "      \"prevVersion\": \"ftdm:abcdefg123\",\n" +
+                "      \"changeTokens\": [\n" +
+                "        {\n" +
+                "          \"@type\": \"meta::pure::changetoken::AddField\",\n" +
+                "          \"fieldName\": \"xyz\",\n" +
+                "          \"fieldType\": \"SampleNestedClass[1]\",\n" +
+                "          \"defaultValue\": {\n" +
+                "            \"@type\": \"meta::pure::changetoken::ConstValue\",\n" +
+                "            \"value\": \"{\\\"@type\\\":\\\"SampleNestedClass\\\",\\\"step\\\":0,\\\"active\\\":true}\"\n" +
+                "          },\n" +
+                "          \"safeCast\": true,\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "          \"@type\": \"meta::pure::changetoken::RenameField\",\n" +
+                "          \"oldFieldName\": [\n" +
+                "            \"abc\"\n" +
+                "          ],\n" +
+                "          \"newFieldName\": [\n" +
+                "            \"xyz\",\n" +
+                "            \"def\"\n" +
+                "          ],\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
     }
 
     @Test

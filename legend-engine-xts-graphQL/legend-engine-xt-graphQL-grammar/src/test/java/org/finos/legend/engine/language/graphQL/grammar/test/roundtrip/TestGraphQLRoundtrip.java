@@ -148,6 +148,46 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testQueryWithDirectiveRoundtrip()
+    {
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(id: 2) @totalCount @directiveWithParams(param1: \"dummy\", param2: \"dummy value\") {\n" +
+                "    firstname(x: null, x: $ok)\n" +
+                "    lastname(test: true)\n" +
+                "    projects(other: \"oo\") @nestedDirective1 {\n" +
+                "      name\n" +
+                "      tasks(val: en) {\n" +
+                "        description(p: 3.2, z: [1, 2, \"ok\"]) @nestedDirective2\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
+    public void testDirectiveParsingError()
+    {
+        try
+        {
+            GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
+            parser.parseDocument(
+                    "query {\n" +
+                    "  user @directiveWithParams(param1: ) {\n" +
+                    "    firstname\n" +
+                    "  }\n" +
+                    "}"
+            );
+            Assert.fail();
+        }
+        catch (GraphQLParserException e)
+        {
+            Assert.assertEquals(37, e.getSourceInformation().startColumn);
+            Assert.assertEquals(2, e.getSourceInformation().startLine);
+            Assert.assertEquals("Unexpected token", e.getMessage());
+        }
+    }
+
+    @Test
     public void testMutationRoundtrip()
     {
         check("mutation setUserWithProjects($a: INT) {\n" +

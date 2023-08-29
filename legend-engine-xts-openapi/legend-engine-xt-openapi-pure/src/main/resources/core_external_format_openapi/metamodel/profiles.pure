@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Profile meta::external::format::openapi::profiles::ServiceSpecGeneration 
+Profile meta::external::function::description::openapi::profiles::ServiceSpecGeneration
 {
   stereotypes: [OpenAPI];
   tags: [specification, definition];

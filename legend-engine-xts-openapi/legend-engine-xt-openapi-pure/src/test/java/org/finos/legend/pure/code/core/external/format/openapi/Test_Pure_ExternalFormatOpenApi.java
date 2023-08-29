@@ -25,7 +25,7 @@ public class Test_Pure_ExternalFormatOpenApi
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::format::openapi", executionSupport.getProcessorSupport(), ci -> true), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::function::description::openapi", executionSupport.getProcessorSupport(), ci -> true), executionSupport));
         return suite;
     }
 }

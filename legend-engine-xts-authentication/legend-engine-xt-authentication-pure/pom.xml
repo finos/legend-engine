@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-authentication</artifactId>
-        <version>4.24.1-SNAPSHOT</version>
+        <version>4.26.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,7 +41,8 @@
                         <repository>core_authentication</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_authentication.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_authentication.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -117,7 +118,7 @@
     </build>
 
     <dependencies>
-        <!-- Pure -->
+        <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
@@ -130,8 +131,9 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-        <!-- Pure -->
+        <!-- PURE -->
 
+        <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -140,8 +142,9 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
+        <!-- ENGINE -->
 
-        <!-- Eclipse collections -->
+        <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
@@ -150,7 +153,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <!-- Eclipse collections -->
-
+        <!-- ECLIPSE COLLECTIONS -->
     </dependencies>
 </project>

@@ -20,12 +20,16 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.SnowflakeAppParserGrammar;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +52,38 @@ public class SnowflakeAppTreeWalker
 
     public void visit(SnowflakeAppParserGrammar.DefinitionContext ctx)
     {
-        ctx.snowflakeApp().stream().map(this::visitSnowflakeApp).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        if (ctx.snowflakeApp() != null && !ctx.snowflakeApp().isEmpty())
+        {
+            ctx.snowflakeApp().stream().map(this::visitSnowflakeApp).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        }
+        if (ctx.deploymentConfig() != null && !ctx.deploymentConfig().isEmpty())
+        {
+            ctx.deploymentConfig().stream().map(this::visitDeploymentConfig).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        }
+    }
+
+    private SnowflakeDeploymentConfiguration visitDeploymentConfig(SnowflakeAppParserGrammar.DeploymentConfigContext ctx)
+    {
+        SnowflakeDeploymentConfiguration config = new SnowflakeDeploymentConfiguration();
+        ConnectionPointer pointer = new ConnectionPointer();
+        pointer.connection = PureGrammarParserUtility.fromQualifiedName(ctx.activationConnection().qualifiedName().packagePath() == null
+                ? Collections.emptyList() : ctx.activationConnection().qualifiedName().packagePath().identifier(), ctx.activationConnection().qualifiedName().identifier());
+        pointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.activationConnection().qualifiedName());
+        config.activationConnection = pointer;
+        String stage = ctx.stage().getText();
+        if (stage.equals("PRODUCTION"))
+        {
+            config.stage = DeploymentStage.PRODUCTION;
+        }
+        else if (stage.equals("SANDBOX"))
+        {
+            config.stage = DeploymentStage.SANDBOX;
+        }
+        else
+        {
+            throw new EngineException("Valid types for deployment stage are: SANDBOX, PRODUCTION");
+        }
+        return config;
     }
 
     private SnowflakeApp visitSnowflakeApp(SnowflakeAppParserGrammar.SnowflakeAppContext ctx)

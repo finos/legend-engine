@@ -19,9 +19,9 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatToPureDescriptor;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatToPureDescriptor;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 import org.finos.legend.pure.generated.core_generation_generation_generations;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -41,14 +41,14 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
     /**
      * Called to compile an external format SchemaToModelConfiguration.
      */
-    Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(ModelGenConfig configuration, PureModel pureModel);
+    Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(ModelGenConfig configuration, PureModel pureModel);
 
     /**
      * Provides the properties used to configure model generation.
      */
     default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
     {
-        Root_meta_external_shared_format_ExternalFormatToPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatToPureDescriptor<?> descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support model generation");
@@ -59,14 +59,14 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
     /**
      * Called when an external schema of this format is used to generate a PURE model.
      */
-    default List<? extends PackageableElement> generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, ModelGenConfig config, PureModel pureModel)
+    default List<? extends PackageableElement> generateModel(Root_meta_external_format_shared_metamodel_SchemaSet schemaSet, ModelGenConfig config, PureModel pureModel)
     {
-        Root_meta_external_shared_format_ExternalFormatToPureDescriptor descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
+        Root_meta_external_format_shared_ExternalFormatToPureDescriptor descriptor = getExternalFormatContract()._externalFormatToPureDescriptor();
         if (descriptor == null)
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support model generation");
         }
-        Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration configuration = compileSchemaToModelConfiguration(config, pureModel);
+        Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration configuration = compileSchemaToModelConfiguration(config, pureModel);
         return descriptor.generate(schemaSet, configuration, pureModel.getExecutionSupport()).toList();
     }
 }

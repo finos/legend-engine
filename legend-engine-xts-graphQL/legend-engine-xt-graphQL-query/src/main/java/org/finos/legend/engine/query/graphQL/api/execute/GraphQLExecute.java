@@ -40,7 +40,9 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
@@ -315,6 +317,12 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
+                        Map<String, ?> extensions = computeExtensionsField(graphQLQuery);
+                        if (!extensions.isEmpty())
+                        {
+                            generator.writeFieldName("extensions");
+                            generator.writeObject(extensions);
+                        }
                         generator.writeEndObject();
                     }
                 }).build();
@@ -340,6 +348,30 @@ public class GraphQLExecute extends GraphQL
 
 
         return plans;
+    }
+
+    private Map<String, ?> computeExtensionsField(OperationDefinition operationDefinition)
+    {
+        List<Directive> directives = ((Field)(operationDefinition.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
+        if (directives.isEmpty())
+        {
+            return new HashMap<>();
+        }
+        String fieldName = ((Field)(operationDefinition.selectionSet.get(0))).name;
+        Map<String, Map<String,Object>> m = new HashMap<>();
+        m.put(fieldName, new HashMap<>());
+        directives.forEach(directive ->
+        {
+            if (directive.name.equals("echo"))
+            {
+                m.get(fieldName).put("echo",true);
+            }
+            else
+            {
+                throw new RuntimeException("Directive not supported: " + directive.name);
+            }
+        });
+        return m;
     }
 
 

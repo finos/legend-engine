@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 import meta::pure::graphFetch::*;
 
 function <<functionType.NormalizeRequiredFunction>> meta::external::format::json::functions::fromJson<T>(class:Class<T>[1], data:String[1]): T[*]

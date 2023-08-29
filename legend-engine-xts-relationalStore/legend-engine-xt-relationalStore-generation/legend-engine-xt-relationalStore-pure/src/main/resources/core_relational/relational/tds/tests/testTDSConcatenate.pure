@@ -221,13 +221,3 @@ function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate:
    
    fail('Expectations need updating once it works');
 }
-
-function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithDistinctAndGroupBy():Boolean[1]
-{
-   let func = {|Person.all()
-         ->project([col(p|$p.lastName, 'lastName')])
-         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))->distinct()->groupBy('lastName', agg('count', x|$x, y| $y->count()))};
-
-  let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   assertEquals('select "aggreg"."lastName" as "lastName", count(*) as "count" from (select distinct "union"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "union") as "aggreg" group by "aggreg"."lastName"', $result);
-}

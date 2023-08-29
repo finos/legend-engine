@@ -252,7 +252,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
       let variable = j_variable($listType, '_' + $context.conventions->fieldName($p));
 
       let multiplicity     = $p.multiplicity;
-      let occurs           = meta::external::shared::format::executionPlan::platformBinding::legendJava::occursFromMultiplicity($multiplicity);
+      let occurs           = meta::external::format::shared::executionPlan::platformBinding::legendJava::occursFromMultiplicity($multiplicity);
       let size             = $variable->j_invoke('size', [], javaInt());
       let lowerBoundClause = $size->j_lt($occurs.first);
       let upperBoundClause = $size->j_gt($occurs.second);

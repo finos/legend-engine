@@ -34,7 +34,7 @@ public class TestExtensionAvailable
         MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
         Assert.assertEquals(2, extensions.selectInstancesOf(MongoDBPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
         List<String> vals = extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).toList().collect(Root_meta_pure_extension_Extension::_type).sortThis();
-        Assert.assertEquals("PlatformBindingExtension", vals.get(0));
+        Assert.assertEquals("PlatformBinding - LegendJava - MongoDB", vals.get(0));
         Assert.assertEquals("mongoDB", vals.get(1));
     }
 }

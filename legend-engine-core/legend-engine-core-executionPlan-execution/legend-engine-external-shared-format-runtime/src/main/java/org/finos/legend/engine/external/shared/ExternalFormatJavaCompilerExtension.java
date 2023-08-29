@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class ExternalFormatJavaCompilerExtension implements ExecutionPlanJavaCompilerExtension
 {
-    public static final String PURE_PACKAGE = "meta::external::shared::format::executionPlan::platformBinding::legendJava::";
+    public static final String PURE_PACKAGE = "meta::external::format::shared::executionPlan::platformBinding::legendJava::";
 
     static final Map<String, Class<?>> DEPENDENCIES = new LinkedHashMap<>();
 

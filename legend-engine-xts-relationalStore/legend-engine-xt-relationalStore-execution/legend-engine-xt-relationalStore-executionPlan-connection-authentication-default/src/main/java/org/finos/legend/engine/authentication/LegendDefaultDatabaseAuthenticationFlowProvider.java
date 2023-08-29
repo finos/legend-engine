@@ -24,8 +24,8 @@ import org.finos.legend.engine.authentication.flows.DatabricksWithApiTokenFlow;
 import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.MemSQLStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
-import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
+import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SpannerWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.TrinoWithDelegatedKerberosFlow;
@@ -58,8 +58,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new SnowflakeWithKeyPairFlow(databaseAuthenticationFlowProviderConfiguration.credentialProviderProvider),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
-                new RedshiftWithUserPasswordFlow(),
                 new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow(),
+                new RedshiftWithUserPasswordFlow(),
                 new MemSQLStaticWithUserPasswordFlow(),
                 new TrinoWithDelegatedKerberosFlow(),
                 new TrinoWithUserPasswordFlow()

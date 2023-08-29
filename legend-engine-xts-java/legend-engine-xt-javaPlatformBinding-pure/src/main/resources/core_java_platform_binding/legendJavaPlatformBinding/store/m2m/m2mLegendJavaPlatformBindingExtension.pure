@@ -179,7 +179,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryExtensionsWithLegendJavaPlatformBinding(): Extension[*]
 {
    meta::pure::extension::defaultExtensions()->concatenate(
-      meta::pure::executionPlan::platformBinding::platformBindingExtension([
+      meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory', [
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()
          ])
@@ -189,7 +189,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryExtensionsJavaPlatformBinding(): Extension[1]
 {
-  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - InMemory', [
      meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
         meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()
      ])

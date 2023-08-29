@@ -21,33 +21,33 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_SchemaSet;
 
 import java.util.Objects;
 
 public class HelperExternalFormat
 {
-    public static Root_meta_external_shared_format_metamodel_SchemaSet getSchemaSet(String fullPath, CompileContext context)
+    public static Root_meta_external_format_shared_metamodel_SchemaSet getSchemaSet(String fullPath, CompileContext context)
     {
         return getSchemaSet(fullPath, SourceInformation.getUnknownSourceInformation(), context);
     }
 
-    public static Root_meta_external_shared_format_metamodel_SchemaSet getSchemaSet(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    public static Root_meta_external_format_shared_metamodel_SchemaSet getSchemaSet(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = getExternalFormatCompilerExtension(context).schemaSetCompiler.getCompiledSchemaSet(fullPath);
+        Root_meta_external_format_shared_metamodel_SchemaSet schemaSet = getExternalFormatCompilerExtension(context).schemaSetCompiler.getCompiledSchemaSet(fullPath);
         Assert.assertTrue(schemaSet != null, () -> "Can't find SchemaSet '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return schemaSet;
     }
 
-    public static Root_meta_external_shared_format_binding_Binding getBinding(String fullPath, CompileContext context)
+    public static Root_meta_external_format_shared_binding_Binding getBinding(String fullPath, CompileContext context)
     {
         return getBinding(fullPath, SourceInformation.getUnknownSourceInformation(), context);
     }
 
-    public static Root_meta_external_shared_format_binding_Binding getBinding(String fullPath, SourceInformation sourceInformation, CompileContext context)
+    public static Root_meta_external_format_shared_binding_Binding getBinding(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_external_shared_format_binding_Binding binding = getExternalFormatCompilerExtension(context).bindingCompiler.getCompiledBinding(fullPath);
+        Root_meta_external_format_shared_binding_Binding binding = getExternalFormatCompilerExtension(context).bindingCompiler.getCompiledBinding(fullPath);
         Assert.assertTrue(binding != null, () -> "Can't find (external format) Binding '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return binding;
     }
@@ -57,7 +57,7 @@ public class HelperExternalFormat
         return Objects.requireNonNull(ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), ExternalFormatCompilerExtension.class).getAny(), "Serializable model specification extension is not in scope");
     }
 
-    public static ExternalFormatExtension<?> getExternalFormatExtension(Root_meta_external_shared_format_binding_Binding binding)
+    public static ExternalFormatExtension<?> getExternalFormatExtension(Root_meta_external_format_shared_binding_Binding binding)
     {
         return ExternalFormatExtensionLoader.extensions().values().stream()
                 .filter(ext -> ext.getContentTypes().contains(binding._contentType()))

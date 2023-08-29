@@ -248,7 +248,7 @@ function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]
 
 function <<access.private>> meta::relational::mapping::buildSemiStructuredPropertyMapping(property:AbstractProperty<Any>[1], parentSet: SemiStructuredEmbeddedRelationalInstanceSetImplementation[1]): SemiStructuredRelationalPropertyMapping[1]
 {
-  let bindingTransformer = $parentSet.transformer->cast(@meta::external::shared::format::binding::BindingTransformer<Any>);
+  let bindingTransformer = $parentSet.transformer->cast(@meta::external::format::shared::binding::BindingTransformer<Any>);
 
   let relOp = ^meta::relational::metamodel::operation::SemiStructuredPropertyAccess(
     operand = $parentSet.relationalOperationElement,

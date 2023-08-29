@@ -16,8 +16,8 @@ package org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toP
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.cloud.context.AwsGluePersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl;
 
 public class HelperPersistenceCloudBuilder
 {
@@ -25,9 +25,9 @@ public class HelperPersistenceCloudBuilder
     {
     }
 
-    public static Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform buildAwsGluePersistencePlatform(AwsGluePersistencePlatform persistencePlatform, CompileContext context)
+    public static Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform buildAwsGluePersistencePlatform(AwsGluePersistencePlatform persistencePlatform, CompileContext context)
     {
-        return new Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl("", null, context.pureModel.getClass("meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform"))
+        return new Root_meta_pure_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl("", null, context.pureModel.getClass("meta::pure::persistence::aws::metamodel::AwsGluePersistencePlatform"))
                 ._dataProcessingUnits(persistencePlatform.dataProcessingUnits);
     }
 }

@@ -24,8 +24,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
@@ -47,7 +47,7 @@ public class EmbeddedDataCompilerHelper
         {
             //TODO: Have extension mechanism to validate data with respect to contentType
             ExternalFormatData externalFormatData = (ExternalFormatData) embeddedData;
-            return new Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::data::ExternalFormatData"))
+            return new Root_meta_external_format_shared_metamodel_data_ExternalFormatData_Impl("", null, context.pureModel.getClass("meta::external::format::shared::metamodel::data::ExternalFormatData"))
                     ._contentType(externalFormatData.contentType)
                     ._data(externalFormatData.data);
         }
@@ -110,7 +110,7 @@ public class EmbeddedDataCompilerHelper
     private static boolean validatePairForModelStoreData(PackageableElementPtr value, CompileContext context)
     {
         return (context.pureModel.getPackageableElement(value.fullPath) instanceof Root_meta_pure_data_DataElement &&
-                ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(value.fullPath))._data() instanceof Root_meta_external_shared_format_metamodel_data_ExternalFormatData
+                ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(value.fullPath))._data() instanceof Root_meta_external_format_shared_metamodel_data_ExternalFormatData
         );
     }
 }

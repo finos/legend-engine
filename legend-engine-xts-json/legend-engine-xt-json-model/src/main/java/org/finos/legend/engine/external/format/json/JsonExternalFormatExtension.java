@@ -24,18 +24,18 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_transformation_fromPure_ModelToJsonSchemaConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_transformation_toPure_JsonSchemaToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 
 public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, ModelToJsonSchemaConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration>
 {
-    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> jsonSchemaContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> jsonSchemaContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = jsonSchemaContract._id();
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()
     {
         return jsonSchemaContract;
     }
@@ -53,7 +53,7 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(JsonSchemaToModelConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(JsonSchemaToModelConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_json_transformation_toPure_JsonSchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::transformation::toPure::JsonSchemaToModelConfiguration"))
                 ._sourceSchemaId(configuration.sourceSchemaId)
@@ -61,7 +61,7 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToJsonSchemaConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToJsonSchemaConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_format_json_transformation_fromPure_ModelToJsonSchemaConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::transformation::fromPure::ModelToJsonSchemaConfiguration"))
                 ._targetSchemaSet(configuration.targetSchemaSet);

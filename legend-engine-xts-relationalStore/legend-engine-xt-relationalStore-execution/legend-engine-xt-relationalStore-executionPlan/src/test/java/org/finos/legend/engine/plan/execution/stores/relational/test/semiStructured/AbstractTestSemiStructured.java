@@ -116,7 +116,7 @@ public abstract class AbstractTestSemiStructured
                         pureModel.getExecutionSupport()
                 )
         );
-        extensions.add(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+        extensions.add(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
         extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
 
         return extensions;
@@ -133,33 +133,4 @@ public abstract class AbstractTestSemiStructured
             throw new RuntimeException(e);
         }
     }
-
-    protected String wrapPreAndFinallyExecutionSqlQuery(String TDSType, String expectedRelational)
-    {
-        return  "RelationalBlockExecutionNode\n" +
-                "(\n" +
-                TDSType +
-                "  (\n" +
-                "    SQL\n" +
-                "    (\n" +
-                "      type = Void\n" +
-                "      resultColumns = []\n" +
-                "      sql = ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n" +
-                expectedRelational +
-                "  ) \n" +
-                "  finallyExecutionNodes = \n" +
-                "  (\n" +
-                "    SQL\n" +
-                "    (\n" +
-                "      type = Void\n" +
-                "      resultColumns = []\n" +
-                "      sql = ALTER SESSION UNSET QUERY_TAG;\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n" +
-                "  )\n" +
-                ")\n";
-    }
-
 }

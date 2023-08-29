@@ -15,11 +15,11 @@
 import meta::external::format::flatdata::metamodel::*;
 import meta::external::format::flatdata::transformation::toPure::*;
 
-import meta::external::shared::*;
-import meta::external::shared::format::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::utils::*;
-import meta::external::shared::generation::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::utils::*;
+import meta::external::format::shared::generation::*;
 
 import meta::pure::functions::collection::*;
 import meta::pure::functions::meta::*;
@@ -52,7 +52,7 @@ function meta::external::format::flatdata::transformation::toPure::flatDataToPur
 // Configuration
 // ========================================================================================================================================================
 
-Class meta::external::format::flatdata::transformation::toPure::FlatDataToModelConfiguration extends meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration
+Class meta::external::format::flatdata::transformation::toPure::FlatDataToModelConfiguration extends meta::external::format::shared::transformation::toPure::SchemaToModelConfiguration
 {
   {doc.doc='Make names in generated model into conventional names'}
   purifyNames: Boolean[1];

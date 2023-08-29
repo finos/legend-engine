@@ -111,43 +111,12 @@ function meta::relational::functions::sqlQueryToString::tests::compareSqls(actua
   assert($r);
 }
 
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testTempTableSqlStatementsForSnowflake(): Boolean[*]
-{
- let actualSqls = getTempTableSqlStatements(DatabaseType.Snowflake);
- let expectedSqls = [
-   'CREATE TEMPORARY TABLE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.temp_table_test(integer_Column INT,float_Column FLOAT,string_Column VARCHAR(128),datetime_Column TIMESTAMP,date_Column DATE);',
-   'CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE',
-   'PUT file://${csv_file_location} @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE${csv_file_location} PARALLEL= 16 AUTO_COMPRESS=TRUE;',
-   'COPY INTO LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.temp_table_test FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE${csv_file_location} file_format = (type= CSV field_optionally_enclosed_by= \'"\');',
-   'DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE',
-   'Drop table if exists LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.temp_table_test;'
-  ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
-}
-
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testTempTableSqlStatementsForH2(): Boolean[*]
 {
  let actualSqls = getTempTableSqlStatements(DatabaseType.H2);
  let expectedSqls = [
    'CREATE LOCAL TEMPORARY TABLE temp_table_test(integer_Column INT,float_Column FLOAT,string_Column VARCHAR(128),datetime_Column TIMESTAMP,date_Column DATE);',
    'INSERT INTO temp_table_test SELECT * FROM CSVREAD(\'${csv_file_location}\');',
-   'Drop table if exists temp_table_test;'
-  ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
-}
-
-function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
-{
- let actualSqls = getTempTableSqlStatements(DatabaseType.SybaseIQ);
- let expectedSqls = [
-   'DECLARE LOCAL TEMPORARY TABLE temp_table_test([integer_Column] INT,[float_Column] FLOAT,[string_Column] VARCHAR(128),[datetime_Column] TIMESTAMP,[date_Column] DATE) ON COMMIT PRESERVE ROWS',
-   ['load table temp_table_test( [integer_Column] null(blanks),[float_Column] null(blanks),[string_Column] null(blanks),[datetime_Column] null(blanks),[date_Column] null(blanks) ) USING CLIENT FILE \'${csv_file_location}\' FORMAT BCP ',
-   '\nwith checkpoint on ',
-   '\nquotes on ',
-   '\nescapes off ',
-   '\ndelimited by \',\' ',
-   '\nROW DELIMITED BY \'\r\n\'']->joinStrings(''),
    'Drop table if exists temp_table_test;'
   ];
   meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  

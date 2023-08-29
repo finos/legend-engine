@@ -38,11 +38,11 @@ import meta::pure::router::utils::*;
 
 import meta::pure::store::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::router::extension::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::router::extension::*;
+import meta::external::format::shared::utils::*;
 
 import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::executionPlan::generation::*;
