@@ -60,17 +60,13 @@ function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection
                                                             pair('userNamePassword', 'UserNamePasswordAuthenticationStrategy'),
                                                             pair('h2Default', 'DefaultH2AuthenticationStrategy'),
                                                             pair('test', 'TestDatabaseAuthenticationStrategy'),
-                                                            pair('snowflakePublic', 'SnowflakePublicAuthenticationStrategy'),
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
                                                             pair('apiToken', 'ApiTokenAuthenticationStrategy'),
                                                             pair('gcpWorkloadIdentityFederationWithAWS','GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
-                                                            pair('h2Local', 'LocalH2DatasourceSpecification('),
-                                                            pair('snowflake', 'SnowflakeDatasourceSpecification'),
-                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
-                                                            pair('redshift', 'RedshiftDatasourceSpecification')
+                                                            pair('h2Local', 'LocalH2DatasourceSpecification(')
                                                           ])
                                             )
                 );
@@ -127,13 +123,6 @@ function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection
          ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(
             // _type = 'test'
          ),
-      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::SnowflakePublicAuthenticationStrategy[1] |
-        ^meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy(
-            // _type = 'snowflakePublic',
-            privateKeyVaultReference = $s.privateKeyVaultReference,
-            passPhraseVaultReference = $s.passPhraseVaultReference,
-            publicUserName = $s.publicUserName
-        ),
       b:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy[1] |
          ^meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy(
             // _type = 'gcpApplicationDefaultCredentials'
@@ -174,42 +163,7 @@ function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection
             //  _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
-         ),
-      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification[1] |
-        ^meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification(
-            // _type = 'snowflake',
-            accountName = $s.accountName,
-            region = $s.region,
-            warehouseName = $s.warehouseName,
-            databaseName = $s.databaseName,
-            cloudType = $s.cloudType,
-            quotedIdentifiersIgnoreCase = $s.quotedIdentifiersIgnoreCase,
-            proxyHost = $s.proxyHost,
-            proxyPort = $s.proxyPort,
-            nonProxyHosts = $s.nonProxyHosts,
-            accountType = if($s.accountType->isEmpty(),|[],
-                             |extractEnumValue(meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType, $s.accountType->toOne())),
-            organization = $s.organization,
-            role = $s.role
-        ),
-      d:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
-          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
-              // _type = 'databricks',
-              hostname = $d.hostname,
-              port = $d.port,
-              protocol = $d.protocol,
-              httpPath = $d.httpPath
-         ),
-     r:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
-          ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
-              //  _type = 'redshift',
-                clusterID = $r.clusterID,
-                port =$r.port,
-                region = $r.region,
-                databaseName = $r.databaseName,
-                endpointURL = $r.endpointURL,
-                host = $r.host 
-         )   
+         )
    ])->toOneMany());
 }
 

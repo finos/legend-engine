@@ -34,23 +34,6 @@ import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::platformBinding::*;
-import meta::pure::executionPlan::platformBinding::legendJava::*;
-import meta::pure::executionPlan::platformBinding::localBinding::*;
-import meta::pure::extension::*;
-import meta::relational::executionPlan::platformBinding::legendJava::*;
-
-function <<LocalPlatformBinding.TestPlanBinder>> meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform(): LocalPlatformBinder[1]
-{
-   ^LocalPlatformBinder
-   (
-      overrides = [],
-      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - InMemory', [legendJavaPlatformBinding([meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()])]));
-         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-      }
-   )
-}
 
 Class test::_S_Types
 {

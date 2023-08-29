@@ -189,19 +189,15 @@ import meta::pure::extension::*;
 import meta::pure::extension::configuration::*;
 import meta::relational::executionPlan::platformBinding::legendJava::*;
 
-function <<LocalPlatformBinding.TestPlanBinder>> meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform(): LocalPlatformBinder[1]
+function <<LocalPlatformBinding.TestPlanBinder, doc.deprecated>> meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform(): LocalPlatformBinder[1]
 {
    ^LocalPlatformBinder
    (
       overrides = [],
-      
-      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-         
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - Relational', [legendJavaPlatformBinding([relationalLegendJavaPlatformBindingExtension()])]));
 
-         // Using LegendJava as the default for local platform binding
-         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-      
+      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
+         fail('This flow is not supported');
+         $plan;
       }
    ) 
 }

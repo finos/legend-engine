@@ -157,14 +157,6 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsFilter::testFilterAfter
    assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", group_concat("root".FIRSTNAME separator ',') as "firstNamesWithSameLength" from personTable as "root" group by "firstNameLength" having char_length("root".FIRSTNAME) = 7', | $result->sqlRemoveFormatting());
 }
 
-
-function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithSameColForGroupByAggAndFilterOnRootClassSybase():Boolean[1]
-{
-   let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7})};
-   let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having char_length("root".FIRSTNAME) = 7', $sql);
-}
-
 //works on Sybase
 function <<test.ToFix>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithFilterOnAllProjectColumns():Boolean[1]
 {
@@ -175,30 +167,12 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsFilter::testFilterAfter
    assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", group_concat("root".FIRSTNAME separator ',') as "firstNamesWithSameLength" from personTable as "root" group by "firstNameLength" having (char_length("root".FIRSTNAME) = 7 or group_concat("root".FIRSTNAME separator ',') like \'%David%\')', $result->sqlRemoveFormatting());
 }
 
-
-function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterAfterGroupByWithFilterOnAllProjectColumnsSybase():Boolean[1]
-{
-   let f = {|Person.all()->groupBy([p|$p.firstName->length()],agg(x|$x.firstName,y|$y->joinStrings(',')),['firstNameLength', 'firstNamesWithSameLength'])->filter({l|$l.getInteger('firstNameLength') == 7 || $l.getString('firstNamesWithSameLength')->contains('David')})};
-   let sql = toSQLString($f,simpleRelationalMapping,DatabaseType.Sybase, meta::relational::extension::relationalExtensions());
-   assertEquals('select char_length("root".FIRSTNAME) as "firstNameLength", list("root".FIRSTNAME,\',\') as "firstNamesWithSameLength" from personTable as "root" group by char_length("root".FIRSTNAME) having (char_length("root".FIRSTNAME) = 7 or list("root".FIRSTNAME,\',\') like \'%David%\')', $sql);
-}
-
-
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterFollowedByGroupByWithFilterOnRootClass():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.firstName=='John')->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals(['12,John','22,John'],$result.values.rows->map(r|$r.values->makeString(',')));
    assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" where "root".FIRSTNAME = \'John\' group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\'', $result->sqlRemoveFormatting());
-}
-
-function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDatesSybase():Boolean[1]
-{
-
-   let dt = %2015-01-01T00:00:00.000;
-   let sql = toSQLString(|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
-                              simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where "root".settlementDateTime < convert(DATETIME, \'2015-01-01 00:00:00.000\', 121)', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnRootClassAggValueAfterGroupByWithHavingMultipleFilters():Boolean[1]

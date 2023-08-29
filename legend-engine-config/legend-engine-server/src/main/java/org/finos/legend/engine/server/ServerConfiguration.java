@@ -44,6 +44,7 @@ public class ServerConfiguration extends Configuration
     public RelationalExecutionConfiguration relationalexecution;
     public GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
     public ErrorHandlingConfiguration errorhandlingconfiguration = new ErrorHandlingConfiguration();
+    public List<org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration> activatorConfiguration;
 
     /*
         This configuration has been deprecated in favor of the 'temporarytestdb' in RelationalExecutionConfiguration

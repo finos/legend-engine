@@ -1,0 +1,23 @@
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+      "_type": "snowflake",
+      "accountName": "ki79827",
+      "region": "us-east-2",
+      "warehouseName": "INTEGRATION_WH1",
+      "databaseName": "INTEGRATION_DB1",
+      "cloudType": "aws",
+      "role": "INTEGRATION_ROLE1"
+    },
+    "authenticationStrategy": {
+      "_type": "snowflakePublic",
+      "privateKeyVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY",
+      "passPhraseVaultReference": "SNOWFLAKE_INTEGRATION_USER1_PASSWORD",
+      "publicUserName": "INTEGRATION_USER1"
+    },
+    "databaseType": "Snowflake",
+    "type": "Snowflake",
+    "element": "firstConn"
+  }
+]

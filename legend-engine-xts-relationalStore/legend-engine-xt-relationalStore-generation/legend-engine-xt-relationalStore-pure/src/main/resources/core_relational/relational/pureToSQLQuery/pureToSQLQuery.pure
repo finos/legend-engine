@@ -2834,14 +2834,21 @@ function meta::relational::functions::pureToSqlQuery::getPksFromAlias(r:Relation
    ^List<Column>(values=$r->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);));
 }
 
+function meta::relational::functions::pureToSqlQuery::resolveViewSelectSQLQuery(v:ViewSelectSQLQuery[1]):Table[1]
+{
+  let relationalElement = $v->cast(@ViewSelectSQLQuery).selectSQLQuery->cast(@SelectSQLQuery).data.alias.relationalElement;
+  $relationalElement->match([ view:ViewSelectSQLQuery[1]| resolveViewSelectSQLQuery($view),
+                              table:Table[1]| $table]);
+}
+
 function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQuery[1], j:RelationalTreeNode[1], newJoinName:String[1], extensions:Extension[*]):Pair<SelectSQLQuery, List<Pair<JoinTreeNode, JoinTreeNode>>>[1]
 {
    let rootJtn = $j;
    let rootJtnAlias = $rootJtn.alias;
 
-   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([ v:ViewSelectSQLQuery[1]| let mt = $v->cast(@ViewSelectSQLQuery).selectSQLQuery->cast(@SelectSQLQuery).data.alias.relationalElement->cast(@Table);
+   let rootJtnAliasTable = $rootJtnAlias.relationalElement->match([ v:ViewSelectSQLQuery[1]| let mt = resolveViewSelectSQLQuery($v);
                                                                                              let pks = getPksFromAlias($v.columns, $mt);
-                                                                                             if($pks->isEmpty(), | fail('There is no primary key defined on the table ' + $mt->toOne().name); false;, | true);
+                                                                                             if($pks->isEmpty() || $pks.values->isEmpty(), | fail('There is no primary key defined on the table ' + $mt->toOne().name); false;, | true);
                                                                                              pair($v.schema.database, $pks);,
                                                                     t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
                                                                     u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
@@ -4235,7 +4242,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::reproce
 function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let nestedQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-   let select = $nestedQuery.select->cast(@TdsSelectSqlQuery);
+   let select = $nestedQuery.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
    let groupByColumns = findAliasOrFail($expression, $select,  $vars, $state);
    let noSubSelect = $select.groupBy->isEmpty() && ($select.distinct->isEmpty() || !$select.distinct->toOne()) && $select.orderBy.column->removeAll($groupByColumns)->isEmpty();
    $groupByColumns->map(gc| assert(!$gc.relationalElement->instanceOf(WindowColumn),'Group by columns cannot include window columns'););
@@ -6033,7 +6040,10 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
     if($hasOnlyEnumValues,
         | ^DynaFunction(name = 'equal', parameters = [$firstVal, $secondVal]->map(v|^Literal(value=$v.processedParam->cast(@Literal).value->toString()))),
         | let enumVar = [$firstVal, $secondVal]->partition(e|$e.processedParam->hasEnumerationVarPlaceHolderValue());
-          let hasEnumVarAndEnumProp = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.currentPropertyMapping->toOne()->map(e|$e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping->isNotEmpty() && $e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(EnumerationMapping))->toOne();
+          let hasEnumVarAndEnumProp = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.currentPropertyMapping->toOne()->map(e| let pm = $e->cast(@OperationWithParentPropertyMapping).currentPropertyMapping;
+                                                                                                                                            $pm->isNotEmpty() &&
+                                                                                                                                            assert($pm->cast(@RelationalPropertyMapping).transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $pm->cast(@RelationalPropertyMapping).property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.') &&
+                                                                                                                                            $pm->cast(@RelationalPropertyMapping).transformer->toOne()->instanceOf(EnumerationMapping);)->toOne();
           let hasEnumVarAndEnumVal = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.processedParam->toOne()->hasEnumValue();
           if($hasEnumVarAndEnumProp,
               | let enumParamFreeMarker = generateFreeMarkerForEnumParam($enumVar.second.values.currentPropertyMapping->toOne(), $enumVar.first.values.processedParam->toOne());
@@ -6076,7 +6086,8 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
 
     let sourceVal = if ($enumPropMapping->instanceOf(SemiStructuredRelationalPropertyMapping),
                         | $enum->id(),
-                        | $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum)
+                        | assert($enumPropMapping.transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
+                          $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
                     );
 
     if ($sourceVal->size() == 1,

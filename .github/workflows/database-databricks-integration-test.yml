@@ -67,4 +67,4 @@ jobs:
       - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -P run-databricks-integration -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*Databricks*" test
+        run: mvn -P run-databricks-integration -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-databricks/legend-engine-xt-relationalStore-databricks-execution-tests  -Dtest="ExternalIntegration*Databricks*" test

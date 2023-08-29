@@ -188,7 +188,7 @@ public class SnowflakeSink extends AnsiSqlSink
                 return results.size() > 0;
             },
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
-            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
+            (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override
@@ -271,7 +271,7 @@ public class SnowflakeSink extends AnsiSqlSink
         {
             String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
             result = IngestorResult.builder()
-                    .status(IngestStatus.ERROR)
+                    .status(IngestStatus.FAILED)
                     .message(errorMessage)
                     .updatedDatasets(datasets)
                     .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))

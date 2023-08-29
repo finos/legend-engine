@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.25.1-SNAPSHOT</version>
+        <version>4.26.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,6 +28,8 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-postgres-connection</module>
+        <module>legend-engine-xt-relationalStore-postgres-execution</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-postgres-pure</module>
     </modules>
 </project>

@@ -24,7 +24,8 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.expectedMetadataTableIngestQueryWithPlaceHolders;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.getDropTempTableQuery;
 
 public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourceSpecifiesFromTestCases
 {
@@ -41,6 +42,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> initializeLockSql = operations.initializeLockSql();
+        List<String> acquireLockSql = operations.acquireLockSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
                 "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
@@ -99,6 +103,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyStagingTableCreateQuery, preActionsSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, preActionsSql.get(3));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(4));
 
         Assertions.assertEquals(expectedStageToTemp, milestoningSql.get(0));
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(1));
@@ -106,6 +111,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(3));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), milestoningSql.get(4));
 
+        Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
+        Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), postCleanupSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -184,6 +193,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.get(0).postCleanupSql().get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         verifyStats(operations.get(0), enrichSqlWithDataSplits(incomingRecordCount,dataSplitRanges.get(0)), rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -298,6 +309,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedTempToMainForDeletion, milestoningSql.get(6));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), milestoningSql.get(7));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"tempWithDeleteIndicator\"", "tempWithDeleteIndicator"), milestoningSql.get(8));
+
+        System.out.println(operations.postCleanupSql());
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"tempWithDeleteIndicator\""), operations.postCleanupSql().get(1));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))";
@@ -449,6 +464,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
+        Assertions.assertEquals(getDropTempTableQuery(tempName), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery(tempWithDeleteIndicatorName), operations.get(0).postCleanupSql().get(1));
+
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))";
         String rowsInserted = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))) as \"rowsInserted\"";
@@ -534,6 +552,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(4));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), milestoningSql.get(5));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"stagingWithoutDuplicates\"", "stage"), milestoningSql.get(6));
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"stagingWithoutDuplicates\""), operations.postCleanupSql().get(1));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -622,6 +643,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"stagingWithoutDuplicates\"", "stage"), operations.get(1).ingestSql().get(6));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"stagingWithoutDuplicates\""), operations.get(0).postCleanupSql().get(1));
 
         Assertions.assertEquals(2, operations.size());
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
@@ -746,6 +770,11 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), milestoningSql.get(8));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"tempWithDeleteIndicator\"", "tempWithDeleteIndicator"), milestoningSql.get(9));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"stagingWithoutDuplicates\"", "stage"), milestoningSql.get(10));
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"temp\""), operations.postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"tempWithDeleteIndicator\""), operations.postCleanupSql().get(1));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"stagingWithoutDuplicates\""), operations.postCleanupSql().get(2));
+
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))";
@@ -917,6 +946,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(1).ingestSql().get(10));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
+
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"main_legend_persistence_temp\""), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"main_legend_persistence_tempWithDeleteIndicator\""), operations.get(0).postCleanupSql().get(1));
+        Assertions.assertEquals(getDropTempTableQuery("\"mydb\".\"staging_legend_persistence_stageWithoutDuplicates\""), operations.get(0).postCleanupSql().get(2));
 
         Assertions.assertEquals(2, operations.size());
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";

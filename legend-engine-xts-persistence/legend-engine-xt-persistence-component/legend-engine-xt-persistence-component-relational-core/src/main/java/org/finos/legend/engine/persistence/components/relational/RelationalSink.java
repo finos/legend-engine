@@ -185,7 +185,7 @@ public abstract class RelationalSink implements Sink
 
     public interface ConstructDatasetFromDatabase
     {
-        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, String tableName, String schemaName, String databaseName);
+        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
     public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues);

@@ -19,27 +19,33 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-service</artifactId>
-        <version>4.25.1-SNAPSHOT</version>
+        <version>4.26.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-language-pure-dsl-service-generation</artifactId>
     <name>Legend Engine - Language Pure - DSL Service - Generation</name>
 
-
-
     <dependencies>
-
         <!-- PURE -->
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <!-- PURE -->
+
+        <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
 
         <dependency>
@@ -50,6 +56,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-core-extension</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
@@ -59,8 +70,22 @@
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
 
-        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-generation</artifactId>
+        </dependency>
+        <!-- ENGINE -->
+
+        <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
@@ -70,41 +95,7 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
-
-        <!-- ENGINE -->
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-generation</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-service</artifactId>
-        </dependency>
-
-        <!-- ENGINE -->
+        <!-- ECLIPSE COLLECTIONS -->
 
         <!-- JSON -->
         <dependency>
@@ -112,6 +103,13 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- JSON -->
+
+        <!-- LOGGING -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- LOGGING -->
 
         <!-- TEST -->
         <dependency>

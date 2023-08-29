@@ -45,6 +45,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
                 .createStagingDataset(true)
+                .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(operations);
@@ -53,7 +54,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionForEmptyBatch()
+    void testUnitemporalSnapshotWithoutPartitionWithNoOpEmptyBatchHandling()
     {
         TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -63,10 +64,10 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(operations);
+        verifyUnitemporalSnapshotWithoutPartitionWithNoOpEmptyBatchHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithoutPartitionWithNoOpEmptyBatchHandling(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer()

@@ -110,7 +110,7 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
     |assertEquals($config.expectedSql->toOne(), $basicPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
 
   if($config.connection->isEmpty(), |[],             
-     | let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($basicPlan, $extensions);
+     | let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);

@@ -277,42 +277,43 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
          let adderImpl = if($p.itemType == javaBoolean(),
                             {|
                                let value = j_parameter(javaBoolean(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             |
                          if($p.itemType == javaLong(),
                             {|
                                let value = j_parameter(javaLong(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataLongAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             |
                          if($p.itemType == javaDouble(),
                             {|
                                let value = j_parameter(javaDouble(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             {|
                                let value = j_parameter($p.adderParam.type, 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$withFieldsAndGetters, $p.adderParam.type]), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             }
                          )));
          
-         pair($propertyName->j_invoke('equals', j_string($p.name)), $adderImpl);
+         pair(j_string($p.name), $adderImpl);
       }
    );
 
+   let adderForPropertyField = javaField(['private', 'static', 'final'], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $withFieldsAndGetters)), '_adderForPropertyMap', $withFieldsAndGetters->j_invoke('_populateAdderForProperty', [], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $withFieldsAndGetters))));
    let dataClass = $withFieldsAndGetters
       ->addMethod({c|
           javaMethod('public', javaList($conventions->defectClass()), 'checkMultiplicities', [],
@@ -321,11 +322,18 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
                 ->concatenate(j_return($defects))
           );
         })
+      ->addField($adderForPropertyField)
       ->addMethod({c|
-          let exception = javaIllegalArgumentException()->j_new(j_string('Unknown property ')->j_plus($propertyName))->j_throw();
-         
+          let resultVar = j_variable(javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), 'result');
+          javaMethod(['private', 'static'], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), '_populateAdderForProperty', [],
+            $resultVar->j_declare(javaHashMap()->j_new([]))
+            ->concatenate($adderClauses->map(p | $resultVar->j_invoke('put', [$p.first, $p.second], javaVoid())))
+            ->concatenate($resultVar->j_return())
+          );
+        })
+      ->addMethod({c|
           javaMethod(['public', 'static'], javaParameterizedType($conventions->className(_ExternalDataAdder), $c), '_getAdderForProperty', $propertyName,
-             if($adderClauses->isEmpty(), |$exception, |j_if(list($adderClauses), $exception))
+             j_return(javaObjects()->j_invoke('requireNonNull', [$c->j_field($adderForPropertyField)->j_invoke('get', $propertyName, javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), j_string('Unknown property ')->j_plus($propertyName)], javaParameterizedType($conventions->className(_ExternalDataAdder), $c)))
           );
         })
       ->addAlloyStoreObjectReferenceMethodsForClass($context);

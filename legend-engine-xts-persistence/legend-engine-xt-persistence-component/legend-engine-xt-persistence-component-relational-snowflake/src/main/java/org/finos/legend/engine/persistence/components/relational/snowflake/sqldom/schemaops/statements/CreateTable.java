@@ -46,6 +46,8 @@ public class CreateTable implements DDLStatement
     private final List<ClusteringKeyConstraint> clusterKeys;
     private Map<String, String> tags;
 
+    private static final String ICEBERG_CATALOG_INTEGRATION_SUFFIX = "ICEBERG_TABLE_2022 = true";
+
     public CreateTable()
     {
         this.modifiers = new ArrayList<>();
@@ -117,6 +119,12 @@ public class CreateTable implements DDLStatement
                 i++;
             }
             builder.append(CLOSING_PARENTHESIS);
+        }
+
+        // Iceberg unified Catalog suppoprt
+        if (types.stream().anyMatch(tableType -> tableType instanceof IcebergTableType))
+        {
+            builder.append(WHITE_SPACE + ICEBERG_CATALOG_INTEGRATION_SUFFIX);
         }
     }
 
