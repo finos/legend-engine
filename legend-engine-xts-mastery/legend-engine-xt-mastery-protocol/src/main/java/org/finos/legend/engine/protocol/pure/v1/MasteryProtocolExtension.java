@@ -21,22 +21,6 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileAcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.RestAcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.NTLMAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.TokenAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.FTPConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.HTTPConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.KafkaConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.CronTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.ManualTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 
 import java.util.List;
 import java.util.Map;
@@ -47,50 +31,15 @@ public class MasteryProtocolExtension implements PureProtocolExtension
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(
-
-                // Packageable element
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
-                        .withSubtype(MasterRecordDefinition.class, "masterRecordDefinition")
-                        .withSubtype(DataProvider.class, "dataProvider")
-                        .withSubtype(Connection.class, "masteryConnection")
-                        .build(),
-
-
-                // Acquisition protocol
-                ProtocolSubTypeInfo.newBuilder(AcquisitionProtocol.class)
-                        .withSubtype(RestAcquisitionProtocol.class, "restAcquisitionProtocol")
-                        .withSubtype(FileAcquisitionProtocol.class, "fileAcquisitionProtocol")
-                        .withSubtype(KafkaAcquisitionProtocol.class, "kafkaAcquisitionProtocol")
-                        .withSubtype(LegendServiceAcquisitionProtocol.class, "legendServiceAcquisitionProtocol")
-                        .build(),
-
-                // Trigger
-                ProtocolSubTypeInfo.newBuilder(Trigger.class)
-                        .withSubtype(ManualTrigger.class, "manualTrigger")
-                        .withSubtype(CronTrigger.class, "cronTrigger")
-                        .build(),
-
-                // Authentication strategy
-                ProtocolSubTypeInfo.newBuilder(AuthenticationStrategy.class)
-                        .withSubtype(TokenAuthenticationStrategy.class, "tokenAuthenticationStrategy")
-                        .withSubtype(NTLMAuthenticationStrategy.class, "ntlmAuthenticationStrategy")
-                        .build(),
-
-                // Connection
-                ProtocolSubTypeInfo.newBuilder(Connection.class)
-                        .withSubtype(FTPConnection.class, "ftpConnection")
-                        .withSubtype(HTTPConnection.class, "httpConnection")
-                        .withSubtype(KafkaConnection.class, "kafkaConnection")
+                        .withSubtype(MasterRecordDefinition.class, "mastery")
                         .build()
-                ));
+        ));
     }
 
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(
-                MasterRecordDefinition.class, "meta::pure::mastery::metamodel::MasterRecordDefinition",
-                DataProvider.class, "meta::pure::mastery::metamodel::DataProvider",
-                Connection.class, "meta::pure::mastery::metamodel::connection::Connection");
+        return Maps.mutable.with(MasterRecordDefinition.class, "meta::pure::mastery::metamodel::MasterRecordDefinition");
     }
 }
