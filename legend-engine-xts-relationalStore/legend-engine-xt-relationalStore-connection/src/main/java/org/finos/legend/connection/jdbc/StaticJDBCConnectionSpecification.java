@@ -23,14 +23,14 @@ public class StaticJDBCConnectionSpecification extends ConnectionSpecification<C
 {
     public String host;
     public int port;
-    public DatabaseType databaseType;
     public String databaseName;
+    public DatabaseType databaseType;
 
-    public StaticJDBCConnectionSpecification(String host, int port, DatabaseType databaseType, String databaseName)
+    public StaticJDBCConnectionSpecification(String host, int port, String databaseName, DatabaseType databaseType)
     {
         this.host = host;
         this.port = port;
-        this.databaseType = databaseType;
         this.databaseName = databaseName;
+        this.databaseType = databaseType;
     }
 }

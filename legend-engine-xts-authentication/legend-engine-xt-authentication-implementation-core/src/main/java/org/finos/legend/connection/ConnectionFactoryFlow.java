@@ -14,6 +14,7 @@
 
 package org.finos.legend.connection;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
 public interface ConnectionFactoryFlow<T, SPEC extends ConnectionSpecification<T>, CRED extends Credential>
