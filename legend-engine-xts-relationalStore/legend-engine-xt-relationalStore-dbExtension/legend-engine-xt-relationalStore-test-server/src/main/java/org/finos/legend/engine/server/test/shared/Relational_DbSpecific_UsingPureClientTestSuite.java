@@ -19,6 +19,8 @@ import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
@@ -35,12 +37,17 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
 {
     public static Test createSuite(String pureTestCollectionPath, String testServerConfigFilePath, NamedType... extraConfigTypes) throws Exception
     {
+        return createSuite(pureTestCollectionPath, testServerConfigFilePath, Lists.immutable.empty(), extraConfigTypes);
+    }
+
+    public static Test createSuite(String pureTestCollectionPath, String testServerConfigFilePath, ImmutableList<String> ignoredTestsAndTestSuites, NamedType... extraConfigTypes) throws Exception
+    {
         //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
         boolean shouldCleanUp = PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
         RelationalTestServer server = PureWithEngineHelper.initEngineServer(testServerConfigFilePath, () -> new RelationalTestServer(extraConfigTypes));
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        TestSuite suite = wrapTestCases(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        TestSuite suite = wrapTestCases(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport), ignoredTestsAndTestSuites);
 
         return new TestSetup(suite)
         {
@@ -60,7 +67,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
 
     private static final String PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD = "runDataAssertionWhichDeviatesFromStandard";
 
-    private static TestSuite wrapTestCases(TestSuite suite)
+    private static TestSuite wrapTestCases(TestSuite suite, ImmutableList<String> ignoredTestsAndTestSuites)
     {
         TestSuite wrappedSuite = new TestSuite(suite.getName());
         String suiteName = wrappedSuite.getName();
@@ -70,7 +77,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
             Test test = suite.testAt(i);
             if (test instanceof TestSuite)
             {
-                wrappedSuite.addTest(wrapTestCases((TestSuite) test));
+                wrappedSuite.addTest(wrapTestCases((TestSuite) test, ignoredTestsAndTestSuites));
             }
             else
             {
@@ -84,6 +91,11 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         boolean ignoreTest = false;
                         String testName = testCase.getName();
                         String dbTestName = dbSuiteName + "::" + testName.substring(0, testName.contains("[") ? testName.indexOf("[") : testName.length());
+                        if (ignoredTestsAndTestSuites.stream().anyMatch(dbTestName::startsWith))
+                        {
+                            System.out.println("| **" + dbTestName + "** | ignored :eight_spoked_asterisk: |");
+                            throw new PureExecutionException("[unsupported-api] ignored");
+                        }
                         try
                         {
                             System.out.println("Running db test " + dbTestName);

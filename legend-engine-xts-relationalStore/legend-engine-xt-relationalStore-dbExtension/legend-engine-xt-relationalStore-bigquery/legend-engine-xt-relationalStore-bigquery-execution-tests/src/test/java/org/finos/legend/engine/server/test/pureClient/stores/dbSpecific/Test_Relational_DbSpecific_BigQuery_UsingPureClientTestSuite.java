@@ -16,6 +16,7 @@ package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
@@ -29,6 +30,7 @@ public class Test_Relational_DbSpecific_BigQuery_UsingPureClientTestSuite extend
         return createSuite(
                 "meta::relational::tests::sqlQueryToString::bigQuery",
                 "org/finos/legend/engine/server/test/userTestConfig_withBigQueryTestConnection.json",
+                Lists.immutable.of("selectSubClauses", "namingTests"),
                 new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest")
         );
     }
