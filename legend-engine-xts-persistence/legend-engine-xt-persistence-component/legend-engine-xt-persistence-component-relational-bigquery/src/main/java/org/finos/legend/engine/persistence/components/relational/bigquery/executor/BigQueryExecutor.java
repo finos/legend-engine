@@ -105,9 +105,9 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName)
+    public Dataset constructDatasetFromDatabase(Dataset dataset)
     {
-        return bigQuerySink.constructDatasetFromDatabaseFn().execute(this, bigQueryHelper, tableName, schemaName, databaseName);
+        return bigQuerySink.constructDatasetFromDatabaseFn().execute(this, bigQueryHelper, dataset);
     }
 
     @Override

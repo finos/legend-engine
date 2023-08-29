@@ -57,7 +57,8 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
                 .name(mainDataset.datasetReference().name().get())
                 .database(mainDataset.datasetReference().database())
                 .group(mainDataset.datasetReference().group())
-                .alias(mainDataset.datasetReference().alias().orElse(null));
+                .alias(mainDataset.datasetReference().alias().orElse(null))
+                .datasetAdditionalProperties(mainDataset.datasetAdditionalProperties());
 
         this.mainSchemaDefinitionBuilder = SchemaDefinition.builder()
                 .addAllIndexes(mainDataset.schema().indexes())
