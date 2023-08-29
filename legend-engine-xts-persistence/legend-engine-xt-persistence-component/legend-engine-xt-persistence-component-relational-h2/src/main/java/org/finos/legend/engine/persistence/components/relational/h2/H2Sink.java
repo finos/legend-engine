@@ -21,9 +21,14 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvEx
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -33,12 +38,17 @@ import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -86,6 +96,11 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(LoadCsv.class, new LoadCsvVisitor());
         logicalPlanVisitorByClass.put(CsvExternalDatasetReference.class, new CsvExternalDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
+        logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();

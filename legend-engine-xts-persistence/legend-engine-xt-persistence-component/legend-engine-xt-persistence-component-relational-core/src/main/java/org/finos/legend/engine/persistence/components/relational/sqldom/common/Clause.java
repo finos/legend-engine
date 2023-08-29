@@ -56,7 +56,8 @@ public enum Clause
     ORDER_BY("ORDER BY"),
     CLUSTER_BY("CLUSTER BY"),
     NOT_ENFORCED("NOT ENFORCED"),
-    DATA_TYPE("DATA TYPE");
+    DATA_TYPE("DATA TYPE"),
+    CONVERT("CONVERT");
 
     private final String clause;
 

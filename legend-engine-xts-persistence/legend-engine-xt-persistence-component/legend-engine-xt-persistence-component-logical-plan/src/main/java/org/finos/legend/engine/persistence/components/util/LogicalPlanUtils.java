@@ -394,7 +394,7 @@ public class LogicalPlanUtils
                     .datasetRefAlias(dataset.datasetReference().alias())
                     .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
                     .elementPath(field.elementPath())
-                    .dataType(field.type().dataType())
+                    .fieldType(field.type())
                     .fieldName(field.name())
                     .build();
             stagedFilesFields.add(fieldValue);

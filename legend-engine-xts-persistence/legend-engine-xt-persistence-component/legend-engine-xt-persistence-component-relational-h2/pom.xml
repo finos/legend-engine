@@ -43,6 +43,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
         </dependency>
+
+        <!-- IMMUTABLES -->
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+        </dependency>
+
         <!-- H2 -->
         <dependency>
             <groupId>com.h2database</groupId>
