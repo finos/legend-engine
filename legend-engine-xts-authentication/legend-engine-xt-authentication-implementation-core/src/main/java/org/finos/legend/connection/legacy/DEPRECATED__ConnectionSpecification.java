@@ -14,6 +14,9 @@
 
 package org.finos.legend.connection.legacy;
 
-public abstract class ConnectionSpecification
+/**
+ * TODO: migrate to the new connection framework
+ */
+public abstract class DEPRECATED__ConnectionSpecification
 {
 }

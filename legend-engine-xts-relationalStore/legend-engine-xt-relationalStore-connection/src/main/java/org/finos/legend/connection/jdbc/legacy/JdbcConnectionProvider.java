@@ -15,8 +15,8 @@
 package org.finos.legend.connection.jdbc.legacy;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.connection.legacy.ConnectionProvider;
-import org.finos.legend.connection.legacy.ConnectionSpecification;
+import org.finos.legend.connection.legacy.DEPRECATED__ConnectionProvider;
+import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -26,7 +26,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
-public class JdbcConnectionProvider extends ConnectionProvider<Connection>
+public class JdbcConnectionProvider extends DEPRECATED__ConnectionProvider<Connection>
 {
     public JdbcConnectionProvider(CredentialProviderProvider credentialProviderProvider)
     {
@@ -34,7 +34,7 @@ public class JdbcConnectionProvider extends ConnectionProvider<Connection>
     }
 
     @Override
-    public Connection makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
+    public Connection makeConnection(DEPRECATED__ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
     {
         assert (connectionSpec instanceof JdbcConnectionSpecification);
         JdbcConnectionSpecification jdbcConnectionSpec = (JdbcConnectionSpecification) connectionSpec;
