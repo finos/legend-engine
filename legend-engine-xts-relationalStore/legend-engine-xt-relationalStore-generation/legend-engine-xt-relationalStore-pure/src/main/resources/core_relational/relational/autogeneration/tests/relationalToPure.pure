@@ -10,12 +10,12 @@ function <<test.Test>> meta::relational::transform::autogen::tests::testClassesA
      _type = 'data',
      serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
      elements = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping(meta::relational::transform::autogen::tests::testDBMapping, $extensions)
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema1::Company, $extensions))
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema1::Employee, $extensions))
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema1::City, $extensions))
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema1::Passport, $extensions))
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema1::Country, $extensions))
-                   ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformPackageableElement(meta::relational::transform::autogen::tests::testSchema2::Company, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Company, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Employee, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::City, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Passport, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema1::Country, $extensions))
+                   ->concatenate(meta::relational::transform::autogen::tests::transformClass(meta::relational::transform::autogen::tests::testSchema2::Company, $extensions))
                    ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::CompanyEmployee, $extensions))
                    ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::EmployeeCity, $extensions))
                    ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::EmployeePassport, $extensions))
@@ -26,13 +26,23 @@ function <<test.Test>> meta::relational::transform::autogen::tests::testClassesA
    assertJsonStringsEqual($expected, $actual);
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema1::Company
+// removes the default native any supertype from protocol class
+function meta::relational::transform::autogen::tests::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
+{
+  let anyClassPath = 'meta::pure::metamodel::type::Any';
+  let _class = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformClass($class, $extensions);
+  ^$_class(
+    superTypes = $_class.superTypes->filter(e | $e != $anyClassPath)
+  );
+}
+
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Company
 {
    name : String[1];
    location : String[1];
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema1::Employee
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Employee
 {
    fullname : String[1];
    passportId : Integer[1];
@@ -40,54 +50,54 @@ Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::tran
    location : String[0..1];
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema1::City
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::City
 {
    cityId : Integer[1];
    name : String[0..1];
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema1::Passport
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Passport
 {
    passportId : Integer[1];
    countryName : String[0..1];
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema1::Country
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema1::Country
 {
    name : String[1];
 }
 
-Class {meta::pure::profiles::doc.doc = 'GENERATED CLASS'} meta::relational::transform::autogen::tests::testSchema2::Company
+Class {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::testSchema2::Company
 {
    name : String[1];
    location : String[1];
 }
 
-Association {meta::pure::profiles::doc.doc = 'GENERATED ASSOCIATION'} meta::relational::transform::autogen::tests::CompanyEmployee
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::CompanyEmployee
 {
    companyEmployeeTestSchema1Company : meta::relational::transform::autogen::tests::testSchema1::Company[1];
    companyEmployeeTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
 }
 
-Association {meta::pure::profiles::doc.doc = 'GENERATED ASSOCIATION'} meta::relational::transform::autogen::tests::EmployeeCity
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::EmployeeCity
 {
    employeeCityTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
    employeeCityTestSchema1City : meta::relational::transform::autogen::tests::testSchema1::City[1..*];
 }
 
-Association {meta::pure::profiles::doc.doc = 'GENERATED ASSOCIATION'} meta::relational::transform::autogen::tests::EmployeePassport
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::EmployeePassport
 {
    employeePassportTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1];
    employeePassportTestSchema1Passport : meta::relational::transform::autogen::tests::testSchema1::Passport[1];
 }
 
-Association {meta::pure::profiles::doc.doc = 'GENERATED ASSOCIATION'} meta::relational::transform::autogen::tests::PassportCountry
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::PassportCountry
 {
    passportCountryTestSchema1Passport : meta::relational::transform::autogen::tests::testSchema1::Passport[1..*];
    passportCountryTestSchema1Country : meta::relational::transform::autogen::tests::testSchema1::Country[1];
 }
 
-Association {meta::pure::profiles::doc.doc = 'GENERATED ASSOCIATION'} meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas
+Association {meta::pure::profiles::doc.doc = 'Generated Element'} meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas
 {
    companyEmployeeFromDifferentSchemasTestSchema2Company : meta::relational::transform::autogen::tests::testSchema2::Company[1];
    companyEmployeeFromDifferentSchemasTestSchema1Employee : meta::relational::transform::autogen::tests::testSchema1::Employee[1..*];
