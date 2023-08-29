@@ -256,7 +256,7 @@ public class AnsiSqlSink extends RelationalSink
             {
                 throw new UnsupportedOperationException();
             },
-            (v, w, x, y, z) ->
+            (x, y, z) ->
             {
                 throw new UnsupportedOperationException();
             });

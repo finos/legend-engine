@@ -28,7 +28,20 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
       superTypes = ['meta::pure::metamodel::type::Any'], // Tables don't have a class hierarchy
       properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
-           ->map(c | $c->columnToProperty())
+           ->map(c | $c->columnToProperty()),
+      taggedValues = [createPureTaggedDoc('GENERATED CLASS')]
+   );
+}
+
+function meta::relational::transform::autogen::createPureTaggedDoc(doc: String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
+{
+   ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue
+   (
+      tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(
+          profile = 'meta::pure::profiles::doc',
+          value = 'doc'
+      ),
+      value = $doc
    );
 }
 
@@ -89,7 +102,8 @@ function meta::relational::transform::autogen::joinToAssociation(join:Join[1], p
      _type = 'association',
      name = $joinName,
      package = $packageStr->removeTrailingColonsFromPackageString(),
-     properties = [$p1, $p2]
+     properties = [$p1, $p2],
+     taggedValues = [createPureTaggedDoc('GENERATED ASSOCIATION')]
    );
 }
 

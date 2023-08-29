@@ -404,11 +404,12 @@ public class LogicalPlanUtils
 
     public static Dataset getTempDataset(Datasets datasets)
     {
+        String mainDatasetName = datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
         return datasets.tempDataset().orElse(DatasetDefinition.builder()
                 .schema(datasets.mainDataset().schema())
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
-                .name(LogicalPlanUtils.generateTableNameWithSuffix(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), TEMP_DATASET_BASE_NAME))
+                .name(mainDatasetName + UNDERSCORE + TEMP_DATASET_BASE_NAME)
                 .alias(TEMP_DATASET_BASE_NAME)
                 .build());
     }
@@ -421,6 +422,7 @@ public class LogicalPlanUtils
         }
         else
         {
+            String mainDatasetName = datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
             Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
             List<Field> mainFieldsPlusDeleteIndicator = new ArrayList<>(datasets.mainDataset().schema().fields());
             mainFieldsPlusDeleteIndicator.add(deleteIndicator);
@@ -428,7 +430,7 @@ public class LogicalPlanUtils
                     .schema(datasets.mainDataset().schema().withFields(mainFieldsPlusDeleteIndicator))
                     .database(datasets.mainDataset().datasetReference().database())
                     .group(datasets.mainDataset().datasetReference().group())
-                    .name(LogicalPlanUtils.generateTableNameWithSuffix(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME))
+                    .name(mainDatasetName + UNDERSCORE + TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
                     .alias(TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
                     .build();
         }

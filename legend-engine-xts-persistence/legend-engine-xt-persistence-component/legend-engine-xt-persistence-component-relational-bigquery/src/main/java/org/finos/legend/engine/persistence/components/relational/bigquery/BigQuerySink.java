@@ -139,7 +139,7 @@ public class BigQuerySink extends AnsiSqlSink
                 LOGICAL_PLAN_VISITOR_BY_CLASS,
                 (executor, sink, dataset) -> sink.doesTableExist(dataset),
                 (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
+                (executor, sink, dataset) -> sink.constructDatasetFromDatabase(dataset, new BigQueryDataTypeToLogicalDataTypeMapping()));
     }
 
     @Override

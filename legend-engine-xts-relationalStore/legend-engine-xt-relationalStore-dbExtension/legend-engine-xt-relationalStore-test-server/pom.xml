@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-dbExtension</artifactId>
-        <version>4.25.3-SNAPSHOT</version>
+        <version>4.26.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
@@ -37,10 +37,6 @@
                     <excludes>
                         <!-- Exclude Base class also for db specific tests -->
                         <exclude>**/Test_Relational_DbSpecific_UsingPureClientTestSuite.java</exclude>
-                        <exclude>**/Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite.java</exclude>
-                        <exclude>**/Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite.java</exclude>
-                        <exclude>**/Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite.java</exclude>
-                        <exclude>**/Test_Relational_DbSpecific_Postgres_UsingPureClientTestSuite.java</exclude>
                     </excludes>
                     <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>

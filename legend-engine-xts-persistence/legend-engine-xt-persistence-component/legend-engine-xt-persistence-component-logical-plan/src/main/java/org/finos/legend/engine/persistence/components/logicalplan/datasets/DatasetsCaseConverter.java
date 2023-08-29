@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.Optional;
@@ -23,26 +24,17 @@ import java.util.function.Function;
 public class DatasetsCaseConverter
 {
     DatasetCaseConverter datasetCaseConverter = new DatasetCaseConverter();
-    MetadataDatasetCaseConverter metadataDatasetCaseConverter = new MetadataDatasetCaseConverter();
 
-    public Datasets applyCaseOnDatasets(Datasets datasets, Function<String, String> strategy)
+    public Datasets applyCase(Datasets datasets, Function<String, String> strategy)
     {
         Dataset main = datasetCaseConverter.applyCaseOnDataset(datasets.mainDataset(), strategy);
         Dataset staging = datasetCaseConverter.applyCaseOnDataset(datasets.stagingDataset(), strategy);
         Optional<Dataset> temp = datasets.tempDataset().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<Dataset> tempWithDeleteIndicator = datasets.tempDatasetWithDeleteIndicator().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<Dataset> stagingWithoutDuplicates = datasets.stagingDatasetWithoutDuplicates().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
-        MetadataDataset metadataset;
-        if (datasets.metadataDataset().isPresent())
-        {
-            metadataset = datasets.metadataDataset().get();
-        }
-        else
-        {
-            metadataset = MetadataDataset.builder().build();
-        }
+        Optional<MetadataDataset> metadata = Optional.ofNullable(datasetCaseConverter.applyCaseOnMetadataDataset(datasets.metadataDataset().orElseThrow(IllegalStateException::new), strategy));
+        Optional<LockInfoDataset> lockInfo = Optional.ofNullable(datasetCaseConverter.applyCaseOnLockInfoDataset(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new), strategy));
 
-        Optional<MetadataDataset> metadata = Optional.ofNullable(metadataDatasetCaseConverter.applyCaseOnMetadataDataset(metadataset, strategy));
         return Datasets.builder()
             .mainDataset(main)
             .stagingDataset(staging)
@@ -50,6 +42,7 @@ public class DatasetsCaseConverter
             .tempDatasetWithDeleteIndicator(tempWithDeleteIndicator)
             .stagingDatasetWithoutDuplicates(stagingWithoutDuplicates)
             .metadataDataset(metadata)
+            .lockInfoDataset(lockInfo)
             .build();
     }
 }

@@ -66,24 +66,6 @@ Enum multiBinding::model::EntityType
 
 
 ###Relational
-Database multiBinding::store::SnowflakeDB
-(
-  Schema PERSON_SCHEMA
-  (
-    Table PERSON_TABLE
-    (
-      ID INTEGER PRIMARY KEY,
-      FIRSTNAME VARCHAR(100),
-      LASTNAME VARCHAR(100),
-      FIRM_DETAILS SEMISTRUCTURED,
-      ADDRESS_DETAILS SEMISTRUCTURED,
-      MANAGERID INTEGER
-    )
-  )
-
-  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
-)
-
 Database multiBinding::store::H2DB
 (
   Schema PERSON_SCHEMA
@@ -142,49 +124,6 @@ Binding multiBinding::store::AddressBinding
 }
 
 ###Mapping
-Mapping multiBinding::mapping::SnowflakeMapping
-(
-  multiBinding::model::Employee: Relational
-  {
-    ~primaryKey
-    (
-      [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
-    )
-    ~mainTable [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
-    firstName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
-    lastName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
-    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
-    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
-  }
-
-  multiBinding::model::EmployeeWithManager: Relational
-  {
-    ~primaryKey
-    (
-      [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
-    )
-    ~mainTable [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
-    firstName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
-    lastName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
-    firm: Binding multiBinding::store::FirmBinding : [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
-    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS,
-    manager[multiBinding_model_Employee]: [multiBinding::store::SnowflakeDB]@manager,
-    managerFirm: Binding multiBinding::store::FirmBinding : [multiBinding::store::SnowflakeDB]@manager | [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
-  }
-
-  multiBinding::model::Person: Relational
-  {
-    ~primaryKey
-    (
-      [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
-    )
-    ~mainTable [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
-    firstName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
-    lastName: [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
-    address: Binding multiBinding::store::AddressBinding : [multiBinding::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ADDRESS_DETAILS
-  }
-)
-
 Mapping multiBinding::mapping::MemSQLMapping
 (
   multiBinding::model::Employee: Relational
@@ -272,34 +211,6 @@ Mapping multiBinding::mapping::H2Mapping
 )
 
 ###Runtime
-Runtime multiBinding::runtime::SnowflakeRuntime
-{
-    mappings :
-    [
-        multiBinding::mapping::SnowflakeMapping
-    ];
-    connections :
-    [
-        multiBinding::store::SnowflakeDB :
-        [
-            connection_1 : #{
-                RelationalDatabaseConnection {
-                    store: multiBinding::store::SnowflakeDB;
-                    type: Snowflake;
-                    specification: Snowflake
-                    {
-                        name: 'dbName';
-                        account: 'account';
-                        warehouse: 'warehouse';
-                        region: 'region';
-                    };
-                    auth: Test;
-                }
-            }#
-        ]
-    ];
-}
-
 Runtime multiBinding::runtime::MemSQLRuntime
 {
     mappings :

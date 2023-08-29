@@ -33,7 +33,5 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
 {
     String location();
 
-    List<String> files();
-
     Optional<String> fileFormat();
 }

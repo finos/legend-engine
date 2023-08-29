@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.schemaevolution;
 
 import org.finos.legend.engine.persistence.components.IngestModeTest;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -26,6 +27,9 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
+import org.finos.legend.engine.persistence.components.scenarios.BitemporalDeltaSourceSpecifiesFromAndThroughScenarios;
+import org.finos.legend.engine.persistence.components.scenarios.BitemporalDeltaSourceSpecifiesFromOnlyScenarios;
+import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
@@ -66,7 +70,7 @@ public class SchemaEvolutionTest extends IngestModeTest
                     {
                         throw new UnsupportedOperationException();
                     },
-                    (v, w, x, y, z) ->
+                    (x, y, z) ->
                     {
                         throw new UnsupportedOperationException();
                     });
@@ -681,5 +685,54 @@ public class SchemaEvolutionTest extends IngestModeTest
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
         Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
+    }
+
+
+    @Test
+    void testBitemporalDeltaSourceSpeciesBothFieldsSchemaEvolution()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().build());
+
+        BitemporalDeltaSourceSpecifiesFromAndThroughScenarios scenarios = new BitemporalDeltaSourceSpecifiesFromAndThroughScenarios();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+
+        Dataset mainTable = scenario.getMainTable();
+        Dataset stagingTable = scenario.getStagingTable();
+        IngestMode ingestMode = scenario.getIngestMode();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+        // Use the planner utils to return the sql
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        Assertions.assertTrue(sqlsForSchemaEvolution.isEmpty());
+    }
+
+    @Test
+    void testBitemporalDeltaSourceSpeciesFromOnlyFieldsSchemaEvolution()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().build());
+
+        BitemporalDeltaSourceSpecifiesFromOnlyScenarios scenarios = new BitemporalDeltaSourceSpecifiesFromOnlyScenarios();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+
+        Dataset mainTable = scenario.getDatasets().mainDataset();
+        Dataset stagingTable = scenario.getDatasets().stagingDataset();
+        IngestMode ingestMode = scenario.getIngestMode();
+
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+        // Use the planner utils to return the sql
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        Assertions.assertTrue(sqlsForSchemaEvolution.isEmpty());
     }
 }

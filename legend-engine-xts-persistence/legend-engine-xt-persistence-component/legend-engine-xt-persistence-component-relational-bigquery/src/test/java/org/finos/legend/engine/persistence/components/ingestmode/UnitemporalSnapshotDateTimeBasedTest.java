@@ -62,7 +62,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithoutPartitionWithDefaultEmptyBatchHandling(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
