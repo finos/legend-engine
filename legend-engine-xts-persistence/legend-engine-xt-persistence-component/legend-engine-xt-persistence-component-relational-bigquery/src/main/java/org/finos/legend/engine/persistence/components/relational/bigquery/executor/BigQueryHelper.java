@@ -250,7 +250,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         SchemaDefinition schemaDefinition = SchemaDefinition.builder()
                 .addAllFields(fields)
                 .build();
-        return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
+        return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).datasetAdditionalProperties(dataset.datasetAdditionalProperties()).build();
     }
 
     private List<String> fetchPrimaryKeys(String tableName, String schemaName, String databaseName)
