@@ -692,16 +692,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema1",
@@ -727,16 +724,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema1",
@@ -778,16 +772,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema1",
@@ -813,16 +804,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema1",
@@ -848,16 +836,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema1",
@@ -875,16 +860,13 @@
       ]
     },
     {
-      "superTypes": [
-        "meta::pure::metamodel::type::Any"
-      ],
       "taggedValues": [
         {
           "tag": {
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED CLASS"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema2",
@@ -916,7 +898,7 @@
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED ASSOCIATION"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests",
@@ -947,7 +929,7 @@
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED ASSOCIATION"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests",
@@ -977,7 +959,7 @@
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED ASSOCIATION"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests",
@@ -1009,7 +991,7 @@
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED ASSOCIATION"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests",
@@ -1040,7 +1022,7 @@
             "profile": "meta::pure::profiles::doc",
             "value": "doc"
           },
-          "value": "GENERATED ASSOCIATION"
+          "value": "Generated Element"
         }
       ],
       "package": "meta::relational::transform::autogen::tests",
