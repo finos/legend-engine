@@ -2875,3 +2875,79 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                      '-----\n', $result->cast(@String)->toOne(), $db);
    },{| true});
 }
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenWithQuotedColumnsForViews():Boolean[1]
+{
+  // Purposefully asserting on plan string to assert we add quotes in join columns
+  
+  let query = {|meta::pure::lineage::scanRelations::test::Party.all()->project([r | $r.identifier.identifier],['id'])->distinct()};
+  let mapping = meta::pure::lineage::scanRelations::test::MappingWithJoinToSchemaInAnotherView;
+  let db = meta::pure::lineage::scanRelations::test::DB2;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let tableRowIdentifiers = [
+    meta::relational::testDataGeneration::createTableRowIdentifiers($db, 'E', 'Entity', [
+        meta::relational::testDataGeneration::createRowIdentifier(['entityID'], ['2'])
+    ])
+  ];
+  
+  let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+  assertEquals(
+    'MultiResultSequence\n' +
+    '(\n' +
+    '  type = meta::pure::metamodel::type::Any\n' +
+    '  (\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=Entity, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=Entity, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("entityID", INT)]\n' +
+    '            sql = select top 20 "root".entityID as "entityID" from E.Entity as "root" where "root".entityID = \'2\'\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=AltIDToEntityMapping, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("alternativeID",INT), ("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0_c0_v\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=AltIDToEntityMapping, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("alternativeID",INT), ("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("alternativeID", INT), ("entityID", INT)]\n' +
+    '            sql = select top 20 "root".alternativeID as "alternativeID", "root".entityID as "entityID" from (select top 20 "altidtoentitymapping_0".root_pk_gen_alternativeID as "alternativeID", "altidtoentitymapping_0".root_pk_gen_entityID as "entityID" from (select * from (${res_c0}) as "root") as "res_c0_1" inner join (select "root".alternativeID as altID, "root".entityID as entityID, "root".alternativeID as root_pk_gen_alternativeID, "root".entityID as root_pk_gen_entityID from E.AltIDToEntityMapping as "root") as "altidtoentitymapping_0" on ("res_c0_1"."entityID" = "altidtoentitymapping_0".entityID)) as "res_c0_0" inner join E.AltIDToEntityMapping as "root" on ("res_c0_0"."entityID" = "root".entityID and "res_c0_0"."alternativeID" = "root".alternativeID)\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0_c0\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("altID", INT), ("entityID", INT)]\n' +
+    '            sql = select top 20 "root"."alternativeID" as "altID", "root"."entityID" as "entityID" from (select * from (${res_c0_c0_v}) as "root") as "root"\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
+}
