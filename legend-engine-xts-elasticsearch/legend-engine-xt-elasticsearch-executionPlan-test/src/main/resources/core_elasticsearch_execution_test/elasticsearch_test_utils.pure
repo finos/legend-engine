@@ -22,20 +22,3 @@ native function meta::external::store::elasticsearch::executionTest::utils::star
 native function meta::external::store::elasticsearch::executionTest::utils::requestElasticsearchTestServer(imageTag: String[1], requestJson: String[1]): String[1];
 
 native function meta::external::store::elasticsearch::executionTest::utils::stopElasticsearchTestServer(imageTag: String[1]): Nil[0];
-
-function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::elasticsearch::executionTest::utils::bindElasticSearchTestPlanToPlatform(): LocalPlatformBinder[1]
-{
-   ^LocalPlatformBinder
-   (
-      overrides = [],
-
-      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-
-         let extensionsWithPlatformBindings = $extensions->concatenate(meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]));
-
-         // Using LegendJava as the default for local platform binding
-         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-
-      }
-   )
-}
