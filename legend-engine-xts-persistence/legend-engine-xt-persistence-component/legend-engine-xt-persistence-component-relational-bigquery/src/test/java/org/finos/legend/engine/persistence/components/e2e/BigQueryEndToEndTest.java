@@ -63,12 +63,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class BigQueryEndToEndTest
@@ -134,7 +134,7 @@ public class BigQueryEndToEndTest
             .build();
 
     protected IngestorResult ingestViaExecutorAndVerifyStagingFilters(IngestMode ingestMode, SchemaDefinition stagingSchema,
-                                                                      DatasetFilter stagingFilter, String path, Clock clock, boolean VerifyStagingFilters) throws IOException, InterruptedException
+            DatasetFilter stagingFilter, String path, Clock clock, boolean VerifyStagingFilters) throws IOException, InterruptedException
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)

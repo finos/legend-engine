@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
+package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
-import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-import java.util.Optional;
-
-public class BatchStartTimestampVisitor implements LogicalPlanVisitor<BatchStartTimestamp>
+public class DatetimeValueVisitor implements LogicalPlanVisitor<DatetimeValue>
 {
 
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, BatchStartTimestamp current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, DatetimeValue current, VisitorContext context)
     {
-        Optional<String> batchStartTimestampPattern = context.batchStartTimestampPattern();
-        DatetimeValue datetimeValue = DatetimeValue.of(batchStartTimestampPattern.orElse(context.batchStartTimestamp()));
-        return new DatetimeValueVisitor().visit(prev, datetimeValue, context);
+        StringValue datetimeValue = StringValue.of(current.value());
+        return new StringValueVisitor().visit(prev, datetimeValue, context);
     }
 }
