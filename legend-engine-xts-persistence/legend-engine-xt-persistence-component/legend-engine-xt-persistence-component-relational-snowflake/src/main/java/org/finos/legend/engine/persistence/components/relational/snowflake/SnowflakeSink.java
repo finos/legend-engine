@@ -223,9 +223,9 @@ public class SnowflakeSink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
-        List<TabularData> results = executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues);
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
         List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
 

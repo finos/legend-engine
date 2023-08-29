@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -36,6 +39,8 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
@@ -68,6 +73,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class H2Sink extends AnsiSqlSink
 {
@@ -186,5 +193,42 @@ public class H2Sink extends AnsiSqlSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
+    }
+
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
+
+        long incomingRecordCount = 0;
+        long rowsInserted = 0;
+
+        SqlPlan incomingRecordCountSqlPlan = statisticsSqlPlan.get(StatisticName.INCOMING_RECORD_COUNT);
+        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
+
+        List<TabularData> incomingRecordCountResults = executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues);
+        List<TabularData> rowsInsertedResults = executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues);
+
+        for (Map<String, Object> row: incomingRecordCountResults.get(0).getData())
+        {
+            incomingRecordCount += (Long) row.get(StatisticName.INCOMING_RECORD_COUNT.get());
+        }
+        for (Map<String, Object> row: rowsInsertedResults.get(0).getData())
+        {
+            rowsInserted += (Long) row.get(StatisticName.ROWS_INSERTED.get());
+        }
+
+        IngestorResult result;
+        Map<StatisticName, Object> stats = new HashMap<>();
+        stats.put(StatisticName.ROWS_INSERTED, rowsInserted);
+        stats.put(StatisticName.INCOMING_RECORD_COUNT, incomingRecordCount);
+        stats.put(StatisticName.FILES_LOADED, 1);
+        result = IngestorResult.builder()
+            .status(IngestStatus.SUCCEEDED)
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .build();
+
+        return result;
     }
 }

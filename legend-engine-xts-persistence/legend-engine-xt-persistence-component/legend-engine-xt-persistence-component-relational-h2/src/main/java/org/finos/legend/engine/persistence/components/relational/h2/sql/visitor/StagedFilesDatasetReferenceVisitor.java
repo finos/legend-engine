@@ -32,7 +32,7 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
             throw new IllegalStateException("Only H2StagedFilesDatasetProperties are supported for H2 Sink");
         }
         H2StagedFilesDatasetProperties datasetProperties = (H2StagedFilesDatasetProperties) current.properties();
-        CsvRead csvRead = new CsvRead(datasetProperties.files().get(0), String.join(",", current.columns()), "NULL");
+        CsvRead csvRead = new CsvRead(datasetProperties.files().get(0), String.join(",", current.columns()), null);
         prev.push(csvRead);
         return new VisitorResult(null);
     }

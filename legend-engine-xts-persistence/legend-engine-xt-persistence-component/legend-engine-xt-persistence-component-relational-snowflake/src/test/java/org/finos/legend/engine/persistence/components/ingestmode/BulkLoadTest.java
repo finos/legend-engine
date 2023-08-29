@@ -249,7 +249,7 @@ public class BulkLoadTest
                     .digestUdfName("LAKEHOUSE_UDF")
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
@@ -267,7 +267,7 @@ public class BulkLoadTest
                     .digestField("digest")
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
@@ -304,7 +304,7 @@ public class BulkLoadTest
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
