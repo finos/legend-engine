@@ -31,6 +31,8 @@
         <module>legend-engine-test-runner-shared</module>
         <module>legend-engine-test-server-shared</module>
         <module>legend-engine-test-data-generation</module>
+        <module>legend-engine-execution-test-data-generation</module>
+        <module>legend-engine-execution-test-data-generation-api</module>
         <module>legend-engine-testable</module>
     </modules>
 </project>
