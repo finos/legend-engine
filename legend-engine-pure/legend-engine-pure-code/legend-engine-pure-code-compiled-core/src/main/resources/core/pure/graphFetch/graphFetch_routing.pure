@@ -284,7 +284,7 @@ function meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation(rout
   print(if($debug.debug,|$permutations->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));    
 
   print(if($debug.debug,|'\n'+$debug.space+'Filtered Permutations ('+$setsInScope.id->size()->toString()+')\n', |''));
-  let filteredPermutationSet = $permutations->filter(permSet | $permSet.values.sets->forAll(s | ($s.class == $sourceSetImplementation.class && $s == $sourceSetImplementation) || $s.class != $sourceSetImplementation.class));
+  let filteredPermutationSet = $permutations->filter(permSet | $permSet.values.sets->forAll(s | ($s.class == $sourceSetImplementation.class && $s.id == $sourceSetImplementation.id) || $s.class != $sourceSetImplementation.class));
 
   print(if($debug.debug,|$filteredPermutationSet->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));
 
