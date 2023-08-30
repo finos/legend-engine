@@ -60,7 +60,7 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
       - name: Build
-        run: mvn clean install -DskipTests=true
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-redshift/legend-engine-xt-relationalStore-redshift-execution-tests -am clean install -DskipTests=true
         env:
           MAVEN_OPTS: -Xmx4g
       - name: SQL Generation Integration Tests
