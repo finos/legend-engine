@@ -16,16 +16,19 @@ package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -50,7 +53,7 @@ public class HelperMasteryGrammarComposer
     {
     }
 
-    public static String renderMastery(MasterRecordDefinition masterRecordDefinition, int indentLevel, PureGrammarComposerContext context)
+    public static String renderMasterRecordDefinition(MasterRecordDefinition masterRecordDefinition, int indentLevel, PureGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder();
         builder.append("MasterRecordDefinition ").append(convertPath(masterRecordDefinition.getPath())).append("\n")
@@ -61,9 +64,20 @@ public class HelperMasteryGrammarComposer
         {
             builder.append(renderPrecedenceRules(masterRecordDefinition.precedenceRules, indentLevel, context));
         }
-        builder.append(renderRecordSources(masterRecordDefinition.sources, indentLevel))
+        if (masterRecordDefinition.postCurationEnrichmentService != null)
+        {
+            builder.append(renderPostCurationEnrichmentService(masterRecordDefinition.postCurationEnrichmentService, indentLevel));
+        }
+        builder.append(renderRecordSources(masterRecordDefinition.sources, indentLevel, context))
                 .append("}");
         return builder.toString();
+    }
+
+    public static String renderDataProvider(DataProvider dataProvider)
+    {
+        return dataProvider.dataProviderType +
+                "DataProvider " +
+                convertPath(dataProvider.getPath()) + ";\n";
     }
 
     /*
@@ -74,10 +88,16 @@ public class HelperMasteryGrammarComposer
         return getTabString(indentLevel) + "modelClass: " + modelClass + ";\n";
     }
 
+    private static String renderPostCurationEnrichmentService(String service, int indentLevel)
+    {
+        return getTabString(indentLevel) + "postCurationEnrichmentService: " + service + ";\n";
+    }
+
+
     /*
      * MasterRecordSources
      */
-    private static String renderRecordSources(List<RecordSource> sources, int indentLevel)
+    private static String renderRecordSources(List<RecordSource> sources, int indentLevel, PureGrammarComposerContext context)
     {
         StringBuilder sourcesStr = new StringBuilder()
                 .append(getTabString(indentLevel)).append("recordSources:\n")
@@ -85,7 +105,7 @@ public class HelperMasteryGrammarComposer
                 ListIterate.forEachWithIndex(sources, (source, i) ->
                 {
                     sourcesStr.append(i > 0 ? ",\n" : "");
-                    sourcesStr.append(source.accept(new RecordSourceComposer(indentLevel)));
+                    sourcesStr.append(source.accept(new RecordSourceComposer(indentLevel, context)));
                     sourcesStr.append(getTabString(indentLevel + 1)).append("}");
                 });
                 sourcesStr.append("\n").append(getTabString(indentLevel)).append("]\n");
@@ -95,10 +115,12 @@ public class HelperMasteryGrammarComposer
     private static class RecordSourceComposer implements RecordSourceVisitor<String>
     {
         private final int indentLevel;
+        private final PureGrammarComposerContext context;
 
-        private RecordSourceComposer(int indentLevel)
+        private RecordSourceComposer(int indentLevel, PureGrammarComposerContext context)
         {
             this.indentLevel = indentLevel;
+            this.context = context;
         }
 
         @Override
@@ -107,42 +129,46 @@ public class HelperMasteryGrammarComposer
             return getTabString(indentLevel + 1) + recordSource.id + ": {\n" +
                     getTabString(indentLevel + 2) + "description: " + convertString(recordSource.description, true) + ";\n" +
                     getTabString(indentLevel + 2) + "status: " + recordSource.status + ";\n" +
-                    (recordSource.parseService != null ? (getTabString(indentLevel + 2) + "parseService: " + recordSource.parseService + ";\n") : "") +
-                    getTabString(indentLevel + 2) + "transformService: " + recordSource.transformService + ";\n" +
+                    getTabString(indentLevel + 2) + renderRecordService(recordSource.recordService, indentLevel + 2) +
+                    (recordSource.dataProvider != null ? getTabString(indentLevel + 2) + "dataProvider: " + recordSource.dataProvider + ";\n" : "") +
+                    getTabString(indentLevel + 2) + renderTrigger(recordSource.trigger, indentLevel + 2) +
                     (recordSource.sequentialData != null ? getTabString(indentLevel + 2) + "sequentialData: " + recordSource.sequentialData + ";\n" : "") +
                     (recordSource.stagedLoad != null ? getTabString(indentLevel + 2) + "stagedLoad: " + recordSource.stagedLoad + ";\n" : "") +
                     (recordSource.createPermitted != null ? getTabString(indentLevel + 2) + "createPermitted: " + recordSource.createPermitted + ";\n" : "") +
                     (recordSource.createBlockedException != null ? getTabString(indentLevel + 2) + "createBlockedException: " + recordSource.createBlockedException + ";\n" : "") +
-                    ((recordSource.getTags() != null && !recordSource.getTags().isEmpty()) ? getTabString(indentLevel + 1) + renderTags(recordSource, indentLevel) + "\n" : "") +
-                    getTabString(indentLevel + 1) + renderPartitions(recordSource, indentLevel) + "\n";
+                    (recordSource.allowFieldDelete != null ? getTabString(indentLevel + 2) + "allowFieldDelete: " + recordSource.allowFieldDelete + ";\n" : "") +
+                    (recordSource.authorization != null ? renderAuthorization(recordSource.authorization, indentLevel + 2) : "");
         }
-    }
 
-    private static String renderPartitions(RecordSource source, int indentLevel)
-    {
-        StringBuffer strBuf = new StringBuffer();
-        strBuf.append(getTabString(indentLevel)).append("partitions:\n");
-        strBuf.append(getTabString(indentLevel + 2)).append("[");
-        ListIterate.forEachWithIndex(source.partitions, (partition, i) ->
+        private String renderRecordService(RecordService recordService, int indentLevel)
         {
-            strBuf.append(i > 0 ? "," : "").append("\n");
-            strBuf.append(renderPartition(partition, indentLevel + 3)).append("\n");
-            strBuf.append(getTabString(indentLevel + 3)).append("}");
-        });
-        strBuf.append("\n").append(getTabString(indentLevel + 2)).append("]");
-        return strBuf.toString();
-    }
+            return  "recordService: {\n" +
+                    (recordService.parseService != null ? getTabString(indentLevel + 1) + "parseService: " + recordService.parseService + ";\n" : "") +
+                    (recordService.transformService != null ? getTabString(indentLevel + 1) + "transformService: " + recordService.transformService + ";\n" : "") +
+                    renderAcquisition(recordService.acquisitionProtocol, indentLevel) +
+                    getTabString(indentLevel) + "};\n";
+        }
 
-    private static String renderTags(Tagable tagable, int indentLevel)
-    {
-        return getTabString(indentLevel) + "tags: [" + LazyIterate.collect(tagable.getTags(), t -> convertString(t, true)).makeString(", ") + "];";
-    }
+        private String renderAcquisition(AcquisitionProtocol acquisitionProtocol, int indentLevel)
+        {
+            List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
+            String text = IMasteryComposerExtension.process(acquisitionProtocol, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraAcquisitionProtocolComposers), indentLevel, context);
+            return getTabString(indentLevel + 1) + "acquisitionProtocol: " + text;
+        }
 
-    private static String renderPartition(RecordSourcePartition partition, int indentLevel)
-    {
-        StringBuilder builder = new StringBuilder().append(getTabString(indentLevel)).append(partition.id).append(": {");
-        builder.append((partition.getTags() != null && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
-        return builder.toString();
+        private String renderTrigger(Trigger trigger, int indentLevel)
+        {
+            List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
+            String triggerText = IMasteryComposerExtension.process(trigger, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraTriggerComposers), indentLevel, context);
+            return "trigger: " + triggerText + ";\n";
+        }
+
+        private String renderAuthorization(Authorization authorization, int indentLevel)
+        {
+            List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
+            String authorizationText = IMasteryComposerExtension.process(authorization, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraAuthorizationComposers), indentLevel, context);
+            return getTabString(indentLevel) + "authorization: " + authorizationText;
+        }
     }
 
     /*
@@ -332,12 +358,17 @@ public class HelperMasteryGrammarComposer
             if (ruleScope instanceof RecordSourceScope)
             {
                 RecordSourceScope recordSourceScope = (RecordSourceScope) ruleScope;
-                return builder.append("RecordSourceScope { ").append(recordSourceScope.recordSourceId).toString();
+                return builder.append("RecordSourceScope {").append(recordSourceScope.recordSourceId).toString();
             }
             if (ruleScope instanceof DataProviderTypeScope)
             {
                 DataProviderTypeScope dataProviderTypeScope = (DataProviderTypeScope) ruleScope;
-                return builder.append("DataProviderTypeScope { ").append(dataProviderTypeScope.dataProviderType.name()).toString();
+                return builder.append("DataProviderTypeScope {").append(dataProviderTypeScope.dataProviderType).toString();
+            }
+            if (ruleScope instanceof DataProviderIdScope)
+            {
+                DataProviderIdScope dataProviderTypeScope = (DataProviderIdScope) ruleScope;
+                return builder.append("DataProviderIdScope {").append(dataProviderTypeScope.dataProviderId).toString();
             }
             return "";
         }
@@ -378,7 +409,6 @@ public class HelperMasteryGrammarComposer
         {
             return getTabString(indentLevel) + "identityResolution: \n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "modelClass: " + val.modelClass + ";\n" +
                     getTabString(indentLevel) + renderResolutionQueries(val, this.indentLevel, this.context) + "\n" +
                     getTabString(indentLevel) + "}\n";
         }
