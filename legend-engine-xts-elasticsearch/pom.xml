@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-elasticsearch</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - ElasticSearch - Parent</name>
+    <name>Legend Engine - XTS - ElasticSearch</name>
 
     <modules>
         <module>legend-engine-xt-elasticsearch-pure-specification-metamodel</module>

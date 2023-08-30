@@ -30,6 +30,7 @@
 
     <modules>
         <module>legend-engine-xt-authentication-grammar</module>
+        <module>legend-engine-xt-authentication-connection-factory</module>
         <module>legend-engine-xt-authentication-implementation-core</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
         <module>legend-engine-xt-authentication-implementation-vault-aws</module>
