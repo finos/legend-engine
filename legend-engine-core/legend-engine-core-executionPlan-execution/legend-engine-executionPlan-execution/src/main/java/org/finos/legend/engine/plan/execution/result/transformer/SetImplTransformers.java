@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.result.transformer;
 
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.block.factory.Functions;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -84,22 +85,25 @@ public class SetImplTransformers
 
     private <T> Function<Object, Object> buildTransformer(TransformerInput<T> transformerInput)
     {
-        if (transformerInput.type != null && transformerInput.test.valueOf(transformerInput.identifier))
+        if (transformerInput.type != null)
         {
-            return transformerInput.transformer.valueOf(transformerInput.identifier);
+            if (transformerInput.test.valueOf(transformerInput.identifier))
+            {
+                return transformerInput.transformer.valueOf(transformerInput.identifier);
+            }
+
+            switch (transformerInput.type)
+            {
+                case "Boolean":
+                    return this::toBoolean;
+                case "StrictDate":
+                case "DateTime":
+                case "Date":
+                    return o -> o instanceof Date ? DateFunctions.fromDate((Date) o) : o;
+            }
         }
-        else if (transformerInput.type != null && transformerInput.type.equals("Boolean"))
-        {
-            return o -> toBoolean(o);
-        }
-        else if (transformerInput.type != null && (transformerInput.type.equals("StrictDate") || transformerInput.type.equals("DateTime") || transformerInput.type.equals("Date")))
-        {
-            return o -> o instanceof Date ? DateFunctions.fromDate((Date) o) : o;
-        }
-        else
-        {
-            return o -> o;
-        }
+
+        return Functions.identity();
     }
 
 }

@@ -13,6 +13,8 @@
 // limitations under the License.
 
 
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::mapping::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::runtime::*;
@@ -38,7 +40,11 @@ function <<test.Test>> meta::relational::tests::milestoning::distinct::testDisti
    let result = execute(|Product.all(%2015-8-16)->project([p|$p.id, p|$p.name, p|$p.type],['id','name', 'type']), milestoningdistinctmapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['1,ProductName,STOCK', '2,ProductName1,STOCK'], $tds.rows->map(r|$r.values->makeString(','))->sort());
-   assertSameSQL('select "root".id as "id", "root".name as "name", "root".type as "type" from (select distinct "producttable_1".id as id, "producttable_1".name as name, "producttable_1".type as type, \'2015-08-16\' as "k_businessDate" from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-08-16\' and "producttable_1".thru_z > \'2015-08-16\') as "root"', $result);   
+   assertEqualsH2Compatible(
+    'select "root".id as "id", "root".name as "name", "root".type as "type" from (select distinct "producttable_1".id as id, "producttable_1".name as name, "producttable_1".type as type, \'2015-08-16\' as "k_businessDate" from ProductTable as "producttable_1" where "producttable_1".from_z <= \'2015-08-16\' and "producttable_1".thru_z > \'2015-08-16\') as "root"', 
+    'select "root".id as "id", "root".name as "name", "root".type as "type" from (select distinct "producttable_1".id as id, "producttable_1".name as name, "producttable_1".type as type, \'2015-08-16\' as "k_businessDate" from ProductTable as "producttable_1" where "producttable_1".from_z <= DATE\'2015-08-16\' and "producttable_1".thru_z > DATE\'2015-08-16\') as "root"', 
+    $result->sqlRemoveFormatting()
+   );   
 }
 
 ###Relational

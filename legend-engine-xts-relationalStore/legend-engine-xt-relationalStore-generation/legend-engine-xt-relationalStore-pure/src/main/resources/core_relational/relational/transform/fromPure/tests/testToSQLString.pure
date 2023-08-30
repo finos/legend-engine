@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::functions::hash::*;
 import meta::relational::tests::functions::sqlstring::*;
 import meta::pure::mapping::*;
@@ -163,7 +164,11 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
                           ->project([t|$t.account.name, t|$t.quantity], ['accountName', 'quantity']);
    };
    let s = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= \'2015-02-01\'', $s);
+   assertEqualsH2Compatible(
+    'select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= \'2015-02-01\'',
+    'select "accountTable_d#4_d_m1".name as "accountName", "root".quantity as "quantity" from tradeTable as "root" left outer join accountTable as "accountTable_d#4_d_m1" on ("root".accountID = "accountTable_d#4_d_m1".ID) where "root".tradeDate <= DATE\'2015-02-01\'',
+    $s->sqlRemoveFormatting()
+  );
 }
 
 function meta::relational::tests::functions::sqlstring::filterReportDates<T>(x:T[1], end:Date[1], path:Function<{T[1]->Date[0..1]}>[1]):Boolean[1]
@@ -428,7 +433,11 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
                                                    ], 
                                                    ['a']), 
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"', $result);
+   assertEqualsH2Compatible(
+    'select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"',
+    'select dateadd(SECOND, 86400, DATE\'2011-12-30\') as "a" from personTable as "root"',
+    $result->sqlRemoveFormatting()
+  );
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForAdjustStrictDateUsageInFiltersForH2():Boolean[1]
@@ -438,7 +447,11 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
                                                    ], 
                                                    ['a']), 
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'', $result);
+   assertEqualsH2Compatible(
+    'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'',
+    'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, DATE\'2011-12-30\') > DATE\'2011-12-30\'',
+    $result->sqlRemoveFormatting()
+  );
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGenerationForDatePartForH2():Boolean[1]

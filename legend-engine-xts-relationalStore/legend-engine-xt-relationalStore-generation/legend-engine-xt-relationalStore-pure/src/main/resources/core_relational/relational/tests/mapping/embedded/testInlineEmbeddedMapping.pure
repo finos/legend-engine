@@ -14,6 +14,7 @@
 
 ###Pure
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
@@ -78,8 +79,11 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,Profit\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
-
+   assertEqualsH2Compatible(
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"', 
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"', 
+    $result->sqlRemoveFormatting()
+  );
  }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testGroupByComplexAgg():Boolean[1]
@@ -92,8 +96,11 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,sum\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
-
+   assertEqualsH2Compatible(
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"', 
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"', 
+    $result->sqlRemoveFormatting()
+  );
  }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testQualifierProperty():Boolean[1]

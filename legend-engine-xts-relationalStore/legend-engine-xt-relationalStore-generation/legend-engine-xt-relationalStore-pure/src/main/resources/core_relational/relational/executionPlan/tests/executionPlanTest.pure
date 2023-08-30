@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::*;
@@ -176,7 +177,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 {
    let generatedPlan = executionPlan({optionalPnl: Float[0..1]|Order.all()->filter(x|$x.pnl==$optionalPnl)}, simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '  resultSizeRange = *\n'+
@@ -195,7 +196,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalPnl:Float[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalPnl![], \'"orderpnlview_0".pnl = ${varPlaceHolderToString(optionalPnl![] "CAST(" " AS FLOAT)" {} "null")}\', \'"orderpnlview_0".pnl is null\')})\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -230,7 +250,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 {
    let generatedPlan = executionPlan({optionalCensusDate: Date[0..1]|Location.all()->filter(t|$t.censusdate==$optionalCensusDate)}, simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Location | simpleRelationalMappingInc.meta_relational_tests_model_simple_Location)]\n'+
                   '  resultSizeRange = *\n'+
@@ -249,7 +269,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Location | simpleRelationalMappingInc.meta_relational_tests_model_simple_Location)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalCensusDate:Date[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Location | simpleRelationalMappingInc.meta_relational_tests_model_simple_Location)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("place", VARCHAR(200)), ("censusdate", DATE)]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".PLACE as "place", "root".date as "censusdate" from locationTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalCensusDate![], \'"root".date = ${varPlaceHolderToString(optionalCensusDate![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'"root".date is null\')})\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -257,7 +296,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 {
    let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '  resultSizeRange = *\n'+
@@ -276,7 +315,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalSettlementDateTime:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(optionalSettlementDateTime![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'"root".settlementDateTime is null\')})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -284,7 +342,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
 {
    let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '  resultSizeRange = *\n'+
@@ -303,7 +361,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalSettlementDateTime:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalSettlementDateTime![]) "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'"root".settlementDateTime is null\')})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParametersString():Boolean[1]
@@ -364,7 +441,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 {
    let generatedPlan = executionPlan({optionalFloatLeft: Float[0..1], optionalFloatRight :Float[0..1]|Address.all()->filter(a|$optionalFloatLeft==$optionalFloatRight)}, simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '  resultSizeRange = *\n'+
@@ -383,7 +460,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalFloatLeft:Float[0..1], optionalFloatRight:Float[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalFloatLeft![], optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'${varPlaceHolderToString(optionalFloatLeft![] "CAST(" " AS FLOAT)" {} "null")} = ${varPlaceHolderToString(optionalFloatRight![] "CAST(" " AS FLOAT)" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -391,7 +487,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 {
    let generatedPlan = executionPlan({optionalDateLeft: Date[0..1], optionalDateRight :Date[0..1]|Address.all()->filter(a|$optionalDateLeft==$optionalDateRight)}, simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '  resultSizeRange = *\n'+
@@ -410,7 +506,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalDateLeft:Date[0..1], optionalDateRight:Date[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalDateLeft![], optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'${varPlaceHolderToString(optionalDateLeft![] "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalDateRight![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -418,7 +533,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 {
    let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '  resultSizeRange = *\n'+
@@ -437,7 +552,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalLeft:DateTime[0..1], optionalRight:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(optionalRight![] "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
@@ -445,7 +579,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
 {
    let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence\n'+
+   let expectedLegacyH2 = 'Sequence\n'+
                   '(\n'+
                   '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '  resultSizeRange = *\n'+
@@ -464,7 +598,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-   assertEquals($expected, $result);
+   let expectedNewH2 = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalLeft:DateTime[0..1], optionalRight:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalLeft![]) "TIMESTAMP\\\'" "\\\'" {} "null")} = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalRight![]) "TIMESTAMP\\\'" "\\\'" {} "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $result);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_H2():Boolean[1]
@@ -766,9 +919,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, []);
    let planAsString = $planWithString.second;
-   let expected = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
-   assertEquals($expected, $planAsString);
-   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1);
+   let expectedLegacyH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedNewH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $planAsString);
+   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
 }
 
@@ -776,9 +930,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, 'GMT');
    let planAsString = $planWithString.second;
-   let expected = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
-   assertEquals($expected, $planAsString);
-   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1);
+   let expectedLegacyH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedNewH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $planAsString);
+   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 18:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 18:00:00\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
 }
 
@@ -786,9 +941,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, 'EST');
    let planAsString = $planWithString.second;
-   let expected = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
-   assertEquals($expected, $planAsString);
-   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 13:00:00\'') != -1);
+   let expectedLegacyH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   let expectedNewH2 = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $planAsString);
+   assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 13:00:00\'') != -1 || $planAsString->indexOf('settlementDateTime = TIMESTAMP\'2019-04-08 13:00:00\'') != -1);
    assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>', 
                         '<#function collectionSize collection> <#return collection?size?c> </#function>', 
                         '<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(",")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>', 
@@ -802,9 +958,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone([]);
    let planAsString = $planWithString.second;
-   let expected = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'${dt}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
-   assertEquals($expected, $planAsString);
-   assert($planAsString->indexOf('settlementDateTime = \'${dt}\'') != -1);
+   let expectedLegacyH2 = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'${dt}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   let expectedNewH2 = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${dt}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $planAsString);
+   assert($planAsString->indexOf('settlementDateTime = \'${dt}\'') != -1|| $planAsString->indexOf('settlementDateTime = TIMESTAMP\'${dt}\'') != -1);
    assertSameElements(templateFunctionsList(),$planWithString.first.processingTemplateFunctions);
 }
 
@@ -812,9 +969,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 {
    let planWithString = executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone('US/Arizona');
    let planAsString = $planWithString.second;
-   let expected = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
-   assertEquals($expected, $planAsString);
-   assert($planAsString->indexOf('settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'') != -1);
+   let expectedLegacyH2 = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   let expectedNewH2 = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", cast(case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as boolean) as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = TIMESTAMP\'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
+   assertEqualsH2Compatible($expectedLegacyH2, $expectedNewH2, $planAsString);
+   assert($planAsString->indexOf('settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'') != -1 || 'settlementDateTime = TIMESTAMP\'${GMTtoTZ( "[US/Arizona]" dt)}\'' != -1);
    assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>', 
                       '<#function collectionSize collection> <#return collection?size?c> </#function>', 
                       '<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(",")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>', 
@@ -924,7 +1082,38 @@ function <<test.Test>> meta::pure::executionPlan::tests::testClassPropertyOpenVa
                                  let reportEndDate = FiscalCalendarDate.all()->filter(d|$d.date == %2005-10-10)->toOne();
                                  SalesCredit.all()->filter(s|$s.tradeDate.date<$reportEndDate.date);}, myMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals(
+   assertEqualsH2Compatible(
+    'Sequence\n(\n' +
+            '  type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::SalesCredit | myMapping.meta_relational_tests_groupBy_datePeriods_domain_SalesCredit)]\n' +
+            '  resultSizeRange = *\n'+
+            '  (\n' +
+            '    Allocation\n' +
+            '    (\n' +
+            '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n' +
+            '      resultSizeRange = 1\n'+
+            '      name = reportEndDate\n' +
+            '      value = \n' +
+            '        (\n' +
+            '          Relational\n' +
+            '          (\n' +
+            '            type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n' +
+            '            resultSizeRange = 1\n'+
+            '            resultColumns = [("pk_0", DATE), ("pk_1", VARCHAR(15)), ("date", DATE), ("weekStart", DATE), ("weekEnd", DATE), ("day", INT), ("week", INT), ("dayOfWeekNumber", INT), ("yearEnd", DATE), ("yearStart", DATE)]\n'+
+            '            sql = select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2005-10-10\'\n' +
+            '            connection = TestDatabaseConnection(type = \"H2\")\n' +
+            '          )\n' +
+            '        )\n' +
+            '    )\n' +
+            '    Relational\n' +
+            '    (\n' +
+            '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::SalesCredit | myMapping.meta_relational_tests_groupBy_datePeriods_domain_SalesCredit)]\n' +
+            '      resultSizeRange = *\n'+
+            '      resultColumns = [("pk_0", INT), ("grossValue", DOUBLE)]\n'+
+            '      sql = select "root".key as "pk_0", "root".credits as "grossValue" from SALES_GCS as "root" left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where "calendar_0"."date" < \'${reportEndDate.date}\'\n' +
+            '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+            '    )\n' +
+            '  )\n' +
+            ')\n',
             'Sequence\n(\n' +
             '  type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::SalesCredit | myMapping.meta_relational_tests_groupBy_datePeriods_domain_SalesCredit)]\n' +
             '  resultSizeRange = *\n'+
@@ -941,7 +1130,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testClassPropertyOpenVa
             '            type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n' +
             '            resultSizeRange = 1\n'+
             '            resultColumns = [("pk_0", DATE), ("pk_1", VARCHAR(15)), ("date", DATE), ("weekStart", DATE), ("weekEnd", DATE), ("day", INT), ("week", INT), ("dayOfWeekNumber", INT), ("yearEnd", DATE), ("yearStart", DATE)]\n'+
-            '            sql = select \"root\".\"date\" as \"pk_0\", \"root\".\"calendar name\" as \"pk_1\", \"root\".\"date\" as \"date\", \"root\".\"fiscal week start\" as \"weekStart\", \"root\".\"fiscal week end\" as \"weekEnd\", \"root\".\"fiscal day\" as \"day\", \"root\".\"fiscal week\" as \"week\", \"root\".\"fiscal day of week\" as \"dayOfWeekNumber\", \"root\".\"fiscal year end\" as \"yearEnd\", \"root\".\"fiscal year start\" as \"yearStart\" from calendar as \"root\" where \"root\".\"date\" = \'2005-10-10\'\n' +
+            '            sql = select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = DATE\'2005-10-10\'\n' +
             '            connection = TestDatabaseConnection(type = \"H2\")\n' +
             '          )\n' +
             '        )\n' +
@@ -951,7 +1140,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testClassPropertyOpenVa
             '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::SalesCredit | myMapping.meta_relational_tests_groupBy_datePeriods_domain_SalesCredit)]\n' +
             '      resultSizeRange = *\n'+
             '      resultColumns = [("pk_0", INT), ("grossValue", DOUBLE)]\n'+
-            '      sql = select \"root\".key as \"pk_0\", \"root\".credits as \"grossValue\" from SALES_GCS as \"root\" left outer join calendar as \"calendar_0\" on (\"root\".tradeDate = \"calendar_0\".\"date\") where \"calendar_0\".\"date\" < \'${reportEndDate.date}\'\n' +
+            '      sql = select "root".key as "pk_0", "root".credits as "grossValue" from SALES_GCS as "root" left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where "calendar_0"."date" < TIMESTAMP\'${reportEndDate.date}\'\n' +
             '      connection = TestDatabaseConnection(type = \"H2\")\n' +
             '    )\n' +
             '  )\n' +
@@ -973,7 +1162,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
                                      ['Sales Division', 'Income Function']);
                               }, myMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals(
+   assertEqualsH2Compatible(
       'Sequence\n'+
       '(\n'+
       '  type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
@@ -1003,7 +1192,38 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
-      ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));}
+      ')\n',
+      'Sequence\n'+
+      '(\n'+
+      '  type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
+      '  (\n'+
+      '    Allocation\n'+
+      '    (\n'+
+      '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+      '      resultSizeRange = 1\n'+
+      '      name = reportEndDate\n'+
+      '      value = \n'+
+      '        (\n'+
+      '          Relational\n'+
+      '          (\n'+
+      '            type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+      '            resultSizeRange = 1\n'+
+      '            resultColumns = [("pk_0", DATE), ("pk_1", VARCHAR(15)), ("date", DATE), ("weekStart", DATE), ("weekEnd", DATE), ("day", INT), ("week", INT), ("dayOfWeekNumber", INT), ("yearEnd", DATE), ("yearStart", DATE)]\n'+
+      '            sql = select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = DATE\'2005-10-10\'\n'+
+      '            connection = TestDatabaseConnection(type = "H2")\n'+
+      '          )\n'+
+      '        )\n'+
+      '    )\n'+
+      '    Relational\n'+
+      '    (\n'+
+      '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else CAST(0.0 AS FLOAT) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
+      '      connection = TestDatabaseConnection(type = "H2")\n'+
+      '    )\n'+
+      '  )\n'+
+      ')\n',
+      $result->planToString(meta::relational::extension::relationalExtensions()));}
 
 
 function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenVariablesInAggAndFilter():Boolean[1]
@@ -1023,7 +1243,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
                                      ['Sales Division', 'Income Function']);
                               }, myMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals(
+   assertEqualsH2Compatible(
       'Sequence\n'+
       '(\n'+
       '  type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
@@ -1068,7 +1288,53 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
-      ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
+      ')\n',
+      'Sequence\n'+
+      '(\n'+
+      '  type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
+      '  (\n'+
+      '    Allocation\n'+
+      '    (\n'+
+      '      type = StrictDate\n'+
+      '      resultSizeRange = 1\n'+
+      '      name = startDate\n'+
+      '      value = \n'+
+      '        (\n'+
+      '          Constant\n'+
+      '          (\n'+
+      '            type = StrictDate\n'+
+      '            resultSizeRange = 1\n'+
+      '            values=[2015-02-25]\n'+
+      '          )\n'+
+      '        )\n'+
+      '    )\n'+
+      '    Allocation\n'+
+      '    (\n'+
+      '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+      '      resultSizeRange = 1\n'+
+      '      name = reportEndDate\n'+
+      '      value = \n'+
+      '        (\n'+
+      '          Relational\n'+
+      '          (\n'+
+      '            type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+      '            resultSizeRange = 1\n'+
+      '            resultColumns = [("pk_0", DATE), ("pk_1", VARCHAR(15)), ("date", DATE), ("weekStart", DATE), ("weekEnd", DATE), ("day", INT), ("week", INT), ("dayOfWeekNumber", INT), ("yearEnd", DATE), ("yearStart", DATE)]\n'+
+      '            sql = select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = DATE\'2005-10-10\'\n'+
+      '            connection = TestDatabaseConnection(type = "H2")\n'+
+      '          )\n'+
+      '        )\n'+
+      '    )\n'+
+      '    Relational\n'+
+      '    (\n'+
+      '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
+      '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else CAST(0.0 AS FLOAT) end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > DATE\'${startDate}\' and "calendar_0"."date" <= TIMESTAMP\'${reportEndDate.date}\') group by "Sales Division"\n'+
+      '      connection = TestDatabaseConnection(type = "H2")\n'+
+      '    )\n'+
+      '  )\n'+
+      ')\n',
+      $result->planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testMapWithOpenVariable():Boolean[1]
@@ -1651,13 +1917,18 @@ function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerati
     ')\n'
     , $result->planToString(meta::relational::extension::relationalExtensions()));
 }
+
 function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariableAtRoot():Boolean[1]
 {
    let l = {bd:Date[1]|meta::relational::tests::milestoning::Product.all($bd)->project(col(t|$t.id, 'id'))};
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEquals('select "root".id as "id" from ProductTable as "root" where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', $rlnNodeSQL);
+   assertEqualsH2Compatible(
+    'select "root".id as "id" from ProductTable as "root" where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'',
+    'select "root".id as "id" from ProductTable as "root" where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'', 
+    $rlnNodeSQL
+   );
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariableInPropertySequence():Boolean[1]
@@ -1666,7 +1937,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEquals('select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'${bd}\' and "productclassificationtable_0".thru_z > \'${bd}\') where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', $rlnNodeSQL);
+   assertEqualsH2Compatible(
+    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'${bd}\' and "productclassificationtable_0".thru_z > \'${bd}\') where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', 
+    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= TIMESTAMP\'${bd}\' and "productclassificationtable_0".thru_z > TIMESTAMP\'${bd}\') where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'', 
+    $rlnNodeSQL
+   );
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariableInFunctionExpression():Boolean[1]
@@ -1675,7 +1950,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEquals('select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', $rlnNodeSQL);
+   assertEqualsH2Compatible(
+    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', 
+    'select "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'', 
+    $rlnNodeSQL
+   );
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariableInFunctionExpressionWithPropagation():Boolean[1]
@@ -1684,7 +1963,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
    let result = executionPlan($l, meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let rlnNode = $result.rootExecutionNode.executionNodes->filter(n|$n->instanceOf(RelationalInstantiationExecutionNode))->at(0).executionNodes->at(0)->cast(@SQLExecutionNode);
    let rlnNodeSQL = $rlnNode.sqlQuery;
-   assertEquals('select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, \'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, \'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', $rlnNodeSQL);
+   assertEqualsH2Compatible(
+    'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, \'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, \'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= \'${bd}\' and "root".thru_z > \'${bd}\'', 
+    'select "productexchangetable_0".name as "exchangeName" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) left outer join (select "productexchangetable_1".name as name from ProductExchangeTable as "productexchangetable_1" where "productexchangetable_1".from_z <= dateadd(DAY, 1, TIMESTAMP\'${bd}\') and "productexchangetable_1".thru_z > dateadd(DAY, 1, TIMESTAMP\'${bd}\')) as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name) where "root".from_z <= TIMESTAMP\'${bd}\' and "root".thru_z > TIMESTAMP\'${bd}\'', 
+    $rlnNodeSQL
+   );
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimple() : Boolean[1]
@@ -1917,7 +2200,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForIn
 {
    let generatedPlan = executionPlan({optionalDateTime:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($optionalDateTime))->project([x | $x.id], ['TradeId'])}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   let expectedPlan ='Sequence\n'+
+   let expectedPlanLegacyH2 ='Sequence\n'+
                      '(\n'+
                      '  type = TDS[(TradeId, Integer, INT, "")]\n'+
                      '  (\n'+
@@ -1934,7 +2217,24 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForIn
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertEquals($expectedPlan, $result);
+   let expectedPlanNewH2 ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(TradeId, Integer, INT, "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalDateTime:DateTime[*]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(TradeId, Integer, INT, "")]\n'+
+                     '      resultColumns = [("TradeId", INT)]\n'+
+                     '      sql = select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (${renderCollectionWithTz(optionalDateTime![] "[US/Arizona]" "," "TIMESTAMP\'" "\'" "null")})\n'+
+                     '      connection = DatabaseConnection(type = "H2")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   assertEqualsH2Compatible($expectedPlanLegacyH2, $expectedPlanNewH2, $result);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::relationalTDSTypeForColumnsAndQuoting():Boolean[1]

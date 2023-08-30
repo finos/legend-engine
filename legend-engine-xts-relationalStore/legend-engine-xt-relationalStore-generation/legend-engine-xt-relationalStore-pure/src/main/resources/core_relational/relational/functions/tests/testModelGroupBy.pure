@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::asserts::*;
@@ -237,7 +238,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAFunctionInThe
           
    assertEquals(['Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 0.0, ^TDSNull(), 0.0], $result.values.rows.values);
 
-   assertSameSQL('select "producttable_0".NAME as "prodName", (sum(case when (("producttable_0".NAME is not null and "producttable_0".NAME like \'%X\') or ("producttable_0".NAME is not null and "producttable_0".NAME like \'%C\')) then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
+   assertEqualsH2Compatible(
+    'select "producttable_0".NAME as "prodName", (sum(case when (("producttable_0".NAME is not null and "producttable_0".NAME like \'%X\') or ("producttable_0".NAME is not null and "producttable_0".NAME like \'%C\')) then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
+    'select "producttable_0".NAME as "prodName", (sum(case when (("producttable_0".NAME is not null and "producttable_0".NAME like \'%X\') or ("producttable_0".NAME is not null and "producttable_0".NAME like \'%C\')) then "root".quantity else CAST(0.0 AS FLOAT) end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 
@@ -264,7 +269,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAnAssociationI
    
    assertEquals(['Firm X', 50.0, 'Firm C', 142.0, 'Firm A', 86.0, ^TDSNull(), 0.0], $result.values.rows.values);
           
-   assertSameSQL('select "producttable_0".NAME as "prodName", (sum(case when ("accounttable_0".name is not null and "accounttable_0".name like \'Account 1%\') then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) group by "prodName" order by "prodName" desc', $result);
+   assertEqualsH2Compatible(
+    'select "producttable_0".NAME as "prodName", (sum(case when ("accounttable_0".name is not null and "accounttable_0".name like \'Account 1%\') then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) group by "prodName" order by "prodName" desc', 
+    'select "producttable_0".NAME as "prodName", (sum(case when ("accounttable_0".name is not null and "accounttable_0".name like \'Account 1%\') then "root".quantity else CAST(0.0 AS FLOAT) end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) group by "prodName" order by "prodName" desc', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 
@@ -509,7 +518,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByOnRootLevelP
    assertSize($result.values, 1);
    assertEquals([%2014-12-01, 356.0], $result.values.rows.values);
 
-   assertSameSQL('select "root".tradeDate as "Date", sum("root".quantity) as "Total Quantity" from tradeTable as "root" where "root".tradeDate = \'2014-12-01\' group by "Date"', $result);
+   assertEqualsH2Compatible(
+    'select "root".tradeDate as "Date", sum("root".quantity) as "Total Quantity" from tradeTable as "root" where "root".tradeDate = \'2014-12-01\' group by "Date"', 
+    'select "root".tradeDate as "Date", sum("root".quantity) as "Total Quantity" from tradeTable as "root" where "root".tradeDate = DATE\'2014-12-01\' group by "Date"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testSimpleJoinStrings():Boolean[1]
@@ -994,11 +1007,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testObjectLevelGroupByW
                                                     , x|$x.getString('LastName'), y| $y->joinStrings(',')) )
            , simpleRelationalMapping, meta::relational::tests::testRuntime() , meta::relational::extension::relationalExtensions());
 
-
-
-   assertEquals( 'select "persontable_0"."FirstName" as "FirstName", "persontable_0"."Case Column" as "Case Column", group_concat("LastName" separator \',\') as "Joined Last Name" from (select "root".FIRSTNAME as "FirstName", "root".LASTNAME as "LastName", "firmtable_0".LEGALNAME as "FirmName", avg(1.0 * "root".AGE) as "Average Age 1", case when avg(1.0 * "root".AGE) < 10 then 10 else (avg(1.0 * "root".AGE) * 0.9) end as "Case Column" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "FirstName","LastName","FirmName" having "firmtable_0".LEGALNAME = \'Firm X\') as "persontable_0" group by "FirstName","Case Column"', $result->sqlRemoveFormatting() );
-
-
+   assertEqualsH2Compatible(
+    'select "persontable_0"."FirstName" as "FirstName", "persontable_0"."Case Column" as "Case Column", group_concat("LastName" separator \',\') as "Joined Last Name" from (select "root".FIRSTNAME as "FirstName", "root".LASTNAME as "LastName", "firmtable_0".LEGALNAME as "FirmName", avg(1.0 * "root".AGE) as "Average Age 1", case when avg(1.0 * "root".AGE) < 10 then 10 else (avg(1.0 * "root".AGE) * 0.9) end as "Case Column" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "FirstName","LastName","FirmName" having "firmtable_0".LEGALNAME = \'Firm X\') as "persontable_0" group by "FirstName","Case Column"', 
+    'select "persontable_0"."FirstName" as "FirstName", "persontable_0"."Case Column" as "Case Column", group_concat("LastName" separator \',\') as "Joined Last Name" from (select "root".FIRSTNAME as "FirstName", "root".LASTNAME as "LastName", "firmtable_0".LEGALNAME as "FirmName", avg(1.0 * "root".AGE) as "Average Age 1", case when avg(1.0 * "root".AGE) < 10 then 10 else (avg(1.0 * "root".AGE) * CAST(0.9 AS FLOAT)) end as "Case Column" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) group by "FirstName","LastName","FirmName" having "firmtable_0".LEGALNAME = \'Firm X\') as "persontable_0" group by "FirstName","Case Column"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testReprocessGroupByAlias():Boolean[1]
@@ -1032,7 +1045,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly1():
 
    assertEquals(['Firm C', 1, 45.0], $result.values.rows.values);
 
-   assertSameSQL('select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else null end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = 45.0) group by "prodName"', $result);
+   assertEqualsH2Compatible(
+    'select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else null end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = 45.0) group by "prodName"', 
+    'select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else null end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = CAST(45.0 AS FLOAT)) group by "prodName"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly2():Boolean[1]
@@ -1058,7 +1075,11 @@ function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly2():
 
    assertEquals(['Firm C', 1, 45.0], $result.values.rows.values);
 
-   assertSameSQL('select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else -1 end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = 45.0) group by "prodName"', $result);
+   assertEqualsH2Compatible(
+    'select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else -1 end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = 45.0) group by "prodName"', 
+    'select "producttable_0".NAME as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else -1 end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where ("producttable_0".NAME = \'Firm C\' and "root".quantity = CAST(45.0 AS FLOAT)) group by "prodName"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testUniqueValueOnly3():Boolean[1]
@@ -1167,7 +1188,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::groupBy::testGro
              meta::relational::extension::relationalExtensions());
    
    assertEquals(['Firm X|290.5|320.0|246.25', 'Firm C|44.6|38.0|44.0', 'Firm A|30.2|23.0|27.5', 'TDSNull|5.0|5.0|5.0'], $result.values.rows->map(r|$r.values->makeString('|')));
-   assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(0.9) within group (order by "root".quantity asc) as "p1", percentile_disc(0.5) within group (order by "root".quantity desc) as "p2", percentile_cont(0.75) within group (order by "root".quantity asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
+   assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".quantity asc) as "p1", percentile_disc(CAST(0.5 AS FLOAT)) within group (order by "root".quantity desc) as "p2", percentile_cont(CAST(0.75 AS FLOAT)) within group (order by "root".quantity asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testGroupByIsDistinct():Boolean[1]
