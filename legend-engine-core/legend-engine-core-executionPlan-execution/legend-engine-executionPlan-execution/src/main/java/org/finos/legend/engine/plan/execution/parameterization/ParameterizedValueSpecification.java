@@ -364,7 +364,7 @@ public class ParameterizedValueSpecification
         if (specification instanceof Collection)
         {
             String type = this.primitiveHelper.getOrDefault(((Collection) specification).values.get(0).getClass(), null);
-            if (type != null)
+            if (type != null && type != "String") //String list is excluded due to an issue related to post processorers
             {
                 Variable variable = new Variable(name, type, new Multiplicity(0, null));
                 variables.add(variable);
