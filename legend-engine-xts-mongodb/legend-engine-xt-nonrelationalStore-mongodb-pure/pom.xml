@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.26.2-SNAPSHOT</version>
+        <version>4.26.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
@@ -93,11 +93,6 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-authentication-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -153,11 +148,6 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>

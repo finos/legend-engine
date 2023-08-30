@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This repo is now deprecated and will be deleted shortly
+
 // Local Binding -------------------------------------------------------------
 
 ###Pure
@@ -25,7 +27,7 @@ import meta::pure::extension::configuration::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::graphFetch::execution::*;
 
-function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configuration::localPlatformBinding::bindTestPlanToPlatform(): LocalPlatformBinder[1]
+function <<LocalPlatformBinding.TestPlanBinder, doc.deprecated>> meta::pure::extension::configuration::localPlatformBinding::bindTestPlanToPlatform(): LocalPlatformBinder[1]
 {
    ^LocalPlatformBinder
    (
@@ -34,17 +36,13 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configur
       ],
 
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-
-         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension('PlatformBinding - LegendJava - InMemory, Relational, ServiceStore, ExternalFormatCore, ExternalFormatFlatData, ExternalFormatJSON, ExternalFormatXSD', [meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding()]));
-
-         // Using LegendJava as the default for local platform binding
-         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-
+         fail('This flow is not supported');
+         $plan;
       }
    ) 
 }
 
-function <<access.private>> meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding(): PlatformBinding[1]
+function <<access.private, doc.deprecated>> meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding(): PlatformBinding[1]
 {
    legendJavaPlatformBinding([
 
@@ -68,7 +66,7 @@ function <<access.private>> meta::pure::extension::configuration::localPlatformB
 }
 
 
-function <<test.Test>> meta::pure::extension::configuration::localPlatformBinding::testLocalBindingOfPlanToPlatform(): Boolean[1]
+function <<access.private, doc.deprecated>> meta::pure::extension::configuration::localPlatformBinding::testLocalBindingOfPlanToPlatform(): Boolean[1]
 {
    let tree = #{
       Person {
@@ -82,7 +80,7 @@ function <<test.Test>> meta::pure::extension::configuration::localPlatformBindin
 
    let extensions = meta::relational::extension::relationalExtensions();
    let basicPlan = executionPlan($query, $mapping, $runtime, $extensions);
-   let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($basicPlan, $extensions);
-   
+   let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);
+
    assert($boundPlan.globalImplementationSupport->isNotEmpty());
 }

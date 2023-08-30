@@ -81,7 +81,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "`validity_through_target`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`," +
                 "stage.`digest`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
-                "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
+                "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE " +
                 "(sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
                 "AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -154,7 +154,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
-                "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
+                "WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND " +
                 "(stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) " +
@@ -166,8 +166,8 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`," +
                 "stage.`validity_through_reference`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')," +
-                "'9999-12-31 23:59:59' FROM `mydb`.`staging` as stage WHERE " +
-                "((NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM `mydb`.`staging` as stage WHERE " +
+                "((NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) " +
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND " +
                 "(sink.`name` = stage.`name`)) AND (sink.`validity_from_target` = stage.`validity_from_reference`)))) " +
                 "AND ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) AND " +
