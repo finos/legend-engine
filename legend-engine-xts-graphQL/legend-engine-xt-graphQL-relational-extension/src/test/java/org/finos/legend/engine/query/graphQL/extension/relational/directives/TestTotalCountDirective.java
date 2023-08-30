@@ -15,6 +15,7 @@
 package org.finos.legend.engine.query.graphQL.extension.relational.directives;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.jetty.server.Handler;
@@ -23,19 +24,28 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
+import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.Protocol;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
+import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
+import org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -90,12 +100,22 @@ public class TestTotalCountDirective
         server.stop();
     }
 
+    private ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> getExecutionCacheInstance()
+    {
+        return ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+    }
+
     private GraphQLExecute getGraphQLExecute()
+    {
+        return getGraphQLExecuteWithCache(null);
+    }
+
+    private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
         return graphQLExecute;
     }
 
@@ -160,6 +180,54 @@ public class TestTotalCountDirective
                 "}" +
                 "}";
         Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_TotalCountDirective_Caching() throws Exception
+    {
+        GraphQLPlanCache graphQLPlanCache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(graphQLPlanCache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  selectEmployees(offset: 1,limit: 2) @totalCount {\n" +
+                "    firstName,\n" +
+                "    lastName\n" +
+                "  }\n" +
+                "}";
+        String expected = "{" +
+                "\"data\":{" +
+                "\"selectEmployees\":[" +
+                "{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}," +
+                "{\"firstName\":\"David\",\"lastName\":\"Harris\"}" +
+                "]" +
+                "}," +
+                "\"extensions\":{" +
+                "\"selectEmployees\":{" +
+                "\"totalCount\":7" +
+                "}" +
+                "}" +
+                "}";
+        String projectId = "Project1";
+        String workspaceId = "Workspace1";
+        String queryClassPath = "simple::model::Query";
+        String mappingPath = "simple::mapping::Map";
+        String runtimePath = "simple::runtime::Runtime";
+        Response response = graphQLExecute.executeDev(mockRequest, projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
+
+        response = graphQLExecute.executeDev(mockRequest, projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0); // miss count carries over
+
+        Document document = GraphQLCachableVisitorHelper.createCachableGraphQLQuery(GraphQLGrammarParser.newInstance().parseDocument(query.query));
+        GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, ModelManager.objectMapper.writeValueAsString(document));
+        List<SerializedNamedPlans> plans = graphQLPlanCache.getCache().getIfPresent(key);
+        Assert.assertEquals(2, plans.size());
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
