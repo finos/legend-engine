@@ -22,11 +22,6 @@ import meta::external::function::description::openapi::transformation::fromPure:
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 
-import meta::alloy::service::metamodel::*;
-import datamarts::ep::domain::anaplan::entitlement::financialPlanningSecurity::*;
-import datamarts::ep::store::anaplan::entitlement::*;
-import datamarts::ep::domain::anaplan::services::*;
-import meta::relational::datalake::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::runtime::*;
 import meta::csv::*;
