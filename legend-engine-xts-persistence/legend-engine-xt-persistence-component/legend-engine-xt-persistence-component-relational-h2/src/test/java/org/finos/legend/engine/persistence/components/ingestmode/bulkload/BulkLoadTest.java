@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -81,12 +82,11 @@ public class BulkLoadTest extends BaseTest
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
 
     @Test
-    public void testBulkLoadWithDigestNotGenerated() throws Exception
+    public void testBulkLoadWithDigestNotGeneratedAuditEnabled() throws Exception
     {
-        String filePath = "src/test/resources/data/bulk-load/data/staged_file1.csv";
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file1.csv";
 
         BulkLoad bulkLoad = BulkLoad.builder()
-                .digestField(DIGEST)
                 .generateDigest(false)
                 .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                 .build();
@@ -126,13 +126,79 @@ public class BulkLoadTest extends BaseTest
             "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"append_time\") " +
             "SELECT " +
             "CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP),'2000-01-01 00:00:00' " +
-            "FROM CSVREAD('src/test/resources/data/bulk-load/data/staged_file1.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file1.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-
         Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, APPEND_TIME};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table1.csv";
+
+        executePlansAndVerifyResults(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    public void testBulkLoadWithDigestNotGeneratedAuditDisabled() throws Exception
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file2.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .generateDigest(false)
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .addAllFiles(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\") " +
+            "SELECT " +
+            "CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP) " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file2.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -140,11 +206,11 @@ public class BulkLoadTest extends BaseTest
         String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime};
 
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
 
-        executePlansAndVerifyResults(bulkLoad, options, datasets, schema, filePath, expectedStats, fixedClock_2000_01_01);
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
+
+        executePlansAndVerifyResults(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test

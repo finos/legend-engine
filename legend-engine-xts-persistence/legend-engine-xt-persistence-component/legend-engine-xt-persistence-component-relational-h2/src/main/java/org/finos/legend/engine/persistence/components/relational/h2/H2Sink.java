@@ -199,28 +199,33 @@ public class H2Sink extends AnsiSqlSink
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
+        Map<StatisticName, Object> stats = new HashMap<>();
         long incomingRecordCount = 0;
         long rowsInserted = 0;
 
         SqlPlan incomingRecordCountSqlPlan = statisticsSqlPlan.get(StatisticName.INCOMING_RECORD_COUNT);
-        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
-
-        List<TabularData> incomingRecordCountResults = executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues);
-        List<TabularData> rowsInsertedResults = executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues);
-
-        for (Map<String, Object> row: incomingRecordCountResults.get(0).getData())
+        if (incomingRecordCountSqlPlan != null)
         {
-            incomingRecordCount += (Long) row.get(StatisticName.INCOMING_RECORD_COUNT.get());
+            List<TabularData> incomingRecordCountResults = executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues);
+            for (Map<String, Object> row: incomingRecordCountResults.get(0).getData())
+            {
+                incomingRecordCount += (Long) row.get(StatisticName.INCOMING_RECORD_COUNT.get());
+            }
+            stats.put(StatisticName.INCOMING_RECORD_COUNT, incomingRecordCount);
         }
-        for (Map<String, Object> row: rowsInsertedResults.get(0).getData())
+
+        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
+        if (rowsInsertedSqlPlan != null)
         {
-            rowsInserted += (Long) row.get(StatisticName.ROWS_INSERTED.get());
+            List<TabularData> rowsInsertedResults = executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues);
+            for (Map<String, Object> row: rowsInsertedResults.get(0).getData())
+            {
+                rowsInserted += (Long) row.get(StatisticName.ROWS_INSERTED.get());
+            }
+            stats.put(StatisticName.ROWS_INSERTED, rowsInserted);
         }
 
         IngestorResult result;
-        Map<StatisticName, Object> stats = new HashMap<>();
-        stats.put(StatisticName.ROWS_INSERTED, rowsInserted);
-        stats.put(StatisticName.INCOMING_RECORD_COUNT, incomingRecordCount);
         stats.put(StatisticName.FILES_LOADED, 1);
         result = IngestorResult.builder()
             .status(IngestStatus.SUCCEEDED)
