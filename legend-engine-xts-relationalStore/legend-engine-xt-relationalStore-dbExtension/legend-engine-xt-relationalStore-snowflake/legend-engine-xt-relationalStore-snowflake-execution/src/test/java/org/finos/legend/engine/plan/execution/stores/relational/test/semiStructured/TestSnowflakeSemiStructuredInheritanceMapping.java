@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.semiStruct
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestSnowflakeSemiStructuredInheritanceMapping extends AbstractTestSnowflakeSemiStructured
+public class TestSnowflakeSemiStructuredInheritanceMapping extends AbstractTestSemiStructured
 {
     private static final String snowflakeMapping = "inheritance::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "inheritance::runtime::SnowflakeRuntime";

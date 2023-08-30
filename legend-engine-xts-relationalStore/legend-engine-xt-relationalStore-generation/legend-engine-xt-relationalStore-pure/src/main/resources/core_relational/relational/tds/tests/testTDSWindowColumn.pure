@@ -58,3 +58,27 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
    meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(0.9) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|12.0', 'John|Johnson|22|12.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result3.values.rows->map(r|$r.values->makeString('|')));
 }
+
+function <<test.Test, test.AlloyOnly>>
+{ meta::pure::executionPlan::profiles::serverVersion.start='v1_16_0' }
+meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithDenseRankAlloyOnly():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->denseRank()),'testCol1')
+   };
+   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));
+}
+
+function <<test.Test, test.AlloyOnly>>
+{ meta::pure::executionPlan::profiles::serverVersion.start='v1_16_0' }
+meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortWithRankAlloyOnly():Boolean[1]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->rank()),'testCol1')
+   };
+   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));
+}

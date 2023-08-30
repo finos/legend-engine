@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xt-relationalStore-execution</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XT - Relational Store - Execution Plan</name>
+    <name>Legend Engine - XT - Relational Store - Execution</name>
 
     <modules>
         <module>legend-engine-xt-relationalStore-executionPlan</module>

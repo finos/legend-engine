@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.semiStruct
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestSnowflakeSemiStructuredMultiBindingMapping extends AbstractTestSnowflakeSemiStructured
+public class TestSnowflakeSemiStructuredMultiBindingMapping extends AbstractTestSemiStructured
 {
     private static final String snowflakeMapping = "multiBinding::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "multiBinding::runtime::SnowflakeRuntime";

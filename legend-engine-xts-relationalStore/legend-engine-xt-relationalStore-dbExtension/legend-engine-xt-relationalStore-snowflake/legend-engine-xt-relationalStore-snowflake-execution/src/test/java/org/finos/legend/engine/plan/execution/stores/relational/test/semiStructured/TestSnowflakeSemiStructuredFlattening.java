@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertThrows;
 
-public class TestSnowflakeSemiStructuredFlattening extends AbstractTestSnowflakeSemiStructured
+public class TestSnowflakeSemiStructuredFlattening extends AbstractTestSemiStructured
 {
     private static final String snowflakeMapping = "flatten::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "flatten::runtime::SnowflakeRuntime";
