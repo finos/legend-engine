@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StagedF
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.StagedFilesField;
-import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -29,14 +28,9 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StagedFilesFieldValue current, VisitorContext context)
     {
-        DataType dataType = getDataTypeMapping().getDataType(current.fieldType());
+        DataType dataType = new H2DataTypeMapping().getDataType(current.fieldType());
         StagedFilesField field = new StagedFilesField(context.quoteIdentifier(), current.fieldName(), dataType);
         prev.push(field);
         return new VisitorResult(null);
-    }
-
-    public DataTypeMapping getDataTypeMapping()
-    {
-        return new H2DataTypeMapping();
     }
 }

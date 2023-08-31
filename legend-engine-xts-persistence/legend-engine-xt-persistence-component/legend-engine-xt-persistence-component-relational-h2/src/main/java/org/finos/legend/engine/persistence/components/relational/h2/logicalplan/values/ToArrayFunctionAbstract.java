@@ -30,5 +30,5 @@ import java.util.List;
 )
 public interface ToArrayFunctionAbstract extends Value
 {
-    List<Value> value();
+    List<Value> values();
 }

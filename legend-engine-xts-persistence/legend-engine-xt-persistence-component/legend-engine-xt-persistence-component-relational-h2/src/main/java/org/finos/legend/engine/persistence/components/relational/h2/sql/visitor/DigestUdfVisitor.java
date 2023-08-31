@@ -43,8 +43,8 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
             columnValueList.add(current.values().get(i));
         }
 
-        ToArrayFunction columnNames = ToArrayFunction.builder().addAllValue(columnNameList).build();
-        ToArrayFunction columnValues = ToArrayFunction.builder().addAllValue(columnValueList).build();
+        ToArrayFunction columnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
+        ToArrayFunction columnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
 
         return new VisitorResult(udf, Arrays.asList(columnNames, columnValues));
     }

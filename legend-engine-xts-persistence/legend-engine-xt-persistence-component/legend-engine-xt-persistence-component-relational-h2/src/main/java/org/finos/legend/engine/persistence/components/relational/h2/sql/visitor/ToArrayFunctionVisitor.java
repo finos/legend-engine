@@ -46,10 +46,10 @@ public class ToArrayFunctionVisitor implements LogicalPlanVisitor<ToArrayFunctio
         }
         prev.push(function);
 
-        if (current.value() != null)
+        if (current.values() != null)
         {
             List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
-            for (Value value : current.value())
+            for (Value value : current.values())
             {
                 if (value instanceof StagedFilesFieldValue)
                 {
