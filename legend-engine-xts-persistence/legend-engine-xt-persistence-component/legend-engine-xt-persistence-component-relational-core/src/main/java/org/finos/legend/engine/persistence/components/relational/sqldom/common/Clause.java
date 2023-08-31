@@ -57,7 +57,8 @@ public enum Clause
     CLUSTER_BY("CLUSTER BY"),
     NOT_ENFORCED("NOT ENFORCED"),
     DATA_TYPE("DATA TYPE"),
-    CONVERT("CONVERT");
+    CONVERT("CONVERT"),
+    ARRAY("ARRAY");
 
     private final String clause;
 

@@ -21,6 +21,8 @@ public class SqlGenUtils
     public static final String COMMA = ",";
     public static final String OPEN_PARENTHESIS = "(";
     public static final String CLOSING_PARENTHESIS = ")";
+    public static final String OPEN_SQUARE_BRACKET = "[";
+    public static final String CLOSING_SQUARE_BRACKET = "]";
     public static final String EMPTY = "";
     public static final String QUOTE_IDENTIFIER = "\"%s\"";
     public static final String SINGLE_QUOTE_IDENTIFIER = "'%s'";

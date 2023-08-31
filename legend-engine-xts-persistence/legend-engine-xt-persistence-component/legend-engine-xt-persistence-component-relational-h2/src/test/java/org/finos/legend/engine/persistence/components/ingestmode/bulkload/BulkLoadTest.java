@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
@@ -55,6 +56,8 @@ public class BulkLoadTest extends BaseTest
 {
     private static final String APPEND_TIME = "append_time";
     private static final String DIGEST = "digest";
+    private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
+    private static final String LINEAGE = "lake_lineage";
     private static final String col_int = "col_int";
     private static final String col_string = "col_string";
     private static final String col_decimal = "col_decimal";
@@ -211,6 +214,244 @@ public class BulkLoadTest extends BaseTest
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 
         executePlansAndVerifyResults(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAuditEnabled() throws Exception
+    {
+        // Register UDF
+        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
+            "String concat(String[] values, String[] values2) {\n" +
+            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
+            "}\n" +
+            "';");
+
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file3.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .generateDigest(true)
+            .digestField(DIGEST)
+            .digestUdfName(DIGEST_UDF)
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .addAllFiles(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"digest\" VARCHAR,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"append_time\") " +
+            "SELECT " +
+            "CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "LAKEHOUSE_MD5(ARRAY['col_int','col_string','col_decimal','col_datetime'],ARRAY[\"col_int\",\"col_string\",\"col_decimal\",\"col_datetime\"]),'2000-01-01 00:00:00' " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, DIGEST, APPEND_TIME};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table3.csv";
+
+        executePlansAndVerifyResults(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAuditEnabledLineageEnabled() throws Exception
+    {
+        // Register UDF
+        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
+            "String concat(String[] values, String[] values2) {\n" +
+            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
+            "}\n" +
+            "';");
+
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file4.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .generateDigest(true)
+            .digestField(DIGEST)
+            .digestUdfName(DIGEST_UDF)
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .lineageField(LINEAGE)
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .addAllFiles(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"digest\" VARCHAR,\"append_time\" TIMESTAMP,\"lake_lineage\" VARCHAR)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"append_time\", \"lake_lineage\") " +
+            "SELECT " +
+            "CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "LAKEHOUSE_MD5(ARRAY['col_int','col_string','col_decimal','col_datetime'],ARRAY[\"col_int\",\"col_string\",\"col_decimal\",\"col_datetime\"])," +
+            "'2000-01-01 00:00:00'," +
+            "'src/test/resources/data/bulk-load/input/staged_file4.csv' " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file4.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, DIGEST, APPEND_TIME, LINEAGE};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table4.csv";
+
+        executePlansAndVerifyResults(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAuditEnabledLineageEnabledUpperCase() throws Exception
+    {
+        // Register UDF
+        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
+            "String concat(String[] values, String[] values2) {\n" +
+            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
+            "}\n" +
+            "';");
+
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file5.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .generateDigest(true)
+            .digestField(DIGEST)
+            .digestUdfName(DIGEST_UDF)
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .lineageField(LINEAGE)
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .addAllFiles(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .caseConversion(CaseConversion.TO_UPPER)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"MAIN\"" +
+            "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_STRING\" VARCHAR,\"COL_DECIMAL\" DECIMAL(5,2),\"COL_DATETIME\" TIMESTAMP,\"DIGEST\" VARCHAR,\"APPEND_TIME\" TIMESTAMP,\"LAKE_LINEAGE\" VARCHAR)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
+            "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"DIGEST\", \"APPEND_TIME\", \"LAKE_LINEAGE\") " +
+            "SELECT " +
+            "CONVERT(\"COL_INT\",INTEGER),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",DECIMAL(5,2)),CONVERT(\"COL_DATETIME\",TIMESTAMP)," +
+            "LAKEHOUSE_MD5(ARRAY['COL_INT','COL_STRING','COL_DECIMAL','COL_DATETIME'],ARRAY[\"COL_INT\",\"COL_STRING\",\"COL_DECIMAL\",\"COL_DATETIME\"])," +
+            "'2000-01-01 00:00:00'," +
+            "'src/test/resources/data/bulk-load/input/staged_file5.csv' " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file5.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{col_int.toUpperCase(), col_string.toUpperCase(), col_decimal.toUpperCase(), col_datetime.toUpperCase(), DIGEST.toUpperCase(), APPEND_TIME.toUpperCase(), LINEAGE.toUpperCase()};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table5.csv";
+
+        executePlansAndVerifyForCaseConversion(bulkLoad, options, datasets, schema, expectedDataPath, expectedStats, fixedClock_2000_01_01);
     }
 
     @Test

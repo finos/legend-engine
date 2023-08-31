@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
@@ -29,6 +28,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
@@ -41,10 +41,12 @@ import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
+import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
@@ -54,6 +56,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -108,6 +111,8 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
+        logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -200,28 +205,32 @@ public class H2Sink extends AnsiSqlSink
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
         Map<StatisticName, Object> stats = new HashMap<>();
-        long incomingRecordCount = 0;
-        long rowsInserted = 0;
 
         SqlPlan incomingRecordCountSqlPlan = statisticsSqlPlan.get(StatisticName.INCOMING_RECORD_COUNT);
         if (incomingRecordCountSqlPlan != null)
         {
-            List<TabularData> incomingRecordCountResults = executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues);
-            for (Map<String, Object> row: incomingRecordCountResults.get(0).getData())
-            {
-                incomingRecordCount += (Long) row.get(StatisticName.INCOMING_RECORD_COUNT.get());
-            }
+            long incomingRecordCount = (Long) executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues)
+                .stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new);
             stats.put(StatisticName.INCOMING_RECORD_COUNT, incomingRecordCount);
         }
 
         SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
         if (rowsInsertedSqlPlan != null)
         {
-            List<TabularData> rowsInsertedResults = executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues);
-            for (Map<String, Object> row: rowsInsertedResults.get(0).getData())
-            {
-                rowsInserted += (Long) row.get(StatisticName.ROWS_INSERTED.get());
-            }
+            long rowsInserted = (Long) executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
+                .stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new);
             stats.put(StatisticName.ROWS_INSERTED, rowsInserted);
         }
 
