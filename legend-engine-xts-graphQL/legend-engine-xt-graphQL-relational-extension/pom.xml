@@ -215,6 +215,16 @@
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-graphQL-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>
