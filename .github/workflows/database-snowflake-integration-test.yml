@@ -63,7 +63,7 @@ jobs:
       - name: Build
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn clean install -DskipTests=true
+        run: mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-snowflake/legend-engine-xt-relationalStore-snowflake-execution-tests -am clean install -DskipTests=true
       - name: Run Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
