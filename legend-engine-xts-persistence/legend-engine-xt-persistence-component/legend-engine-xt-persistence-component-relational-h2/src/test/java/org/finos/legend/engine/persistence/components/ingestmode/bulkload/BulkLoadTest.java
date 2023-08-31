@@ -545,6 +545,7 @@ public class BulkLoadTest extends BaseTest
                         .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.csv", "src/test/resources/data/bulk-load/input/staged_file2.csv")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
@@ -564,6 +565,7 @@ public class BulkLoadTest extends BaseTest
                         .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.json")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
