@@ -2,34 +2,6 @@ import meta::rel::contract::*;
 import meta::pure::extension::*;
 
 function meta::rel::extension::defaultRAIExtension(): Extension[1] {
-  /*^RouterExtension(
-    type='rel',
-    serializerExtension={a: String[1] | 'None'},
-    cluster_cluster_ExtendedRoutedValueSpecification = {r: ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping: Mapping[1] | [
-      {rsi: meta::rel::mapping::RelSetImplementation[1] | 
-        let resolvedDb = $rsi.stores->first()->unwrap();           
-        ^ClusteredValueSpecification(
-          genericType  = $r.genericType,
-          multiplicity = $r.multiplicity,
-          s = RAISystemMapping(),
-          store = $r.mapping.resolveStore($resolvedDb),
-          mapping = $r.mapping,
-          runtime = $r.runtime,
-          openVars = $openVariables,
-          val = $r,
-          exeCtx = $r.executionContext,
-          executable = false
-        );
-      }
-    ]},
-    systemMapping_systemForSetImplementation = r: meta::rel::mapping::RelSetImplementation[1] | contract(),
-    graphFetch_getSystemMappingFromStore = store : meta::rel::metamodel::store::RAIDatabase[1] | contract(),
-    graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : meta::rel::mapping::RelSetImplementation[1] | $mapping.resolveStore($rsi.stores->first()->toOne());},
-    routing_extraShouldStop = [
-      meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_
-      //meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_
-    ]
-  );*/
   ^Extension(
     availableStores = [contract()],
     type = 'relationalai'
