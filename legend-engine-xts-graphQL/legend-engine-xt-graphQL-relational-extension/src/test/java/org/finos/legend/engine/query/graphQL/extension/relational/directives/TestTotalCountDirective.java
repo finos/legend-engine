@@ -199,8 +199,8 @@ public class TestTotalCountDirective
         String expected = "{" +
                 "\"data\":{" +
                 "\"selectEmployees\":[" +
-                "{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}," +
-                "{\"firstName\":\"David\",\"lastName\":\"Harris\"}" +
+                "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
                 "]" +
                 "}," +
                 "\"extensions\":{" +
