@@ -161,26 +161,16 @@ public class Execute
                 lambdaParameters.addAll(cachableValueSpec.getVariables());
                 lambda = ((Lambda) cachableValueSpec.getValueSpecification()).body;
                 executionCacheKey = new PureExecutionCacheKey(lambda, executeInput.runtime, executeInput.mapping, ((PureModelContextPointer) executeInput.model).sdlcInfo);
-
-                for (ParameterValue parameterValue : cachableValueSpec.getParameterValues())
-                {
-                    parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
-                }
+                updateParametersWithValues(parameters, cachableValueSpec.getParameterValues());
             }
-
             else
             {
                 lambda = executeInput.function.body;
             }
-
             if (executeInput.parameterValues != null)
             {
-                for (ParameterValue parameterValue : executeInput.parameterValues)
-                {
-                    parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
-                }
+                updateParametersWithValues(parameters, executeInput.parameterValues);
             }
-
 
             List<ValueSpecification> finalLambda = lambda;
             Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(finalLambda, lambdaParameters, pureModel.getContext()),
@@ -467,6 +457,15 @@ public class Execute
 
         Result result = planExecutor.executeWithArgs(executeArgs);
         return this.wrapInResponse(pm, format, start, result);
+    }
+
+
+    private void updateParametersWithValues(Map<String, Object> parameters, List<ParameterValue> inputValues)
+    {
+        for (ParameterValue parameterValue : inputValues)
+        {
+            parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
+        }
     }
 
     private Response wrapInResponse(MutableList<CommonProfile> pm, SerializationFormat format, long start, Result result)
