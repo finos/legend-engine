@@ -3,17 +3,21 @@ package org.finos.legend.engine.language.pure.dsl.service.execution;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
+
 public final class TestIdentityFactory implements IdentityFactory
 {
     public static TestIdentityFactory INSTANCE = new TestIdentityFactory();
@@ -46,7 +50,17 @@ public final class TestIdentityFactory implements IdentityFactory
         {
             return this.makeUnknownIdentity();
         }
+        Optional<KerberosProfile> kerberosProfileHolder = this.getKerberosProfile(profiles);
+        if (kerberosProfileHolder.isPresent())
+        {
+            return INSTANCE.makeIdentity(kerberosProfileHolder.get().getSubject());
+        }
         return INSTANCE.makeIdentityForTesting(profiles.get(0).getId());
+    }
+
+    private Optional<KerberosProfile> getKerberosProfile(MutableList<CommonProfile> profiles)
+    {
+        return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
     }
 
     public Identity makeUnknownIdentity()
@@ -67,7 +81,12 @@ public final class TestIdentityFactory implements IdentityFactory
         ImmutableList<Credential> credentials = identity.getCredentials();
         for (Credential credential : credentials)
         {
-            if (credential instanceof AnonymousCredential)
+            if (credential instanceof LegendKerberosCredential)
+            {
+                LegendKerberosCredential kerberosCredential = (LegendKerberosCredential) credential;
+                profiles.add(new KerberosProfile(kerberosCredential.getSubject(), null));
+            }
+            else if (credential instanceof AnonymousCredential)
             {
                 CommonProfile profile = new CommonProfile();
                 profile.setId(identity.getName());
