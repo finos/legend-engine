@@ -46,7 +46,7 @@ public final class TestIdentityFactory implements IdentityFactory
     @Override
     public Identity makeIdentity(MutableList<CommonProfile> profiles)
     {
-        if (profiles == null)
+        if (profiles == null || profiles.isEmpty())
         {
             return this.makeUnknownIdentity();
         }
