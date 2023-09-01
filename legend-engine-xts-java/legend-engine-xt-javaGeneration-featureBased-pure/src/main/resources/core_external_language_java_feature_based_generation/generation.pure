@@ -19,6 +19,11 @@ import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
 import meta::external::format::shared::utils::*;
 
+Profile meta::external::language::java::generation::featureBased:EnumLabel
+{
+    stereotypes: [hasLabel];
+    tags: [label];
+}
 
 Class meta::external::language::java::generation::featureBased::metamodel::Feature
 {
@@ -193,6 +198,16 @@ function  meta::external::language::java::generation::featureBased::definition::
   );
 }
 
+function  meta::external::language::java::generation::featureBased::definition::gettersOnly():Feature[1]
+{
+  ^Feature(
+        key='gettersOnly',
+        name = 'gettersOnly',
+        applyFunction = applyOnlyGetters_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields']
+  );
+}
+
 function  meta::external::language::java::generation::featureBased::definition::equalsHashMethods():Feature[1]
 {
   ^Feature(
@@ -213,6 +228,17 @@ function  meta::external::language::java::generation::featureBased::definition::
   );
 }
 
+function  meta::external::language::java::generation::featureBased::definition::allPropertyConstructor():Feature[1]
+{
+  ^Feature(
+        key='allPropertyConstructor',
+        name = 'allPropertyConstructor',
+        applyFunction = applyAllPropertyConstructor_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+  );
+}
+
+
+
 function  meta::external::language::java::generation::featureBased::pojo::pojoGenerationFeatures():Feature[*]
 {
   [
@@ -229,9 +255,37 @@ function <<access.private>> meta::external::language::java::generation::featureB
 {    
   
   let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
-  javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
-    ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->map(e| javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name))))
+  let javaEnumClass = javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
     ->annotate(^ meta::external::language::java::generation::featureBased::annotations::Generated(value=$enum->elementName()));
+
+  if($enum->hasStereotype('hasLabel', meta::external::language::java::generation::featureBased::EnumLabel)
+    ,|
+        let fieldType = javaString();
+        let fieldName = 'label';
+        let labelField = javaField(['private'], $fieldType, $fieldName);
+        let labelParam = j_parameter($fieldType, $fieldName);
+        $javaEnumClass
+        ->addEntries($pureEnum->cast(@meta::pure::metamodel::type::Enumeration<Any>)
+                            ->enumValues()
+                            ->map(e|
+                                        let enumValue = $e->cast(@Enum);
+                                        javaEnumEntry($context.conventions
+                                                ->identifier($enumValue.name),
+                                                if($enumValue->hasEnumLabelTag()
+                                                    ,| j_string($enumValue->getEnumLabelTag())
+                                                    ,|[]
+                                                )
+                                        );
+                            )
+        )
+        ->addField($labelField)
+        ->addConstructor(javaConstructor(['private'], $labelParam,
+                j_this($javaClass)->j_field($labelField)->j_assign($labelParam)))
+        ->addMethod(javaMethod(['public'], $fieldType, $context.conventions->getterName($fieldName), [],j_return( j_this($javaClass)->j_field($labelField))));
+    ,| $javaEnumClass
+        ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->map(e| javaEnumEntry($context.conventions->identifier($e->cast(@Enum).name))))
+
+    );
 
 }
 
@@ -577,6 +631,76 @@ function meta::external::language::java::generation::featureBased::pojo::applyDe
   ,|$javaElement);
 }
 
+// Would be good to merge this in with default and execute path based on what's in the code gen context
+function meta::external::language::java::generation::featureBased::pojo::applyAllPropertyConstructor(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|
+        let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+        let properties = $pureClass->findPropertiesEligibleForJavaGeneration();
+
+        let selfParamsForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           j_parameter($fieldType, $fieldName);
+        );
+
+        let bodyForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+           let jfield = j_this($javaClass)->j_field($field);
+           let param = j_parameter($fieldType, $field.name);
+           $jfield->j_assign($param);
+        );
+
+    let superParamsForConstructor = $pureClass->getAllSuperTypePropertiesAsParams($context);
+
+    let superConstructorCallBody = if($superParamsForConstructor->size() > 0
+    ,|
+       let superPureType = $pureClass->getSuperPureType();
+       j_superInvoke($context.conventions->className($superPureType), $superParamsForConstructor);
+    ,|[]);
+
+// super params go to the end
+    let paramsForConstructor = $selfParamsForConstructor->concatenate( $superParamsForConstructor);
+    $javaClass->annotate(^meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties(ignoreUnknown=true))
+        ->addConstructor(javaConstructor(['public'], $paramsForConstructor,
+        if($superParamsForConstructor->size() > 0
+        ,|$superConstructorCallBody ->concatenate($bodyForConstructor)
+        ,|$bodyForConstructor)));
+    ,|$javaClass);
+}
+
+function meta::external::language::java::generation::featureBased::pojo::getSuperPureType(pureClass:meta::pure::metamodel::type::Class<Any>[1]):
+  meta::pure::metamodel::type::Class<Any>[1]
+{
+  let superPureType = $pureClass->getGeneralizations()->toOne();
+  let superPureClass = $superPureType->cast(@meta::pure::metamodel::type::Class<Any>);
+  $superPureClass;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::pojo::getAllSuperTypePropertiesAsParams(pureClass:meta::pure::metamodel::type::Class<Any>[1],context:JavaCodeGenerationContext[1]): meta::external::language::java::metamodel::Code[*]
+{
+  let generalizations = $pureClass->getGeneralizations();
+  let hasSuperClass = ! $generalizations->isEmpty();
+  if( $hasSuperClass
+  ,|
+    let superPureClass = $pureClass->getSuperPureType();
+    let properties = $superPureClass->findPropertiesEligibleForJavaGeneration();
+
+    let propertiesForConstructor = $properties->map(property|
+        let fieldType = $context.conventions->pureTypeToJavaType($property);
+        let fieldName = $context.conventions->sanitizeFieldName($property);
+        j_parameter($fieldType, $fieldName);
+    );
+    let superTypeParamsForConstructor = $superPureClass->getAllSuperTypePropertiesAsParams($context);
+    $propertiesForConstructor -> concatenate ( $superTypeParamsForConstructor);
+  ,|[]);
+
+}
+
 function meta::external::language::java::generation::featureBased::versions::getPropertyTypes(class: meta::pure::metamodel::type::Class<Any>[1]):meta::pure::metamodel::type::Type[*]
 {
    meta::external::language::java::generation::featureBased::versions::getPropertyTypes($class, []);
@@ -869,3 +993,46 @@ function <<access.private>> {doc.doc = 'Get ASCII decimal representation'}
    0 )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) // lol, sue me
 }
 
+function <<access.private>> meta::external::language::java::generation::featureBased::pojo::applyOnlyGetters(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|  let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+      $pureClass->findPropertiesEligibleForJavaGeneration()->fold({property, temporaryClass |
+
+        let getter = $temporaryClass->generateOnlyGetters($property,$context.conventions);
+        $temporaryClass->addMethods($getter);
+
+      }, $javaClass);
+
+  ,| $javaClass
+  );
+}
+
+function <<access.private>>  {doc.doc = 'Creates getter and setter methods for a given field . Sanitizes its name'}
+meta::external::language::java::generation::featureBased::pojo::generateOnlyGetters(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[1]
+{
+   let fieldType = $conventions->pureTypeToJavaType($property);
+
+   let fieldName = $conventions->sanitizeFieldName($property);
+
+   let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+   let jfield = j_this($javaClass)->j_field($field);
+
+// global code gen at this point does not support correct boolean getter naming
+// and the strategy does not take in the type as input
+// TODO this should eventually go into the core code gen
+
+    let getterName = if( $fieldType->isPrimitive()
+            && $fieldType->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName == 'boolean'
+            ,|
+                if($field.name->startsWith('is')
+                    ,| $field.name
+                    ,| 'is' + $field.name->toUpperFirstCharacter()->toOne()
+                )
+            ,| $conventions->getterName($field.name)
+            );
+   let getter = javaMethod(['public'], $fieldType, $getterName, [],j_return($jfield));
+
+   [$getter];
+}
