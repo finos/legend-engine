@@ -116,12 +116,22 @@ public class TestGraphQLAPI
         server.stop();
     }
 
+    private ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> getExecutionCacheInstance()
+    {
+        return ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+    }
+
     private GraphQLExecute getGraphQLExecute()
+    {
+        return getGraphQLExecuteWithCache(null);
+    }
+
+    private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
         return graphQLExecute;
     }
 
@@ -508,13 +518,8 @@ public class TestGraphQLAPI
     @Test
     public void testCacheUsed() throws Exception
     {
-        ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> planCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
-        GraphQLPlanCache cache = new GraphQLPlanCache(planCache);
-
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -582,13 +587,8 @@ public class TestGraphQLAPI
     @Test
     public void testCachingUsingNestedSelectionSets() throws Exception
     {
-        ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> planCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
-        GraphQLPlanCache cache = new GraphQLPlanCache(planCache);
-
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -636,7 +636,8 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_EchoDirective() throws Exception
     {
-        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        GraphQLPlanCache graphQLPlanCache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(graphQLPlanCache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -645,8 +646,6 @@ public class TestGraphQLAPI
                 "      legalName\n" +
                 "    }\n" +
                 "  }";
-        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-
         String expected = "{" +
                 "\"data\":{" +
                     "\"allFirms\":[" +
@@ -662,7 +661,15 @@ public class TestGraphQLAPI
                 "}" +
             "}";
 
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
         Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
+
+        response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception

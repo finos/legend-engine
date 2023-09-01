@@ -26,8 +26,15 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testSimpleFilter
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->filter({r | $r.getString('name') == 'John'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 2 );
+   assertEquals(['John','John'], $result.values.rows->map(r|$r.values));   
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterWithStringConcat():Boolean[1]
+{
+   let result = execute(|Person.all()->project([#/Person/firstName!name#])->filter({r | ($r.getString('name') +'A') == 'JohnA'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where concat("root".FIRSTNAME, \'A\') = \'JohnA\'', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 2 );
    assertEquals(['John','John'], $result.values.rows->map(r|$r.values));
-   
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnEnum():Boolean[1]

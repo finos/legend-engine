@@ -147,7 +147,8 @@ function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecific
    $v->match([f:FunctionExpression[1]                | let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($binding, $openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));    
                                                        if($f->externalFormatSupportsFunction(),
                                                          |wrapValueSpecByExternalFormatCluster(^$f(parametersValues = $params->map(p | $p->match([ef:ExternalFormatClusteredValueSpecification[1]|$ef.val, vs:ValueSpecification[1]| $vs]))), $binding, $openVariables, $exeCtx),
-                                                         |meta::pure::router::platform::clustering::wrapValueSpecByPlatformCluster(^$f(parametersValues = $params), $openVariables, $exeCtx))->evaluateAndDeactivate();,
+                                                         |let unwrappedPlatformClusterParams = $params->map(p | $p->match([pf:meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification[1] | $pf.val, vs:ValueSpecification[1]|$vs]));
+							  meta::pure::router::platform::clustering::wrapValueSpecByPlatformCluster(^$f(parametersValues = $unwrappedPlatformClusterParams), $openVariables, $exeCtx);)->evaluateAndDeactivate();,
               i:InstanceValue[1]                     | if($i->isOneFunctionDefinition(),
                                                           | let f           = $i.values->at(0)->cast(@FunctionDefinition<Any>)->evaluateAndDeactivate();
                                                             let expressions = $f.expressionSequence->evaluateAndDeactivate()->map(v|print(if($debug.debug,|'\n'+$v->asString()->debug($debug.space+'Processing: '),|''));

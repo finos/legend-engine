@@ -64,7 +64,7 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: |
-          mvn clean install -DskipTests=true
+          mvn -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-postgres/legend-engine-xt-relationalStore-postgres-execution-tests -am clean install -DskipTests=true
       - name: Run Sql Generation Tests
         env:
           MAVEN_OPTS: -Xmx4g
