@@ -134,32 +134,4 @@ public abstract class AbstractTestSemiStructured
         }
     }
 
-    protected String wrapPreAndFinallyExecutionSqlQuery(String TDSType, String expectedRelational)
-    {
-        return  "RelationalBlockExecutionNode\n" +
-                "(\n" +
-                TDSType +
-                "  (\n" +
-                "    SQL\n" +
-                "    (\n" +
-                "      type = Void\n" +
-                "      resultColumns = []\n" +
-                "      sql = ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n" +
-                expectedRelational +
-                "  ) \n" +
-                "  finallyExecutionNodes = \n" +
-                "  (\n" +
-                "    SQL\n" +
-                "    (\n" +
-                "      type = Void\n" +
-                "      resultColumns = []\n" +
-                "      sql = ALTER SESSION UNSET QUERY_TAG;\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n" +
-                "  )\n" +
-                ")\n";
-    }
-
 }
