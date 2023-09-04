@@ -134,18 +134,20 @@ public class TestTotalCountDirective
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
 
         String expected = "{" +
-                "\"data\":{" +
-                "\"allFirms\":[" +
-                "{\"legalName\":\"Firm X\"}," +
-                "{\"legalName\":\"Firm A\"}," +
-                "{\"legalName\":\"Firm B\"}" +
-                "]" +
-                "}," +
-                "\"extensions\":{" +
-                "\"allFirms\":{" +
-                "\"totalCount\":3" +
-                "}" +
-                "}" +
+                    "\"data\":{" +
+                        "\"allFirms\":[" +
+                            "{\"legalName\":\"Firm X\"}," +
+                            "{\"legalName\":\"Firm A\"}," +
+                            "{\"legalName\":\"Firm B\"}" +
+                        "]" +
+                    "}," +
+                    "\"extensions\":{" +
+                        "\"allFirms\":{" +
+                            "\"totalCount\":{" +
+                                "\"value\":3" +
+                            "}" +
+                        "}" +
+                    "}" +
                 "}";
 
         Assert.assertEquals(expected, responseAsString(response));
@@ -167,17 +169,21 @@ public class TestTotalCountDirective
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
 
         String expected = "{" +
-                "\"data\":{" +
-                "\"selectEmployees\":[" +
-                "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
-                "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
-                "]" +
-                "}," +
-                "\"extensions\":{" +
-                "\"selectEmployees\":{" +
-                "\"totalCount\":7" +
-                "}" +
-                "}" +
+                    "\"data\":{" +
+                        "\"selectEmployees\":[" +
+                            "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                            "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
+                        "]" +
+                    "}," +
+                    "\"extensions\":{" +
+                        "\"selectEmployees\":{" +
+                            "\"totalCount\":{" +
+                                "\"offset\":1,"  +
+                                "\"limit\":2," +
+                                "\"value\":7" +
+                            "}" +
+                        "}" +
+                    "}" +
                 "}";
         Assert.assertEquals(expected, responseAsString(response));
     }
@@ -197,17 +203,21 @@ public class TestTotalCountDirective
                 "  }\n" +
                 "}";
         String expected = "{" +
-                "\"data\":{" +
-                "\"selectEmployees\":[" +
-                "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
-                "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
-                "]" +
-                "}," +
-                "\"extensions\":{" +
-                "\"selectEmployees\":{" +
-                "\"totalCount\":7" +
-                "}" +
-                "}" +
+                    "\"data\":{" +
+                        "\"selectEmployees\":[" +
+                            "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                            "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
+                        "]" +
+                    "}," +
+                    "\"extensions\":{" +
+                        "\"selectEmployees\":{" +
+                            "\"totalCount\":{" +
+                                "\"offset\":1,"  +
+                                "\"limit\":2," +
+                                "\"value\":7" +
+                            "}" +
+                        "}" +
+                    "}" +
                 "}";
         String projectId = "Project1";
         String workspaceId = "Workspace1";
