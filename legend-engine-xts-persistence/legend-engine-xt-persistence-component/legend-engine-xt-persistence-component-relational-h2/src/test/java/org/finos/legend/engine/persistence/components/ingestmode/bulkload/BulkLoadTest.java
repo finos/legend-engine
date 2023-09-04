@@ -32,6 +32,7 @@ import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
+import org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
 import org.junit.jupiter.api.Assertions;
@@ -223,11 +224,7 @@ public class BulkLoadTest extends BaseTest
     public void testBulkLoadWithDigestGeneratedAuditEnabled() throws Exception
     {
         // Register UDF
-        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
-            "String concat(String[] values, String[] values2) {\n" +
-            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
-            "}\n" +
-            "';");
+        H2DigestUtil.registerMD5Udf(h2Sink, DIGEST_UDF);
 
         String filePath = "src/test/resources/data/bulk-load/input/staged_file3.csv";
 
@@ -301,11 +298,7 @@ public class BulkLoadTest extends BaseTest
     public void testBulkLoadWithDigestGeneratedAuditEnabledLineageEnabled() throws Exception
     {
         // Register UDF
-        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
-            "String concat(String[] values, String[] values2) {\n" +
-            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
-            "}\n" +
-            "';");
+        H2DigestUtil.registerMD5Udf(h2Sink, DIGEST_UDF);
 
         String filePath = "src/test/resources/data/bulk-load/input/staged_file4.csv";
 
@@ -382,11 +375,7 @@ public class BulkLoadTest extends BaseTest
     public void testBulkLoadWithDigestGeneratedAuditEnabledLineageEnabledUpperCase() throws Exception
     {
         // Register UDF
-        h2Sink.executeStatement("CREATE ALIAS " + DIGEST_UDF + " AS '\n" +
-            "String concat(String[] values, String[] values2) {\n" +
-            "    return String.join(\"-\", values) + String.join(\"-\", values2);\n" +
-            "}\n" +
-            "';");
+        H2DigestUtil.registerMD5Udf(h2Sink, DIGEST_UDF);
 
         String filePath = "src/test/resources/data/bulk-load/input/staged_file5.csv";
 

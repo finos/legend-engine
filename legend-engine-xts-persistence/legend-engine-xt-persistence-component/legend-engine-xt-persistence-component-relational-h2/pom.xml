@@ -59,6 +59,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- MISC -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
