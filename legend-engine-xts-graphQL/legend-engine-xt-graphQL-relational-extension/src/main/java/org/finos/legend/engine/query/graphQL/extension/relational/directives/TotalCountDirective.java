@@ -95,7 +95,7 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
         Long totalCount = (Long)((resultSetRows.get(0)).get(0));
         HashMap<String, Object> finalResult = new HashMap<>();
         finalResult.put("value", totalCount);
-        if(parameterMap.containsKey("limit"))
+        if (parameterMap.containsKey("limit"))
         {
             finalResult.put("limit", ((ConstantResult)parameterMap.get("limit")).getValue());
         }
