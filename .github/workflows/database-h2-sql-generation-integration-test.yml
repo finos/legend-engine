@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results
-          path: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-test-server/surefire-reports/*.xml
+          path: legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-test-server/target/surefire-reports/*.xml
       - name: Upload CI Event
         if: always()
         uses: actions/upload-artifact@v3
