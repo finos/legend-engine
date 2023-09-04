@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -42,6 +43,7 @@ import org.finos.legend.pure.generated.core_external_query_graphql_transformatio
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,6 +93,16 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
         RealizedRelationalResult realizedResult = ((RealizedRelationalResult) ((result).realizeInMemory()));
         List<List<Object>> resultSetRows = (realizedResult).resultSetRows;
         Long totalCount = (Long)((resultSetRows.get(0)).get(0));
-        return totalCount;
+        HashMap<String, Object> finalResult = new HashMap<>();
+        finalResult.put("value", totalCount);
+        if (parameterMap.containsKey("limit"))
+        {
+            finalResult.put("limit", ((ConstantResult)parameterMap.get("limit")).getValue());
+        }
+        if (parameterMap.containsKey("offset"))
+        {
+            finalResult.put("offset", ((ConstantResult)parameterMap.get("offset")).getValue());
+        }
+        return finalResult;
     }
 }
