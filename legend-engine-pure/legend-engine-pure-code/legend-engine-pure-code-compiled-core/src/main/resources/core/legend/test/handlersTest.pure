@@ -172,6 +172,10 @@ Class meta::legend::test::handlers::model::TestAlgebra
     logFloat(){$this.float->log()}:Float[1];
     logInteger(){$this.integer->log()}:Float[1];
 
+    log10Number(){$this.number->log10()}:Float[1];
+    log10Float(){$this.float->log10()}:Float[1];
+    log10Integer(){$this.integer->log10()}:Float[1];    
+
     mod(){$this.integer->mod($this.integer)}:Integer[1];
     pow(){$this.number->pow($this.number)}:Number[1];
     rem(){$this.number->rem($this.number)}:Number[1];
@@ -179,6 +183,8 @@ Class meta::legend::test::handlers::model::TestAlgebra
     roundNumber(){$this.number->round()}:Integer[1];
     roundFloat(){$this.float->round()}:Integer[1];
     roundInteger(){$this.integer->round()}:Integer[1];
+
+    sign(){$this.integer->sign()}:Integer[1];
    
     sqrtNumber(){$this.number->sqrt()}:Float[1];
     sqrtFloat(){$this.float->sqrt()}:Float[1];
@@ -232,6 +238,30 @@ Class meta::legend::test::handlers::model::StdDev
    stdDevSampleIntegerMinOne() {$this.integersMinOne->stdDevSample()}:Number[1];
 }
 
+Class meta::legend::test::handlers::model::Variance
+{
+   numbers : Number[*];
+   numbersMinOne : Number[1..*];
+   floats : Float[*];
+   floatsMinOne : Float[1..*];
+   integers : Integer[*];
+   integersMinOne: Integer[1..*];
+
+   variancePopulationNumber() {$this.numbers->variancePopulation()}:Number[1];
+   variancePopulationNumberMinOne() {$this.numbersMinOne->variancePopulation()}:Number[1];
+   variancePopulationFloat() {$this.floats->variancePopulation()}:Number[1];
+   variancePopulationFloatMinOne() {$this.floatsMinOne->variancePopulation()}:Number[1];
+   variancePopulationInteger() {$this.integers->variancePopulation()}:Number[1];
+   variancePopulationIntegerMinOne() {$this.integersMinOne->variancePopulation()}:Number[1];
+
+   varianceSampleNumber() {$this.numbers->varianceSample()}:Number[1];
+   varianceSampleNumberMinOne() {$this.numbersMinOne->varianceSample()}:Number[1];
+   varianceSampleFloat() {$this.floats->varianceSample()}:Number[1];
+   varianceSampleFloatMinOne() {$this.floatsMinOne->varianceSample()}:Number[1];
+   varianceSampleInteger() {$this.integers->varianceSample()}:Number[1];
+   varianceSampleIntegerMinOne() {$this.integersMinOne->varianceSample()}:Number[1];
+}
+
 Class meta::legend::test::handlers::model::Trigo
 {
    number : Number[1];
@@ -241,6 +271,10 @@ Class meta::legend::test::handlers::model::Trigo
    cosNumber() {$this.number->cos()}:Float[1];
    cosFloat() {$this.float->cos()}:Float[1];
    cosInteger() {$this.integer->cos()}:Float[1];
+
+   cotNumber() {$this.number->cot()}:Float[1];
+   cotFloat() {$this.float->cot()}:Float[1];
+   cotInteger() {$this.integer->cot()}:Float[1];   
 
    sinNumber() {$this.number->sin()}:Float[1];
    sinFloat() {$this.float->sin()}:Float[1];
@@ -291,6 +325,10 @@ Class meta::legend::test::handlers::model::TestString
    strings : String[*];
    string : String[1];
    stringZeroOne : String[0..1];
+   integer: Integer[1];
+
+   ascii(){$this.string->ascii()}:Integer[1];
+   char(){$this.integer->char()}:String[1];
 
    plus() {$this.string+$this.string}:String[1];
    
@@ -340,7 +378,9 @@ Class meta::legend::test::handlers::model::TestString
    parseFloat(){$this.string->parseFloat()}:Float[1];
    parseInteger(){$this.string->parseInteger()}:Integer[1];
    
+   repeatString(){$this.string->repeatString(2)}:String[0..1];
    replace(){$this.string->replace($this.string, $this.string)}:String[1];
+   reverseString(){$this.string->reverseString()}:String[1];
    split(){$this.string->split($this.string)}:String[*];
    rtrim(){$this.string->rtrim()}:String[1];
    substringTwo(){$this.string->substring(1,2)}:String[1];

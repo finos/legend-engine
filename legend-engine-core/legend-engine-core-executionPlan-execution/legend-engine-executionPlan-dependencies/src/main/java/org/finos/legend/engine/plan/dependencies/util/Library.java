@@ -232,6 +232,42 @@ public class Library
         return firstDayOfYear(today());
     }
 
+    public static PureDate firstHourOfDay(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay()) {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), 0);
+        }
+        throw new IllegalArgumentException("Date must have year, month and day");
+    }
+
+
+    public static PureDate firstMinuteOfHour(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour()) {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), 0);
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day and hour");
+    }
+
+    public static PureDate firstSecondOfMinute(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute()) {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), 0);
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day, hour and minute");
+    }
+
+    public static PureDate firstMillisecondOfSecond(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute() && date.hasSecond()) {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), "0");
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day, hour, minute and second");
+    }
+
     public static long weekOfYear(PureDate date)
     {
         if (!date.hasDay())
@@ -1516,6 +1552,11 @@ public class Library
         return result;
     }
 
+    public static String repeatString(String s, int times)
+    {
+        return String.join("", Collections.nCopies(times, s));
+    }
+
     public static String toUpperFirstCharacter(String s)
     {
         if (s == null)
@@ -1593,6 +1634,21 @@ public class Library
         return Math.sqrt(variance(values, isBiasCorrected));
     }
 
+    public static Number variance(List<Number> list, boolean isBiasCorrected)
+    {
+        if (list == null || list.isEmpty())
+        {
+            throw new RuntimeException("Unable to process empty list");
+        }
+        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
+        double[] values = new double[javaNumbers.size()];
+        for (int i = 0; i < javaNumbers.size(); i++)
+        {
+            values[i] = javaNumbers.get(i).doubleValue();
+        }
+        return variance(values, isBiasCorrected);
+    }
+
     public static double variance(double[] values, boolean isBiasCorrected)
     {
         int length = values.length;
@@ -1642,5 +1698,10 @@ public class Library
             sum += values[i];
         }
         return sum / length;
+    }
+
+    public static double coTangent(double input)
+    {
+        return 1.0 / Math.tan(input);
     }
 }

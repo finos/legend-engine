@@ -65,6 +65,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
          fc1(parseDecimal_String_1__Decimal_1_,                                  {ctx,s                       | $ctx.conventions->codeParseDecimal($s)}),
 
          fc2(chunk_String_1__Integer_1__String_MANY_,                            {ctx,s,val                   | $library->j_invoke('chunk', [$s, $val->j_cast(javaInt())], javaList(javaString()))}),
+         fc2(repeatString_String_$0_1$__Integer_1__String_$0_1$_,                {ctx,s,times                 | $library->j_invoke('repeatString', [$s, $times->j_cast(javaInt())], javaString())}),
          fc3(replace_String_1__String_1__String_1__String_1_,                    {ctx,s,toReplace,replacement | $s->j_invoke('replace', [$toReplace, $replacement])}),
          fc1(rtrim_String_1__String_1_,                                          {ctx,s                       | $s->j_invoke('rtrim', [])}),
          fc2(split_String_1__String_1__String_MANY_,                             {ctx,s,token                 | $library->j_invoke('split', [$s, $token], javaList(javaString()))}),
