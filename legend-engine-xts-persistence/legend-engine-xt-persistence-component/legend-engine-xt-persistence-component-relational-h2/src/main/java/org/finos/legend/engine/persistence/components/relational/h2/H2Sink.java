@@ -209,29 +209,13 @@ public class H2Sink extends AnsiSqlSink
         SqlPlan incomingRecordCountSqlPlan = statisticsSqlPlan.get(StatisticName.INCOMING_RECORD_COUNT);
         if (incomingRecordCountSqlPlan != null)
         {
-            long incomingRecordCount = (Long) executor.executePhysicalPlanAndGetResults(incomingRecordCountSqlPlan, placeHolderKeyValues)
-                .stream()
-                .findFirst()
-                .map(TabularData::getData)
-                .flatMap(t -> t.stream().findFirst())
-                .map(Map::values)
-                .flatMap(t -> t.stream().findFirst())
-                .orElseThrow(IllegalStateException::new);
-            stats.put(StatisticName.INCOMING_RECORD_COUNT, incomingRecordCount);
+            stats.put(StatisticName.INCOMING_RECORD_COUNT, getStats(executor, incomingRecordCountSqlPlan, placeHolderKeyValues));
         }
 
         SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
         if (rowsInsertedSqlPlan != null)
         {
-            long rowsInserted = (Long) executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
-                .stream()
-                .findFirst()
-                .map(TabularData::getData)
-                .flatMap(t -> t.stream().findFirst())
-                .map(Map::values)
-                .flatMap(t -> t.stream().findFirst())
-                .orElseThrow(IllegalStateException::new);
-            stats.put(StatisticName.ROWS_INSERTED, rowsInserted);
+            stats.put(StatisticName.ROWS_INSERTED, getStats(executor, rowsInsertedSqlPlan, placeHolderKeyValues));
         }
 
         IngestorResult result;
@@ -244,5 +228,17 @@ public class H2Sink extends AnsiSqlSink
             .build();
 
         return result;
+    }
+
+    private long getStats(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        return (Long) executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues)
+            .stream()
+            .findFirst()
+            .map(TabularData::getData)
+            .flatMap(t -> t.stream().findFirst())
+            .map(Map::values)
+            .flatMap(t -> t.stream().findFirst())
+            .orElseThrow(IllegalStateException::new);
     }
 }

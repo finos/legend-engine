@@ -19,7 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
-import org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.Udf;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 

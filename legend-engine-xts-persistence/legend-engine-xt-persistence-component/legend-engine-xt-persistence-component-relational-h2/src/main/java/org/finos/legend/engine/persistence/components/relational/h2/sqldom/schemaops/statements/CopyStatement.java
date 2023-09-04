@@ -51,7 +51,7 @@ public class CopyStatement implements DMLStatement
      Copy GENERIC PLAN for H2:
         INSERT INTO table_name (COLUMN_LIST)
         SELECT [CONVERT("column_name", column_type) , ...]
-        FROM CSVREAD('{FILE_PATH}','{CSV_COLUMN_NAMES}',NULL)
+        FROM CSVREAD('{FILE_PATH}','{CSV_COLUMN_NAMES}','{CSV_OPTIONS}')
      */
 
     @Override
