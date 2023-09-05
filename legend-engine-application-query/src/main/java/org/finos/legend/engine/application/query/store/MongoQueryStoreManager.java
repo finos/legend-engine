@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.application.query.api;
+package org.finos.legend.engine.application.query.store;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -33,6 +32,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.sorted.MutableSortedSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.application.query.api.ApplicationQueryException;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QueryParameterValue;
@@ -43,7 +43,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-import javax.lang.model.SourceVersion;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -51,25 +50,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class QueryStoreManager
+public class MongoQueryStoreManager extends BaseQueryStoreManager
 {
-    private static final Pattern VALID_ARTIFACT_ID_PATTERN = Pattern.compile("^[a-z][a-z0-9_]*+(-[a-z][a-z0-9_]*+)*+$");
-
-    private static final int MAX_NUMBER_OF_QUERIES = 100;
-    private static final int MAX_NUMBER_OF_EVENTS = 1000;
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Document EMPTY_FILTER = Document.parse("{}");
-
-    // NOTE: these are non-compilable profile and tag that we come up with for query
-    // so that it records the dataSpace it is created from
-    private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
-    private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
-    private static final int GET_QUERIES_LIMIT = 50;
     private final MongoClient mongoClient;
 
-    public QueryStoreManager(MongoClient mongoClient)
+    private static final Document EMPTY_FILTER = Document.parse("{}");
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
+
+
+    public MongoQueryStoreManager(MongoClient mongoClient)
     {
         this.mongoClient = mongoClient;
     }
@@ -157,15 +146,6 @@ public class QueryStoreManager
         return Document.parse(objectMapper.writeValueAsString(query));
     }
 
-    private static QueryEvent createEvent(String queryId, QueryEvent.QueryEventType eventType)
-    {
-        QueryEvent event = new QueryEvent();
-        event.queryId = queryId;
-        event.timestamp = Instant.now().toEpochMilli();
-        event.eventType = eventType;
-        return event;
-    }
-
     private static QueryEvent documentToQueryEvent(Document document)
     {
         QueryEvent event = new QueryEvent();
@@ -185,35 +165,6 @@ public class QueryStoreManager
     private static Document queryEventToDocument(QueryEvent event) throws JsonProcessingException
     {
         return Document.parse(objectMapper.writeValueAsString((event)));
-    }
-
-    private static void validate(boolean predicate, String message)
-    {
-        if (!predicate)
-        {
-            throw new ApplicationQueryException(message, Response.Status.BAD_REQUEST);
-        }
-    }
-
-    private static void validateNonEmptyQueryField(String fieldValue, String message)
-    {
-        validate(fieldValue != null && !fieldValue.isEmpty(), message);
-    }
-
-    public static void validateQuery(Query query)
-    {
-        validateNonEmptyQueryField(query.id, "Query ID is missing or empty");
-        validateNonEmptyQueryField(query.name, "Query name is missing or empty");
-        validateNonEmptyQueryField(query.groupId, "Query project group ID is missing or empty");
-        validateNonEmptyQueryField(query.artifactId, "Query project artifact ID is missing or empty");
-        validateNonEmptyQueryField(query.versionId, "Query project version is missing or empty");
-        validateNonEmptyQueryField(query.mapping, "Query mapping is missing or empty");
-        validateNonEmptyQueryField(query.runtime, "Query runtime is missing or empty");
-        validateNonEmptyQueryField(query.content, "Query content is missing or empty");
-
-        validate(SourceVersion.isName(query.groupId), "Query project group ID is invalid");
-        validate(VALID_ARTIFACT_ID_PATTERN.matcher(query.artifactId).matches(), "Query project artifact ID is invalid");
-        // TODO: we can potentially create a pattern check for version
     }
 
     public List<Query> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
@@ -283,7 +234,7 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Can't fetch more than " + GET_QUERIES_LIMIT + " queries", Response.Status.BAD_REQUEST);
         }
-        MutableList<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.in("id", queryIds)).limit(GET_QUERIES_LIMIT), QueryStoreManager::documentToQuery).toList();
+        MutableList<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.in("id", queryIds)).limit(GET_QUERIES_LIMIT), MongoQueryStoreManager::documentToQuery).toList();
         // validate
         MutableSortedSet<String> notFoundQueries = SortedSets.mutable.empty();
         MutableSortedSet<String> duplicatedQueries = SortedSets.mutable.empty();
@@ -312,7 +263,7 @@ public class QueryStoreManager
 
     public Query getQuery(String queryId)
     {
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), MongoQueryStoreManager::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
@@ -344,7 +295,7 @@ public class QueryStoreManager
         // Force the current user as owner regardless of user input
         query.owner = currentUser;
 
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), MongoQueryStoreManager::documentToQuery).toList();
         if (matchingQueries.size() >= 1)
         {
             throw new ApplicationQueryException("Query with ID '" + query.id + "' already existed", Response.Status.BAD_REQUEST);
@@ -362,7 +313,7 @@ public class QueryStoreManager
     {
         validateQuery(query);
 
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), MongoQueryStoreManager::documentToQuery).toList();
         if (!queryId.equals(query.id))
         {
             throw new ApplicationQueryException("Updating query ID is not supported", Response.Status.BAD_REQUEST);
@@ -395,7 +346,7 @@ public class QueryStoreManager
 
     public void deleteQuery(String queryId, String currentUser) throws JsonProcessingException
     {
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), MongoQueryStoreManager::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
@@ -436,6 +387,6 @@ public class QueryStoreManager
         }
         return LazyIterate.collect(this.getQueryEventCollection()
                 .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-                .limit(Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit)), QueryStoreManager::documentToQueryEvent).toList();
+                .limit(Math.min(MAX_NUMBER_OF_EVENTS, limit == null ? Integer.MAX_VALUE : limit)), MongoQueryStoreManager::documentToQueryEvent).toList();
     }
 }
