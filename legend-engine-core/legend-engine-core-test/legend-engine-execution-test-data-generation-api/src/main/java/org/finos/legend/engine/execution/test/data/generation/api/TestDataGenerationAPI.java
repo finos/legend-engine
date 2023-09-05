@@ -114,6 +114,14 @@ public class TestDataGenerationAPI
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Test Data Generation").startActive(true))
         {
             String clientVersion = testDataGenerationInput.clientVersion == null ? PureClientVersions.production : testDataGenerationInput.clientVersion;
+            Map<String, Object> parameterNameValueMap = Maps.mutable.empty();
+            if (testDataGenerationInput.parameterValues != null)
+            {
+                for (ParameterValue parameterValue : testDataGenerationInput.parameterValues)
+                {
+                    parameterNameValueMap.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
+                }
+            }
             return TestDataGeneration.executeTestDataGenerateWithSeed(
                     pureModel -> HelperValueSpecificationBuilder.buildLambda(testDataGenerationInput.function.body, testDataGenerationInput.function.parameters, pureModel.getContext()),
                     () -> modelManager.loadModel(testDataGenerationInput.model, clientVersion, profiles, null),
@@ -122,6 +130,7 @@ public class TestDataGenerationAPI
                     testDataGenerationInput.context,
                     testDataGenerationInput.tableRowIdentifiers,
                     testDataGenerationInput.hashStrings,
+                    parameterNameValueMap,
                     clientVersion,
                     profiles,
                     request.getRemoteUser(),

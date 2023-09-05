@@ -73,7 +73,7 @@ public class TestDataGeneration
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestDataGeneration.class);
     private static final ObjectMapper objectMapper = TestDataGenerationObjectMapperFactory.getNewObjectMapper();
 
-    public static Response executeTestDataGenerateWithSeed(Function<PureModel, LambdaFunction> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, List<TableRowIdentifiers> tableRowIdentifiers, Boolean hashStrings, String clientVersion, MutableList<CommonProfile> profiles, String user, PlanExecutor planExecutor)
+    public static Response executeTestDataGenerateWithSeed(Function<PureModel, LambdaFunction> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, List<TableRowIdentifiers> tableRowIdentifiers, Boolean hashStrings, Map<String, Object> parameterNameValueMap, String clientVersion, MutableList<CommonProfile> profiles, String user, PlanExecutor planExecutor)
     {
         try
         {
@@ -93,7 +93,7 @@ public class TestDataGeneration
                 tableRowIdentifiers.forEach(x -> pureTableRowIdentifiers.add(HelperTestDataGenerationBuilder.processTestDataGenerationTableRowIdentifiers(x, pureModel.getContext())));
             }
             boolean pureHashStrings = hashStrings == null ? false : hashStrings;
-            SingleExecutionPlan plan = PlanGenerator.transformExecutionPlan(generateTestDataPlan(lambdaFunction, pureMapping, pureRuntime, executionContext, pureTableRowIdentifiers, pureHashStrings, Maps.mutable.empty(), pureModel, profiles), pureModel, clientVersion, profiles, routerExtensions, planTransformers);
+            SingleExecutionPlan plan = PlanGenerator.transformExecutionPlan(generateTestDataPlan(lambdaFunction, pureMapping, pureRuntime, executionContext, pureTableRowIdentifiers, pureHashStrings, parameterNameValueMap, pureModel, profiles), pureModel, clientVersion, profiles, routerExtensions, planTransformers);
             Result result = planExecutor.execute(plan, planExecutor.buildDefaultExecutionState(plan, Maps.mutable.empty()).setRealizeAllocationResults(true), user, profiles);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.GENERATE_TEST_DATA_STOP, System.currentTimeMillis() - start).toString());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
