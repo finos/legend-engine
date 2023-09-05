@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
@@ -860,12 +861,12 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceWithUserId()
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
-        Set<KerberosPrincipal> principals = new HashSet<>();
-        principals.add(new KerberosPrincipal("peter@test.com"));
+
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("peter");
 
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
-                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty())))
+                .withIdentity(identity)
                 .withSerializationFormat(SerializationFormat.PURE);
         String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
