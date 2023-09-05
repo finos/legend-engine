@@ -88,9 +88,13 @@ public class MasteryProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(
+        Map<Class<? extends PackageableElement>, String> classifierMap = Maps.mutable.with(
                 MasterRecordDefinition.class, "meta::pure::mastery::metamodel::MasterRecordDefinition",
                 DataProvider.class, "meta::pure::mastery::metamodel::DataProvider",
-                Connection.class, "meta::pure::mastery::metamodel::connection::Connection");
+                FTPConnection.class, "meta::pure::mastery::metamodel::connection::FTPConnection",
+                HTTPConnection.class, "meta::pure::mastery::metamodel::connection::HTTPConnection");
+
+        classifierMap.put(KafkaConnection.class, "meta::pure::mastery::metamodel::connection::KafkaConnection");
+        return classifierMap;
     }
 }
