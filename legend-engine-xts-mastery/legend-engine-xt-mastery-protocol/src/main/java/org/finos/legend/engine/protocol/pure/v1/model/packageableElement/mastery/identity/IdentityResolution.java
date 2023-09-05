@@ -21,6 +21,7 @@ import java.util.List;
 
 public class IdentityResolution
 {
+    public String modelClass;
     public List<ResolutionQuery> resolutionQueries = Collections.emptyList();
     public SourceInformation sourceInformation;
 
