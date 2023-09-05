@@ -25,15 +25,14 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
       _type = 'class',
       name = createValidClassName($table.name),
       package = $packageStr + $table.schema.name,
-      superTypes = ['meta::pure::metamodel::type::Any'], // Tables don't have a class hierarchy
       properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
            ->map(c | $c->columnToProperty()),
-      taggedValues = [createPureTaggedDoc('GENERATED CLASS')]
+      taggedValues = [createPureGeneratedTaggedDoc()]
    );
 }
 
-function meta::relational::transform::autogen::createPureTaggedDoc(doc: String[1]):meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
+function meta::relational::transform::autogen::createPureGeneratedTaggedDoc():meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue
    (
@@ -41,7 +40,7 @@ function meta::relational::transform::autogen::createPureTaggedDoc(doc: String[1
           profile = 'meta::pure::profiles::doc',
           value = 'doc'
       ),
-      value = $doc
+      value = 'Generated Element'
    );
 }
 
@@ -103,7 +102,7 @@ function meta::relational::transform::autogen::joinToAssociation(join:Join[1], p
      name = $joinName,
      package = $packageStr->removeTrailingColonsFromPackageString(),
      properties = [$p1, $p2],
-     taggedValues = [createPureTaggedDoc('GENERATED ASSOCIATION')]
+     taggedValues = [createPureGeneratedTaggedDoc()]
    );
 }
 

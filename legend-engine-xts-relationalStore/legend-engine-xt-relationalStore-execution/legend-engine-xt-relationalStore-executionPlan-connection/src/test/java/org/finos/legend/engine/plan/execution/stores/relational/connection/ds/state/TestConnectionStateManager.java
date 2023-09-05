@@ -22,7 +22,9 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -421,6 +423,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
 
     }
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testPoolIdentityIsValid()
@@ -441,10 +445,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Assert.assertEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(), dataSourceWithStatistics1.getStatistics().getFirstConnectionRequest());
 
         //mock expiring of credentials
+        exceptionRule.expect(RuntimeException.class);
+        exceptionRule.expectMessage("Invalid Identity found, cannot build connection pool for mock");
         when(mockCredential.isValid()).thenReturn(false);
         requestConnection(identityOne, ds1);
-        Assert.assertEquals(1, connectionStateManager.size());
-        DataSourceWithStatistics dataSourceWithStatisticsAfter = connectionStateManager.get(poolName);
-        Assert.assertNotEquals(dataSourceWithStatistics.getStatistics().getFirstConnectionRequest(), dataSourceWithStatisticsAfter.getStatistics().getFirstConnectionRequest());
     }
 }

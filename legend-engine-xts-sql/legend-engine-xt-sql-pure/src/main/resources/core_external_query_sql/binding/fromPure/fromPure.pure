@@ -996,11 +996,9 @@ function meta::external::query::sql::transformation::queryToPure::convertValue(a
 {
 
   $a->match([
-    s:String[1] | if ($type->in([Date, StrictDate, DateTime]),
-                    | parseDate($s),
-                    | if ($type->instanceOf(Enumeration),
-                        | extractEnumValue($type->cast(@Enumeration<Enum>), $s),
-                        | $s)),
+    s:String[1] | if ($type->instanceOf(Enumeration),
+                    | extractEnumValue($type->cast(@Enumeration<Enum>), $s),
+                    | $s),
     a:Any[1] | $a,
     a:Any[*] | $a->map(v | convertValue($v, $type))
   ]);

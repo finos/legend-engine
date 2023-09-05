@@ -82,6 +82,23 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinc
    assertEquals('select concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "sourceName", count(distinct("root".ID)) as "count" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) group by "sourceName" order by "count" desc,"sourceName"', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::groupBy::simpleFilterWithGroupByWithDistinct():Boolean[1]
+{
+  let result = execute(|Trade.all()
+                        ->filter(t | $t.id < 4)
+                        ->filter(t | $t.quantity > 11)
+                        ->project([ x | $x.quantity ],['quantity' ])
+                        ->meta::pure::tds::distinct()
+                        ->meta::pure::tds::groupBy(['quantity'], [agg( 'qty',  x | $x.getString('quantity'), y | $y->count())])
+                        ,simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+
+  let tds = $result.values->at(0);
+  assertEquals(2, $tds.rows->size());
+  assertEquals([25.0, 1], $tds.rows->at(0).values);
+  assertEquals([320.0, 1], $tds.rows->at(1).values);
+
+  assertEquals('select "tradetable_0"."quantity" as "quantity", count("quantity") as "qty" from (select distinct "root".quantity as "quantity" from tradeTable as "root" where "root".ID < 4 and "root".quantity > 11) as "tradetable_0" group by "quantity"', $result->sqlRemoveFormatting());
+}
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum():Boolean[1]
 {

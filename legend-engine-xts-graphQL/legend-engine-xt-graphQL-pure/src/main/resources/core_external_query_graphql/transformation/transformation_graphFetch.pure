@@ -100,8 +100,9 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 
 
 ###Pure
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::pure::graphFetch::*;
 import meta::external::query::graphQL::transformation::queryToPure::*;
-
 function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
@@ -135,9 +136,8 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
 {
   let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
 
-
-    let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
-
+  let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  
   $res->map(r|
               ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
                name = $r.propertyName,
@@ -149,7 +149,129 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                 )
               )
         );
+}
 
+function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(
+                                                                          cl:Class<Any>[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  let tree = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let res = $tree->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+
+  $res->map(r|
+    ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+      name = $r.propertyName + '@totalCount',
+      plan =  meta::pure::executionPlan::executionPlan(
+                meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($tree, $r, $query),
+                $mapping,
+                $runtime,
+                $extensions
+              )
+  ));
+
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::isALimitingFunction(func: Function<Any>[1]): Boolean[1]
+{
+  $func->in(
+    [
+      slice_T_MANY__Integer_1__Integer_1__T_MANY_,
+      drop_T_MANY__Integer_1__T_MANY_,
+      limit_T_MANY__Integer_1__T_MANY_,
+      take_T_MANY__Integer_1__T_MANY_,
+      paginated_T_MANY__Integer_1__Integer_1__T_MANY_
+    ]
+  )
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective(tree: RootGraphFetchTree<Any>[1], r: meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[1], query: meta::external::query::graphQL::metamodel::sdl::Document[1]): FunctionDefinition<Any>[1]
+{
+  let parameters = $tree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree)->evaluateAndDeactivate()->at(0).property.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->tail()->evaluateAndDeactivate();
+  let expressionSequence = $r.functionDef.expressionSequence;
+  let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
+  let funcWithoutGraphFetchSerialize = $expressionSequence->last()->toOne()
+                                        ->cast(@SimpleFunctionExpression).parametersValues->at(0)
+                                        ->cast(@SimpleFunctionExpression).parametersValues->at(0);
+  let funcWithoutLimitingFunction = if(
+    $funcWithoutGraphFetchSerialize->cast(@SimpleFunctionExpression).func->meta::external::query::graphQL::transformation::queryToPure::isALimitingFunction(),
+    |$funcWithoutGraphFetchSerialize->cast(@SimpleFunctionExpression).parametersValues->at(0),
+    |$funcWithoutGraphFetchSerialize
+  );
+
+  let expressionSequenceLengthLess1 = $expressionSequence->size() - 1;
+  let returnType = $funcWithoutLimitingFunction->evaluateAndDeactivate();
+  let classGenericType = $returnType.genericType->cast(@GenericType);
+  let integerGenericType = ^GenericType(rawType = Integer);
+  let xLambda = newLambdaFunction(
+    ^FunctionType(
+      returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Integer), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='x')])
+  );
+  let yLambda = newLambdaFunction(
+    ^FunctionType(
+      returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Integer), parameters = [^VariableExpression(multiplicity=ZeroMany,genericType=^GenericType(rawType=Integer),name='y')])
+  );
+  let func = ^LambdaFunction<{->Any[*]}>(
+    expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
+                          // $realGroupBy
+                          ^$getAll(
+                            func = groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,
+                            functionName = 'groupBy',
+                            genericType = ^GenericType(rawType=TabularDataSet),
+                            resolvedTypeParameters = ^GenericType(rawType=TabularDataSet, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                            parametersValues = [
+                              $funcWithoutLimitingFunction,
+                              ^InstanceValue(multiplicity=ZeroMany,genericType=^GenericType(rawType=Function),values=[]),
+                              ^InstanceValue(
+                                multiplicity=PureOne,
+                                genericType=^GenericType(rawType=meta::pure::functions::collection::AggregateValue, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                                values = [
+                                  ^SimpleFunctionExpression(
+                                    func = agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
+                                    functionName = 'agg',
+                                    genericType = ^GenericType(rawType=meta::pure::functions::collection::AggregateValue, typeArguments=[$classGenericType,$integerGenericType,$integerGenericType]),
+                                    resolvedTypeParameters = [
+                                      $classGenericType,
+                                      ^GenericType(rawType=Integer),
+                                      ^GenericType(rawType=Integer)
+                                    ],
+                                    multiplicity = PureOne,
+                                    importGroup=system::imports::coreImport,
+                                    parametersValues = [
+                                      ^InstanceValue(
+                                        multiplicity=PureOne,
+                                        genericType=^GenericType(rawType=LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnType=^GenericType(rawType=Integer),returnMultiplicity=PureOne,parameters=[^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='x')]))]),
+                                        values = ^$xLambda(expressionSequence = ^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Integer),values=[1]))
+                                      ),
+                                      ^InstanceValue(
+                                        multiplicity=PureOne,
+                                        genericType=^GenericType(rawType=LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnType=^GenericType(rawType=Integer),returnMultiplicity=PureOne,parameters=[^VariableExpression(multiplicity=ZeroMany,genericType=$integerGenericType,name='y')]))]),
+                                        values = ^$yLambda(expressionSequence = ^SimpleFunctionExpression(
+                                                      func=count_Any_MANY__Integer_1_,
+                                                      multiplicity=PureOne,
+                                                      importGroup=system::imports::coreImport,
+                                                      genericType=^GenericType(rawType=Integer),
+                                                      parametersValues=[
+                                                        ^VariableExpression(multiplicity=PureOne,name='y',genericType=^GenericType(rawType=Integer))
+                                                      ])
+                                                  )
+                                      )
+                                    ]
+                                  )
+                                ]
+                              ),
+                              ^InstanceValue(multiplicity=ZeroMany,genericType=^GenericType(rawType=String),values=['count'])
+                            ],
+                            usageContext = []
+                          )
+                        )->toOneMany());
+  let lambdaWithParams = newLambdaFunction(
+                          ^FunctionType(returnMultiplicity = ZeroMany, returnType = ^GenericType(rawType = Any), parameters= $parameters)
+                        );
+  ^$func(classifierGenericType=$lambdaWithParams.classifierGenericType);
 }
 Class meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan
 {
