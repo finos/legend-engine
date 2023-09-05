@@ -234,7 +234,8 @@ public class Library
 
     public static PureDate firstHourOfDay(PureDate date)
     {
-        if (date.hasMonth() && date.hasDay()) {
+        if (date.hasMonth() && date.hasDay())
+        {
             return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), 0);
         }
         throw new IllegalArgumentException("Date must have year, month and day");
@@ -243,7 +244,8 @@ public class Library
 
     public static PureDate firstMinuteOfHour(PureDate date)
     {
-        if (date.hasMonth() && date.hasDay() && date.hasHour()) {
+        if (date.hasMonth() && date.hasDay() && date.hasHour()) 
+        {
             return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), 0);
         }
 
@@ -252,7 +254,8 @@ public class Library
 
     public static PureDate firstSecondOfMinute(PureDate date)
     {
-        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute()) {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute()) 
+        {
             return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), 0);
         }
 
@@ -261,7 +264,8 @@ public class Library
 
     public static PureDate firstMillisecondOfSecond(PureDate date)
     {
-        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute() && date.hasSecond()) {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute() && date.hasSecond()) 
+        {
             return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), "0");
         }
 
