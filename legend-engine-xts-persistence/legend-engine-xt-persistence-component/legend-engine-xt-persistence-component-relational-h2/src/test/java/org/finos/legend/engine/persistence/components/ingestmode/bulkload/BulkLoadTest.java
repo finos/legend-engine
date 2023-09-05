@@ -15,8 +15,9 @@
 package org.finos.legend.engine.persistence.components.ingestmode.bulkload;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
+import org.finos.legend.engine.persistence.components.common.CsvFileFormat;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.JsonFileFormat;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
@@ -99,7 +100,7 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                         H2StagedFilesDatasetProperties.builder()
-                            .fileFormat(FileFormat.CSV)
+                            .fileFormat(CsvFileFormat.builder().build())
                            .addAllFiles(Collections.singletonList(filePath)).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
@@ -167,7 +168,7 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
+                    .fileFormat(CsvFileFormat.builder().build())
                     .addAllFiles(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
@@ -238,7 +239,7 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
+                    .fileFormat(CsvFileFormat.builder().build())
                     .addAllFiles(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
@@ -313,7 +314,7 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
+                    .fileFormat(CsvFileFormat.builder().build())
                     .addAllFiles(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
@@ -390,7 +391,7 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
+                    .fileFormat(CsvFileFormat.builder().build())
                     .addAllFiles(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
@@ -530,7 +531,7 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.CSV)
+                        .fileFormat(CsvFileFormat.builder().build())
                         .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.csv", "src/test/resources/data/bulk-load/input/staged_file2.csv")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
@@ -550,7 +551,7 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.JSON)
+                        .fileFormat(JsonFileFormat.builder().build())
                         .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.json")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();

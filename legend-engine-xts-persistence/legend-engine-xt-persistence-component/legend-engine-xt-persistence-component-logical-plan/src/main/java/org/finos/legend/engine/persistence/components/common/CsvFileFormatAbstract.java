@@ -14,6 +14,16 @@
 
 package org.finos.legend.engine.persistence.components.common;
 
-public interface FileFormat
+import org.immutables.value.Value;
+
+@Value.Immutable
+@Value.Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface CsvFileFormatAbstract extends FileFormat
 {
 }
