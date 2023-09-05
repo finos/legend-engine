@@ -71,7 +71,9 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 3))
+                                handlers.m(handlers.m(handlers.h("meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 3)),
+                                        handlers.m(handlers.h("meta::external::format::shared::functions::externalize_TabularDataSet_1__String_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
+                                )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
