@@ -748,12 +748,26 @@ function meta::relational::testDataGeneration::getMilestoningFilter(table: Table
    )
 }
 
-function meta::relational::testDataGeneration::getTableFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1]):Table[*]
+function meta::relational::testDataGeneration::getRelationalCSVDataFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1]):meta::relational::metamodel::data::RelationalCSVData[1]
 {
-   let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries;
-   $sql->map(q | $q->meta::relational::validation::functions::getTables())
-      ->removeDuplicates()
-      ->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+  let propertyTree = $query.expressionSequence->at(0)->evaluateAndDeactivate()->meta::pure::lineage::scanProperties::scanProperties(^List<meta::pure::lineage::scanProperties::PropertyPathNode>(), [], [])
+  .result->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree();
+  let columns = $propertyTree->meta::pure::lineage::scanColumns::scanColumns($mapping).column->removeDuplicates();
+
+  let finalTableToColumnsMap = $columns->filter(c | $c.owner->isNotEmpty() && $c.owner->toOne()->instanceOf(Table))->fold({column, tableToColumnsMap | 
+                                let table = $column.owner->toOne()->cast(@Table);
+                                let existingColumnList = $tableToColumnsMap->get($table);
+                                let list = if($existingColumnList->isEmpty(),| ^List<Column>(values = [$column]) ,| ^List<Column>(values = $existingColumnList.values->add($column)))->cast(@List<Column>)->toOne();
+                                $tableToColumnsMap->put($table, $list);
+       },  ^Map<Table,List<Column>>());
+  
+  let relationalCSVTables = $finalTableToColumnsMap->keyValues()->map(tableColumnsPair | let table = $tableColumnsPair.first;
+                                                                                         let milestoningColumns = $table->meta::relational::milestoning::getMilestoningDateColumns();
+                                                                                         let primaryKeys = $table.primaryKey;
+                                                                                         let columns = $tableColumnsPair.second.values->concatenate($milestoningColumns)->concatenate($primaryKeys)->removeDuplicates();
+                                                                                       ^meta::relational::metamodel::data::RelationalCSVTable(schema = $table.schema.name, table = $table.name, values = $columns->sortBy(c | $c->cast(@Column).name)->map(c|$c->cast(@Column).name)->joinStrings(','));
+                                                                              );
+  ^meta::relational::metamodel::data::RelationalCSVData(tables=$relationalCSVTables);
 }
 
 /*** Plan Generation ***/

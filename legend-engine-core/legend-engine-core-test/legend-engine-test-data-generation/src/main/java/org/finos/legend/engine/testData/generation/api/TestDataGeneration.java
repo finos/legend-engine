@@ -68,7 +68,7 @@ public class TestDataGeneration
         PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, profiles, null);
         try
         {
-            TestDataGenerationResult result = new TestDataGenerationResult(TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getRuntime(input.runtime),pureModel.getMapping(input.mapping),  pureModel));
+            TestDataGenerationResult result = new TestDataGenerationResult(TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel));
             return ManageConstantResult.manageResult(profiles, result, objectMapper);
         }
         catch (Exception e)

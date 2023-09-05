@@ -424,6 +424,15 @@ function meta::relational::milestoning::getSnapshotDateColumns(tables:Table[*]):
    $tables->map(table|$table->getSnapshotDateColumn());
 }
 
+function meta::relational::milestoning::getMilestoningDateColumns(tables:Table[*]):Column[*]
+{
+   $tables->map(table|$table.milestoning->match([
+          p : ProcessingMilestoning[*] | $p.in->concatenate($p.out),
+          b : BusinessMilestoning[*] | $b.from->concatenate($b.thru),
+          bs: BusinessSnapshotMilestoning[*] | $table->getSnapshotDateColumn()
+   ]));
+}
+
 function <<access.private>> meta::relational::milestoning::getSnapshotDateColumn(table:Table[1]):Column[0..1]
 {
    $table.milestoning->filter(m|$m->instanceOf(BusinessSnapshotMilestoning))->cast(@BusinessSnapshotMilestoning).snapshotDate->first();
