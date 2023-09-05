@@ -15,28 +15,22 @@
 package org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.language.pure.dsl.mastery.extension.IMasteryModelGenerationExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordService;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourcePartition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -97,6 +91,7 @@ public class HelperMasterRecordDefinitionBuilder
         public Root_meta_pure_mastery_metamodel_identity_IdentityResolution visit(IdentityResolution protocolVal)
         {
             Root_meta_pure_mastery_metamodel_identity_IdentityResolution_Impl resImpl = new Root_meta_pure_mastery_metamodel_identity_IdentityResolution_Impl("");
+            resImpl._modelClass(context.resolveClass(protocolVal.modelClass));
             resImpl._resolutionQueriesAddAll(ListIterate.flatCollect(protocolVal.resolutionQueries, this::visitResolutionQuery));
             return resImpl;
         }
@@ -122,10 +117,10 @@ public class HelperMasterRecordDefinitionBuilder
         return ListIterate.collect(recordSources, n -> n.accept(new RecordSourceBuilder(context)));
     }
 
-    public static RichIterable<Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule> buildPrecedenceRules(MasterRecordDefinition masterRecordDefinition, CompileContext context, Set<String> dataProviderTypes)
+    public static RichIterable<Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule> buildPrecedenceRules(MasterRecordDefinition masterRecordDefinition, CompileContext context) //List<RecordSource> recordSources, List<PrecedenceRule> precedenceRules)
     {
         Set<String> recordSourceIds = masterRecordDefinition.sources.stream().map(recordSource -> recordSource.id).collect(Collectors.toSet());
-        return ListIterate.collect(masterRecordDefinition.precedenceRules, n -> n.accept(new PrecedenceRuleBuilder(context, recordSourceIds, masterRecordDefinition.modelClass, dataProviderTypes)));
+        return ListIterate.collect(masterRecordDefinition.precedenceRules, n -> n.accept(new PrecedenceRuleBuilder(context, recordSourceIds, masterRecordDefinition.modelClass)));
     }
 
     private static class PrecedenceRuleBuilder implements PrecedenceRuleVisitor<Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule>
@@ -133,14 +128,12 @@ public class HelperMasterRecordDefinitionBuilder
         private final CompileContext context;
         private final Set<String> recordSourceIds;
         private final String modelClass;
-        private final Set<String> validDataProviderTypes;
 
-        public PrecedenceRuleBuilder(CompileContext context, Set<String> recordSourceIds, String modelClass, Set<String> validProviderTypes)
+        public PrecedenceRuleBuilder(CompileContext context, Set<String> recordSourceIds, String modelClass)
         {
             this.context = context;
             this.recordSourceIds = recordSourceIds;
             this.modelClass = modelClass;
-            this.validDataProviderTypes = validProviderTypes;
         }
 
         @Override
@@ -309,22 +302,11 @@ public class HelperMasterRecordDefinitionBuilder
             else if (ruleScope instanceof DataProviderTypeScope)
             {
                 DataProviderTypeScope dataProviderTypeScope = (DataProviderTypeScope) ruleScope;
-
-                if (!validDataProviderTypes.contains(dataProviderTypeScope.dataProviderType))
-                {
-                    throw new EngineException(format("Unrecognized Data Provider Type: %s", dataProviderTypeScope.dataProviderType), ruleScope.sourceInformation, EngineErrorType.COMPILATION);
-                }
                 Root_meta_pure_mastery_metamodel_precedence_DataProviderTypeScope pureDataProviderTypeScope = new Root_meta_pure_mastery_metamodel_precedence_DataProviderTypeScope_Impl("");
-                pureDataProviderTypeScope._dataProviderType(dataProviderTypeScope.dataProviderType);
+                pureDataProviderTypeScope._dataProviderType();
+                String DATA_PROVIDER_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::precedence::DataProviderType";
+                pureDataProviderTypeScope._dataProviderType(context.resolveEnumValue(DATA_PROVIDER_TYPE_FULL_PATH, dataProviderTypeScope.dataProviderType.name()));
                 return pureDataProviderTypeScope;
-            }
-            else if (ruleScope instanceof DataProviderIdScope)
-            {
-                DataProviderIdScope dataProviderIdScope = (DataProviderIdScope) ruleScope;
-                getAndValidateDataProvider(dataProviderIdScope.dataProviderId, dataProviderIdScope.sourceInformation, context);
-                Root_meta_pure_mastery_metamodel_precedence_DataProviderIdScope pureDataProviderIdScope = new Root_meta_pure_mastery_metamodel_precedence_DataProviderIdScope_Impl("");
-                pureDataProviderIdScope._dataProviderId(dataProviderIdScope.dataProviderId.replaceAll("::", "_"));
-                return pureDataProviderIdScope;
             }
             else
             {
@@ -345,57 +327,51 @@ public class HelperMasterRecordDefinitionBuilder
         @Override
         public Root_meta_pure_mastery_metamodel_RecordSource visit(RecordSource protocolSource)
         {
-            List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
-            List<Function2<Authorization, CompileContext, Root_meta_pure_mastery_metamodel_authorization_Authorization>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraAuthorizationProcessors);
-            List<Function2<Trigger, CompileContext, Root_meta_pure_mastery_metamodel_trigger_Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraTriggerProcessors);
-
             String KEY_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::RecordSourceStatus";
             Root_meta_pure_mastery_metamodel_RecordSource pureSource = new Root_meta_pure_mastery_metamodel_RecordSource_Impl("");
             pureSource._id(protocolSource.id);
             pureSource._description(protocolSource.description);
             pureSource._status(context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolSource.status.name()));
+            pureSource._parseService(buildOptionalService(protocolSource.parseService, protocolSource, context));
+            pureSource._transformService(buildService(protocolSource.transformService, protocolSource, context));
             pureSource._sequentialData(protocolSource.sequentialData);
             pureSource._stagedLoad(protocolSource.stagedLoad);
             pureSource._createPermitted(protocolSource.createPermitted);
             pureSource._createBlockedException(protocolSource.createBlockedException);
-            pureSource._dataProvider(buildDataProvider(protocolSource, context));
-            pureSource._recordService(buildRecordService(protocolSource.recordService, context));
-            pureSource._allowFieldDelete(protocolSource.allowFieldDelete);
-            pureSource._authorization(protocolSource.authorization == null ? null : IMasteryCompilerExtension.process(protocolSource.authorization, processors, context));
-            pureSource._trigger(IMasteryCompilerExtension.process(protocolSource.trigger, triggerProcessors, context));
+            pureSource._tags(ListIterate.collect(protocolSource.tags, n -> n));
+            pureSource._partitions(ListIterate.collect(protocolSource.partitions, this::visitPartition));
             return pureSource;
         }
 
-        private static Root_meta_pure_mastery_metamodel_DataProvider buildDataProvider(RecordSource recordSource, CompileContext context)
+        public static Root_meta_legend_service_metamodel_Service buildOptionalService(String service, RecordSource protocolSource, CompileContext context)
         {
-            if (recordSource.dataProvider != null)
+            if (service == null)
             {
-              return getAndValidateDataProvider(recordSource.dataProvider, recordSource.sourceInformation, context);
+                return null;
             }
-            return null;
+            return buildService(service, protocolSource, context);
         }
 
-        private static Root_meta_pure_mastery_metamodel_RecordService buildRecordService(RecordService recordService, CompileContext context)
+        public static Root_meta_legend_service_metamodel_Service buildService(String service, RecordSource protocolSource, CompileContext context)
         {
-            List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
-            List<Function2<AcquisitionProtocol, CompileContext, Root_meta_pure_mastery_metamodel_acquisition_AcquisitionProtocol>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraAcquisitionProtocolProcessors);
+            String servicePath = service.substring(0, service.lastIndexOf("::"));
+            String serviceName = service.substring(service.lastIndexOf("::") + 2);
 
-            return new Root_meta_pure_mastery_metamodel_RecordService_Impl("")
-                    ._parseService(BuilderUtil.buildService(recordService.parseService, context, recordService.sourceInformation))
-                    ._transformService(BuilderUtil.buildService(recordService.transformService, context, recordService.sourceInformation))
-                    ._acquisitionProtocol(IMasteryCompilerExtension.process(recordService.acquisitionProtocol, processors, context));
+            PackageableElement packageableElement = context.pureModel.getOrCreatePackage(servicePath)._children().detect(c -> serviceName.equals(c._name()));
+            if (packageableElement instanceof Root_meta_legend_service_metamodel_Service)
+            {
+                return (Root_meta_legend_service_metamodel_Service) packageableElement;
+            }
+            throw new EngineException(format("Service '%s' is not defined", service), protocolSource.sourceInformation, EngineErrorType.COMPILATION);
         }
-    }
 
-    private static Root_meta_pure_mastery_metamodel_DataProvider getAndValidateDataProvider(String path, SourceInformation sourceInformation, CompileContext context)
-    {
-        PackageableElement packageableElement = context.resolvePackageableElement(path, sourceInformation);
-        if (packageableElement instanceof Root_meta_pure_mastery_metamodel_DataProvider)
+        private Root_meta_pure_mastery_metamodel_RecordSourcePartition visitPartition(RecordSourcePartition protocolPartition)
         {
-            return (Root_meta_pure_mastery_metamodel_DataProvider) packageableElement;
+            Root_meta_pure_mastery_metamodel_RecordSourcePartition purePartition = new Root_meta_pure_mastery_metamodel_RecordSourcePartition_Impl("");
+            purePartition._id(protocolPartition.id);
+            purePartition._tags(ListIterate.collect(protocolPartition.tags, String::toString));
+            return purePartition;
         }
-        throw new EngineException(format("DataProvider '%s' is not defined", path), sourceInformation, EngineErrorType.COMPILATION);
-
     }
 
     public static PureModelContextData buildMasterRecordDefinitionGeneratedElements(Root_meta_pure_mastery_metamodel_MasterRecordDefinition masterRecordDefinition, CompileContext compileContext, String version)
