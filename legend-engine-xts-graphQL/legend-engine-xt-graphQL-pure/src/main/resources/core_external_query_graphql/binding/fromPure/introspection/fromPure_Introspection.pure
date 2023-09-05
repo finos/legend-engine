@@ -34,7 +34,14 @@ function meta::external::query::graphQL::binding::fromPure::introspection::build
     __schema = ^__Schema(
                   queryType = $res->filter(c|$c.name == $cl.name)->toOne(),
                   types = $res,
-                  directives = [^__Directive(name='echo', description='A preliminary test directive to ensure the working of directives in a query',locations=[__DirectiveLocation.FIELD])]
+                  directives = [
+                    ^__Directive(name='echo', description='A preliminary test directive to ensure the working of directives in a query',locations=[__DirectiveLocation.FIELD]),
+                    ^__Directive(
+                      name='totalCount', 
+                      description='Directive to return total number of records for a field excluding any pagination i.e. limit, offset, pageNumber, pageSize, etc. parameters while computing but including all other specified filters such as name, age, country, etc. The directive is currently supported at a root level field.',
+                      locations=[__DirectiveLocation.FIELD]
+                    )
+                  ]
                 )
   );
 }
