@@ -209,7 +209,7 @@ function meta::pure::functions::date::firstHourOfDay(date:Date[1]):DateTime[1]
   assert($date->hasMonth(), 'date must have month');
   assert($date->hasDay(), 'date must have day');
 
-  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 0, 0, 0);
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 0);
 }
 
 function meta::pure::functions::date::firstMinuteOfHour(date:Date[1]):DateTime[1]
