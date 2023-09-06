@@ -715,7 +715,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             return this;
         }
         PureDate copy = clone();
-        copy.incrementDay(7 * weeks);
+        copy.incrementDay(Math.multiplyExact(7L, weeks));
         return copy;
     }
 
