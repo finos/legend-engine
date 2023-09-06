@@ -38,7 +38,7 @@ function <<test.Test>> meta::pure::functions::tests::date::firstSecondOfMinuteTe
 
 function <<test.Test>> meta::pure::functions::tests::date::firstMillisecondOfSecondTest():Boolean[1]
 {
-  assertEquals(%2023-02-03T12:11:10.0+0000, %2023-02-03T12:11:10.123->firstMillisecondOfSecond());
+  assertEquals(%2023-02-03T12:11:10.000+0000, %2023-02-03T12:11:10.123->firstMillisecondOfSecond());
 }
 
 function <<test.Test>> meta::pure::functions::tests::date::testLeapYear():Boolean[1]
