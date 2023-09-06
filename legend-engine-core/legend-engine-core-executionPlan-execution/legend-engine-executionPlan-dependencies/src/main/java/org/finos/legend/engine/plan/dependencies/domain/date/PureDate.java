@@ -941,12 +941,12 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
     private void incrementYear(long delta)
     {
-        if (this.year + delta > Integer.MAX_VALUE)
+        long newYear = Math.addExact(this.year, delta);
+        if ((newYear > Integer.MAX_VALUE) || (newYear < Integer.MIN_VALUE))
         {
-            throw new RuntimeException("Year incremented beyond supported bounds");
+            throw new IllegalStateException("Year incremented beyond supported bounds");
         }
-
-        this.year += delta;
+        this.year = (int) newYear;
     }
 
     void setMonth(int month)
@@ -993,7 +993,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
     private void incrementDay(long delta)
     {
-        long remDelta = this.day + delta;
+        long remDelta = Math.addExact(this.day, delta);
         if (delta < 0)
         {
             while (remDelta < 1)
