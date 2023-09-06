@@ -75,7 +75,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
             else
             {
                 TestCase testCase = (TestCase) test;
-                wrappedSuite.addTest(new TestCase(testCase.getName())
+                wrappedSuite.addTest(new TestCase(dbSuiteName + "::" + testCase.getName())
                 {
                     @Override
                     protected void runTest() throws Throwable
