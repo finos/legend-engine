@@ -266,7 +266,7 @@ public class Library
     {
         if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute() && date.hasSecond()) 
         {
-            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), "0");
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), "000");
         }
 
         throw new IllegalArgumentException("Date must have year, month, day, hour, minute and second");
