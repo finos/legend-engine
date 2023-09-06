@@ -73,6 +73,7 @@ public class GraphQLCachableVisitorHelper
             {
                 Field field = new Field();
                 field.name = val.name;
+                field.directives = val.directives;
                 field.arguments = val.arguments.stream().map(a ->
                 {
                     Argument arg = new Argument();

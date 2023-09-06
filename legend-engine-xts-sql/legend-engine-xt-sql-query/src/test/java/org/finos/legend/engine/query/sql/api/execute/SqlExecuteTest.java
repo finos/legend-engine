@@ -58,7 +58,7 @@ public class SqlExecuteTest
     @ClassRule
     public static final ResourceTestRule resources;
     private static final PureModel pureModel;
-
+    private static final ObjectMapper OM = new ObjectMapper();
 
     static
     {
@@ -143,10 +143,22 @@ public class SqlExecuteTest
                 .addRow(FastList.newListWith("Danielle"))
                 .build();
 
-        ObjectMapper OM = new ObjectMapper();
-
         Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
         Assert.assertEquals(filteredExpected, OM.readValue(filtered, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithDateParams() throws JsonProcessingException
+    {
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date=>'2023-08-24')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
     }
 
     @Test

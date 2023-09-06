@@ -331,6 +331,12 @@ public class ConnectionStateManager implements Closeable
         String principal = identityState.getIdentity().getName();
         String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecification.getConnectionKey());
         ConnectionKey connectionKey = dataSourceSpecification.getConnectionKey();
+
+        if (!identityState.isValid())
+        {
+            throw new RuntimeException(String.format("Invalid Identity found, cannot build connection pool for %s for %s",principal,connectionKey.shortId()));
+        }
+
         //why do we need getIfAbsentPut?  the first ever pool creation request will create a new Hikari Data Source
         //because we have configured hikari to fail fast a new connection will be created.
         //This will invoke the DriverWrapper connect method, for this method to create that test connection we need to pass minimal state
