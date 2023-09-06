@@ -273,6 +273,74 @@ public class Library
         return previousDayOfWeek(today(), dayOfWeek);
     }
 
+    public static boolean equals(Object left, Object right)
+    {
+        if (left == right)
+        {
+            return true;
+        }
+        if (left == null)
+        {
+            return (right instanceof List) && ((List<?>) right).isEmpty();
+        }
+        if (right == null)
+        {
+            return (left instanceof List) && ((List<?>) left).isEmpty();
+        }
+        if (left instanceof List)
+        {
+            List<?> leftList = (List<?>) left;
+            int size = leftList.size();
+            if (right instanceof List)
+            {
+                List<?> rightList = (List<?>) right;
+                return (size == rightList.size()) && iteratorsEqual(leftList.iterator(), rightList.iterator());
+            }
+            return (size == 1) && equals(leftList.get(0), right);
+        }
+        if (right instanceof List)
+        {
+            List<?> rightList = (List<?>) right;
+            return (rightList.size() == 1) && equals(left, rightList.get(0));
+        }
+        if (left instanceof Number)
+        {
+            return (right instanceof Number) && eq((Number) left, (Number) right);
+        }
+
+        return left.equals(right);
+    }
+
+    private static boolean eq(Number left, Number right)
+    {
+        if (left instanceof BigDecimal && right instanceof Double ||
+                left instanceof Double && right instanceof BigDecimal)
+        {
+            return false;
+        }
+
+        if ((left instanceof Byte) || (right instanceof Byte))
+        {
+            return (left.getClass() == right.getClass()) && (left.byteValue() == right.byteValue());
+        }
+
+        left = left.equals(-0.0d) ? 0.0d : left;
+        right = right.equals(-0.0d) ? 0.0d : right;
+        return left.equals(right) || left.toString().equals(right.toString());
+    }
+
+    private static boolean iteratorsEqual(Iterator<?> leftIterator, Iterator<?> rightIterator)
+    {
+        while (leftIterator.hasNext() && rightIterator.hasNext())
+        {
+            if (!equals(leftIterator.next(), rightIterator.next()))
+            {
+                return false;
+            }
+        }
+        return !leftIterator.hasNext() && !rightIterator.hasNext();
+    }
+
     public static boolean lessThan(PureDate date1, PureDate date2)
     {
         if (date1 == null || date2 == null)
