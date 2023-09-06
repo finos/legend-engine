@@ -1466,6 +1466,70 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                  '  ])\n', $seedDataString);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::testAlloyTestDatGenForNestedViews():Boolean[1]
+{
+  let query = {|meta::relational::testDataGeneration::tests::Student.all()->project([s | $s.school.id],['id'])};
+  let mapping1 = meta::relational::testDataGeneration::tests::VeiwOnViewMapping;
+  let mapping2 = meta::relational::testDataGeneration::tests::VeiwOnViewonViewMapping;
+  let db = meta::relational::testDataGeneration::tests::db;
+  let runtime = meta::relational::tests::testRuntime($db);
+  let connection = $runtime.connectionByElement($db)->cast(@TestDatabaseConnection);
+
+  executeInDb('Drop table if exists StudentTable;', $connection);
+  executeInDb('Create Table StudentTable(id VARCHAR(60), name VARCHAR(60), school_id VARCHAR(60));', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'1\', \'SURAJ\', \'sc1\');', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'2\', \'MAN\', \'sc2\');', $connection);
+  executeInDb('insert into StudentTable(id, name, school_id) values (\'5\', \'RAJ\', \'sc5\');', $connection);
+  executeInDb('Drop table if exists SchoolTable;', $connection);
+  executeInDb('Create Table SchoolTable(id VARCHAR(60), name VARCHAR(60));', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc1\', \'school1\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc2\', \'school2\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc3\', \'school3\');', $connection);
+  executeInDb('insert into SchoolTable(id, name) values (\'sc4\', \'school4\');', $connection);
+
+  let tableRowIdentifiers = [
+    meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::db, 'default', 'StudentTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['1', 'SURAJ', 'sc1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['2', 'MAN', 'sc2'])
+    ]),
+      meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::db, 'default', 'SchoolTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc1', 'school1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
+    ])
+  ];
+
+  let testData1 = generateTestData($query, $mapping1, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+  let testData2 = generateTestData($query, $mapping2, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData1.dataCsvString, $db);
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData2.dataCsvString, $db);
+
+  loadAndTestExecution($query, [], $mapping1, $runtime, $testData1.dataCsvString, $db);
+  loadAndTestExecution($query, [], $mapping2, $runtime, $testData2.dataCsvString, $db);
+}
+
 function <<access.protected>> meta::relational::testDataGeneration::tests::initDatabase():Runtime[1]
 {
    let connection = meta::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connections->toOne()->cast(@TestDatabaseConnection);
@@ -1759,9 +1823,115 @@ function <<access.private>> meta::relational::testDataGeneration::tests::loadAnd
    $result.values->isNotEmpty() && (!$result.values->at(0)->instanceOf(TabularDataSet) || $result.values->at(0)->cast(@TabularDataSet).rows->isNotEmpty());
 }
 
+Class meta::relational::testDataGeneration::tests::Student
+{
+  id : String[1];
+  name : String[1];
+}
+Class meta::relational::testDataGeneration::tests::School
+{
+  id : String[1];
+  name : String[1];
+}
+
+Association meta::relational::testDataGeneration::tests::Student_School
+{
+  student: meta::relational::testDataGeneration::tests::Student[1..*];
+  school: meta::relational::testDataGeneration::tests::School[1];
+}
+
+###Relational
+Database meta::relational::testDataGeneration::tests::db
+(
+  View ViewSchool
+  (
+    id: SchoolTable.id,
+    name : SchoolTable.name
+  )
+
+  View ViewOnViewSchool
+  (
+    id: ViewSchool.id,
+    name: ViewSchool.name
+  )
+
+  View ViewOnViewOnViewSchool
+  (
+    id: ViewOnViewSchool.id,
+    name: ViewOnViewSchool.name
+  )
+
+  Table SchoolTable
+  (
+    id VARCHAR(60) PRIMARY KEY,
+    name VARCHAR(60) PRIMARY KEY
+  )
+
+  Table StudentTable
+  (
+    id VARCHAR(60) PRIMARY KEY,
+    school_id VARCHAR(60),
+    name VARCHAR(60)
+  )
+
+  Join student_to_school(ViewOnViewSchool.id = StudentTable.school_id)
+  Join student_to_school2(ViewOnViewOnViewSchool.id = StudentTable.school_id)
+ )
 
 
+###Mapping
+import meta::relational::testDataGeneration::tests::*;
+Mapping meta::relational::testDataGeneration::tests::VeiwOnViewMapping
+( 
+  meta::relational::testDataGeneration::tests::Student_School: Relational
+  {
+    AssociationMapping
+    (
+      student[schoolMapping,studentMapping]: [db]@student_to_school,
+      school[studentMapping, schoolMapping]: [db]@student_to_school
+    )
+  }
 
+  *meta::relational::testDataGeneration::tests::School[schoolMapping]: Relational
+  {
+    ~mainTable [db]ViewOnViewSchool
+    id: [db]ViewOnViewSchool.id,
+    name: [db]ViewOnViewSchool.name
+  }
+
+  *meta::relational::testDataGeneration::tests::Student[studentMapping]: Relational
+  {
+    ~mainTable [db]StudentTable
+    id: [db]StudentTable.id,
+    name: [db]StudentTable.name
+  }
+)
+
+Mapping meta::relational::testDataGeneration::tests::VeiwOnViewonViewMapping
+( 
+  meta::relational::testDataGeneration::tests::Student_School: Relational
+  {
+    AssociationMapping
+    (
+      student[schoolMapping,studentMapping]: [db]@student_to_school2,
+      school[studentMapping, schoolMapping]: [db]@student_to_school2
+    )
+  }
+
+  *meta::relational::testDataGeneration::tests::School[schoolMapping]: Relational
+  {
+    ~mainTable [db]ViewOnViewOnViewSchool
+    id: [db]ViewOnViewOnViewSchool.id,
+    name: [db]ViewOnViewOnViewSchool.name
+  }
+
+  *meta::relational::testDataGeneration::tests::Student[studentMapping]: Relational
+  {
+    ~mainTable [db]StudentTable
+    id: [db]StudentTable.id,
+    name: [db]StudentTable.name
+  }
+)
 
 /*** Execution Plan + Alloy Tests ***/
 ###Pure
