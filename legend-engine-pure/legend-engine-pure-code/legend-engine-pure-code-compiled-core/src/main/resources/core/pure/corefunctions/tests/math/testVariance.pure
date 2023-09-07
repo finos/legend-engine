@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery;
+import meta::pure::profiles::*;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
-
-public class RecordService
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::math::tests::variance::testVariance():Boolean[1]
 {
-    public String parseService;
-    public String transformService;
-    public AcquisitionProtocol acquisitionProtocol;
-    public SourceInformation sourceInformation;
+  assertEq(1.0, varianceSample([1.0,2.0,3.0]));
+  assertEq(4.0, varianceSample([2,4,6]));
 
+   assertEq(0.25, variancePopulation([1,2]));
+   assertEq(1.0, variancePopulation([2,4]));
 }

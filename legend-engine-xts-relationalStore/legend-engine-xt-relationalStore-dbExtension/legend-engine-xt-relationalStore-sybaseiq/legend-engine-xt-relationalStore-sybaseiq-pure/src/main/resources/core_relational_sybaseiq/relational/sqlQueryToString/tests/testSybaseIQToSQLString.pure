@@ -165,6 +165,22 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
    assertEquals('select datediff(wk,"root".settlementDateTime,now()) as "DiffWeeks" from tradeTable as "root"', $result);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationFirstDayOfTimePeriod():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|$t.date->firstHourOfDay(), 'day'),
+          col(t|$t.date->firstMinuteOfHour(), 'hour'),
+          col(t|$t.date->firstSecondOfMinute(), 'minute'),
+          col(t|$t.date->firstMillisecondOfSecond(), 'second')
+        ]),
+        simpleRelationalMapping,
+        DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select datetime(date("root".tradeDate)) as "day", dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate)) as "hour", dateadd(minute, datepart(minute, "root".tradeDate), dateadd(hour, datepart(hour, "root".tradeDate), date("root".tradeDate))) as "minute", dateadd(microsecond, -(datepart(microsecond, "root".tradeDate)), "root".tradeDate) as "second" from tradeTable as "root"', $result);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testGenerateDateDiffExpressionForSybaseIQForDifferenceInDays():Boolean[1]
 {
    let result = toSQLString(|Trade.all()->project([
@@ -742,4 +758,16 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
       DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
 
    assertEquals('select datepart(DAY,"root".tradeDate) as "date" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSQLStringToNumericCasts():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|$t.quantity->toDecimal(), 'decimal'),
+          col(t|$t.quantity->toFloat(), 'float')
+        ]), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double) as "float" from tradeTable as "root"', $result);
 }

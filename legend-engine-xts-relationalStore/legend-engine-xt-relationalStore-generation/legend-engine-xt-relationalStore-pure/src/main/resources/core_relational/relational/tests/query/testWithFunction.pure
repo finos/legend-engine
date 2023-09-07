@@ -306,6 +306,13 @@ function <<test.Test>> meta::relational::tests::query::function::log::testFilter
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ln("root".ID) = 0', $result);
 }
 
+function <<test.Test>> meta::relational::tests::query::function::log::testFilterUsingLog10Function():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t | $t.id->log10() == 0), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([1], $result.values.id);
+   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where log10("root".ID) = 0', $result);
+}
+
 function <<test.Test>> meta::relational::tests::query::function::sin::testFilterUsingsinFunction():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t | $t.id->sin() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
@@ -318,6 +325,13 @@ function <<test.Test>> meta::relational::tests::query::function::cos::testFilter
    let result = execute(|Trade.all()->filter(t | $t.id->cos() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([2, 3, 4, 5, 8, 9, 10, 11], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where cos("root".ID) < 0.5', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::cos::testFilterUsingCotFunction():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t | $t.id->cot() < 0.5), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([2, 3, 5, 6, 8, 9, 11], $result.values.id);
+   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where cot("root".ID) < 0.5', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::tan::testFilterUsingTanFunction():Boolean[1]
@@ -360,6 +374,13 @@ function <<test.Test>> meta::relational::tests::query::function::sqrt::testFilte
    let result = execute(|Trade.all()->filter(t | $t.id->sqrt() < 3), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 3, 4, 5, 6, 7, 8], $result.values.id);
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where sqrt("root".ID) < 3', $result);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::sqrt::testFilterUsingSignFunction():Boolean[1]
+{
+   let result = execute(|Trade.all()->filter(t | $t.id->sign() == 1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], $result.values.id);
+   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where sign("root".ID) = 1', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::mod::testFilterUsingModFunction():Boolean[1]

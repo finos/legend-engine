@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection;
-
-import java.util.List;
-
-public class KafkaConnection extends Connection
+function meta::pure::tds::extensions::firstNotNull<T>(set:T[*]):T[0..1]
 {
-
-    public String topicName;
-    public List<String> topicUrls;
+  $set->filter(v | $v != TDSNull)->first();
 }

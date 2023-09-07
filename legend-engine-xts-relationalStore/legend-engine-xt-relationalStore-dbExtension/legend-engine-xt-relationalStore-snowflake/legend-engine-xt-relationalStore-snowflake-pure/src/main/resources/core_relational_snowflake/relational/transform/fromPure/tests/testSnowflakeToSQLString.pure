@@ -81,6 +81,32 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testDayO
    )->distinct() == [true];
 }
 
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSqlGenerationFirstDayOfTimePeriod():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|$t.date->firstHourOfDay(), 'day'),
+          col(t|$t.date->firstMinuteOfHour(), 'hour'),
+          col(t|$t.date->firstSecondOfMinute(), 'minute'),
+          col(t|$t.date->firstMillisecondOfSecond(), 'second')
+        ]), simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select DATE_TRUNC(\'DAY\', "root".tradeDate) as "day", DATE_TRUNC(\'HOUR\', "root".tradeDate) as "hour", DATE_TRUNC(\'MINUTE\', "root".tradeDate) as "minute", DATE_TRUNC(\'SECOND\', "root".tradeDate) as "second" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringToNumericCasts():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t|$t.quantity->toDecimal(), 'decimal'),
+          col(t|$t.quantity->toFloat(), 'float')
+        ]), simpleRelationalMapping, DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select to_decimal("root".quantity) as "decimal", to_double("root".quantity) as "float" from tradeTable as "root"', $result);
+}
+
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTrim():Boolean[1]
 {
   let common = 'select ltrim("root".FIRSTNAME) as "ltrim", trim("root".FIRSTNAME) as "trim", rtrim("root".FIRSTNAME) as "rtrim" from personTable as "root"';

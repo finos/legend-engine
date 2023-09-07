@@ -482,3 +482,9 @@ function <<test.Test>>
    assertEquals('2014-12-01|356.0|3|TDSNull|TDSNull|false|false|false,2014-12-02|55.0|2|356.0|3|false|false|false,2014-12-03|71.0|2|55.0|2|false|true|false,2014-12-04|105.0|3|71.0|2|false|false|false,2014-12-05|5.0|1|105.0|3|false|false|false,2014-12-06|TDSNull|TDSNull|5.0|1|false|false|false',
       $relationalResult.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
 }
+
+function <<test.Test>> meta::pure::tds::tests::extensions::testFirstNotNull():Boolean[1]
+{
+  assertEquals(1, [TDSNull, 1, 2]->meta::pure::tds::extensions::firstNotNull());
+  assertEquals([], [TDSNull, TDSNull]->meta::pure::tds::extensions::firstNotNull());
+}
