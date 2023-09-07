@@ -652,6 +652,8 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatATanResult : Float[1];
    floatATan2Result : Float[1];
    floatSqrtResult : Float[1];
+   float1VarianceSample: Float[1];
+   float1VariancePopulation: Float[1];   
    string2Float : Float[1];
    string2decimal: String[1];
    string2Decimal: Decimal[1];
@@ -764,6 +766,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           floatATanResult : atan(float1),
           floatATan2Result : atan2(float1, int1),
           floatSqrtResult : sqrt(int1),
+          float1VarianceSample: varianceSample(int1),
+          float1VariancePopulation: variancePopulation(int1),          
           string2Float : parseFloat(string2float),
           string2Decimal : parseDecimal(string2Decimal),
           string2decimal: trim(string2Decimal),
