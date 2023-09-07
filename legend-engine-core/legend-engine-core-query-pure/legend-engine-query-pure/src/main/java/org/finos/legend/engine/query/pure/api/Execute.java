@@ -157,11 +157,9 @@ public class Execute
         public LambdaWithParameters(List<ValueSpecification> lambdaExpressions, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues)
         {
             this.lambdaBody = lambdaExpressions;
-            this.lambdaParameters = lambdaParameters;
-            if (lambdaParameterValues != null)
-            {
-                this.lambdaParameterMap = lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
-            }
+            this.lambdaParameters = lambdaParameters != null ? lambdaParameters : new ArrayList<>();
+            this.lambdaParameterMap = lambdaParameterValues != null ? lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor()))) : Maps.mutable.empty();
+
 
         }
 

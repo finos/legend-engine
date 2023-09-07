@@ -53,7 +53,6 @@ public class TestExecutionPlanCache
     @Test
     public void testCacheIsUsed() throws IOException
     {
-        PureModelContextData data;
         ModelManager modelManager;
         RelationalStoreExecutor relationalStoreExecutor;
         PlanExecutor planExecutor;
@@ -92,6 +91,30 @@ public class TestExecutionPlanCache
         assert (cache.getCache().stats().hitCount() == 1);
 
     }
+
+    @Test
+    public void testExecuteWithNoParameters() throws IOException
+    {
+        RelationalStoreExecutor relationalStoreExecutor;
+        PlanExecutor planExecutor;
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        ExecutionPlanCache cache = ExecutionPlanCacheBuilder.buildWithDefaultCache();
+        relationalStoreExecutor = new RelationalStoreExecutorBuilder().build();
+        planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor);
+        ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputNoParameters.json")), ExecuteInput.class);
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new MockModelLoader((PureModelContextData) input.model));
+        ExecuteInput inputPointer = input;
+
+        inputPointer.model = new PureModelContextPointer();
+        HttpServletRequest request = TestExecutionUtility.buildMockRequest();
+        Mockito.when(request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE)).thenReturn("true");
+        String expected = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20, 30)\"}],\"result\":{\"columns\":[\"Age\"],\"rows\":[{\"values\":[20]},{\"values\":[30]}]}}";
+
+        Execute execute = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, null, null, cache);
+        Response response = execute.execute(request, inputPointer, SerializationFormat.defaultFormat, null, null);
+        assertEquals(expected, RelationalResultToJsonDefaultSerializer.removeComment(TestExecutionUtility.responseAsString(response)));
+    }
+
 
     private class MockModelLoader implements ModelLoader
     {
