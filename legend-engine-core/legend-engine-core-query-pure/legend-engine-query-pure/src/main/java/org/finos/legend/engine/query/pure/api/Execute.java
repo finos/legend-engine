@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.pure.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -46,7 +47,9 @@ import org.finos.legend.engine.plan.generation.PlanWithDebug;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
@@ -92,6 +95,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
@@ -137,6 +142,43 @@ public class Execute
 
     }
 
+    private boolean usePlanCache(HttpServletRequest request, PureModelContext model)
+    {
+        return request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE) != null && model instanceof PureModelContextPointer && executionPlanCache != null;
+    }
+
+    private static class LambdaWithParameters
+    {
+        List<ValueSpecification> lambdaBody;
+        List<Variable> lambdaParameters;
+        Map<String, Object> lambdaParameterMap;
+        PureExecutionCacheKey executionCacheKey;
+
+        public LambdaWithParameters(List<ValueSpecification> lambdaExpressions, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues)
+        {
+            this.lambdaBody = lambdaExpressions;
+            this.lambdaParameters = lambdaParameters;
+            if (lambdaParameterValues != null)
+            {
+                this.lambdaParameterMap = lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+
+        }
+
+        public LambdaWithParameters(List<ValueSpecification> lambdaExpressions, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues, Runtime runtime, String mapping, SDLC sdlcInfo) throws JsonProcessingException
+        {
+            this(lambdaExpressions, lambdaParameters, lambdaParameterValues);
+            this.executionCacheKey = new PureExecutionCacheKey(lambdaExpressions, runtime, mapping, sdlcInfo);
+        }
+    }
+
+    private LambdaWithParameters planCacheLambdaWithParams(Lambda lambda, List<Variable> lambdaParameters, List<ParameterValue> lambdaParameterValues, Runtime runtime, String mapping, SDLC sdlcInfo) throws JsonProcessingException
+    {
+        ParameterizedValueSpecification cachableValueSpec = new ParameterizedValueSpecification(lambda, "GENERATED");
+        List<Variable> allLambdaParameters = lambdaParameters != null ? Stream.concat(lambdaParameters.stream(), cachableValueSpec.getVariables().stream()).collect(Collectors.toList()) : cachableValueSpec.getVariables();
+        List<ParameterValue> allLambdaParameterValues = lambdaParameterValues != null ? Stream.concat(lambdaParameterValues.stream(), cachableValueSpec.getParameterValues().stream()).collect(Collectors.toList()) : cachableValueSpec.getParameterValues();
+        return new LambdaWithParameters(((Lambda) cachableValueSpec.getValueSpecification()).body, allLambdaParameters, allLambdaParameterValues, runtime, mapping, sdlcInfo);
+    }
 
     @POST
     @ApiOperation(value = "Execute a Pure query (function) in the context of a Mapping and a Runtime. Full Interactive and Semi Interactive modes are supported by giving the appropriate PureModelContext (respectively PureModelDataContext and PureModelContextComposite). Production executions need to use the Service interface.")
@@ -144,36 +186,14 @@ public class Execute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         long start = System.currentTimeMillis();
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
-            Map<String, Object> parameters = Maps.mutable.empty();
 
-            List<ValueSpecification> lambda = null;
-            PureExecutionCacheKey executionCacheKey = null;
-            List<Variable> lambdaParameters = new ArrayList<>();
-            lambdaParameters.addAll(executeInput.function.parameters);
-            if (request.getHeader(RequestContextHelper.LEGEND_USE_PLAN_CACHE) != null && executeInput.model instanceof PureModelContextPointer && executionPlanCache != null)
-            {
-                ParameterizedValueSpecification cachableValueSpec = new ParameterizedValueSpecification(executeInput.function, "GENERATED");
-                lambdaParameters.addAll(cachableValueSpec.getVariables());
-                lambda = ((Lambda) cachableValueSpec.getValueSpecification()).body;
-                executionCacheKey = new PureExecutionCacheKey(lambda, executeInput.runtime, executeInput.mapping, ((PureModelContextPointer) executeInput.model).sdlcInfo);
-                updateParametersWithValues(parameters, cachableValueSpec.getParameterValues());
-            }
-            else
-            {
-                lambda = executeInput.function.body;
-            }
-            if (executeInput.parameterValues != null)
-            {
-                updateParametersWithValues(parameters, executeInput.parameterValues);
-            }
-
-            List<ValueSpecification> finalLambda = lambda;
-            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(finalLambda, lambdaParameters, pureModel.getContext()),
+            LambdaWithParameters lwp = usePlanCache(request, executeInput.model) ? planCacheLambdaWithParams(executeInput.function, executeInput.function.parameters, executeInput.parameterValues, executeInput.runtime, executeInput.mapping, ((PureModelContextPointer) executeInput.model).sdlcInfo) : new LambdaWithParameters(executeInput.function.body, executeInput.function.parameters, executeInput.parameterValues);
+            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(lwp.lambdaBody, lwp.lambdaParameters, pureModel.getContext()),
                     () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
                     this.planExecutor,
                     executeInput.mapping,
@@ -183,8 +203,8 @@ public class Execute
                     profiles,
                     request.getRemoteUser(),
                     format,
-                    parameters,
-                    RequestContextHelper.RequestContext(request), executionCacheKey);
+                    lwp.lambdaParameterMap,
+                    RequestContextHelper.RequestContext(request), lwp.executionCacheKey);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
             {
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
@@ -193,9 +213,8 @@ public class Execute
         }
         catch (Exception ex)
         {
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
             MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
-            return response;
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }
 
@@ -425,7 +444,7 @@ public class Execute
         return executionAuthorization;
     }
 
-    private Response executeAsPushDownPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext) throws Exception
+    private Response executeAsPushDownPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext)
     {
         MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
         buildParameterToConstantResult(plan, parameterToValues, parametersToConstantResult);
@@ -433,7 +452,7 @@ public class Execute
         return this.wrapInResponse(pm, format, start, result);
     }
 
-    private Response executeAsMiddleTierPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, ExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext) throws Exception
+    private Response executeAsMiddleTierPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, ExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext)
     {
         StoreExecutionState.RuntimeContext runtimeContext = StoreExecutionState.newRuntimeContext(
                 Maps.immutable.with(
