@@ -30,7 +30,7 @@ Class meta::external::format::shared::executionPlan::ExternalFormatPlanGeneratio
 {
    inScopeVars     : Map<String, List<Any>>[1];
    exeCtx          : meta::pure::runtime::ExecutionContext[1];
-
+   binding         : Binding[1];
    checked         : Boolean[0..1];
    graphContext    : GraphFetchContext[0..1];
 }
