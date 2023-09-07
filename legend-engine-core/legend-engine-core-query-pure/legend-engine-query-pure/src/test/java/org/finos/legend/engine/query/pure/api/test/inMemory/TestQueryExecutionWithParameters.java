@@ -49,6 +49,15 @@ public class TestQueryExecutionWithParameters
         assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}],\"result\":{\"columns\":[\"Inc Type\"],\"rows\":[{\"values\":[\"LLC\"]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(json));
     }
 
+    @Test
+    public void testQueryExecutionWithNoParameters() throws IOException
+    {
+        ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputNoParameters.json")), ExecuteInput.class);
+        HttpServletRequest mockRequest = TestExecutionUtility.buildMockRequest();
+        String json = TestExecutionUtility.responseAsString(runTest(input, mockRequest));
+        assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20, 30)\"}],\"result\":{\"columns\":[\"Age\"],\"rows\":[{\"values\":[20]},{\"values\":[30]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(json));
+    }
+
 
 }
 
