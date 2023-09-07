@@ -174,7 +174,7 @@ public class BigQueryTestArtifacts
             " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'DONE')";
     
     public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
-            "(SELECT 'main',{BATCH_ID_PATTERN},PARSE_DATETIME('%Y-%m-%d %H:%M:%S','{BATCH_START_TS_PATTERN}'),'{BATCH_END_TS_PATTERN}','DONE')";
+            "(SELECT 'main',{BATCH_ID_PATTERN},PARSE_DATETIME('%Y-%m-%d %H:%M:%S','{BATCH_START_TS_PATTERN}'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','{BATCH_END_TS_PATTERN}'),'DONE')";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +

@@ -1,6 +1,6 @@
 {
   "name" : "core_mongodb_execution_test",
-  "pattern" : "(meta::external::store::mongodb::executionTest|meta::external::store::mongodb::executionPlan::platformBinding::legendJava|meta::pure::executionPlan::platformBinding::legendJava)(::.*)?",
+  "pattern" : "(meta::external::store::mongodb::executionTest)(::.*)?",
   "dependencies" : [
     "platform",
     "platform_functions",
@@ -11,8 +11,6 @@
     "core_external_compiler",
     "core_external_execution",
     "core_external_format_json",
-    "core_java_platform_binding",
-    "core_nonrelational_mongodb_java_platform_binding",
-    "core_external_format_json_java_platform_binding"
+    "core_nonrelational_mongodb"
   ]
 }

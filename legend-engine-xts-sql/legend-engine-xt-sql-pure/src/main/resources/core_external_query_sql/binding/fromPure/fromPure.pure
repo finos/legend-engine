@@ -106,18 +106,30 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
 
 function meta::external::query::sql::transformation::queryToPure::parameterConstantValue(value:ValueSpecification[1], many:Boolean[1]):Any[0..1]
 {
-  $value->match([
-    i:InstanceValue[1] | if ($many, | list($i.values), | $i.values->first()),
+  $value->evaluateAndDeactivate()->match([
+    i:InstanceValue[1] | if ($many, 
+                          | list($i.values->map(v | $v->normalizeParameterValue())), 
+                          | $i.values->first()->normalizeParameterValue()),
     v:ValueSpecification[1] | []
+  ]);
+}
+
+function meta::external::query::sql::transformation::queryToPure::normalizeParameterValue(value:Any[0..1]):Any[0..1]
+{
+  $value->match([
+    d:Date[1] | $d->toString(),
+    a:Any[0..1] | $a
   ])
 }
 
 function meta::external::query::sql::transformation::queryToPure::parameterPlan(value:ValueSpecification[1], extensions: meta::pure::extension::Extension[*]):ExecutionPlan[0..1]
 {
-  $value->match([
+  $value->evaluateAndDeactivate()->match([
     i:InstanceValue[1] | [],
-    v:ValueSpecification[1] | ^LambdaFunction<Any>(expressionSequence = $v)->executionPlan($extensions)
-  ])
+    v:ValueSpecification[1] | 
+      let expression = if ($v.genericType.rawType->in([Date, StrictDate, DateTime]), | sfe(toString_Any_1__String_1_, $v)->evaluateAndDeactivate(), | $v);
+      lambda(^FunctionType(returnMultiplicity = $expression.multiplicity, returnType = $expression.genericType), $expression)->executionPlan($extensions);
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::constantPlan(value:Any[*]):ExecutionPlan[1]
@@ -432,8 +444,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     l:Literal[1] | ^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())),
     e:meta::external::query::sql::metamodel::Expression[1] | ^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())),
     //NOTE * params come through as empty, investigate whether parser should handle this better
-    a:Any[0] | ^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())),
-    a:Any[*] | fail('aggregation type currently not supported'); [];
+    a:meta::external::query::sql::metamodel::Expression[0] | ^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())),
+    a:meta::external::query::sql::metamodel::Expression[1..*] | ^$functionCall(arguments = [^QualifiedNameReference(name=^QualifiedName())]->concatenate($a->tail())),
+    a:meta::external::query::sql::metamodel::Expression[*] | fail('aggregation type currently not supported'); [];
   ])->toOne()
 }
 
@@ -481,14 +494,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunction(functionCall:FunctionCall[1], context: SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunctionArgument(e:meta::external::query::sql::metamodel::Expression[0..1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
-  $functionCall.arguments->match([
+  $e->match([
     q:QualifiedNameReference[1] | processExpression($q, rowExpressionContext(), $context),
     e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, rowExpressionContext(), $context),
     //NOTE * params come through as empty, investigate whether parser should handle this better
-    a:Any[0] | rowExpressionContext().var(),
-    a:Any[*] | fail('aggregation type currently not supported'); iv(1);
+    a:meta::external::query::sql::metamodel::Expression[0] | rowExpressionContext().var()
+  ])->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunction(functionCall:FunctionCall[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+  $functionCall.arguments->match([
+    e:meta::external::query::sql::metamodel::Expression[0..1] | $e->processMapFunctionArgument($context),
+    e:meta::external::query::sql::metamodel::Expression[*] | $functionCall.arguments->first()->processMapFunctionArgument($context)
   ])->evaluateAndDeactivate();
 }
 
@@ -885,7 +905,7 @@ function meta::external::query::sql::transformation::queryToPure::extractSourceA
     n:NullLiteral[1] | ^SQLSourceArgument(name = $name, index = $index),
     b:BooleanLiteral[1] | ^SQLSourceArgument(value = $b.value, name = $name, index = $index),
     a:ArrayLiteral[1] | ^SQLSourceArgument(value = $a->extractExpressionValue(), name = $name, index = $index),
-    e:meta::external::query::sql::metamodel::Expression[1] | []
+    e:meta::external::query::sql::metamodel::Expression[1] | ^SQLSourceArgument(value = $e, name = $name, index = $index)
   ]);
 }
 
@@ -899,9 +919,10 @@ function meta::external::query::sql::transformation::queryToPure::extractExpress
     n:NullLiteral[1] | Nil,
     b:BooleanLiteral[1] | $b.value,
     a:ArrayLiteral[1] | $a.values->map(v | $v->extractExpressionValue()),
-    e:meta::external::query::sql::metamodel::Expression[1] | fail('only literal values supported'); [];
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
   ]);
 }
+
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableFunction(tableFunc: TableFunction[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
@@ -926,7 +947,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let expressionSequence = $source.func.expressionSequence;
   let assignments = $expressionSequence->evaluateAndDeactivate()->init();
-  let parameterValues = createLambdaParameters($parameters, $arguments, $scopeSuffix);
+  let parameterValues = createLambdaParameters($parameters, $arguments, $scopeSuffix, $context);
   let expression = $expressionSequence->last()->toOne();
 
   let nc = ^$context(
@@ -969,14 +990,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLambdaParameters(parameters:VariableExpression[*], arguments:SQLSourceArgument[*], suffix:String[0..1]):SQLLambdaParameter[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLambdaParameters(parameters:VariableExpression[*], arguments:SQLSourceArgument[*], suffix:String[0..1], context: SqlTransformContext[1]):SQLLambdaParameter[*]
 {
   $parameters->map(p |
     let argument = $arguments->filter(a | $a.name == $p.name);
 
     let value = if ($argument->isEmpty(),
       | iv([]),
-      | iv(convertValue($argument.value, $p.genericType.rawType->toOne())));
+      | $argument.value->match([
+          e:meta::external::query::sql::metamodel::Expression[1] | $e->processExpression(rowExpressionContext(), $context)->convertValueSpecification($p.genericType.rawType->toOne()),
+          a:Any[*] | iv(convertValue($a, $p.genericType.rawType->toOne()))
+        ]);
+    );
 
     let name = if ($suffix->isNotEmpty(), | $p.name + '_' + $suffix->toOne(), | $p.name);
 
@@ -1457,7 +1482,7 @@ function meta::external::query::sql::transformation::queryToPure::processParseDa
 {
   let value = if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(String),
     | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
-      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]{3})?'),
+      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]{1,3})?'),
         | $string->replace(' ', 'T')->iv(),
         | $v);,
     | $v);
@@ -1725,10 +1750,10 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe($func, $args);
       }),
-      processor('acos', acos_Number_1__Float_1_, false),
-      processor('asin', asin_Number_1__Float_1_, false),
-      processor('atan', atan_Number_1__Float_1_, false),
-      processor('atan2', atan2_Number_1__Number_1__Float_1_, false),
+      processor('acos', acos_Number_1__Float_1_),
+      processor('asin', asin_Number_1__Float_1_),
+      processor('atan', atan_Number_1__Float_1_),
+      processor('atan2', atan2_Number_1__Number_1__Float_1_),
       processor('avg', true, false, Float, {args |
         let type = $args->match([
           v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
@@ -1742,26 +1767,29 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe($func, $args);
       }),
-      processor('cbrt', cbrt_Number_1__Float_1_, false),
-      processor('ceil', ceiling_Number_1__Integer_1_, false),
-      processor('ceiling', ceiling_Number_1__Integer_1_, false),
-      processor('cos', cos_Number_1__Float_1_, false),
-      processor('degrees', toDegrees_Number_1__Float_1_, false),
-      processor('div', divide_Number_1__Number_1__Float_1_, false),
-      processor('exp', exp_Number_1__Float_1_, false),
-      processor('floor', floor_Number_1__Integer_1_, false),
-      processor('ln', log_Number_1__Float_1_, false),
-      processor('mod', rem_Number_1__Number_1__Number_1_, false),
-      processor('pi', pi__Float_1_, false),
-      processor('power', pow_Number_1__Number_1__Number_1_, false),
-      processor('radians', toRadians_Number_1__Float_1_, false),
+      processor('cbrt', cbrt_Number_1__Float_1_),
+      processor('ceil', ceiling_Number_1__Integer_1_),
+      processor('ceiling', ceiling_Number_1__Integer_1_),
+      processor('cos', cos_Number_1__Float_1_),
+      processor('cot', cot_Number_1__Float_1_),
+      processor('degrees', toDegrees_Number_1__Float_1_),
+      processor('div', divide_Number_1__Number_1__Float_1_),
+      processor('exp', exp_Number_1__Float_1_),
+      processor('floor', floor_Number_1__Integer_1_),
+      processor('ln', log_Number_1__Float_1_),
+      processor('log', log10_Number_1__Float_1_),
+      processor('mod', rem_Number_1__Number_1__Number_1_),
+      processor('pi', pi__Float_1_),
+      processor('power', pow_Number_1__Number_1__Number_1_),
+      processor('radians', toRadians_Number_1__Float_1_),
       processor('round', Number, {args |
         assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
         let func = if ($args->size() == 1, | round_Number_1__Integer_1_, | round_Decimal_1__Integer_1__Decimal_1_);
 
         sfe($func, $args);
       }),
-      processor('sin', sin_Number_1__Float_1_, false),
+      processor('sign', sign_Number_1__Integer_1_),
+      processor('sin', sin_Number_1__Float_1_),
       processor('stddev_pop', stdDevPopulation_Number_MANY__Number_1_, true),
       processor('stddev_samp', stdDevSample_Number_MANY__Number_1_, true),
       processor('stddev', stdDevSample_Number_MANY__Number_1_, true),
@@ -1778,8 +1806,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe($func, $args);
       }),
-      processor('sqrt', sqrt_Number_1__Float_1_, false),
-      processor('tan', tan_Number_1__Float_1_, false),
+      processor('sqrt', sqrt_Number_1__Float_1_),
+      processor('tan', tan_Number_1__Float_1_),
       processor('trunc', Integer, {args |
         //TODO replace with pure trunc function when implemented;
         assert($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
@@ -1790,8 +1818,12 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         createIfStatement($condition, $truth, $else);
       }),
+      processor('variance', varianceSample_Number_MANY__Number_1_, true),
+      processor('var_samp', varianceSample_Number_MANY__Number_1_, true),
+      processor('var_pop', variancePopulation_Number_MANY__Number_1_, true),
 
       //STRING
+      processor('ascii', ascii_String_1__Integer_1_),
       processor('btrim', String, {args |
         assert($args->size() == 1 || $args->size() == 2, 'incorrect number of args');
         assert($args->size() == 1 || ($args->at(1)->reactivate() == ' '), 'only empty string trim is currently supported');
@@ -1799,6 +1831,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(trim_String_1__String_1_, $args->at(0));
       }),
       processor('char_length', length_String_1__Integer_1_),
+      processor('chr', char_Integer_1__String_1_),
       processor('concat', plus_String_MANY__String_1_),
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
@@ -1809,7 +1842,9 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(ltrim_String_1__String_1_, $args->at(0));
       }),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_),
+      processor('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       processor('replace', replace_String_1__String_1__String_1__String_1_),
+      processor('reverse', reverseString_String_1__String_1_),
       processor('rtrim', String, {args |
         assert($args->size() == 1 || $args->size() == 2, 'incorrect number of args');
         assert($args->size() == 1 || ($args->at(1)->reactivate() == ' '), 'only empty string rtrim is currently supported');
@@ -1866,21 +1901,23 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair('quarter', firstDayOfQuarter_Date_1__StrictDate_1_),
           pair('month', firstDayOfMonth_Date_1__Date_1_),
           pair('week', firstDayOfWeek_Date_1__Date_1_),
-          pair('day', datePart_Date_1__Date_1_)
+          pair('day', firstHourOfDay_Date_1__DateTime_1_),
+          pair('hour', firstMinuteOfHour_Date_1__DateTime_1_),
+          pair('minute', firstSecondOfMinute_Date_1__DateTime_1_),
+          pair('second', firstMillisecondOfSecond_Date_1__DateTime_1_)
         ]->getValue($value->toLower());
 
         sfe($func, $args->at(1));
       }),
 
       //COLLECTION
-      processor('coalesce', false, false, [], {args |
-      //TODO really translates to pure "first", but first is noop in pure to sql
-        $args->reverse()->fold({value, else |
-          //TODO: investigate why the copy on condition is required
-          let condition = sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value);
-          createIfStatement(^$condition(parametersValues = $value), $value, $else);
-        }, iv([])->evaluateAndDeactivate())->cast(@SimpleFunctionExpression);
-      }),
+      processor('coalesce',  false, false, [], {args |
+        let filteredArgs = $args->filter(a | $a->match([
+          i:InstanceValue[1] | !($i.genericType.rawType == Nil && $i.values->isEmpty()),
+          v:ValueSpecification[1] | true
+        ]));
+        sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = String), ^GenericType(rawType = String), $filteredArgs->iv());
+      }),      
 
       //WINDOW
       processor('row_number',  false, true, [], {args |

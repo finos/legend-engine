@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
-import java.util.UUID;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -29,45 +31,43 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
-import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DATE;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DECIMAL;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DOUBLE;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DOUBLE;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DECIMAL;
-import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DATE;
 
 
 public class LogicalPlanUtils
@@ -95,9 +95,9 @@ public class LogicalPlanUtils
         return InfiniteBatchIdValue.builder().build();
     }
 
-    public static StringValue INFINITE_BATCH_TIME()
+    public static DatetimeValue INFINITE_BATCH_TIME()
     {
-        return StringValue.of(LogicalPlanUtils.INFINITE_BATCH_TIME);
+        return DatetimeValue.of(LogicalPlanUtils.INFINITE_BATCH_TIME);
     }
 
     public static List<Value> ALL_COLUMNS()

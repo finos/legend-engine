@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
-        <version>4.26.3-SNAPSHOT</version>
+        <version>4.26.7-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -117,6 +117,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-extensions</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <scope>test</scope>
@@ -130,6 +135,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

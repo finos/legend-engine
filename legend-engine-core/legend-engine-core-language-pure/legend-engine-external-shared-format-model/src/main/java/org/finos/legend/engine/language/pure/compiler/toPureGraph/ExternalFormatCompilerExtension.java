@@ -60,7 +60,7 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
-        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_24_0");
         List<String> elements = versions.collect(v -> "meta::protocols::pure::" + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
         return ListIterate.collect(elements, this::registerElement);
     }
