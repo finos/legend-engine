@@ -39,6 +39,8 @@ function meta::external::format::shared::transformation::tests::exampleFormatCon
    )
 }
 
+
+
 // Example Schema Metamodel
 Class meta::external::format::shared::transformation::tests::ExampleSchema
 {
@@ -104,4 +106,14 @@ function meta::external::format::shared::transformation::tests::defaultConfig():
 function meta::external::format::shared::transformation::tests::bindDetails(binding:Binding[1]):BindingDetail[1]
 {
    ^SuccessfulBindingDetail(fetchMappedPropertiesForClass = {class:Class<Any>[1] | []});
+}
+
+//Example Extension with External Format Contract
+function meta::external::format::shared::transformation::tests::exampleExternalFormatExtension(): Extension[1]
+{
+   ^Extension
+   (
+      type                     = 'Example External Format Extension',
+      availableExternalFormats = meta::external::format::shared::transformation::tests::exampleFormatContract()
+   )
 }
