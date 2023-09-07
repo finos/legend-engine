@@ -42,7 +42,6 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 
 class BulkLoadPlanner extends Planner
@@ -145,15 +144,7 @@ class BulkLoadPlanner extends Planner
     @Override
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        // Only supported if Audit enabled
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            // Rows inserted = rows in main with audit column equals latest timestamp
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            postRunStatisticsResult.put(INCOMING_RECORD_COUNT, LogicalPlan.builder()
-                    .addOps(getRowsBasedOnAppendTimestamp(mainDataset(), auditField, INCOMING_RECORD_COUNT.get()))
-                    .build());
-        }
+        // Not supported at the moment
     }
 
     private Selection getRowsBasedOnAppendTimestamp(Dataset dataset, String field, String alias)

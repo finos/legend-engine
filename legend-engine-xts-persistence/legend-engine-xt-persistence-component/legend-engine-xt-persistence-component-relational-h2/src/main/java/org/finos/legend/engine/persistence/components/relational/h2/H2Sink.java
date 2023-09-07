@@ -205,21 +205,23 @@ public class H2Sink extends AnsiSqlSink
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
         Map<StatisticName, Object> stats = new HashMap<>();
-
-        SqlPlan incomingRecordCountSqlPlan = statisticsSqlPlan.get(StatisticName.INCOMING_RECORD_COUNT);
-        if (incomingRecordCountSqlPlan != null)
-        {
-            stats.put(StatisticName.INCOMING_RECORD_COUNT, getStats(executor, incomingRecordCountSqlPlan, placeHolderKeyValues));
-        }
+        stats.put(StatisticName.FILES_LOADED, 1);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, 0);
 
         SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
         if (rowsInsertedSqlPlan != null)
         {
-            stats.put(StatisticName.ROWS_INSERTED, getStats(executor, rowsInsertedSqlPlan, placeHolderKeyValues));
+            stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
+                .stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new));
         }
 
         IngestorResult result;
-        stats.put(StatisticName.FILES_LOADED, 1);
         result = IngestorResult.builder()
             .status(IngestStatus.SUCCEEDED)
             .updatedDatasets(datasets)
@@ -228,17 +230,5 @@ public class H2Sink extends AnsiSqlSink
             .build();
 
         return result;
-    }
-
-    private long getStats(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
-    {
-        return (Long) executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues)
-            .stream()
-            .findFirst()
-            .map(TabularData::getData)
-            .flatMap(t -> t.stream().findFirst())
-            .map(Map::values)
-            .flatMap(t -> t.stream().findFirst())
-            .orElseThrow(IllegalStateException::new);
     }
 }

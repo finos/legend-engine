@@ -51,7 +51,6 @@ import java.util.Optional;
 import static org.finos.legend.engine.persistence.components.TestUtils.mainTableName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 
 public class BulkLoadTest extends BaseTest
@@ -136,7 +135,6 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
 
 
@@ -145,9 +143,9 @@ public class BulkLoadTest extends BaseTest
         String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, APPEND_TIME};
 
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table1.csv";
 
@@ -204,7 +202,6 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_INSERTED));
 
 
@@ -214,6 +211,7 @@ public class BulkLoadTest extends BaseTest
 
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 
@@ -276,7 +274,6 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
 
 
@@ -285,9 +282,9 @@ public class BulkLoadTest extends BaseTest
         String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, DIGEST, APPEND_TIME};
 
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table3.csv";
 
@@ -353,7 +350,6 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
 
 
@@ -362,9 +358,9 @@ public class BulkLoadTest extends BaseTest
         String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, DIGEST, APPEND_TIME, LINEAGE};
 
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table4.csv";
 
@@ -431,7 +427,6 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
 
 
@@ -440,9 +435,9 @@ public class BulkLoadTest extends BaseTest
         String[] schema = new String[]{col_int.toUpperCase(), col_string.toUpperCase(), col_decimal.toUpperCase(), col_datetime.toUpperCase(), DIGEST.toUpperCase(), APPEND_TIME.toUpperCase(), LINEAGE.toUpperCase()};
 
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table5.csv";
 
