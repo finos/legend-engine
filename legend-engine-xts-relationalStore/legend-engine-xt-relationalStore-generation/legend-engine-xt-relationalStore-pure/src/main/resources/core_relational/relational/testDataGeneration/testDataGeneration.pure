@@ -1008,7 +1008,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
   let mainRelation = $view->mainRelation();
   let currentIndices = $indices->add('v');
   let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
-  let table = getUnderlyingTable($mainRelation)->cast(@Table);          
+  let table = meta::relational::metamodel::mainTable($view);          
 
   let pksAndErrorNodes = if ($root,
                             | planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $dbConnection, true, $view, $config, $extensions),
@@ -1121,14 +1121,6 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
       let childNodes =  $relationTree.nestedViewTree.children->at(0)->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
       $thisNode->concatenate($childNodes);,
     | $errorNodes
-  );
-}
-
-function <<access.protected>> meta::relational::testDataGeneration::executionPlan::getUnderlyingTable(relation : Relation[1]):Relation[1]
-{
-  if($relation->instanceOf(View),
-  | getUnderlyingTable($relation->cast(@View)->mainRelation()),
-  | $relation
   );
 }
 
