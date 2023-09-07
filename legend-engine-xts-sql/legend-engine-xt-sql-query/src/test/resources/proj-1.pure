@@ -140,7 +140,7 @@ Service demo::H2PersonServiceDateParameterized
   autoActivateUpdates: true;
   execution: Single
   {
-    query: {date:Date[1]|demo::employee.all()->filter(p | $p.startDate == $date)->project(
+    query: {date:Date[1], type:demo::employeeType[0..1] |demo::employee.all()->filter(p | $p.startDate == $date && ($type->isEmpty() || $p.type == $type))->project(
       [
         x|$x.id,
         x|$x.name,
@@ -186,9 +186,15 @@ Mapping demo::DemoRelationalMapping
     ~mainTable [demo::H2DemoDataBase]EmployeeTable
     id: [demo::H2DemoDataBase]EmployeeTable.id,
     name: [demo::H2DemoDataBase]EmployeeTable.name,
-    type: [demo::H2DemoDataBase]EmployeeTable.type,
+    type: EnumerationMapping EmployeeType: [demo::H2DemoDataBase]EmployeeTable.type,
     startDate: [demo::H2DemoDataBase]EmployeeTable.start_date
   }
+
+   demo::employeeType : EnumerationMapping EmployeeType
+   {
+       Type1: 'Type1',
+       Type2: 'Type2'
+   }
 )
 
 
@@ -200,7 +206,7 @@ RelationalDatabaseConnection demo::H2DemoConnection
   specification: LocalH2
   {
     testDataSetupSqls: [
-      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE);\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (101,202, \'Alice\', 303, \'Type1\', \'2023-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (102,203, \'Bob\', 304, \'Type2\', \'2022-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (103,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (104,205, \'Danielle\', 306, \'Typ1\', \'2022-07-23\');\n'
+      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE);\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (101,202, \'Alice\', 303, \'Type1\', \'2023-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (102,203, \'Bob\', 304, \'Type2\', \'2022-08-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (103,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\');\nInsert into EmployeeTable (id, firm_id, name, country_id, type, start_date) values (104,205, \'Danielle\', 306, \'Type1\', \'2022-07-23\');\n'
       ];
   };
   auth: DefaultH2;

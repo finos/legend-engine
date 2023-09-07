@@ -106,12 +106,12 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
 
 function meta::external::query::sql::transformation::queryToPure::parameterConstantValue(value:ValueSpecification[1], many:Boolean[1]):Any[0..1]
 {
-  $value->match([
+  $value->evaluateAndDeactivate()->match([
     i:InstanceValue[1] | if ($many, 
                           | list($i.values->map(v | $v->normalizeParameterValue())), 
                           | $i.values->first()->normalizeParameterValue()),
     v:ValueSpecification[1] | []
-  ])
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::normalizeParameterValue(value:Any[0..1]):Any[0..1]
@@ -124,10 +124,12 @@ function meta::external::query::sql::transformation::queryToPure::normalizeParam
 
 function meta::external::query::sql::transformation::queryToPure::parameterPlan(value:ValueSpecification[1], extensions: meta::pure::extension::Extension[*]):ExecutionPlan[0..1]
 {
-  $value->match([
+  $value->evaluateAndDeactivate()->match([
     i:InstanceValue[1] | [],
-    v:ValueSpecification[1] | ^LambdaFunction<Any>(expressionSequence = $v)->executionPlan($extensions)
-  ])
+    v:ValueSpecification[1] | 
+      let expression = if ($v.genericType.rawType->in([Date, StrictDate, DateTime]), | sfe(toString_Any_1__String_1_, $v)->evaluateAndDeactivate(), | $v);
+      lambda(^FunctionType(returnMultiplicity = $expression.multiplicity, returnType = $expression.genericType), $expression)->executionPlan($extensions);
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::constantPlan(value:Any[*]):ExecutionPlan[1]
@@ -903,7 +905,7 @@ function meta::external::query::sql::transformation::queryToPure::extractSourceA
     n:NullLiteral[1] | ^SQLSourceArgument(name = $name, index = $index),
     b:BooleanLiteral[1] | ^SQLSourceArgument(value = $b.value, name = $name, index = $index),
     a:ArrayLiteral[1] | ^SQLSourceArgument(value = $a->extractExpressionValue(), name = $name, index = $index),
-    e:meta::external::query::sql::metamodel::Expression[1] | []
+    e:meta::external::query::sql::metamodel::Expression[1] | ^SQLSourceArgument(value = $e, name = $name, index = $index)
   ]);
 }
 
@@ -917,9 +919,10 @@ function meta::external::query::sql::transformation::queryToPure::extractExpress
     n:NullLiteral[1] | Nil,
     b:BooleanLiteral[1] | $b.value,
     a:ArrayLiteral[1] | $a.values->map(v | $v->extractExpressionValue()),
-    e:meta::external::query::sql::metamodel::Expression[1] | fail('only literal values supported'); [];
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
   ]);
 }
+
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableFunction(tableFunc: TableFunction[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
@@ -944,7 +947,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let expressionSequence = $source.func.expressionSequence;
   let assignments = $expressionSequence->evaluateAndDeactivate()->init();
-  let parameterValues = createLambdaParameters($parameters, $arguments, $scopeSuffix);
+  let parameterValues = createLambdaParameters($parameters, $arguments, $scopeSuffix, $context);
   let expression = $expressionSequence->last()->toOne();
 
   let nc = ^$context(
@@ -987,14 +990,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLambdaParameters(parameters:VariableExpression[*], arguments:SQLSourceArgument[*], suffix:String[0..1]):SQLLambdaParameter[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLambdaParameters(parameters:VariableExpression[*], arguments:SQLSourceArgument[*], suffix:String[0..1], context: SqlTransformContext[1]):SQLLambdaParameter[*]
 {
   $parameters->map(p |
     let argument = $arguments->filter(a | $a.name == $p.name);
 
     let value = if ($argument->isEmpty(),
       | iv([]),
-      | iv(convertValue($argument.value, $p.genericType.rawType->toOne())));
+      | $argument.value->match([
+          e:meta::external::query::sql::metamodel::Expression[1] | $e->processExpression(rowExpressionContext(), $context)->convertValueSpecification($p.genericType.rawType->toOne()),
+          a:Any[*] | iv(convertValue($a, $p.genericType.rawType->toOne()))
+        ]);
+    );
 
     let name = if ($suffix->isNotEmpty(), | $p.name + '_' + $suffix->toOne(), | $p.name);
 
@@ -1014,9 +1021,11 @@ function meta::external::query::sql::transformation::queryToPure::convertValue(a
 {
 
   $a->match([
-    s:String[1] | if ($type->instanceOf(Enumeration),
-                    | extractEnumValue($type->cast(@Enumeration<Enum>), $s),
-                    | $s),
+    s:String[1] | if ($type->in([Date, StrictDate, DateTime]),
+                    | parseDate($s),
+                    | if ($type->instanceOf(Enumeration),
+                        | extractEnumValue($type->cast(@Enumeration<Enum>), $s),
+                        | $s)),
     a:Any[1] | $a,
     a:Any[*] | $a->map(v | convertValue($v, $type))
   ]);
