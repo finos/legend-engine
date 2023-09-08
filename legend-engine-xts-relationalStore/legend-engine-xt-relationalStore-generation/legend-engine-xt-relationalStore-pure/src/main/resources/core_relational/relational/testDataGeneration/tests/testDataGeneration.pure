@@ -1466,6 +1466,57 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                  '  ])\n', $seedDataString);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::TestDatGenForNestedViews():Boolean[1]
+{
+  let query = {|meta::relational::testDataGeneration::tests::model::Student.all()->project([s | $s.school.id],['id'])};
+  let mapping1 = meta::relational::testDataGeneration::tests::model::VeiwOnViewMapping;
+  let mapping2 = meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping;
+  let db = meta::relational::testDataGeneration::tests::model::db;
+  let runtime = meta::relational::testDataGeneration::tests::model::setUp();
+
+  let tableRowIdentifiers = [
+    meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'StudentTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['1', 'SURAJ', 'sc1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['2', 'MAN', 'sc2'])
+    ]),
+      meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'SchoolTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc1', 'school1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
+    ])
+  ];
+
+  let testData1 = generateTestData($query, $mapping1, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+  let testData2 = generateTestData($query, $mapping2, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData1.dataCsvString, $db);
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData2.dataCsvString, $db);
+
+  loadAndTestExecution($query, [], $mapping1, $runtime, $testData1.dataCsvString, $db);
+  loadAndTestExecution($query, [], $mapping2, $runtime, $testData2.dataCsvString, $db);
+}
+
 function <<access.protected>> meta::relational::testDataGeneration::tests::initDatabase():Runtime[1]
 {
    let connection = meta::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connections->toOne()->cast(@TestDatabaseConnection);
@@ -1758,8 +1809,6 @@ function <<access.private>> meta::relational::testDataGeneration::tests::loadAnd
    let result = $plan->execute($parametersValues, meta::relational::extension::relationalExtensions());
    $result.values->isNotEmpty() && (!$result.values->at(0)->instanceOf(TabularDataSet) || $result.values->at(0)->cast(@TabularDataSet).rows->isNotEmpty());
 }
-
-
 
 
 
@@ -2874,6 +2923,41 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                      'Anthony,Allen,4\n'+
                      '-----\n', $result->cast(@String)->toOne(), $db);
    },{| true});
+}
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::model::alloy::testAlloyTestDatGenForNestedViews():Boolean[1]
+{
+  let query = {|meta::relational::testDataGeneration::tests::model::Student.all()->project([s | $s.school.id],['id'])};
+  let mapping = meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping;
+  let db = meta::relational::testDataGeneration::tests::model::db;
+  let runtime = meta::relational::testDataGeneration::tests::model::setUp();
+  
+  let tableRowIdentifiers = [
+  meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'StudentTable', [
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['1', 'SURAJ', 'sc1']),
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['2', 'MAN', 'sc2'])
+  ]),
+    meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'SchoolTable', [
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc1', 'school1']),
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
+  ])
+];
+  
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+    assertTestData('default\n'+
+                'StudentTable\n'+
+                'ID,SCHOOL_ID\n'+
+                '1,sc1\n'+
+                '2,sc2\n'+
+                '-----\n'+
+                'default\n'+
+                'SchoolTable\n'+
+                'ID,NAME\n'+
+                'sc1,school1\n'+
+                'sc2,school2\n'+
+                '-----\n', $result->cast(@String)->toOne(), $db);
+  },{| true});
 }
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenWithQuotedColumnsForViews():Boolean[1]
