@@ -21,6 +21,10 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.mockito.Mockito;
+
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class TestFreeMarkerExecutor
 {
@@ -39,6 +43,28 @@ public class TestFreeMarkerExecutor
         rootMap.put("testCollection", largeCollection);
         String result1 = FreeMarkerExecutor.processRecursively(query, rootMap, collectionSizeTemplate());
         Assert.assertEquals("final collectionSize :1000", result1.trim());
+    }
+
+    @Test
+    public void testFreemarkerSkippedOnEmptyTemplate()
+    {
+        String query = "no templates query";
+        FreeMarkerExecutor freeMarkerExecutor = Mockito.spy(FreeMarkerExecutor.class);
+        Map rootMap = new HashMap();
+        String result = FreeMarkerExecutor.processRecursively(query, rootMap, null);
+        verify(freeMarkerExecutor, never()).process(Mockito.anyString(), Mockito.anyMap(), Mockito.anyString());
+        Assert.assertEquals(query, result.trim());
+
+    }
+
+    @Test
+    public void testParametersProcessedWithNoTemplates()
+    {
+        String query = "${testCollection}";
+        Map rootMap = new HashMap();
+        rootMap.put("testCollection", "foo");
+        String result = FreeMarkerExecutor.processRecursively(query, rootMap, "");
+        Assert.assertEquals("foo", result.trim());
     }
 
     public static String collectionSizeTemplate()

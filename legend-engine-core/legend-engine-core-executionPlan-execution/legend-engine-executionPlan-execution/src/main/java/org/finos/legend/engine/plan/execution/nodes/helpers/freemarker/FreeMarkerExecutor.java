@@ -71,7 +71,7 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        String result = process(input, variableMap, templateFunctions);
+        String result = (templateFunctions == null || templateFunctions == "") && variableMap.isEmpty() ? input : process(input, variableMap, templateFunctions);
         if (!result.equals(input.replace("\\\"", "\"")))
         {
             return processRecursively(result, variableMap, templateFunctions);
@@ -79,7 +79,7 @@ public class FreeMarkerExecutor
         return result;
     }
 
-    private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
+    protected static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
         try
@@ -91,6 +91,7 @@ public class FreeMarkerExecutor
             template.setCustomDateFormats(customDateFormats);
             template.setDateFormat("@alloyDate");
             template.process(variableMap, stringWriter);
+
             return stringWriter.toString();
         }
         catch (Exception e)
