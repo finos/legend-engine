@@ -666,7 +666,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addYears(int years)
+    public PureDate addYears(long years)
     {
         if (years == 0)
         {
@@ -681,7 +681,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addMonths(int months)
+    public PureDate addMonths(long months)
     {
         if (!hasMonth())
         {
@@ -704,7 +704,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addWeeks(int weeks)
+    public PureDate addWeeks(long weeks)
     {
         if (!hasDay())
         {
@@ -715,11 +715,11 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
             return this;
         }
         PureDate copy = clone();
-        copy.incrementDay(7 * weeks);
+        copy.incrementDay(Math.multiplyExact(7L, weeks));
         return copy;
     }
 
-    public PureDate addDays(int days)
+    public PureDate addDays(long days)
     {
         if (!hasDay())
         {
@@ -734,7 +734,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addHours(int hours)
+    public PureDate addHours(long hours)
     {
         if (!hasHour())
         {
@@ -749,7 +749,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addMinutes(int minutes)
+    public PureDate addMinutes(long minutes)
     {
         if (!hasMinute())
         {
@@ -764,7 +764,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addSeconds(int seconds)
+    public PureDate addSeconds(long seconds)
     {
         if (!hasSecond())
         {
@@ -779,7 +779,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         return copy;
     }
 
-    public PureDate addMilliseconds(int milliseconds)
+    public PureDate addMilliseconds(long milliseconds)
     {
         if (!hasSubsecond() || (this.subsecond.length() < 3))
         {
@@ -791,7 +791,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         }
         PureDate copy = clone();
 
-        int seconds = milliseconds / 1000;
+        long seconds = milliseconds / 1000;
         if (seconds != 0)
         {
             copy.incrementSecond(seconds);
@@ -939,9 +939,14 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.year = year;
     }
 
-    private void incrementYear(int delta)
+    private void incrementYear(long delta)
     {
-        this.year += delta;
+        long newYear = Math.addExact(this.year, delta);
+        if ((newYear > Integer.MAX_VALUE) || (newYear < Integer.MIN_VALUE))
+        {
+            throw new IllegalStateException("Year incremented beyond supported bounds");
+        }
+        this.year = (int) newYear;
     }
 
     void setMonth(int month)
@@ -953,7 +958,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         this.month = month;
     }
 
-    private void incrementMonth(int delta)
+    private void incrementMonth(long delta)
     {
         incrementYear(delta / 12);
         this.month += (delta % 12);
@@ -988,24 +993,24 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
     private void incrementDay(long delta)
     {
+        long remDelta = Math.addExact(this.day, delta);
         if (delta < 0)
         {
-            this.day += delta;
-            while (this.day < 1)
+            while (remDelta < 1)
             {
                 incrementMonth(-1);
-                this.day += getMaxDayOfMonth(this.year, this.month);
+                remDelta += getMaxDayOfMonth(this.year, this.month);
             }
         }
         else if (delta > 0)
         {
-            this.day += delta;
-            for (int maxDay = getMaxDayOfMonth(this.year, this.month); this.day > maxDay; maxDay = getMaxDayOfMonth(this.year, this.month))
+            for (int maxDay = getMaxDayOfMonth(this.year, this.month); remDelta > maxDay; maxDay = getMaxDayOfMonth(this.year, this.month))
             {
-                this.day -= maxDay;
+                remDelta -= maxDay;
                 incrementMonth(1);
             }
         }
+        this.day = (int) remDelta;
     }
 
     void setHour(int hour)

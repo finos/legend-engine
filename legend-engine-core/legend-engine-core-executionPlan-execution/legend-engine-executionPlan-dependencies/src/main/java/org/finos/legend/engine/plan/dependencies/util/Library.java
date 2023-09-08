@@ -61,45 +61,45 @@ public class Library
 
     public static PureDate adjustDate(PureDate date, long number, DurationUnit unit)
     {
-        switch (unit.name())
+        switch (unit)
         {
-            case "YEARS":
+            case YEARS:
             {
-                return date.addYears((int) number);
+                return date.addYears(number);
             }
-            case "MONTHS":
+            case MONTHS:
             {
-                return date.addMonths((int) number);
+                return date.addMonths(number);
             }
-            case "WEEKS":
+            case WEEKS:
             {
-                return date.addWeeks((int) number);
+                return date.addWeeks(number);
             }
-            case "DAYS":
+            case DAYS:
             {
-                return date.addDays((int) number);
+                return date.addDays(number);
             }
-            case "HOURS":
+            case HOURS:
             {
-                return date.addHours((int) number);
+                return date.addHours(number);
             }
-            case "MINUTES":
+            case MINUTES:
             {
-                return date.addMinutes((int) number);
+                return date.addMinutes(number);
             }
-            case "SECONDS":
+            case SECONDS:
             {
-                return date.addSeconds((int) number);
+                return date.addSeconds(number);
             }
-            case "MILLISECONDS":
+            case MILLISECONDS:
             {
-                return date.addMilliseconds((int) number);
+                return date.addMilliseconds(number);
             }
-            case "MICROSECONDS":
+            case MICROSECONDS:
             {
                 return date.addMicroseconds(number);
             }
-            case "NANOSECONDS":
+            case NANOSECONDS:
             {
                 return date.addNanoseconds(number);
             }
