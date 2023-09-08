@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::format::shared::utils::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::externalFormat::metamodel::*;
 import meta::pure::router::externalFormat::metamodel::clustering::*;
@@ -71,17 +72,52 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
   [
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::format::shared::functions::externalizeFunctions()),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-            let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
-            let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
             let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
                                                                       b:meta::external::format::shared::binding::Binding[1] | $b,
                                                                       s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
                                                                     ]);
+
+            let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
+
+            let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
+
             let routedExternalize    = ^ExternalFormatRoutedValueSpecification
                                         (
                                           multiplicity    = $f->functionReturnMultiplicity(),
                                           genericType     = $f->functionReturnType(),
                                           executionContext= $executionContext,
+                                          id              = $fe->id(),
+                                          routingStrategy = getExternalFormatRoutingStrategy($binding),
+                                          binding         = $binding,
+                                          value           = $processedExternalize
+                                        );
+            print(if($debug.debug,|$debug.space+'~>Externalize Routing Done',|''));
+            ^$processedFirstParam(routingStrategy = getExternalFormatRoutingStrategy($binding),
+                                  value           = $routedExternalize);
+        }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::format::shared::functions::externalizeTDSFunctions()),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+            let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
+                                                                      b:meta::external::format::shared::binding::Binding[1] | $b,
+                                                                      s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
+                                                                    ]);
+
+           let updatedContext = $executionContext;
+
+
+           let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $updatedContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
+
+            let firstValue = $processedFirstParam.value->cast(@ValueSpecification)->evaluateAndDeactivate();
+
+            let wrappedFirstPraram = $processedFirstParam.routingStrategy.wrapValueSpec->eval($firstValue, $processedFirstParam.routingStrategy, $processedFirstParam->id(), $updatedContext, $extensions, $debug);
+
+            let processedExternalize = ^$fe(parametersValues = $wrappedFirstPraram->concatenate($fe.parametersValues->tail()));
+            let routedExternalize    = ^ExternalFormatRoutedValueSpecification
+                                        (
+                                          multiplicity    = $f->functionReturnMultiplicity(),
+                                          genericType     = $f->functionReturnType(),
+                                          executionContext= $updatedContext,
                                           id              = $fe->id(),
                                           routingStrategy = getExternalFormatRoutingStrategy($binding),
                                           binding         = $binding,
@@ -215,6 +251,8 @@ function meta::pure::router::externalFormat::clustering::externalFormatSupportsF
   let supportedFunctions = meta::external::format::shared::functions::internalizeFunctions()
                             ->concatenate(meta::external::format::shared::functions::externalizeFunctions())
                             ->concatenate(meta::pure::graphFetch::execution::graphFetchFunctions())
-                            ->concatenate(meta::pure::dataQuality::checked_T_MANY__Checked_MANY_);
+                            ->concatenate(meta::pure::dataQuality::checked_T_MANY__Checked_MANY_)
+                            ->concatenate(meta::external::format::shared::functions::externalizeTDSFunctions()
+                            );
   $f.func->in($supportedFunctions);
 }

@@ -22,6 +22,16 @@ function meta::pure::functions::math::stdDevPopulation(numbers:Number[*]):Number
     meta::pure::functions::math::stdDev($numbers->toOneMany(), false);
 }
 
+function meta::pure::functions::math::varianceSample(numbers:Number[*]):Number[1]
+{
+  pow(stdDevSample($numbers), 2);
+}
+
+function meta::pure::functions::math::variancePopulation(numbers:Number[*]):Number[1]
+{
+  pow(stdDevPopulation($numbers), 2);
+}
+
 function meta::pure::functions::math::pi():Float[1]
 {
    3.141592653589793;

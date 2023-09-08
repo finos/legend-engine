@@ -251,7 +251,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                          meta::pure::extension::defaultExtensions()
                 );
 
-   assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::F","message":"Unable to evaluate constraint [0]: data not available - check your mappings"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":20}"},"value":{"n":20}},"value":{"i":20}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::F","message":"Constraint :[0] violated in the Class F"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":20}"},"value":{"n":20}},"value":{"i":20}}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>

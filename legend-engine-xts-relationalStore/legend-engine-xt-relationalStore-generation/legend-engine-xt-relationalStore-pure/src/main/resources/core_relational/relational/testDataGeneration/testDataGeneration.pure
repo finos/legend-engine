@@ -1231,6 +1231,15 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
    ])
 }
 
+function <<access.private>> meta::relational::testDataGeneration::executionPlan::doesAliasPointToTempTable(r:RelationalOperationElement[1]):Boolean[1]
+{
+  $r->match([
+    v:meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder[1] | true,
+    s:SelectSQLQuery[1] | $s.data.alias.relationalElement->isNotEmpty() && $s.data.alias.relationalElement->toOne()->doesAliasPointToTempTable(),
+    r:RelationalOperationElement[1] | false
+  ])
+}
+
 function <<access.private>> meta::relational::testDataGeneration::executionPlan::quoteVarPlaceHolderTableAliasColumnsIfNotQuouted(relationalOperationElement:RelationalOperationElement[1]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
@@ -1249,7 +1258,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                     t:NamedRelation[1] | $t,
                     u:UnaryOperation[1] | ^$u(nested=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($u.nested)),
                     b:BinaryOperation[1] | ^$b(left=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($b.left), right=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($b.right)),
-                    c:TableAliasColumn[1] | if($c.alias.relationalElement->toOne()->instanceOf(SelectSQLQuery) && $c.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder),|let col = $c.column; ^$c(column = ^$col(name = $col.name->addQuotesIfNoQuotes()));,|$c),
+                    c:TableAliasColumn[1] | if($c.alias.relationalElement->doesAliasPointToTempTable(),|let col = $c.column; ^$c(column = ^$col(name = $col.name->addQuotesIfNoQuotes()));,|$c),
                     va:VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())),
                     d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())),
                     j:JoinStrings[1] | ^$j(strings=$j.strings->map(v | $v->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),

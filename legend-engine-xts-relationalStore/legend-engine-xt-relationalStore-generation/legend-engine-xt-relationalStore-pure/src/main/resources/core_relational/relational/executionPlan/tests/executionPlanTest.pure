@@ -2173,3 +2173,29 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
   let transformedPlan = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($plan, meta::relational::extension::relationalExtensions());
   assertEquals(['a','b'], $transformedPlan.rootExecutionNode.executionNodes->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode).connection->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
 }
+
+
+ function <<test.Test>> meta::pure::executionPlan::tests::testRelationalProjectionWithExternalFormat():Boolean[1]
+ {
+
+    let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
+    let result = executionPlan({|Product.all()->project(p|$p.name, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::relational::tests::testRuntime(), $extensions);
+    assertEquals (
+    'ExternalFormat_Externalize\n' +
+               '(\n' +
+               '  type = String\n' +
+               '  resultSizeRange = 1\n' +
+               '  checked = false\n' +
+               '  binding = meta::external::format::shared::executionPlan::generatedBinding\n' +
+               '\n' +
+               '  (\n' +
+               '    Relational\n' +
+               '    (\n' +
+               '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
+               '      resultColumns = [("name", VARCHAR(200))]\n'+
+               '      sql = select "root".NAME as "name" from productSchema.productTable as "root"\n'+
+               '      connection = TestDatabaseConnection(type = "H2")\n'+
+               '    )\n' +
+               '  )\n' +
+               ')\n', $result->planToString($extensions));
+ }

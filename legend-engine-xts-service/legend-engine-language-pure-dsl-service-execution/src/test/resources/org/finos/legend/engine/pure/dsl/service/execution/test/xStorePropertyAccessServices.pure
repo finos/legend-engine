@@ -46,6 +46,17 @@ Association test::Firm_Address
   address: test::Address[0..1];
 }
 
+Class test::Street
+{
+  streetId: String[0..1];
+}
+
+Association test::Street_Address
+{
+  street: test::Street[*];
+  address: test::Address[0..1];
+}
+
 function test::fetch1(): String[1]
 {
   test::Person.all()
@@ -163,6 +174,15 @@ function test::fetch5(): String[1]
     }#)
 }
 
+function test::fetch6(): String[1]
+{
+  test::Street.all()->graphFetchChecked(#{test::Street{address{name}}}#)->serialize(#{test::Street{address{name}}}#)
+}
+
+function test::fetch7(): String[1]
+{
+  test::Street.all()->graphFetch(#{test::Street{address{name}}}#)->serialize(#{test::Street{address{name}}}#)
+}
 
 ###Relational
 Database test::DB1
@@ -224,6 +244,17 @@ Mapping test::Map
     firms[test_Address, test_Firm]: $this.name == $that.addressName,
     address[test_Firm, test_Address]: $this.addressName == $that.name
   }
+
+  *test::Street[street_self]: Pure
+  {
+    ~src test::Street
+    streetId: $src.streetId
+  }
+
+  test::Street_Address: XStore
+  {
+    address[street_self, test_Address]: $this.streetId == $that.name
+  }
 )
 
 
@@ -275,6 +306,17 @@ Runtime test::Runtime
             testDataSetupCSV: 'default\naddressTable\nname\nA1\nA2\nA3\nA4\nA5\n---';
           };
           auth: DefaultH2;
+        }
+      }#
+    ],
+    ModelStore:
+    [
+      c5:
+      #{
+        JsonModelConnection
+        {
+          class: test::Street;
+          url: 'data:application/json,\n{"streetId": "A2"}\n{"streetId": "A4"}\n{"streetId": "A5"}\n';
         }
       }#
     ]

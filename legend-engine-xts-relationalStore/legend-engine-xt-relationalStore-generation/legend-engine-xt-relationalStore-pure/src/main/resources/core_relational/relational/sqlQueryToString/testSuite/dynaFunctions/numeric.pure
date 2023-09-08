@@ -119,6 +119,22 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::log10::testDecimal(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='log10', parameters=[^Literal(value=10)]);
+  let expected = ^Literal(value= 1.0);
+  let equalityComparator = floatEqualityComparatorGenerator([0.0001]);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sign::testInt(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='sign', parameters=[^Literal(value=10)]);
+  let expected = ^Literal(value= 1.0);
+  let equalityComparator = floatEqualityComparatorGenerator([0.0001]);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}
+
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqrt::testInt1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='sqrt', parameters=[^Literal(value=1)]);
@@ -159,6 +175,13 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name='cos', parameters=[^Literal(value=1.8)]);
   let expected = ^Literal(value=-0.2272020946930871);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::cot::testDecimal(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='cot', parameters=[^Literal(value=1)]);
+  let expected = ^Literal(value=0.6420926159343306);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
@@ -293,6 +316,20 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::round::testInt(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='round', parameters=[^Literal(value=2.0)]);
+  let expected = ^Literal(value=2.0);  
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toFloat::testInt(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='toFloat', parameters=[^Literal(value=2)]);
+  let expected = ^Literal(value=2.0);  
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toDecimal::testInt(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='toDecimal', parameters=[^Literal(value=2)]);
   let expected = ^Literal(value=2.0);  
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }

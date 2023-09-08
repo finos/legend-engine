@@ -124,7 +124,7 @@ Database meta::relational::tests::db
 
     Table Dept(id INT PRIMARY KEY, name VARCHAR(10))
     Table Branch(branchId INT PRIMARY KEY, name VARCHAR(10))
-    Table Org(OrgId INT PRIMARY KEY, name VARCHAR(10))
+    Table Org(OrgId INT, name VARCHAR(10))
 
     View interactionViewMaxTime
     (
@@ -191,7 +191,7 @@ Database meta::relational::tests::db
 
     View OrgViewOnView
     (
-        OrgId: OrgView.OrgId,
+        OrgId: OrgView.OrgId PRIMARY KEY,
         name: OrgView.name
     )
 
