@@ -3015,23 +3015,6 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
     '          )\n' +
     '        )\n' +
     '    )\n' +
-    '    Allocation\n' +
-    '    (\n' +
-    '      type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
-    '      resultSizeRange = *\n' +
-    '      name = res_c0_c0\n' +
-    '      value = \n' +
-    '        (\n' +
-    '          Relational\n' +
-    '          (\n' +
-    '            type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
-    '            resultSizeRange = *\n' +
-    '            resultColumns = [("altID", INT), ("entityID", INT)]\n' +
-    '            sql = select top 20 "root"."alternativeID" as "altID", "root"."entityID" as "entityID" from (select * from (${res_c0_c0_v}) as "root") as "root"\n' +
-    '            connection = TestDatabaseConnection(type = "H2")\n' +
-    '          )\n' +
-    '        )\n' +
-    '    )\n' +
     '  )\n' +
     ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
