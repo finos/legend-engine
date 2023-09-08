@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::functions::hash::*;
 import meta::relational::extension::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::external::query::sql::metamodel::*;
@@ -1226,9 +1227,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", upper(String) AS "UPPER", ' + 
+  let sqlString = 'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' + 
                   'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", ' + 
-                  'substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
+                  'sha256(String) AS "SHA256", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -1244,6 +1245,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
                 col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM'),
                 col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM2'),
+                col(row:TDSRow[1] | hash($row.getString('String'), HashType.MD5), 'MD5'),
                 col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                 col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
                 col(row:TDSRow[1] | repeatString($row.getString('String'), 2), 'REPEAT'),
@@ -1253,6 +1255,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | reverseString($row.getString('String')), 'REVERSE'),
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM2'),
+                col(row:TDSRow[1] | hash($row.getString('String'), HashType.SHA256), 'SHA256'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
                 col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),

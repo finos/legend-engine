@@ -1841,6 +1841,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe(ltrim_String_1__String_1_, $args->at(0));
       }),
+      processor('md5', String, {args | processHash($args, meta::pure::functions::hash::HashType.MD5)}),      
       processor('regexp_like', matches_String_1__String_1__Boolean_1_),
       processor('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       processor('replace', replace_String_1__String_1__String_1__String_1_),
@@ -1851,6 +1852,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe(rtrim_String_1__String_1_, $args->at(0));
       }),
+      processor('sha256', String, {args | processHash($args, meta::pure::functions::hash::HashType.SHA256)}),  
       processor('starts_with', startsWith_String_1__String_1__Boolean_1_),
 
       processor('string_agg', true, false, String, {args |
@@ -1865,7 +1867,6 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('substr', false, processSubstring_ValueSpecification_MANY__SimpleFunctionExpression_1_),
       processor('substring', false, processSubstring_ValueSpecification_MANY__SimpleFunctionExpression_1_),
       processor('upper', toUpper_String_1__String_1_),
-
       //DATE
       processor('date', Date, {args | 
         possiblyProcessParseDate($args->at(0))
@@ -1930,6 +1931,12 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(meta::pure::functions::math::olap::rank_Any_MANY__Map_1_, ^GenericType(rawType = Map, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Integer)]), [^GenericType(rawType = Any), ^GenericType(rawType = Integer)], $args)
       })
   ]
+}
+
+function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1]):SimpleFunctionExpression[1]
+{ 
+  assert($args->size() == 1, 'incorrect number of args');
+  sfe(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, [$args->at(0), processExtractEnumValue(meta::pure::functions::hash::HashType, $type.name->toOne())]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):SimpleFunctionExpression[1]

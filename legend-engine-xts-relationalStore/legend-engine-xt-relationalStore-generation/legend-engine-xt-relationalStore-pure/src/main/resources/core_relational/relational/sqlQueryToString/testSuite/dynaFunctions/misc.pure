@@ -29,3 +29,24 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let expected = ^Literal(value='a');
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::md5::testMD5(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='md5', parameters=[^Literal(value='hello')]);
+  let expected = ^Literal(value='5d41402abc4b2a76b9719d911017c592');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sha1::testSHA1(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='sha1', parameters=[^Literal(value='hello')]);
+  let expected = ^Literal(value='aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sha256::testSHA256(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='sha256', parameters=[^Literal(value='hello')]);
+  let expected = ^Literal(value='2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
