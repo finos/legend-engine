@@ -93,4 +93,10 @@ public class Identity
         return credentials.isEmpty() || credentials.stream().allMatch(c -> c.isValid());
     }
 
+    public static Identity create(String name, List<Credential> credentials)
+    {
+        Identity identity = new Identity(name);
+        identity.credentials.addAll(credentials);
+        return identity;
+    }
 }
