@@ -254,13 +254,15 @@ public class SnowflakeSink extends AnsiSqlSink
                 totalRowsWithError += (Long) row.get(ERRORS_SEEN);
             }
         }
+
         IngestorResult result;
+        Map<StatisticName, Object> stats = new HashMap<>();
+        stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
+        stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+
         if (dataFilePathsWithFailedBulkLoad.isEmpty())
         {
-            Map<StatisticName, Object> stats = new HashMap<>();
-            stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
-            stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
-            stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
             result = IngestorResult.builder()
                     .status(IngestStatus.SUCCEEDED)
                     .updatedDatasets(datasets)
@@ -275,6 +277,7 @@ public class SnowflakeSink extends AnsiSqlSink
                     .status(IngestStatus.FAILED)
                     .message(errorMessage)
                     .updatedDatasets(datasets)
+                    .putAllStatisticByName(stats)
                     .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
                     .build();
         }
