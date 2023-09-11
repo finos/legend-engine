@@ -12,8 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental;
+package org.finos.legend.connection;
 
-public abstract class ConnectionSpecification
+import org.eclipse.collections.api.factory.Lists;
+
+import java.util.List;
+import java.util.ServiceLoader;
+
+public class DefaultConnectionBuilderProvider implements ConnectionBuilderProvider
 {
+
+    @Override
+    public List<ConnectionBuilder> getBuilders()
+    {
+        return Lists.mutable.withAll(ServiceLoader.load(ConnectionBuilder.class));
+    }
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental;
+package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -41,7 +41,7 @@ public class IdentityFactory
         // TODO: @akphi - should we restrict here that we can only either specify the subject/profiles?
         credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
         credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
-        return Identity.create(identitySpecification.getName(), credentials);
+        return new Identity(identitySpecification.getName(), credentials);
     }
 
     public static class Builder

@@ -14,6 +14,9 @@
 
 package org.finos.legend.connection;
 
-public abstract class ConnectionSpecification
+import java.util.List;
+
+public interface CredentialBuilderProvider
 {
+    List<CredentialBuilder> getBuilders();
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental;
+package org.finos.legend.connection;
 
 import org.finos.legend.engine.shared.core.identity.Credential;
 
@@ -22,7 +22,7 @@ import java.util.Objects;
 
 public abstract class ConnectionBuilder<T, CRED extends Credential, SPEC extends ConnectionSpecification>
 {
-    public abstract T getConnection(CRED credential, SPEC connectionSpecification) throws Exception;
+    public abstract T getConnection(CRED credential, SPEC connectionSpecification, StoreInstance storeInstance) throws Exception;
 
     public Class<? extends Credential> getCredentialType()
     {

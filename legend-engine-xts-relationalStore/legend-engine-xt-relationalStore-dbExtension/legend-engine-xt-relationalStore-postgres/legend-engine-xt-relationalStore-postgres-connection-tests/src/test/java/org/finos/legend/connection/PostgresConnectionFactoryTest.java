@@ -14,19 +14,15 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
-import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
-import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
-import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.jdbc.StaticJDBCConnectionSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.postgres.test.PostgresTestContainerWrapper;
+import org.finos.legend.connection.test.PostgresTestContainerWrapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,37 +62,53 @@ public class PostgresConnectionFactoryTest
     public void testConnectionFactory() throws Exception
     {
         Properties properties = new Properties();
-        String passRef = "passwordRef1";
-        properties.put(passRef, postgresContainer.getPassword());
+        final String PASS_REF = "passwordRef";
+        properties.put(PASS_REF, postgresContainer.getPassword());
         PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
 
-        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
-                .with(propertiesFileCredentialVault)
+        RelationalDatabaseStoreSupport storeSupport = new RelationalDatabaseStoreSupport.Builder()
+                .withIdentifier("Postgres")
+                .withDatabaseType("Postgres")
+                .withAuthenticationSpecificationTypes(Lists.mutable.of(
+                        UserPasswordAuthenticationSpecification.class,
+                        ApiKeyAuthenticationSpecification.class
+                ))
                 .build();
 
-        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
-                .with(platformCredentialVaultProvider)
+        EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
+                .withVault(propertiesFileCredentialVault)
+                .withStoreSupport(storeSupport)
                 .build();
 
-        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
-                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
+        IdentityFactory identityFactory = new IdentityFactory.Builder(environmentConfiguration)
                 .build();
 
-        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
-                .with(new UserPasswordCredentialProvider())
-                .with(intermediationRuleProvider)
+        ConnectionFactory connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
+                .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider())
+                .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider())
                 .build();
 
-        ConnectionFactoryFlowProvider connectionFactoryFlowProvider = new DefaultConnectionFactoryFlowProvider();
-        connectionFactoryFlowProvider.configure();
+        // --------------------------------- USAGE ---------------------------------
 
-        ConnectionFactory connectionFactory = new ConnectionFactory(connectionFactoryFlowProvider, credentialProviderProvider);
-        connectionFactory.initialize();
-
-        connectionFactory.getConnection(
-                new StaticJDBCConnectionSpecification(postgresContainer.getHost(), postgresContainer.getPort(), postgresContainer.getDatabaseName(), DatabaseType.Postgres),
-                new UserPasswordAuthenticationSpecification(postgresContainer.getUser(), new PropertiesFileSecret(passRef)),
-                IdentityFactoryProvider.getInstance().makeIdentityForTesting("anyone")
+        Identity identity = identityFactory.createIdentity(
+                new IdentitySpecification.Builder()
+                        .withName("test-user")
+                        .build()
         );
+
+        final String STORE_NAME = "test-store";
+        ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(postgresContainer.getHost(), postgresContainer.getPort(), postgresContainer.getDatabaseName());
+        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
+                .withIdentifier(STORE_NAME)
+                .withStoreSupportIdentifier("Postgres")
+                // TODO: @akphi - check if we already verify right here - we should throw if this is not specified in the store support
+                .withAuthenticationSpecificationTypes(Lists.mutable.of(UserPasswordAuthenticationSpecification.class))
+                .withConnectionSpecification(connectionSpecification)
+                .build();
+        connectionFactory.registerStoreInstance(testStore);
+
+        AuthenticationSpecification authenticationSpecification = new UserPasswordAuthenticationSpecification(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
+        ConnectionAuthentication connectionAuthentication = connectionFactory.authenticate(identity, STORE_NAME, authenticationSpecification);
+        connectionFactory.getConnection(connectionAuthentication);
     }
 }

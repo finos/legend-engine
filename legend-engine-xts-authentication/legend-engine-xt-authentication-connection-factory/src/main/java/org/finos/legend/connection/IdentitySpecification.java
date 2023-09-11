@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental;
+package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -60,7 +60,7 @@ public class IdentitySpecification
     public static class Builder
     {
         private String name;
-        private List<CommonProfile> profiles = Lists.mutable.empty();
+        private final List<CommonProfile> profiles = Lists.mutable.empty();
         private Subject subject;
         private final List<Credential> credentials = Lists.mutable.empty();
 

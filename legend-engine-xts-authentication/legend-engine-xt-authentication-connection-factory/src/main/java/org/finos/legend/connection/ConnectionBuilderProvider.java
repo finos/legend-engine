@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental.demo;
+package org.finos.legend.connection;
 
-import org.finos.legend.connection.experimental.ConnectionSpecification;
+import java.util.List;
 
-public class DemoConnectionSpecification extends ConnectionSpecification
+public interface ConnectionBuilderProvider
 {
+    List<ConnectionBuilder> getBuilders();
 }

@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental.demo;
+package org.finos.legend.connection.impl;
 
-import org.finos.legend.connection.experimental.CredentialBuilder;
-import org.finos.legend.connection.experimental.EnvironmentConfiguration;
+import org.finos.legend.connection.CredentialBuilder;
+import org.finos.legend.connection.EnvironmentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;

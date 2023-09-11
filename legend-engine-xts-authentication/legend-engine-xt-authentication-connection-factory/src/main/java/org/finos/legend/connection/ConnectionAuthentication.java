@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.experimental;
+package org.finos.legend.connection;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -23,14 +23,16 @@ import java.util.List;
 public class ConnectionAuthentication
 {
     private final Identity identity;
+    private final StoreInstance storeInstance;
     private final AuthenticationSpecification authenticationSpecification;
 
     private final List<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
 
-    public ConnectionAuthentication(Identity identity, AuthenticationSpecification authenticationSpecification, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public ConnectionAuthentication(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
     {
         this.identity = identity;
+        this.storeInstance = storeInstance;
         this.authenticationSpecification = authenticationSpecification;
         this.credentialBuilders = credentialBuilders;
         this.connectionBuilder = connectionBuilder;
@@ -49,5 +51,10 @@ public class ConnectionAuthentication
     public ConnectionBuilder getConnectionBuilder()
     {
         return connectionBuilder;
+    }
+
+    public StoreInstance getStoreInstance()
+    {
+        return storeInstance;
     }
 }
