@@ -23,16 +23,16 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 /**
  * TODO: migrate to the new connection framework
  */
-public abstract class DEPRECATED__ConnectionProvider<T>
+public abstract class ConnectionProvider<T>
 {
     protected CredentialProviderProvider credentialProviderProvider;
 
-    public DEPRECATED__ConnectionProvider(CredentialProviderProvider credentialProviderProvider)
+    public ConnectionProvider(CredentialProviderProvider credentialProviderProvider)
     {
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public abstract T makeConnection(DEPRECATED__ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception;
+    public abstract T makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception;
 
     public Credential makeCredential(AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {

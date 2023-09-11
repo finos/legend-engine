@@ -16,12 +16,12 @@ package org.finos.legend.engine.plan.execution.stores.service.auth;
 
 import org.apache.http.Header;
 import org.apache.http.entity.StringEntity;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 
 import java.net.URI;
 import java.util.List;
 
-public class ServiceStoreConnectionSpecification extends DEPRECATED__ConnectionSpecification
+public class ServiceStoreConnectionSpecification extends ConnectionSpecification
 {
     public URI uri;
     public String httpMethod;

@@ -22,8 +22,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionProvider;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionProvider;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.service.IServiceStoreExecutionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SingleAuthenticationSchemeRequirement;
@@ -36,14 +36,14 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import java.util.List;
 import java.util.Objects;
 
-public class ServiceStoreConnectionProvider extends DEPRECATED__ConnectionProvider<HttpConnectionBuilder>
+public class ServiceStoreConnectionProvider extends ConnectionProvider<HttpConnectionBuilder>
 {
     public ServiceStoreConnectionProvider(CredentialProviderProvider credentialProviderProvider)
     {
         super(credentialProviderProvider);
     }
 
-    public HttpConnectionBuilder makeConnection(DEPRECATED__ConnectionSpecification connectionSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    public HttpConnectionBuilder makeConnection(ConnectionSpecification connectionSpecification, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {
         if (!(connectionSpecification instanceof ServiceStoreConnectionSpecification && authenticationSpecification instanceof ServiceStoreAuthenticationSpecification))
         {

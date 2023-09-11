@@ -25,8 +25,8 @@ import org.bson.Document;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionProvider;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionProvider;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
@@ -44,7 +44,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class MongoDBStoreConnectionProvider extends DEPRECATED__ConnectionProvider<Supplier<MongoClient>>
+public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<MongoClient>>
 {
     private static final int DEFAULT_BATCH_SIZE = 10;
     private static final String ADMIN_DB = "admin";
@@ -126,7 +126,7 @@ public class MongoDBStoreConnectionProvider extends DEPRECATED__ConnectionProvid
     }
 
     @Override
-    public Supplier<MongoClient> makeConnection(DEPRECATED__ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
+    public Supplier<MongoClient> makeConnection(ConnectionSpecification connectionSpec, AuthenticationSpecification authenticationSpec, Identity identity) throws Exception
     {
         throw new UnsupportedOperationException("MakeConnection is not supported for MongoDB, only executeQuery - since authentication is at execution not connection");
     }

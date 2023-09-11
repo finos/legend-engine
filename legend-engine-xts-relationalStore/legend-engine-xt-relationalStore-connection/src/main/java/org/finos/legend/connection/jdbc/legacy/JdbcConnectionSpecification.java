@@ -14,9 +14,9 @@
 
 package org.finos.legend.connection.jdbc.legacy;
 
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 
-public class JdbcConnectionSpecification extends DEPRECATED__ConnectionSpecification
+public class JdbcConnectionSpecification extends ConnectionSpecification
 {
     public enum DbType
     {

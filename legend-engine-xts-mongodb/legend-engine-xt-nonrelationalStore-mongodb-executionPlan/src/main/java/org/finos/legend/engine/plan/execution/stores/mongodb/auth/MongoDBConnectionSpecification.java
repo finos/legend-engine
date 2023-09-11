@@ -15,13 +15,13 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
 import com.mongodb.ServerAddress;
-import org.finos.legend.connection.legacy.DEPRECATED__ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MongoDBConnectionSpecification extends DEPRECATED__ConnectionSpecification
+public class MongoDBConnectionSpecification extends ConnectionSpecification
 {
 
     private final MongoDBDatasourceSpecification mongoDBDataSourceSpec;
