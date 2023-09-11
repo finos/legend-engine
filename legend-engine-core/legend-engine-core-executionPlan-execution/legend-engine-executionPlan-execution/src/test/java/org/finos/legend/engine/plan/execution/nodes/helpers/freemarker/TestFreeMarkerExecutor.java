@@ -14,7 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 
+import java.util.Collections;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,11 +52,13 @@ public class TestFreeMarkerExecutor
     @Test
     public void testFreemarkerSkippedOnEmptyTemplate()
     {
+        ExecutionState state = new ExecutionState(Maps.mutable.empty(), Collections.emptyList(), Collections.emptyList(), false, 0);
+
         String query = "no templates query";
         FreeMarkerExecutor freeMarkerExecutor = Mockito.spy(FreeMarkerExecutor.class);
         Map rootMap = new HashMap();
-        String result = FreeMarkerExecutor.processRecursively(query, rootMap, null);
-        verify(freeMarkerExecutor, never()).process(Mockito.anyString(), Mockito.anyMap(), Mockito.anyString());
+        String result = FreeMarkerExecutor.process(query, state);
+        verify(freeMarkerExecutor, never()).processRecursively(Mockito.anyString(), Mockito.anyMap(), Mockito.anyString());
         Assert.assertEquals(query, result.trim());
 
     }
@@ -60,10 +66,11 @@ public class TestFreeMarkerExecutor
     @Test
     public void testParametersProcessedWithNoTemplates()
     {
-        String query = "${testCollection}";
         Map rootMap = new HashMap();
-        rootMap.put("testCollection", "foo");
-        String result = FreeMarkerExecutor.processRecursively(query, rootMap, "");
+        rootMap.put("testCollection", new ConstantResult("foo"));
+        ExecutionState state = new ExecutionState(rootMap, Collections.emptyList(), Collections.emptyList(), false, 0);
+        String query = "${testCollection}";
+        String result = FreeMarkerExecutor.process(query, state);
         Assert.assertEquals("foo", result.trim());
     }
 

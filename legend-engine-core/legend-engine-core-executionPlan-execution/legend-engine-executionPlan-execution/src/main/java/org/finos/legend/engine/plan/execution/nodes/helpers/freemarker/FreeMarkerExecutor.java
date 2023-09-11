@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 import freemarker.core.TemplateDateFormatFactory;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -66,12 +67,13 @@ public class FreeMarkerExecutor
         });
         String templateFunctions = String.join("", executionState.getTemplateFunctions());
         variableMap.put("instanceOf", new FreemarkerInstanceOfMethod());
-        return processRecursively(input, variableMap, templateFunctions);
+
+        return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        String result = (templateFunctions == null || templateFunctions == "") && variableMap.isEmpty() ? input : process(input, variableMap, templateFunctions);
+        String result = process(input, variableMap, templateFunctions);
         if (!result.equals(input.replace("\\\"", "\"")))
         {
             return processRecursively(result, variableMap, templateFunctions);
@@ -79,7 +81,7 @@ public class FreeMarkerExecutor
         return result;
     }
 
-    protected static String process(String input, Map<String, ?> variableMap, String templateFunctions)
+    private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
         try
