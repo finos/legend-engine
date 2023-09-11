@@ -16,7 +16,7 @@ package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ public class Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite extend
         return createSuite(
                 "meta::relational::tests::sqlQueryToString::redshift",
                 "org/finos/legend/engine/server/test/userTestConfig_withRedshiftTestConnection.json",
-                new NamedType(LegendDefaultDatabaseAuthenticationFlowProvider.class, "legendDefault")
+                new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
         );
     }
 }

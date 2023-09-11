@@ -25,7 +25,6 @@ import java.util.List;
 public class MasterRecordDefinition extends ModelGenerationSpecification
 {
     public String modelClass;
-    public String postCurationEnrichmentService;
     public IdentityResolution identityResolution;
     public List<RecordSource> sources = Collections.emptyList();
     public List<PrecedenceRule> precedenceRules;
