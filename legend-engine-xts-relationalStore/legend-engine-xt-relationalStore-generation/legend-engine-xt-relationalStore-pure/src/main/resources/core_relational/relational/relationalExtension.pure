@@ -881,6 +881,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'md5',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 32)}
+            )
+         ])
+      ),      
+
+      pair(
          'min',
          list([
             pair(
@@ -1191,6 +1201,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'sha1',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 40)}
+            )
+         ])
+      ),          
+
+      pair(
+         'sha256',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 64)}
+            )
+         ])
+      ),        
 
       pair(
          'sign',
