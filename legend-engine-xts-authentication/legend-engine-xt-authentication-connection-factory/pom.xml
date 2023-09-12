@@ -23,9 +23,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+    <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Authentication - Implementation - Core</name>
+    <name>Legend Engine - XT - Authentication - Connection Factory</name>
 
     <dependencies>
         <!-- ENGINE -->
@@ -35,9 +35,20 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- PAC4J -->
+        <dependency>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-core</artifactId>
+        </dependency>
+        <!-- PAC4J -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
@@ -49,17 +60,6 @@
             <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
-
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.67</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.67</version>
-        </dependency>
 
         <!-- TEST -->
         <dependency>

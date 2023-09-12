@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.legacy;
+package org.finos.legend.connection;
 
-/**
- * TODO: migrate to the new connection framework
- */
-public abstract class ConnectionSpecification
+import org.eclipse.collections.api.factory.Lists;
+
+import java.util.List;
+import java.util.ServiceLoader;
+
+public class DefaultConnectionBuilderProvider implements ConnectionBuilderProvider
 {
+
+    @Override
+    public List<ConnectionBuilder> getBuilders()
+    {
+        return Lists.mutable.withAll(ServiceLoader.load(ConnectionBuilder.class));
+    }
 }

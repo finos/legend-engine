@@ -28,10 +28,17 @@ public class Identity
     private String name;
     private final List<Credential> credentials = new ArrayList<>();
 
-    public Identity(String name, Credential credential)
+    public Identity(String name, Credential... credentials)
     {
         this.name = name;
-        this.credentials.add(credential);
+        this.credentials.addAll(Lists.mutable.of(credentials));
+    }
+
+    public Identity(String name, List<Credential> credentials)
+    {
+
+        this.name = name;
+        this.credentials.addAll(credentials);
     }
 
     public Identity(String name)
@@ -92,5 +99,4 @@ public class Identity
     {
         return credentials.isEmpty() || credentials.stream().allMatch(c -> c.isValid());
     }
-
 }

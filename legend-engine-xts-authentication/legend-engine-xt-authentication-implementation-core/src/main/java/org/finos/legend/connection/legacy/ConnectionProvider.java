@@ -20,6 +20,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+/**
+ * TODO: migrate to the new connection framework
+ */
 public abstract class ConnectionProvider<T>
 {
     protected CredentialProviderProvider credentialProviderProvider;

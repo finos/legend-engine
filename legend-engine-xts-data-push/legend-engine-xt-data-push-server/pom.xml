@@ -37,9 +37,13 @@
 
     <dependencies>
         <!-- ENGINE -->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+            <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
         </dependency>
         <!-- ENGINE -->
 
