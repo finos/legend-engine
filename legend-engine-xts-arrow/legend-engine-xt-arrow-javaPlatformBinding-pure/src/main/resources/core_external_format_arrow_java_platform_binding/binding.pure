@@ -1,0 +1,36 @@
+import meta::external::format::shared::executionPlan::*;
+
+function meta::external::format::arrow::executionPlan::platformBinding::legendJava::arrowJavaBindingDescriptor():meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[1]
+{
+  ^meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor
+  (
+    externalFormatContract     = meta::external::format::arrow::contract::arrowFormatContract(),
+    enginePlatformDependencies =    meta::external::format::arrow::executionPlan::platformBinding::legendJava::arrowExtendJavaEngineDependencies_Conventions_1__Conventions_1_,
+    externalizeDescriptor  = meta::external::format::arrow::executionPlan::platformBinding::legendJava::externalize::getExternalFormatExternalizeJavaBindingDescriptor()
+  )
+}
+
+function meta::external::format::arrow::executionPlan::platformBinding::legendJava::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatExternalizeBindingDescriptor[1]
+{
+  ^meta::external::format::shared::executionPlan::platformBinding::legendJava::ExternalFormatExternalizeBindingDescriptor
+  (
+    externalizeGenerator  = {node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:meta::pure::executionPlan::platformBinding::legendJava::GenerationContext[1], debug:DebugContext[1]| ^meta::pure::executionPlan::platformBinding::legendJava::GeneratedCode()}
+  );
+}
+
+function meta::external::format::arrow::executionPlan::platformBinding::legendJava::arrowExtendJavaEngineDependencies(conventions:meta::external::language::java::transform::Conventions[1]):meta::external::language::java::transform::Conventions[1]
+{
+   $conventions;
+}
+
+function meta::external::format::arrow::executionPlan::platformBinding::legendJava::arrowExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
+{
+     meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - ExternalFormat- Arrow',[
+            meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+               // Bindings
+               meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+                  meta::external::format::arrow::executionPlan::platformBinding::legendJava::arrowJavaBindingDescriptor()
+               ])
+            ])
+      ])
+}

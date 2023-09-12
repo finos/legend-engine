@@ -408,6 +408,8 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
+                .with(ArrowJavaBindingPureCoreExtension.class)
+                .with(ArrowPureCoreExtension.class)
                 ;
     }
 
@@ -515,6 +517,9 @@ public class TestExtensions
                 .with("core_elasticsearch_seven_metamodel")
                 .with("core_nonrelational_mongodb")
                 .with("core_nonrelational_mongodb_java_platform_binding")
+                .with("core_external_format_arrow")
+                .with("core_external_format_arrow_java_platform_binding")
+
                 ;
     }
 }

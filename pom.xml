@@ -54,6 +54,7 @@
         <module>legend-engine-xts-flatdata</module>
         <module>legend-engine-xts-json</module>
         <module>legend-engine-xts-avro</module>
+        <module>legend-engine-xts-arrow</module>
 
         <!-- Table Formats -->
         <module>legend-engine-xts-iceberg</module>
@@ -198,11 +199,12 @@
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
         <wiremock.version>2.27.2</wiremock.version>
-        <io.netty.version>4.1.95.Final</io.netty.version>
+        <io.netty.version>4.1.96.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <opencsv.version>4.6</opencsv.version>
         <logback.version>1.2.3</logback.version>
         <logback-contrib.version>0.1.5</logback-contrib.version>
+        <arrow.version>13.0.0</arrow.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -1994,6 +1996,26 @@
                 <artifactId>legend-engine-xt-openapi-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-runtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-javaPlatformBinding-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -3002,6 +3024,35 @@
                 </exclusions>
             </dependency>
 
+
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-memory-netty</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-vector</artifactId>
+                <version>${arrow.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-jsr310</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-memory-core</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-jdbc</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+
+            <!-- arrow -->
         </dependencies>
 
     </dependencyManagement>

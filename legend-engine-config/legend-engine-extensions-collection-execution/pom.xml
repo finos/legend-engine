@@ -158,6 +158,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-flatdata-shared</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-arrow-runtime</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-flatdata-driver-bloomberg</artifactId>
