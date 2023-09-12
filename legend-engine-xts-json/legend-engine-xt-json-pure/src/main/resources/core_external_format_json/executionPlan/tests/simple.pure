@@ -157,6 +157,16 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndFunctionalInput(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| TargetPerson.all()->graphFetch(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data->decodeUrl()))->externalize($binding, #{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'->encodeUrl()));
+
+  assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndCompleteCheckedTree(): Boolean[1]
 {
   let binding = getTestBinding();

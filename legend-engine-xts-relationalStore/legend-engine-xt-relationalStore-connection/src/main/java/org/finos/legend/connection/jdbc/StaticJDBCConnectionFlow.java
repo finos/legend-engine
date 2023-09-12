@@ -14,7 +14,10 @@
 
 package org.finos.legend.connection.jdbc;
 
-import org.finos.legend.connection.ConnectionFactoryFlow;
+import org.finos.legend.connection.ConnectionBuilder;
+import org.finos.legend.connection.RelationalDatabaseStoreSupport;
+import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
@@ -24,24 +27,16 @@ import java.util.Properties;
 
 public class StaticJDBCConnectionFlow
 {
-    public static class WithPlaintextUsernamePassword implements ConnectionFactoryFlow<Connection, StaticJDBCConnectionSpecification, PlaintextUserPasswordCredential>
+    public static class WithPlaintextUsernamePassword extends ConnectionBuilder<Connection, PlaintextUserPasswordCredential, StaticJDBCConnectionSpecification>
     {
-        @Override
-        public Class<StaticJDBCConnectionSpecification> getConnectionSpecificationClass()
+        public Connection getConnection(PlaintextUserPasswordCredential credential, StaticJDBCConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
         {
-            return StaticJDBCConnectionSpecification.class;
-        }
-
-        @Override
-        public Class<PlaintextUserPasswordCredential> getCredentialClass()
-        {
-            return PlaintextUserPasswordCredential.class;
-        }
-
-        @Override
-        public Connection getConnection(StaticJDBCConnectionSpecification connectionSpecification, PlaintextUserPasswordCredential credential) throws Exception
-        {
-            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(connectionSpecification.databaseType.name());
+            StoreSupport storeSupport = storeInstance.getStoreSupport();
+            if (!(storeSupport instanceof RelationalDatabaseStoreSupport))
+            {
+                throw new RuntimeException("Can't get connection: only support relational database stores");
+            }
+            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(((RelationalDatabaseStoreSupport) storeSupport).getDatabaseType());
             return DriverManager.getConnection(
                     driver.buildURL(connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, new Properties()),
                     credential.getUser(), credential.getPassword()
