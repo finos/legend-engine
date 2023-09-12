@@ -22,6 +22,7 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
+                        <repository>core_external_compiler</repository>
                         <repository>core_analytics_mapping</repository>
                     </repositories>
                     <extraRepositories>
@@ -52,7 +53,6 @@
                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
@@ -63,7 +63,11 @@
                         <artifactId>legend-pure-m2-store-relational-pure</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -106,19 +110,21 @@
                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
@@ -201,7 +207,21 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>

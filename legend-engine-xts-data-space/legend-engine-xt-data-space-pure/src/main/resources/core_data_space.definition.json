@@ -10,6 +10,7 @@
     "core_diagram_metamodel",
     "core_diagram",
     "core_analytics_mapping",
+    "core_external_compiler",
     "core_data_space_metamodel"
   ]
 }
