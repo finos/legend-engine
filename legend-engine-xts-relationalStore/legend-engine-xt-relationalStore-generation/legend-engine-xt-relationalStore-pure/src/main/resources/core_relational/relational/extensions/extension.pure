@@ -200,12 +200,18 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                                          }
                                                     )
                                                 )
+                                             )->concatenate(
+                                                pair(tableToTDS_Table_1__TableTDS_1_->cast(@Function<Any>), {|
+                                                    createSchemaState($fe->reactivate()->cast(@TabularDataSet).columns);
+                                                })                                              
                                              )
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
       validTestPackages = 'meta::relational::tests'
    )
 }
+
+
 
 
 //Helper Functions
