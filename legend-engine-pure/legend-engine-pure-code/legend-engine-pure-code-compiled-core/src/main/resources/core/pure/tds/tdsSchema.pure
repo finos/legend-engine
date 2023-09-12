@@ -16,7 +16,7 @@ import meta::pure::tds::schema::*;
 
 function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
-   assert($f->functionReturnType().rawType == TabularDataSet, 'function must return TabularDataSet');
+   assert($f->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet), 'function must return TabularDataSet');
    resolveSchemaImpl($f, $extensions).columns;
 }
 
@@ -270,7 +270,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                | $tdsSchema.rename($renameMapping->toOneMany())
                );
 
-         }) 
+         })
       ])
       ->concatenate($extensions.tdsSchema_resolveSchemaImpl->map(e|$e->eval($fe, $openVars, $extensions)))
       ->concatenate([

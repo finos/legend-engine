@@ -517,6 +517,13 @@
         </dependency>
         <!-- GraphQL -->
 
+        <!-- SQL -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+        </dependency>
+        <!-- SQL -->
+
         <!-- DAML -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

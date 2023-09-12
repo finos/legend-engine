@@ -60,6 +60,11 @@ Class meta::external::query::sql::transformation::queryToPure::PlanGenerationRes
   arguments: PlanParameter[*];
 }
 
+function meta::external::query::sql::transformation::queryToPure::emptyMapping():Mapping[1]
+{
+  ^Mapping(package = meta::external::query::sql::transformation::queryToPure, name = 'sqlDummy')
+}
+
 function meta::external::query::sql::transformation::queryToPure::getPlanResultFromSQL(
                                                                           sources: SQLSource[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
@@ -96,7 +101,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
                                                                   ):meta::pure::executionPlan::ExecutionPlan[1]
 {
   //NOTE: we should remove this once issues with enum mappings in plan transformation are fixed.
-  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | ^Mapping(package = meta::external::query::sql::transformation::queryToPure, name = 'sqlDummy'));
+  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | emptyMapping());
   let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::pure::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
   let lambda = $context.lambda()->meta::pure::router::preeval::preval($extensions);
 
@@ -1073,12 +1078,14 @@ let executionContext = if ($source.executionOptions->isNotEmpty(),
                         | $source.executionContext);
 
   if ($context.scopeWithFrom->isFalse(), | $context, |
-    let scopedExpression = if ($source.mapping->isNotEmpty() && $source.runtime->isNotEmpty(),
+    let mapping = if ($source.mapping->isEmpty(), | emptyMapping(), | $source.mapping->toOne());
+
+    let scopedExpression = if ($source.runtime->isNotEmpty(),
       | if ($executionContext->isNotEmpty(),
           | sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
-                [$expression, iv($source.mapping->toOne()), iv($source.runtime->toOne()), iv($executionContext)]),
+                [$expression, iv($mapping), iv($source.runtime->toOne()), iv($executionContext)]),
           | sfe(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-                [$expression, iv($source.mapping->toOne()), iv($source.runtime->toOne())])),
+                [$expression, iv($mapping->toOne()), iv($source.runtime->toOne())])),
       | $expression);
 
     ^$context(expression = $scopedExpression);

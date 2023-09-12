@@ -44,8 +44,16 @@ public class SQLSourceTranslator
 
         compiled._type(source.getType());
         compiled._func(HelperValueSpecificationBuilder.buildLambda(source.getFunc(), pureModel.getContext()));
-        compiled._mapping(pureModel.getMapping(source.getMapping()));
-        compiled._runtime(HelperRuntimeBuilder.buildPureRuntime(source.getRuntime(), pureModel.getContext()));
+
+        if (source.getMapping() != null)
+        {
+            compiled._mapping(pureModel.getMapping(source.getMapping()));
+        }
+
+        if (source.getRuntime() != null)
+        {
+            compiled._runtime(HelperRuntimeBuilder.buildPureRuntime(source.getRuntime(), pureModel.getContext()));
+        }
 
         if (source.getExecutionOptions() != null)
         {

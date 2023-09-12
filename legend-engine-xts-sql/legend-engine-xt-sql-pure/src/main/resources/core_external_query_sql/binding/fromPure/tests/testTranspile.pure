@@ -1423,6 +1423,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingNoMapping():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1"';
+  let mapping = meta::external::query::sql::transformation::queryToPure::emptyMapping();
+
+  let sqlTransformContext = $sqlString->processQuery(serviceToSource(createService('/service/service1', | FlatInput.all()->project(x | $x.stringIn, 'String'), [], dummyRuntime())), true);
+  let expected = {| FlatInput.all()->project(x | $x.stringIn, 'String')->from($mapping, dummyRuntime())}->meta::pure::router::preeval::preval(sqlExtensions());
+
+  assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimpleNested():Boolean[1]
 {
   let sqlString = 'SELECT * FROM (SELECT Integer FROM service."/service/service1")';
