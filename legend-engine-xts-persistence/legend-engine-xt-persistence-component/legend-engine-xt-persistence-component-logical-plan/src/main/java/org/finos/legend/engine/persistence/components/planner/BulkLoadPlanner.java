@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -25,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -32,10 +35,13 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
+import org.finos.legend.engine.persistence.components.util.AppendLogMetadataUtils;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
@@ -49,6 +55,8 @@ class BulkLoadPlanner extends Planner
 
     private StagedFilesDataset stagedFilesDataset;
 
+    private AppendLogMetadataDataset appendLogMetadataDataset;
+
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
     {
         super(datasets, ingestMode, plannerOptions);
@@ -60,6 +68,7 @@ class BulkLoadPlanner extends Planner
         }
 
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
+        appendLogMetadataDataset = appendLogMetadataDataset().orElseThrow(IllegalStateException::new);
     }
 
     @Override
@@ -88,20 +97,16 @@ class BulkLoadPlanner extends Planner
             fieldsToSelect.add(digestValue);
         }
 
+        // Add batch_id field
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(StringValue.of(options().appendBatchIdValue()));
+
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
             fieldsToSelect.add(batchStartTimestamp);
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
-        }
-
-        if (ingestMode().lineageField().isPresent())
-        {
-            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().lineageField().get()).build());
-            List<String> files = stagedFilesDataset.stagedFilesDatasetProperties().files();
-            String lineageValue = String.join(",", files);
-            fieldsToSelect.add(StringValue.of(lineageValue));
         }
 
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
@@ -113,10 +118,7 @@ class BulkLoadPlanner extends Planner
     {
         List<Operation> operations = new ArrayList<>();
         operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            // TODO: Check if Create Stage is needed
-        }
+        operations.add(Create.of(true, appendLogMetadataDataset.get()));
         return LogicalPlan.of(operations);
     }
 
@@ -125,6 +127,20 @@ class BulkLoadPlanner extends Planner
     {
         List<Operation> operations = new ArrayList<>();
         return LogicalPlan.of(operations);
+    }
+
+    @Override
+    public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
+    {
+        AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
+        String batchSourceInfo = jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties().files());
+
+        StringValue appendDatasetName = StringValue.of(mainDataset().datasetReference().name());
+        StringValue batchIdValue = StringValue.of(options().appendBatchIdValue().orElseThrow(IllegalStateException::new));
+        StringValue appendBatchStatusPattern = StringValue.of(options().appendBatchStatusPattern().orElseThrow(IllegalStateException::new));
+
+        Insert insertMetaData = appendLogMetadataUtils.insertMetaData(batchIdValue, appendDatasetName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, appendBatchStatusPattern, StringValue.of(batchSourceInfo));
+        return LogicalPlan.of(Arrays.asList(insertMetaData));
     }
 
     @Override
@@ -154,4 +170,20 @@ class BulkLoadPlanner extends Planner
         FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
+
+    public static String jsonifyBatchSourceInfo(List<String> files)
+    {
+        Map batchSourceMap = new HashMap();
+        batchSourceMap.put("files", files);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(batchSourceMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

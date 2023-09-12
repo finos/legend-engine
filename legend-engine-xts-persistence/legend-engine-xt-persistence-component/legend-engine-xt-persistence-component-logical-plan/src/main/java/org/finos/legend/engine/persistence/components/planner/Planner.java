@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -96,6 +97,10 @@ public abstract class Planner
         {
             return false;
         }
+
+        Optional<String> appendBatchIdValue();
+
+        Optional<String> appendBatchStatusPattern();
     }
 
     private final Datasets datasets;
@@ -130,6 +135,11 @@ public abstract class Planner
     protected Optional<MetadataDataset> metadataDataset()
     {
         return datasets.metadataDataset();
+    }
+
+    protected Optional<AppendLogMetadataDataset> appendLogMetadataDataset()
+    {
+        return datasets.appendLogMetadataDataset();
     }
 
     protected Optional<LockInfoDataset> lockInfoDataset()

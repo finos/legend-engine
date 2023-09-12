@@ -160,10 +160,10 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     public IngestMode visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
         return BulkLoad.builder()
+                .batchIdField(applyCase(bulkLoad.batchIdField()))
                 .digestField(applyCase(bulkLoad.digestField()))
                 .digestUdfName(bulkLoad.digestUdfName())
                 .generateDigest(bulkLoad.generateDigest())
-                .lineageField(applyCase(bulkLoad.lineageField()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
                 .build();
     }

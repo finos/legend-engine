@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode;
+package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
-import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 import org.immutables.value.Value;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(
@@ -26,33 +24,11 @@ import java.util.Optional;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public interface BulkLoadAbstract extends IngestMode
+public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
 {
-    String batchIdField();
-
-    boolean generateDigest();
-
-    Optional<String> digestUdfName();
-
-    Optional<String> digestField();
-
-    Auditing auditing();
-
     @Override
-    default <T> T accept(IngestModeVisitor<T> visitor)
+    default <T> T accept(DigestGenStrategyVisitor<T> visitor)
     {
-        return visitor.visitBulkLoad(this);
-    }
-
-    @Value.Check
-    default void validate()
-    {
-        if (generateDigest())
-        {
-            if (!digestField().isPresent() || !digestUdfName().isPresent())
-            {
-                throw new IllegalArgumentException("For digest generation, digestField & digestUdfName are mandatory");
-            }
-        }
+        return visitor.visitUDFBasedDigestGenStrategy(this);
     }
 }

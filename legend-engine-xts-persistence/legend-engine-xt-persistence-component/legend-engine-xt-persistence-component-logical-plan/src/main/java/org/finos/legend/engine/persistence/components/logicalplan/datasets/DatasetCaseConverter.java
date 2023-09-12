@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -148,6 +149,21 @@ public class DatasetCaseConverter
                 .batchStatusField(strategy.apply(metadataDataset.batchStatusField()))
                 .tableBatchIdField(strategy.apply(metadataDataset.tableBatchIdField()))
                 .stagingFiltersField(strategy.apply(metadataDataset.stagingFiltersField()))
+                .build();
+    }
+
+    public AppendLogMetadataDataset applyCaseOnAppendLogMetadataDataset(AppendLogMetadataDataset appendLogMetadataDataset, Function<String, String> strategy)
+    {
+        return AppendLogMetadataDataset.builder()
+                .database(appendLogMetadataDataset.database().map(strategy))
+                .group(appendLogMetadataDataset.group().map(strategy))
+                .name(strategy.apply(appendLogMetadataDataset.name()))
+                .batchIdField(strategy.apply(appendLogMetadataDataset.batchIdField()))
+                .tableNameField(strategy.apply(appendLogMetadataDataset.tableNameField()))
+                .batchStartTimeField(strategy.apply(appendLogMetadataDataset.batchStartTimeField()))
+                .batchEndTimeField(strategy.apply(appendLogMetadataDataset.batchEndTimeField()))
+                .batchStatusField(strategy.apply(appendLogMetadataDataset.batchStatusField()))
+                .batchSourceInfoField(strategy.apply(appendLogMetadataDataset.batchSourceInfoField()))
                 .build();
     }
 

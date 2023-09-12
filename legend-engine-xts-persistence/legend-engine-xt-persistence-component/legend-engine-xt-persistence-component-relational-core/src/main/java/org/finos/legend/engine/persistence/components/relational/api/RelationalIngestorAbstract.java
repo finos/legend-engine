@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.APPEND_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Immutable
@@ -155,6 +156,8 @@ public abstract class RelationalIngestorAbstract
         return Collections.emptySet();
     }
 
+    public abstract Optional<String> appendBatchIdValue();
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -170,6 +173,8 @@ public abstract class RelationalIngestorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .appendBatchIdValue(appendBatchIdValue())
+            .appendBatchStatusPattern(APPEND_BATCH_STATUS_PATTERN)
             .build();
     }
 
@@ -531,6 +536,9 @@ public abstract class RelationalIngestorAbstract
         // Execute metadata ingest SqlPlan
         if (generatorResult.metadataIngestSqlPlan().isPresent())
         {
+            // add batchEndTimestamp
+            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            placeHolderKeyValues.put(APPEND_BATCH_STATUS_PATTERN, result.status().name());
             executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
         }
 

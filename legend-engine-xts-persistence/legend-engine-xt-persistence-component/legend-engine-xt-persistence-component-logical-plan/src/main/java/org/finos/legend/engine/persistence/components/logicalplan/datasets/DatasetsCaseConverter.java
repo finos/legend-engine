@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -33,6 +34,7 @@ public class DatasetsCaseConverter
         Optional<Dataset> tempWithDeleteIndicator = datasets.tempDatasetWithDeleteIndicator().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<Dataset> stagingWithoutDuplicates = datasets.stagingDatasetWithoutDuplicates().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<MetadataDataset> metadata = Optional.ofNullable(datasetCaseConverter.applyCaseOnMetadataDataset(datasets.metadataDataset().orElseThrow(IllegalStateException::new), strategy));
+        Optional<AppendLogMetadataDataset> appendLogMetadataDataset = Optional.ofNullable(datasetCaseConverter.applyCaseOnAppendLogMetadataDataset(datasets.appendLogMetadataDataset().orElseThrow(IllegalStateException::new), strategy));
         Optional<LockInfoDataset> lockInfo = Optional.ofNullable(datasetCaseConverter.applyCaseOnLockInfoDataset(datasets.lockInfoDataset().orElseThrow(IllegalStateException::new), strategy));
 
         return Datasets.builder()
@@ -42,6 +44,7 @@ public class DatasetsCaseConverter
             .tempDatasetWithDeleteIndicator(tempWithDeleteIndicator)
             .stagingDatasetWithoutDuplicates(stagingWithoutDuplicates)
             .metadataDataset(metadata)
+            .appendLogMetadataDataset(appendLogMetadataDataset)
             .lockInfoDataset(lockInfo)
             .build();
     }

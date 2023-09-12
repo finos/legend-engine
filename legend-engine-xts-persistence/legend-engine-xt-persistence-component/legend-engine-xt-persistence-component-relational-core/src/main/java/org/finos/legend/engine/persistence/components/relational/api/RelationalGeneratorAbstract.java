@@ -56,6 +56,9 @@ import java.util.stream.Collectors;
 )
 public abstract class RelationalGeneratorAbstract
 {
+
+    public static final String APPEND_BATCH_STATUS_PATTERN = "{APPEND_BATCH_STATUS_PLACEHOLDER}";
+
     //---------- FLAGS ----------
 
     @Default
@@ -110,6 +113,14 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
+    public abstract Optional<String> appendBatchIdValue();
+
+    @Default
+    public String appendBatchStatusPattern()
+    {
+        return APPEND_BATCH_STATUS_PATTERN;
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -125,6 +136,8 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .appendBatchIdValue(appendBatchIdValue())
+            .appendBatchStatusPattern(appendBatchStatusPattern())
             .build();
     }
 
