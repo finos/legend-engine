@@ -12,52 +12,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+import meta::protocols::pure::vX_X_X::metamodel::runtime::*;
+import meta::pure::mastery::metamodel::authentication::*;
+import meta::pure::mastery::metamodel::acquisition::*;
+import meta::pure::mastery::metamodel::acquisition::file::*;
+import meta::pure::mastery::metamodel::acquisition::kafka::*;
+import meta::pure::mastery::metamodel::credential::*;
+import meta::pure::mastery::metamodel::connection::*;
+import meta::pure::mastery::metamodel::trigger::*;
+import meta::pure::mastery::metamodel::authorization::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::mastery::metamodel::precedence::*;
+import meta::pure::mastery::metamodel::*;
+import meta::pure::mastery::metamodel::identity::*;
+import meta::pure::mastery::metamodel::dataset::*;
+import meta::pure::runtime::connection::authentication::*;
+
 Class {doc.doc = 'Defines a Master Record and all configuration required for managing it in a mastering platform.'}
 meta::pure::mastery::metamodel::MasterRecordDefinition extends PackageableElement
 {
   {doc.doc = 'The class of data that is managed in this Master Record.'}
-  modelClass : meta::pure::metamodel::type::Class<Any>[1];
+  modelClass : Class<Any>[1];
 
   {doc.doc = 'The identity resolution configuration used to identify a record in the master store using the inputs provided, the inputs usually do not contain the primary key.'}
-  identityResolution : meta::pure::mastery::metamodel::identity::IdentityResolution[1];
+  identityResolution : IdentityResolution[1];
 
   {doc.doc = 'Defines how child collections should compare objects for equality, required for collections that contain objects that do not have an equality key stereotype defined.'}
-  collectionEquality: meta::pure::mastery::metamodel::identity::CollectionEquality[0..*];
+  collectionEquality: CollectionEquality[0..*];
   
   {doc.doc = 'The sources of records to be loaded into the master.'}
-  sources: meta::pure::mastery::metamodel::RecordSource[0..*];
+  sources: RecordSource[0..*];
+
+  {doc.doc = 'An optional service invoked on the curated master record just before being persisted into the store.'}
+  postCurationEnrichmentService: Service[0..1];
 
   {doc.doc = 'The rules which determine if changes should be blocked or accepted'}
   precedenceRules: meta::pure::mastery::metamodel::precedence::PrecedenceRule[0..*];
 }
 
 
-Class <<typemodifiers.abstract>> {doc.doc='A source of data records to be curated into the master, by specifying the connection RecordSource can be from a File, Kafka, Alloy Service (Pull API) or RESTful (Push API).'}
+Class <<typemodifiers.abstract>> {doc.doc='A source of data records to be curated into the master, by specifying the connection RecordSource can be from a File, Kafka, Legend Service (Pull API) or RESTful (Push API).'}
 meta::pure::mastery::metamodel::RecordSource
 {
   {doc.doc='A unique ID defined for the source that is used by the operational control plane to trigger and manage the resulting sourcing session.'}
   id: String[1];
 
   {doc.doc='Depending on the liveStatus certain controls are introduced, for example a Production status introduces warnings on mopdel changes that are not backwards compatible.'}
-  status: meta::pure::mastery::metamodel::RecordSourceStatus[1];
+  status: RecordSourceStatus[1];
   
   {doc.doc='Description of the RecordSource suitable for end users.'}
   description: String[1];
-
-  {doc.doc='Sources have at least one partition to support parameters (e.g. filename), schedules and SLOs that may vary for the different functional partitions in which the data is delivered. (For e.g. see Bloomberg equity files)'}
-  partitions: meta::pure::mastery::metamodel::RecordSourcePartition[1..*];
-  
-  {doc.doc='An optional service that converts raw data into a SourceModel, e.g. commonly used to parse CSVs into a Legend model defined in Studio.'}
-  parseService: meta::legend::service::metamodel::Service[0..1]; 
-
-  {doc.doc='A service that returns teh source data in the class defined for the MasterRecordDefinition, this can be a model-to-model transformation from a SourceModel or a Legend Service that extracts the data from any source supported by Legend.'}
-  transformService: meta::legend::service::metamodel::Service[1];
-  
+    
   {doc.doc='Indicates if the data has to be processed sequentially, e.g. a delta source on Kafka that provides almost realtime changes, a record may appear more than once so processing in order is important.'}
   sequentialData: Boolean[0..1];
 
   {doc.doc='The data must be loaded fully into a staging store before beginning processing, e.g. the parse and transform into the SourceModel groups records that may be anywhere in the file and they need to be processed as an atomic SourceModel.'}
   stagedLoad: Boolean[0..1]; 
+
+  {doc.doc='The data provider details for this record source'}
+  dataProvider: DataProvider[0..1];
   
   {doc.doc='Determines if the source will create a new record if the incoming data does not resolve to an existing record.'}
   createPermitted: Boolean[0..1];
@@ -65,18 +79,31 @@ meta::pure::mastery::metamodel::RecordSource
   {doc.doc='If the source is not permitted to create a record determine if an exception should be rasied.'}
   createBlockedException: Boolean[0..1];
 
-  {doc.doc='A collection of tags used to label the source, typically used to classify the data loaded e.g. an asset class, region, etc...'}
-  tags: String[*];
+  {doc.doc='Record input service responsible for acquiring data from source and performing necessary transformations.'}
+  recordService: RecordService[0..1];
+
+  {doc.doc='Indicates if the source is allowed to delete fields on the master data.'}
+  allowFieldDelete: Boolean[0..1];
+
+  {doc.doc='An event that kick start the processing of the source.'}
+  trigger: Trigger[0..1];
+
+  {doc.doc='Authorization mechanism for determine who is allowed to trigger the datasource.'}
+  authorization: Authorization[0..1];
 }
 
-Class {doc.doc='A functional partion of a RecordSource splitting a source into logical sections, this is a common practice for many data vendors (see Bloomberg Equity File). Partions can have different parameters (e.g. filename), schedules and SLOs.'}
-meta::pure::mastery::metamodel::RecordSourcePartition
-{
-  {doc.doc='A unique ID defined for the partition that is used by the operational control plane to trigger and manage the resulting sourcing session.'}
-  id: String[1];
 
-  {doc.doc='A collection of tags used to label the partition, typically used to classify the data loaded e.g. an asset class, region, etc...'}
-  tags: String[*]; 
+Class {doc.doc='Defines how a data is sourced from source and transformed into a master record model.'}
+meta::pure::mastery::metamodel::RecordService 
+{
+  {doc.doc = 'The protocol for acquiring the raw data form the sourcee.'}
+  acquisitionProtocol: AcquisitionProtocol[0..1];
+
+  {doc.doc='An optional service that converts raw data into a SourceModel, e.g. commonly used to parse CSVs into a Legend model defined in Studio.'}
+  parseService: Service[0..1]; 
+
+  {doc.doc='A service that returns the source data in the class defined for the MasterRecordDefinition, this can be a model-to-model transformation from a SourceModel or a Legend Service that extracts the data from any source supported by Legend.'}
+  transformService: Service[0..1];
 }
 
 Enum {doc.doc = 'Release status used to apply controls on models and configuration to preserve lineage and provenance.'}
@@ -97,9 +124,6 @@ meta::pure::mastery::metamodel::RecordSourceStatus
 Class {doc.doc = 'Defines how to resolve a single incoming record to match a single record in the master store, handling cases when the primary key is not provided in the input and defines the scope of uniqueness to prevent the creation of duplicate records.'}
 meta::pure::mastery::metamodel::identity::IdentityResolution
 {
-  {doc.doc = 'The master record class that this identity resolution applies to. (May be used outside of a MasterRecordDefinition so cannot infer.)'}
-  modelClass : Class<Any>[1];
-
   {doc.doc = 'The set of queries used to identify a single record in the master store. Not required if the Master record has a single equality key field defined (using model stereotypes) that is not generated.'}
   resolutionQueries : meta::pure::mastery::metamodel::identity::ResolutionQuery[0..*];
 }
@@ -148,6 +172,7 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
 }
 
 
+
 /*************************
  * Precedence Rules
  *************************/
@@ -156,14 +181,14 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
 {
   paths: meta::pure::mastery::metamodel::precedence::PropertyPath[1..*];
   scope: meta::pure::mastery::metamodel::precedence::RuleScope[*];
-  masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Boolean[1]}>[1];
+  masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
   
 }
 
 Class meta::pure::mastery::metamodel::precedence::PropertyPath
 {
   property: Property<Nil, Any|*>[1];
-  filter: meta::pure::metamodel::function::LambdaFunction<{Any[1]->Boolean[1]}>[1];
+  filter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
 }
 
 
@@ -220,7 +245,7 @@ Class meta::pure::mastery::metamodel::precedence::RecordSourceScope extends meta
 }
 
 Class meta::pure::mastery::metamodel::precedence::DataProviderTypeScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
-  dataProviderType: meta::pure::mastery::metamodel::precedence::DataProviderType[1];
+  dataProviderType: String[1];
 }
 
 Class meta::pure::mastery::metamodel::precedence::DataProviderIdScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
@@ -234,8 +259,263 @@ Enum meta::pure::mastery::metamodel::precedence::RuleAction
   Block
 }
 
-Enum meta::pure::mastery::metamodel::precedence::DataProviderType
+Class
+{doc.doc = 'Groups together related precedence rules.'} 
+meta::pure::mastery::metamodel::DataProvider extends PackageableElement
+{
+  dataProviderId: String[1];
+  dataProviderType: String[1];
+}
+
+
+Enum
+{doc.doc = 'Enumerate values for Curation Processing Actions.'} 
+meta::pure::mastery::metamodel::precedence::DataProviderType
 {
   Aggregator,
-  Exchange
+  Exchange,
+  Regulator
+}
+
+
+/**********
+ * Trigger
+ **********/
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::trigger::Trigger
+{
+}
+
+Class
+meta::pure::mastery::metamodel::trigger::ManualTrigger extends Trigger
+{
+}
+
+Class
+{doc.doc = 'A trigger that executes on a schedule specified as a cron expression.'}
+meta::pure::mastery::metamodel::trigger::CronTrigger extends Trigger
+{
+   minute : Integer[1];
+   hour: Integer[1];
+   days: Day[0..*];
+   month: meta::pure::mastery::metamodel::trigger::Month[0..1];
+   dayOfMonth: Integer[0..1];
+   year: Integer[0..1];
+   timezone: String[1];
+   frequency: Frequency[0..1];
+}
+
+Enum 
+{doc.doc = 'Trigger Frequency at which the data is sent'} 
+meta::pure::mastery::metamodel::trigger::Frequency
+{
+  Daily,
+  Weekly,
+  Intraday
+}
+
+Enum
+{doc.doc = 'Run months value for trigger'} 
+meta::pure::mastery::metamodel::trigger::Month
+{
+  January,
+  February,
+  March,
+  April,
+  May,
+  June,
+  July,
+  August,
+  September,
+  October,
+  November,
+  December
+}
+
+Enum
+{doc.doc = 'Run days value for trigger'} 
+meta::pure::mastery::metamodel::trigger::Day
+{
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday
+}
+
+/*************************
+ * 
+ * Acquisition Protocol
+ *
+ *************************/
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::acquisition::AcquisitionProtocol 
+{
+
+}
+
+Class
+meta::pure::mastery::metamodel::acquisition::LegendServiceAcquisitionProtocol extends AcquisitionProtocol
+{
+   service: Service[1];
+}
+
+
+Class
+{doc.doc = 'File based data acquisition protocol. Files could be either JSON, XML or CSV.'}
+meta::pure::mastery::metamodel::acquisition::FileAcquisitionProtocol extends AcquisitionProtocol
+{
+  connection: FileConnection[1];
+
+  filePath: String[1];
+
+  fileType: FileType[1];
+
+  fileSplittingKeys: String[0..*];
+
+  headerLines: Integer[1];
+
+  recordsKey: String[0..1];
+}
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::acquisition::KafkaAcquisitionProtocol extends AcquisitionProtocol
+{
+
+  dataType: KafkaDataType[1];  
+
+  recordTag: String[0..1]; //required when the data type is xml
+
+  connection: KafkaConnection[1];
+}
+
+Class
+{doc.doc = 'Push data acquisition protocol where upstream systems send data via REST APIs.'}
+meta::pure::mastery::metamodel::acquisition::RestAcquisitionProtocol extends AcquisitionProtocol
+{
+}
+
+Enum
+meta::pure::mastery::metamodel::acquisition::file::FileType
+{
+  JSON,
+  CSV,
+  XML
+}
+
+Enum
+meta::pure::mastery::metamodel::acquisition::kafka::KafkaDataType
+{
+  JSON,
+  XML
+}
+
+
+/*************************
+ * 
+ * Authentication Strategy
+ *
+ *************************/
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::authentication::AuthenticationStrategy
+{
+  credential: meta::pure::mastery::metamodel::authentication::CredentialSecret[0..1];
+}
+
+
+Class
+{doc.doc = 'NTLM Authentication Protocol.'}
+meta::pure::mastery::metamodel::authentication::NTLMAuthenticationStrategy extends meta::pure::mastery::metamodel::authentication::AuthenticationStrategy
+{
+}
+
+Class
+{doc.doc = 'Token based Authentication Protocol.'}
+meta::pure::mastery::metamodel::authentication::TokenAuthenticationStrategy extends meta::pure::mastery::metamodel::authentication::AuthenticationStrategy
+{
+  tokenUrl: String[1];
+}
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::authentication::CredentialSecret
+{
+
+}
+
+
+/*****************
+ * 
+ * Authorization
+ *
+ ****************/
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::authorization::Authorization
+{
+}
+
+/**************
+ * 
+ * Connection
+ *
+ **************/
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::connection::Connection extends PackageableElement
+{
+
+  authentication:  meta::pure::mastery::metamodel::authentication::AuthenticationStrategy[0..1];
+}
+
+Class <<typemodifiers.abstract>>
+{doc.doc = 'Connection details for file type entities.'} 
+meta::pure::mastery::metamodel::connection::FileConnection extends meta::pure::mastery::metamodel::connection::Connection
+{
+}
+
+Class
+{doc.doc = 'Kafka Connection details.'} 
+meta::pure::mastery::metamodel::connection::KafkaConnection extends meta::pure::mastery::metamodel::connection::Connection
+{
+  topicName: String[1];
+  topicUrls: String[1..*];
+}
+
+
+Class
+{doc.doc = 'File Transfer Protocol (FTP) Connection details.'} 
+meta::pure::mastery::metamodel::connection::FTPConnection extends FileConnection
+{
+   host: String[1];
+   
+   port: Integer[1];
+
+   secure: Boolean[0..1];
+}
+
+
+Class
+{doc.doc = 'Hyper Text Transfer Protocol (HTTP) Connection details.'} 
+meta::pure::mastery::metamodel::connection::HTTPConnection extends FileConnection
+{
+  url: String[1];
+  
+  proxy: Proxy[0..1];
+
+}
+
+Class
+{doc.doc = 'Proxy details through which connection is extablished with an http server'} 
+meta::pure::mastery::metamodel::connection::Proxy
+{
+
+  host: String[1];
+
+  port: Integer[1];
+
+  authentication: meta::pure::mastery::metamodel::authentication::AuthenticationStrategy[0..1];
 }
