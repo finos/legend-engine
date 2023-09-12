@@ -16,5 +16,5 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 public enum IngestStatus
 {
-    SUCCEEDED, ERROR
+    SUCCEEDED, FAILED
 }

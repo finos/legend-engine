@@ -49,6 +49,8 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
             .createStagingDataset(true)
+            .enableConcurrentSafety(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());

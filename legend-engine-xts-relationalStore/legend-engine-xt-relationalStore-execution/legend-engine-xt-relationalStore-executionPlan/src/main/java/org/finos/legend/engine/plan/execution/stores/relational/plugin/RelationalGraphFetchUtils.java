@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
@@ -344,7 +345,7 @@ class RelationalGraphFetchUtils
             int mul = 1;
             for (Method getter : getters)
             {
-                Object val = getter.invoke(obj);
+                Object val = getter.invoke(resolveValueIfIChecked(obj));
                 hash = hash + mul * (val == null ? -1 : val.hashCode());
                 mul = mul * 29;
             }
@@ -496,7 +497,7 @@ class RelationalGraphFetchUtils
             for (int index : indices)
             {
                 Object thisVal = sqlResult.getTransformedValue(index);
-                Object thatVal = getters.get(i).invoke(object);
+                Object thatVal = getters.get(i).invoke(resolveValueIfIChecked(object));
                 if (!Objects.equals(thisVal, thatVal))
                 {
                     return false;
@@ -577,5 +578,10 @@ class RelationalGraphFetchUtils
             ).collect(Collectors.joining(",", "(", ")"));
         }
         return "";
+    }
+
+    protected static Object resolveValueIfIChecked(Object obj)
+    {
+        return IChecked.class.isInstance(obj) ? ((IChecked) obj).getValue() : obj;
     }
 }

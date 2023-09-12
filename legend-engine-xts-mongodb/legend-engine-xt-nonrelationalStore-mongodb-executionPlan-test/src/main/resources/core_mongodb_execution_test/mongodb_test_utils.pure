@@ -19,18 +19,3 @@ native function meta::external::store::mongodb::executionTest::utils::startMongo
 native function meta::external::store::mongodb::executionTest::utils::requestMongoDBTestServer(imageTag: String[1], requestJson: String[1]): String[1];
 
 native function meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer(imageTag: String[1]): Nil[0];
-
-function <<meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::bindMongoDBTestPlanToPlatform(): meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinder[1]
-{
-   ^meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinder
-   (
-      overrides = [],
-
-      bindingFunction = {plan: meta::pure::executionPlan::ExecutionPlan[1], extensions: meta::pure::extension::Extension[*] |
-
-           let extensionsWithPlatformBindings = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions();
-         // Using LegendJava as the default for local platform binding
-         meta::pure::executionPlan::generatePlatformCode($plan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-      }
-   )
-}

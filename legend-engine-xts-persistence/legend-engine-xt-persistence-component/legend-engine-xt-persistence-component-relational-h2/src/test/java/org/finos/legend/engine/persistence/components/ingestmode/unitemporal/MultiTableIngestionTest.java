@@ -298,7 +298,7 @@ public class MultiTableIngestionTest extends BaseTest
     }
 
 
-    private void verifyResults(int batchId, String[] schema, String expectedDataPath, String tableName, IngestorResult result, Map<String, Object> expectedStats) throws IOException
+    public static void verifyResults(int batchId, String[] schema, String expectedDataPath, String tableName, IngestorResult result, Map<String, Object> expectedStats) throws IOException
     {
         Assertions.assertEquals(batchId, result.batchId().get());
         Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());

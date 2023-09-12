@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -131,5 +134,32 @@ public class DatasetCaseConverter
         }
 
         throw new UnsupportedOperationException("Unsupported Dataset Conversion");
+    }
+
+    public MetadataDataset applyCaseOnMetadataDataset(MetadataDataset metadataDataset, Function<String, String> strategy)
+    {
+        return MetadataDataset.builder()
+                .metadataDatasetDatabaseName(metadataDataset.metadataDatasetDatabaseName().map(strategy))
+                .metadataDatasetGroupName(metadataDataset.metadataDatasetGroupName().map(strategy))
+                .metadataDatasetName(strategy.apply(metadataDataset.metadataDatasetName()))
+                .tableNameField(strategy.apply(metadataDataset.tableNameField()))
+                .batchStartTimeField(strategy.apply(metadataDataset.batchStartTimeField()))
+                .batchEndTimeField(strategy.apply(metadataDataset.batchEndTimeField()))
+                .batchStatusField(strategy.apply(metadataDataset.batchStatusField()))
+                .tableBatchIdField(strategy.apply(metadataDataset.tableBatchIdField()))
+                .stagingFiltersField(strategy.apply(metadataDataset.stagingFiltersField()))
+                .build();
+    }
+
+    public LockInfoDataset applyCaseOnLockInfoDataset(LockInfoDataset lockInfoDataset, Function<String, String> strategy)
+    {
+        return LockInfoDataset.builder()
+                .database(lockInfoDataset.database().map(strategy))
+                .group(lockInfoDataset.group().map(strategy))
+                .name(strategy.apply(lockInfoDataset.name()))
+                .insertTimeField(strategy.apply(lockInfoDataset.insertTimeField()))
+                .lastUsedTimeField(strategy.apply(lockInfoDataset.lastUsedTimeField()))
+                .tableNameField(strategy.apply(lockInfoDataset.tableNameField()))
+                .build();
     }
 }

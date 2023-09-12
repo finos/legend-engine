@@ -969,7 +969,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
     j_parameter(javaList(javaObject()), 'path'),
     j_parameter(javaString(), 'relativeReference')
   ],
-      '        List<Object> newPath = new ArrayList<>(path);\n' +
+      '        List<Object> newPath = new java.util.ArrayList<>(path);\n' +
       '        String[] parts = relativeReference.split("/");\n' +
       '        for (int i = 0; i < parts.length; i++)\n' +
       '        {\n' +
@@ -1004,7 +1004,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
   javaMethod(['private', 'static'], javaString(), 'pathToString', [
     j_parameter(javaList(javaObject()), 'path')
   ],
-      '        return path.stream().map(Object::toString).collect(Collectors.joining("/"));\n'
+      '        return path.stream().map(Object::toString).collect(java.util.stream.Collectors.joining("/"));\n'
   ),
   // public static String convertField_IntegerToString(List<Object> path, Object value)
   javaMethod(['public', 'static'], javaString(), 'convertField_IntegerToString', [

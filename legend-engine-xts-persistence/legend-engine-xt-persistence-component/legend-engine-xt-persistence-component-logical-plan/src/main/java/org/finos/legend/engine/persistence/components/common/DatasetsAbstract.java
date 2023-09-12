@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.common;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Parameter;
 import org.immutables.value.Value.Style;
@@ -45,4 +46,6 @@ public interface DatasetsAbstract
     Optional<Dataset> tempDatasetWithDeleteIndicator();
 
     Optional<Dataset> stagingDatasetWithoutDuplicates();
+
+    Optional<LockInfoDataset> lockInfoDataset();
 }

@@ -17,7 +17,6 @@ package org.finos.legend.engine.persistence.components.testcases.ingestmode.unit
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -53,7 +52,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     public abstract void verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionForEmptyBatch()
+    void testUnitemporalSnapshotWithoutPartitionWithDefaultEmptyBatchHandling()
     {
         TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -63,10 +62,10 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperationsForEmptyBatch(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(operations);
+        verifyUnitemporalSnapshotWithoutPartitionWithDefaultEmptyBatchHandling(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithoutPartitionForEmptyBatch(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithoutPartitionWithDefaultEmptyBatchHandling(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer()

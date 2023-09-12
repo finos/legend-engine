@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Assertions;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
+
 public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 {
     String cleanUpMainTableSql = "DELETE FROM \"mydb\".\"main\" as sink";
@@ -41,14 +44,20 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> initializeLockSql = operations.initializeLockSql();
+        List<String> acquireLockSql = operations.acquireLockSql();
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
                 "(SELECT * FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseStagingTableCreateQuery, preActionsSqlList.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSqlList.get(2));
+
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
+        Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
 
         // Stats
         verifyStats(operations);

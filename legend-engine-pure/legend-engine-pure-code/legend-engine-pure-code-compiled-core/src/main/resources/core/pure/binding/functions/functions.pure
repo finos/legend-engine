@@ -40,7 +40,11 @@ function <<functionType.NotImplementedFunction, functionType.NormalizeRequiredFu
    fail('Implemented by execution plans');
    [];
 }
-
+function <<functionType.NotImplementedFunction, functionType.NormalizeRequiredFunction>> meta::external::format::shared::functions::externalize(collection: TabularDataSet[1], contentType:String[1]):String[1]
+{
+   fail('Implemented by execution plans');
+   'Not implemented!';
+}
 function <<functionType.NotImplementedFunction, functionType.NormalizeRequiredFunction>> meta::external::format::shared::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], data:Byte[*]):T[*]
 {
    fail('Implemented by execution plans');
@@ -86,5 +90,12 @@ function meta::external::format::shared::functions::externalizeFunctions():Funct
   [
     externalize_T_MANY__String_1__RootGraphFetchTree_1__String_1_,
     externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_
+  ]
+}
+
+function meta::external::format::shared::functions::externalizeTDSFunctions():Function<Any>[*]
+{
+  [
+    externalize_TabularDataSet_1__String_1__String_1_
   ]
 }

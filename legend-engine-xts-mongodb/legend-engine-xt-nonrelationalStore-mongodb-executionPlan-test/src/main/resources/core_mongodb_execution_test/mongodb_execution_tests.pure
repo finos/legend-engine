@@ -411,6 +411,10 @@ function <<paramTest.Test>>
 
 function meta::external::store::mongodb::executionTest::executeAndAssert(f: FunctionDefinition<Any>[1], expectedResult: String[1]):Boolean[1]
  {
+  let extensions = [
+    meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
+    meta::external::format::json::extension::jsonSchemaFormatExtension()
+  ];
 
  let executionContext = ^meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext(queryTimeOutInSeconds=5, enableConstraints=false);
   
@@ -418,7 +422,7 @@ function meta::external::store::mongodb::executionTest::executeAndAssert(f: Func
     $f,
     [],
     $executionContext,
-    meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions()
+    $extensions
   )->meta::json::parseJSON()->meta::json::toPrettyJSONString();
   
   assertEquals($expectedResult, $result);

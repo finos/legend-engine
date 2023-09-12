@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
+
 public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends BitemporalDeltaSourceSpecifiesFromAndThroughTestCases
 {
     @Override
@@ -32,6 +35,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> initializeLockSql = operations.initializeLockSql();
+        List<String> acquireLockSql = operations.acquireLockSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
@@ -53,10 +59,14 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalStagingTableCreateQuery, preActionsSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(2));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSql.get(3));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
+        Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
+        Assertions.assertEquals(0, postCleanupSql.size());
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1";

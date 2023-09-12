@@ -15,11 +15,8 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -28,16 +25,11 @@ import java.util.Optional;
 public class BatchStartTimestampVisitor implements LogicalPlanVisitor<BatchStartTimestamp>
 {
 
-    private static final String DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S";
-
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, BatchStartTimestamp current, VisitorContext context)
     {
         Optional<String> batchStartTimestampPattern = context.batchStartTimestampPattern();
-        StringValue dateTimeFormat = StringValue.of(DATE_TIME_FORMAT);
-        StringValue datetimeValue;
-        datetimeValue = StringValue.of(batchStartTimestampPattern.orElse(context.batchStartTimestamp()));
-        FunctionImpl parseDateTime = FunctionImpl.builder().functionName(FunctionName.PARSE_DATETIME).addValue(dateTimeFormat, datetimeValue).build();
-        return new FunctionVisitor().visit(prev, parseDateTime, context);
+        DatetimeValue datetimeValue = DatetimeValue.of(batchStartTimestampPattern.orElse(context.batchStartTimestamp()));
+        return new DatetimeValueVisitor().visit(prev, datetimeValue, context);
     }
 }

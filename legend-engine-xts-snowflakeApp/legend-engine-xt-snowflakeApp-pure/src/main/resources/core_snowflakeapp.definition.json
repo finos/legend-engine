@@ -3,6 +3,7 @@
   "pattern": "(meta::external::function::activator::snowflakeApp|meta::protocols)(::.*)?",
   "dependencies": [
     "platform",
-    "core_function_activator"
+    "core_function_activator",
+    "core_relational"
   ]
 }

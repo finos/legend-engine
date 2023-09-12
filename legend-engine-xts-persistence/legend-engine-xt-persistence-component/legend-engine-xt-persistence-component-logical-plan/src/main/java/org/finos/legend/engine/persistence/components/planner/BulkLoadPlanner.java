@@ -24,9 +24,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equ
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -45,15 +46,20 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 
 class BulkLoadPlanner extends Planner
 {
+
+    private StagedFilesDataset stagedFilesDataset;
+
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
     {
         super(datasets, ingestMode, plannerOptions);
 
         // validation
-        if (!(datasets.stagingDataset() instanceof StagedFilesDatasetAbstract))
+        if (!(datasets.stagingDataset() instanceof StagedFilesDataset))
         {
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
+
+        stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
     }
 
     @Override
@@ -88,6 +94,14 @@ class BulkLoadPlanner extends Planner
             fieldsToSelect.add(batchStartTimestamp);
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+        }
+
+        if (ingestMode().lineageField().isPresent())
+        {
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().lineageField().get()).build());
+            List<String> files = stagedFilesDataset.stagedFilesDatasetProperties().files();
+            String lineageValue = String.join(",", files);
+            fieldsToSelect.add(StringValue.of(lineageValue));
         }
 
 

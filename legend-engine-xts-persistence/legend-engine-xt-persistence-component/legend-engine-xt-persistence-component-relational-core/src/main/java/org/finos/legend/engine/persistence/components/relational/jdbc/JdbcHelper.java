@@ -256,8 +256,11 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, TypeMapping typeMapping)
+    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping)
     {
+        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
+        String schemaName = dataset.datasetReference().group().orElse(null);
+        String databaseName = dataset.datasetReference().database().orElse(null);
         try
         {
             if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
@@ -344,7 +347,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             }
 
             SchemaDefinition schemaDefinition = SchemaDefinition.builder().addAllFields(fields).addAllIndexes(indices).build();
-            return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
+            return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).datasetAdditionalProperties(dataset.datasetAdditionalProperties()).build();
         }
         catch (SQLException e)
         {

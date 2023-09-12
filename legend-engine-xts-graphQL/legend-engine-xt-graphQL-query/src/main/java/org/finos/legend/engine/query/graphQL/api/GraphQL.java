@@ -28,10 +28,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -44,12 +46,9 @@ import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public abstract class GraphQL
 {
@@ -62,7 +61,7 @@ public abstract class GraphQL
         this.metadataserver = metadataserver;
     }
 
-    protected static org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
+    public static org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document toPureModel(Document document, PureModel pureModel)
     {
         return new ProtocolToMetamodelTranslator().translate(document, pureModel);
     }

@@ -100,9 +100,9 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     }
 
     @Override
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName)
+    public Dataset constructDatasetFromDatabase(Dataset dataset)
     {
-        return relationalSink.constructDatasetFromDatabaseFn().execute(this, relationalExecutionHelper, tableName, schemaName, databaseName);
+        return relationalSink.constructDatasetFromDatabaseFn().execute(this, relationalExecutionHelper, dataset);
     }
 
     @Override

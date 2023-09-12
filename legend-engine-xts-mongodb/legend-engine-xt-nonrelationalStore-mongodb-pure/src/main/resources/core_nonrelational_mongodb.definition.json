@@ -10,7 +10,6 @@
     "platform_functions_json",
     "core_functions",
     "core",
-    "core_external_language_java",
     "core_authentication"
   ]
 }

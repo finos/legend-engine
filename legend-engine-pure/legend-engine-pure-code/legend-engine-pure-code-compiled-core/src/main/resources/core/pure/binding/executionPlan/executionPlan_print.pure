@@ -43,13 +43,6 @@ function meta::external::format::shared::executionPlan::toString::printPlanNodeT
          if($node.executionNodes->isEmpty(), |'', |$node->childrenToString($space+'  ', $extensions) + '\n') +
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'
-      },
-      {node:UrlStreamExecutionNode[1] |   // TODO: TO BE REMOVED
-         'UrlStream\n' +
-         $space + '(' + header($node, $space, $extensions) + '\n' +
-         $space + '  url = ' + $node.url + '\n' +
-         $node->childrenToString($space+'  ', $extensions) + '\n' +
-         $space + ')\n'
       }
    ]
 }
