@@ -761,12 +761,12 @@ function meta::relational::testDataGeneration::getRelationalCSVDataFromQuery(que
                                 $tableToColumnsMap->put($table, $list);
        },  ^Map<Table,List<Column>>());
   
-  let relationalCSVTables = $finalTableToColumnsMap->keyValues()->map(tableColumnsPair | let table = $tableColumnsPair.first;
-                                                                                         let milestoningColumns = $table->meta::relational::milestoning::getMilestoningDateColumns();
-                                                                                         let primaryKeys = $table.primaryKey;
-                                                                                         let columns = $tableColumnsPair.second.values->concatenate($milestoningColumns)->concatenate($primaryKeys)->removeDuplicates();
-                                                                                       ^meta::relational::metamodel::data::RelationalCSVTable(schema = $table.schema.name, table = $table.name, values = $columns->sortBy(c | $c->cast(@Column).name)->map(c|$c->cast(@Column).name)->joinStrings(','));
-                                                                              );
+  let relationalCSVTables = $finalTableToColumnsMap->keyValues()->map(tableColumnsPair | let table = $tableColumnsPair.first;                                                           
+                                                                                         let primaryKeys = $table.primaryKey->sortBy(pk | $pk.name);
+                                                                                         let milestoningColumns = $table->meta::relational::milestoning::getMilestoningDateColumns()->sortBy(c | $c.name);
+                                                                                         let columns = $primaryKeys->concatenate($tableColumnsPair.second.values->sortBy(c | $c->cast(@Column).name))->concatenate($milestoningColumns)->removeDuplicates();
+                                                                                       ^meta::relational::metamodel::data::RelationalCSVTable(schema = $table.schema.name, table = $table.name, values = $columns->map(c|$c->cast(@Column).name)->joinStrings(','));
+                                                                              )->sortBy(t | $t.schema + $t.table);
   ^meta::relational::metamodel::data::RelationalCSVData(tables=$relationalCSVTables);
 }
 

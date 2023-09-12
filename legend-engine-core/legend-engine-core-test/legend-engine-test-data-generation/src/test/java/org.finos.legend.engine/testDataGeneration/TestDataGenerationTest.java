@@ -67,6 +67,6 @@ public class TestDataGenerationTest
     {
         testGenerateEmbeddedData(
                 "models/relationalModelTestDataGenerationInput.json",
-                "[{\"tables\":[{\"schema\":\"default\",\"table\":\"PersonTable\",\"values\":\"firm_id,firstName,id\"},{\"schema\":\"default\",\"table\":\"FirmTable\",\"values\":\"id\"}]}]");
+                "[{\"tables\":[{\"schema\":\"default\",\"table\":\"FirmTable\",\"values\":\"id\"},{\"schema\":\"default\",\"table\":\"PersonTable\",\"values\":\"id,firm_id,firstName\"}]}]");
     }
 }

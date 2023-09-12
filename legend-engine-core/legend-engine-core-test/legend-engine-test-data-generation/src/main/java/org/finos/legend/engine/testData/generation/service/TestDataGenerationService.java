@@ -36,10 +36,6 @@ public class TestDataGenerationService
     {
         Root_meta_relational_metamodel_data_RelationalCSVData relationalCSVData = core_relational_relational_testDataGeneration_testDataGeneration.Root_meta_relational_testDataGeneration_getRelationalCSVDataFromQuery_FunctionDefinition_1__Mapping_1__RelationalCSVData_1_(
                 buildPureLambda(query, pureModel), mapping, pureModel.getExecutionSupport());
-        if (relationalCSVData == null)
-        {
-            return null;
-        }
         RelationalCSVData data = new RelationalCSVData();
         List<RelationalCSVTable> relationalCSVTables = relationalCSVData._tables().collect(table ->
         {

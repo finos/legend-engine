@@ -3062,10 +3062,10 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    assertEquals(2, $relationalCsvData.tables->size());
    assertEquals('default\n'+
                 'ProductClassificationTable\n'+
-                'from_z,thru_z,type\n'+
+                'type,from_z,thru_z\n'+
                 '-------\n'+
                 'default\n'+
                 'ProductTable\n'+
-                'from_z,id,name,thru_z,type',
+                'id,name,type,from_z,thru_z',
                 $relationalCsvData.tables->sortBy(t | $t.schema +  $t.table)->map(t | $t.schema + '\n' + $t.table + '\n' + $t.values)->joinStrings('\n-------\n'));
 }
