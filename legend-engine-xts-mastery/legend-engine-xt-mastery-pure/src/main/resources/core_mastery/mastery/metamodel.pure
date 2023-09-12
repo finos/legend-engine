@@ -38,9 +38,9 @@ meta::pure::mastery::metamodel::MasterRecordDefinition extends PackageableElemen
   {doc.doc = 'The identity resolution configuration used to identify a record in the master store using the inputs provided, the inputs usually do not contain the primary key.'}
   identityResolution : IdentityResolution[1];
 
-  {doc.doc = 'Defines how child collections should compare objects for equality, required for collections that contain objects that do not have an equality key stereotype defined.'}
-  collectionEquality: CollectionEquality[0..*];
-  
+  {doc.doc = 'Defines how child collections should compare objects for equality, required for collections that cant simply be compared using the equality key stereotype defined.'}
+  collectionEqualities: CollectionEquality[0..*];
+
   {doc.doc = 'The sources of records to be loaded into the master.'}
   sources: RecordSource[0..*];
 
@@ -49,6 +49,15 @@ meta::pure::mastery::metamodel::MasterRecordDefinition extends PackageableElemen
 
   {doc.doc = 'The rules which determine if changes should be blocked or accepted'}
   precedenceRules: meta::pure::mastery::metamodel::precedence::PrecedenceRule[0..*];
+
+  {doc.doc='Whether to push this data to Elastic Search or not'}
+  publishToElasticSearch: Boolean[0..1];
+
+  {doc.doc='Service to convert the master record class to a model that will be published to Elastic Search when enabled'}
+  elasticSearchTransformService: Service[0..1];
+
+  {doc.doc='Service to convert the master record class to a model that will be published to an Exception Workflow when enabled'}
+  exceptionWorkflowTransformService: Service[0..1];
 }
 
 
@@ -60,24 +69,27 @@ meta::pure::mastery::metamodel::RecordSource
 
   {doc.doc='Depending on the liveStatus certain controls are introduced, for example a Production status introduces warnings on mopdel changes that are not backwards compatible.'}
   status: RecordSourceStatus[1];
-  
+
   {doc.doc='Description of the RecordSource suitable for end users.'}
   description: String[1];
-    
+
   {doc.doc='Indicates if the data has to be processed sequentially, e.g. a delta source on Kafka that provides almost realtime changes, a record may appear more than once so processing in order is important.'}
   sequentialData: Boolean[0..1];
 
   {doc.doc='The data must be loaded fully into a staging store before beginning processing, e.g. the parse and transform into the SourceModel groups records that may be anywhere in the file and they need to be processed as an atomic SourceModel.'}
-  stagedLoad: Boolean[0..1]; 
+  stagedLoad: Boolean[0..1];
 
   {doc.doc='The data provider details for this record source'}
   dataProvider: DataProvider[0..1];
-  
+
   {doc.doc='Determines if the source will create a new record if the incoming data does not resolve to an existing record.'}
   createPermitted: Boolean[0..1];
 
   {doc.doc='If the source is not permitted to create a record determine if an exception should be rasied.'}
   createBlockedException: Boolean[0..1];
+
+  {doc.doc='Whether this source should raise an Exception Workflow.'}
+  raiseExceptionWorkflow: Boolean[0..1];
 
   {doc.doc='Record input service responsible for acquiring data from source and performing necessary transformations.'}
   recordService: RecordService[0..1];
@@ -90,6 +102,15 @@ meta::pure::mastery::metamodel::RecordSource
 
   {doc.doc='Authorization mechanism for determine who is allowed to trigger the datasource.'}
   authorization: Authorization[0..1];
+
+  {doc.doc='The run profile this source should use when triggered, for sources that process a large number of records a larger profile can be set which will allocate more CPU and memory to the run container.'}
+  runProfile: meta::pure::mastery::metamodel::Profile[0..1];
+
+  {doc.doc = 'Maximum time in minutes that the source should be running for - will send an alert if it runs for more than this'}
+  timeoutInMinutes: Integer[0..1];
+
+  {doc.doc = 'Indicates when there are dependencies on some other RecordSources and what type of dependency there is'}
+  dependencies: RecordSourceDependency[*];
 }
 
 
@@ -100,20 +121,35 @@ meta::pure::mastery::metamodel::RecordService
   acquisitionProtocol: AcquisitionProtocol[0..1];
 
   {doc.doc='An optional service that converts raw data into a SourceModel, e.g. commonly used to parse CSVs into a Legend model defined in Studio.'}
-  parseService: Service[0..1]; 
+  parseService: Service[0..1];
 
   {doc.doc='A service that returns the source data in the class defined for the MasterRecordDefinition, this can be a model-to-model transformation from a SourceModel or a Legend Service that extracts the data from any source supported by Legend.'}
   transformService: Service[0..1];
 }
 
 Enum {doc.doc = 'Release status used to apply controls on models and configuration to preserve lineage and provenance.'}
-meta::pure::mastery::metamodel::RecordSourceStatus 
+meta::pure::mastery::metamodel::RecordSourceStatus
 {
   Development,
   TestOnly,
   Production,
   Dormant,
   Decommissioned
+}
+
+Enum {doc.doc = 'Profile to be used when running the record source.'}
+meta::pure::mastery::metamodel::Profile
+{
+  Large,
+  Medium,
+  Small,
+  ExtraSmall
+}
+
+Class
+meta::pure::mastery::metamodel::RecordSourceDependency
+{
+  {doc.doc = 'Id of the record source that the dependency is on - this source cant run until this record source has run successfully'} dependentRecordSourceId: String[1];
 }
 
 
@@ -133,7 +169,7 @@ meta::pure::mastery::metamodel::identity::ResolutionQuery
 {
   {doc.doc='Expressions that refer to attributes used to generate queries that are executed on the master store.'}
   queries : meta::pure::metamodel::function::LambdaFunction<{Any[1],StrictDate[0..1]->Any[*]}>[1..*]; //TODO in compiler check that parameter and return type are of same type, via subclass of LambdaFunction?
-  
+
   {doc.doc='The key type used to define influences how to generate queries issued against the store and validate the results of query execution.'}
   keyType : meta::pure::mastery::metamodel::identity::ResolutionKeyType[1];
 
@@ -151,24 +187,21 @@ meta::pure::mastery::metamodel::identity::ResolutionKeyType
   SuppliedPrimaryKey,
 
   {doc.doc = 'If an AlternateKey is specified then at least one is required in the input record or resolution fails, if supplied data has a curationModel filed specified and it is "Create" then the input source is attempting to create a new record (e.g. from UI) therefore block if existing record found.'}
-  AlternateKey, 
+  AlternateKey,
 
   {doc.doc = 'Used for matching to records in the store if supplied but no validation is applied.'}
   Optional
 }
 
 
-Class {doc.doc='Defines how child collections should compare objects for equality, required for collections that contain objects that do not have a primary key defined (by an equality key stereotype on the model).'}
-meta::pure::mastery::metamodel::identity::CollectionEquality 
+Class {doc.doc='Defines how child collections should compare objects for equality, required for collections that cant simply be compared using the equality key stereotype defined.'}
+meta::pure::mastery::metamodel::identity::CollectionEquality
 {
   {doc.doc = 'The class of data that the equality function is applied to when it exists in a collection.'}
   modelClass : meta::pure::metamodel::type::Class<Any>[1];
 
-  {doc.doc = 'The functions applied to elements in the collection, if all functions return true then the objects are equal.'}
-  equalityFunctions: meta::pure::metamodel::function::LambdaFunction<{Any[1],Any[1]->Boolean[1]}>[1];
-
-  //{doc.doc = 'The path of the collection for which the equality functions apply, this enables the same class to have different equality functions in different collections in a model. (Will be added when a use case is found and when PropertyPathElement is supported in Studio.)'}
-  //collectionPath: meta::pure::metamodel::path::PropertyPathElement[1];
+  {doc.doc = 'The equality function applied to elements in the collection.'}
+  equalityFunction: Service[1];
 }
 
 
@@ -182,7 +215,7 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
   paths: meta::pure::mastery::metamodel::precedence::PropertyPath[1..*];
   scope: meta::pure::mastery::metamodel::precedence::RuleScope[*];
   masterRecordFilter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
-  
+
 }
 
 Class meta::pure::mastery::metamodel::precedence::PropertyPath
@@ -194,7 +227,7 @@ Class meta::pure::mastery::metamodel::precedence::PropertyPath
 
 Class meta::pure::mastery::metamodel::precedence::UpdateRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
 {
-  
+
 }
 
 
@@ -237,7 +270,7 @@ Class meta::pure::mastery::metamodel::precedence::DeleteRule extends meta::pure:
 }
 
 Class <<typemodifiers.abstract>> meta::pure::mastery::metamodel::precedence::RuleScope {
-  
+
 }
 
 Class meta::pure::mastery::metamodel::precedence::RecordSourceScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
@@ -260,7 +293,7 @@ Enum meta::pure::mastery::metamodel::precedence::RuleAction
 }
 
 Class
-{doc.doc = 'Groups together related precedence rules.'} 
+{doc.doc = 'Groups together related precedence rules.'}
 meta::pure::mastery::metamodel::DataProvider extends PackageableElement
 {
   dataProviderId: String[1];
@@ -306,7 +339,7 @@ meta::pure::mastery::metamodel::trigger::CronTrigger extends Trigger
    frequency: Frequency[0..1];
 }
 
-Enum 
+Enum
 {doc.doc = 'Trigger Frequency at which the data is sent'} 
 meta::pure::mastery::metamodel::trigger::Frequency
 {
@@ -347,7 +380,7 @@ meta::pure::mastery::metamodel::trigger::Day
 }
 
 /*************************
- * 
+ *
  * Acquisition Protocol
  *
  *************************/
@@ -379,13 +412,39 @@ meta::pure::mastery::metamodel::acquisition::FileAcquisitionProtocol extends Acq
   headerLines: Integer[1];
 
   recordsKey: String[0..1];
+
+  {doc.doc = 'Maximum time in minutes we should keep checking if the file exists, after this an alert will be sent if not found'} maxRetryTimeInMinutes: Integer[0..1];
+
+  decryption: Decryption[0..1];
+
+  {meta::pure::profiles::doc.doc = 'Character encoding of the source file. This is only needed if the source is not already in utf-8'} encoding: String[0..1];
+}
+
+Class <<typemodifiers.abstract>>
+meta::pure::mastery::metamodel::acquisition::file::Decryption
+{
+}
+
+Class
+meta::pure::mastery::metamodel::acquisition::file::PGPDecryption extends Decryption
+{
+  privateKey: meta::pure::mastery::metamodel::authentication::CredentialSecret[1];
+  passPhrase: meta::pure::mastery::metamodel::authentication::CredentialSecret[1];
+}
+
+Class
+meta::pure::mastery::metamodel::acquisition::file::DESDecryption extends Decryption
+{
+  decryptionKey: meta::pure::mastery::metamodel::authentication::CredentialSecret[1];
+  {doc.doc = 'unix to unix Encoding is a symmetric encryption based on conversion of binary data into ASCII characters'} uuEncode: Boolean[1];
+  {doc.doc = 'whether the source uses the certified assisted products (CAP) option - https://www.ncsc.gov.uk/section/products-services/ncsc-certification'} capOption: Boolean[1];
 }
 
 Class <<typemodifiers.abstract>>
 meta::pure::mastery::metamodel::acquisition::KafkaAcquisitionProtocol extends AcquisitionProtocol
 {
 
-  dataType: KafkaDataType[1];  
+  dataType: KafkaDataType[1];
 
   recordTag: String[0..1]; //required when the data type is xml
 
@@ -415,7 +474,7 @@ meta::pure::mastery::metamodel::acquisition::kafka::KafkaDataType
 
 
 /*************************
- * 
+ *
  * Authentication Strategy
  *
  *************************/
@@ -448,7 +507,7 @@ meta::pure::mastery::metamodel::authentication::CredentialSecret
 
 
 /*****************
- * 
+ *
  * Authorization
  *
  ****************/
@@ -459,7 +518,7 @@ meta::pure::mastery::metamodel::authorization::Authorization
 }
 
 /**************
- * 
+ *
  * Connection
  *
  **************/
@@ -491,7 +550,7 @@ Class
 meta::pure::mastery::metamodel::connection::FTPConnection extends FileConnection
 {
    host: String[1];
-   
+
    port: Integer[1];
 
    secure: Boolean[0..1];
@@ -503,7 +562,7 @@ Class
 meta::pure::mastery::metamodel::connection::HTTPConnection extends FileConnection
 {
   url: String[1];
-  
+
   proxy: Proxy[0..1];
 
 }

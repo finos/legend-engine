@@ -17,9 +17,12 @@ package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.DESDecryption;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.Decryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.PGPDecryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.RestAcquisitionProtocol;
 
 import java.util.List;
@@ -66,8 +69,40 @@ public class HelperAcquisitionComposer
                 getTabString(indentLevel + 2) + "headerLines: " + acquisitionProtocol.headerLines + ";\n" +
                 (acquisitionProtocol.recordsKey == null ? "" : getTabString(indentLevel + 2) + "recordsKey: " + convertString(acquisitionProtocol.recordsKey, true) + ";\n") +
                 renderFileSplittingKeys(acquisitionProtocol.fileSplittingKeys, indentLevel + 2) +
+                (acquisitionProtocol.maxRetryTimeInMinutes == null ? "" : getTabString(indentLevel + 2) + "maxRetryTimeMinutes: " + acquisitionProtocol.maxRetryTimeInMinutes + ";\n") +
+                (acquisitionProtocol.encoding == null ? "" : getTabString(indentLevel + 2) + "encoding: " + convertString(acquisitionProtocol.encoding, true) + ";\n") +
+                (acquisitionProtocol.decryption == null ? "" : renderDecryption(acquisitionProtocol.decryption, indentLevel, context)) +
                 getTabString(indentLevel + 2) + "connection: " + convertPath(acquisitionProtocol.connection) + ";\n" +
                 getTabString(indentLevel + 1) + "}#;\n";
+    }
+
+    public static String renderDecryption(Decryption decryption, int indentLevel, PureGrammarComposerContext context)
+    {
+        String decryptionBody = null;
+        if (decryption instanceof PGPDecryption)
+        {
+            decryptionBody = renderPgpDecryption((PGPDecryption) decryption, indentLevel, context);
+        }
+        if (decryption instanceof DESDecryption)
+        {
+            decryptionBody = renderDesDecryption((DESDecryption) decryption, indentLevel, context);
+        }
+        return getTabString(indentLevel + 2) + "decryption: " + decryptionBody + getTabString(indentLevel + 2) + "};\n";
+    }
+
+    public static String renderPgpDecryption(PGPDecryption decryption, int indentLevel, PureGrammarComposerContext context)
+    {
+        return "PGP {\n" +
+                HelperAuthenticationComposer.renderCredentialSecret("privateKey", decryption.privateKey, indentLevel + 3, context) +
+                HelperAuthenticationComposer.renderCredentialSecret("passPhrase", decryption.passPhrase, indentLevel + 3, context);
+    }
+
+    public static String renderDesDecryption(DESDecryption decryption, int indentLevel, PureGrammarComposerContext context)
+    {
+        return "DES {\n" +
+                HelperAuthenticationComposer.renderCredentialSecret("decryptionKey", decryption.decryptionKey, indentLevel + 3, context) +
+                getTabString(indentLevel + 3) + "uuEncode: " + decryption.uuEncode + ";\n" +
+                getTabString(indentLevel + 3) + "capOption: " + decryption.capOption + ";\n";
     }
 
     public static String renderKafkaAcquisitionProtocol(KafkaAcquisitionProtocol acquisitionProtocol, int indentLevel, PureGrammarComposerContext context)

@@ -14,17 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
 
-import java.util.List;
-
-public class FileAcquisitionProtocol extends AcquisitionProtocol
+public interface DecryptionVisitor<T>
 {
-    public String connection;
-    public String filePath;
-    public FileType fileType;
-    public List<String> fileSplittingKeys;
-    public Integer headerLines;
-    public String recordsKey;
-    public Integer maxRetryTimeInMinutes;
-    public String encoding;
-    public Decryption decryption;
+    T visit(Decryption val);
 }

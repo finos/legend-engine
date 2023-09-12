@@ -47,19 +47,19 @@ public class HelperAuthenticationComposer
     private static String renderNTLMAuthentication(NTLMAuthenticationStrategy authenticationStrategy, int indentLevel, PureGrammarComposerContext context)
     {
        return "NTLM #{ \n"
-               + renderCredentialSecret(authenticationStrategy.credential, indentLevel + 1, context)
+               + renderCredentialSecret("credential", authenticationStrategy.credential, indentLevel + 1, context)
                + getTabString(indentLevel + 1) + "}#;\n";
     }
 
     private static String renderTokenAuthentication(TokenAuthenticationStrategy authenticationStrategy, int indentLevel, PureGrammarComposerContext context)
     {
         return "Token #{ \n"
-                + renderCredentialSecret(authenticationStrategy.credential, indentLevel + 1, context)
+                + renderCredentialSecret("credential", authenticationStrategy.credential, indentLevel + 1, context)
                 + getTabString(indentLevel + 1) + "tokenUrl: " + convertString(authenticationStrategy.tokenUrl, true) + ";\n"
                 +  getTabString(indentLevel + 1) + "}#;\n";
     }
 
-    public static String renderCredentialSecret(CredentialSecret credentialSecret, int indentLevel, PureGrammarComposerContext context)
+    public static String renderCredentialSecret(String field, CredentialSecret credentialSecret, int indentLevel, PureGrammarComposerContext context)
     {
         if (credentialSecret == null)
         {
@@ -67,6 +67,6 @@ public class HelperAuthenticationComposer
         }
         List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
         String text = IMasteryComposerExtension.process(credentialSecret, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraSecretComposers), indentLevel, context);
-        return getTabString(indentLevel) + "credential: " + text;
+        return getTabString(indentLevel) + field + ": " + text;
     }
 }

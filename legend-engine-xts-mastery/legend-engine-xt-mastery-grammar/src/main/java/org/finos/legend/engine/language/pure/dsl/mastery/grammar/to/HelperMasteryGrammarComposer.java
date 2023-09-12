@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
@@ -58,7 +59,7 @@ public class HelperMasteryGrammarComposer
         StringBuilder builder = new StringBuilder();
         builder.append("MasterRecordDefinition ").append(convertPath(masterRecordDefinition.getPath())).append("\n")
                 .append("{\n")
-                .append(renderModelClass(masterRecordDefinition.modelClass, indentLevel))
+                .append(renderAttribute("modelClass", masterRecordDefinition.modelClass, indentLevel))
                 .append(renderIdentityResolution(masterRecordDefinition.identityResolution, indentLevel, context));
         if (masterRecordDefinition.precedenceRules != null)
         {
@@ -66,7 +67,23 @@ public class HelperMasteryGrammarComposer
         }
         if (masterRecordDefinition.postCurationEnrichmentService != null)
         {
-            builder.append(renderPostCurationEnrichmentService(masterRecordDefinition.postCurationEnrichmentService, indentLevel));
+            builder.append(renderAttribute("postCurationEnrichmentService", masterRecordDefinition.postCurationEnrichmentService, indentLevel));
+        }
+        if (masterRecordDefinition.publishToElasticSearch != null)
+        {
+            builder.append(renderAttribute("publishToElasticSearch", String.valueOf(masterRecordDefinition.publishToElasticSearch), indentLevel));
+        }
+        if (masterRecordDefinition.elasticSearchTransformService != null)
+        {
+            builder.append(renderAttribute("elasticSearchTransformService", masterRecordDefinition.elasticSearchTransformService, indentLevel));
+        }
+        if (masterRecordDefinition.exceptionWorkflowTransformService != null)
+        {
+            builder.append(renderAttribute("exceptionWorkflowTransformService", masterRecordDefinition.exceptionWorkflowTransformService, indentLevel));
+        }
+        if (masterRecordDefinition.collectionEqualities != null)
+        {
+            builder.append(renderCollectionEqualities(masterRecordDefinition.collectionEqualities, indentLevel));
         }
         builder.append(renderRecordSources(masterRecordDefinition.sources, indentLevel, context))
                 .append("}");
@@ -83,14 +100,24 @@ public class HelperMasteryGrammarComposer
     /*
      * MasterRecordDefinition Attributes
      */
-    private static String renderModelClass(String modelClass, int indentLevel)
+    private static String renderAttribute(String field, String modelClass, int indentLevel)
     {
-        return getTabString(indentLevel) + "modelClass: " + modelClass + ";\n";
+        return getTabString(indentLevel) + field + ": " + modelClass + ";\n";
     }
 
-    private static String renderPostCurationEnrichmentService(String service, int indentLevel)
+    private static String renderCollectionEqualities(List<CollectionEquality> collectionEqualities, int indentLevel)
     {
-        return getTabString(indentLevel) + "postCurationEnrichmentService: " + service + ";\n";
+        StringBuilder collectionEqualitiesString = new StringBuilder().append(getTabString(indentLevel)).append("collectionEqualities: [\n");
+        ListIterate.forEachWithIndex(collectionEqualities, (collectionEquality, i) ->
+        {
+            collectionEqualitiesString.append(i > 0 ? ",\n" : "")
+                    .append(getTabString(indentLevel + 1)).append("{\n")
+                    .append(getTabString(indentLevel + 2)).append("modelClass: ").append(collectionEquality.modelClass).append(";\n")
+                    .append(getTabString(indentLevel + 2)).append("equalityFunction: ").append(collectionEquality.equalityFunction).append(";\n")
+                    .append(getTabString(indentLevel + 1)).append("}");
+        });
+        collectionEqualitiesString.append("\n").append(getTabString(indentLevel)).append("]\n");
+        return collectionEqualitiesString.toString();
     }
 
 
@@ -137,6 +164,10 @@ public class HelperMasteryGrammarComposer
                     (recordSource.createPermitted != null ? getTabString(indentLevel + 2) + "createPermitted: " + recordSource.createPermitted + ";\n" : "") +
                     (recordSource.createBlockedException != null ? getTabString(indentLevel + 2) + "createBlockedException: " + recordSource.createBlockedException + ";\n" : "") +
                     (recordSource.allowFieldDelete != null ? getTabString(indentLevel + 2) + "allowFieldDelete: " + recordSource.allowFieldDelete + ";\n" : "") +
+                    (recordSource.raiseExceptionWorkflow != null ? getTabString(indentLevel + 2) + "raiseExceptionWorkflow: " + recordSource.raiseExceptionWorkflow + ";\n" : "") +
+                    (recordSource.runProfile != null ? getTabString(indentLevel + 2) + "runProfile: " + recordSource.runProfile + ";\n" : "") +
+                    (recordSource.timeoutInMinutes != null ? getTabString(indentLevel + 2) + "timeoutInMinutes: " + recordSource.timeoutInMinutes + ";\n" : "") +
+                    (recordSource.dependencies != null ? renderRecordSourceDependencies(recordSource.dependencies, indentLevel + 2) : "") +
                     (recordSource.authorization != null ? renderAuthorization(recordSource.authorization, indentLevel + 2) : "");
         }
 
@@ -163,6 +194,19 @@ public class HelperMasteryGrammarComposer
                     (transformService != null ? getTabString(indentLevel + 1) + "transformService: " + transformService + ";\n" : "") +
                     (acquisitionProtocol != null ? renderAcquisition(acquisitionProtocol, indentLevel) : "") +
                     getTabString(indentLevel) + "};\n";
+        }
+
+        private String renderRecordSourceDependencies(List<RecordSourceDependency> dependencies, int indentLevel)
+        {
+            StringBuilder recordSourceDependenciesString = new StringBuilder().append(getTabString(indentLevel)).append("dependencies: [\n");
+            ListIterate.forEachWithIndex(dependencies, (dependency, i) ->
+            {
+                recordSourceDependenciesString.append(i > 0 ? ",\n" : "")
+                        .append(getTabString(indentLevel + 1)).append("RecordSourceDependency {")
+                        .append(dependency.dependentRecordSourceId).append("}");
+            });
+            recordSourceDependenciesString.append("\n").append(getTabString(indentLevel)).append("];\n");
+            return recordSourceDependenciesString.toString();
         }
 
         private String renderAcquisition(AcquisitionProtocol acquisitionProtocol, int indentLevel)

@@ -14,17 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class FileAcquisitionProtocol extends AcquisitionProtocol
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public abstract class Decryption
 {
-    public String connection;
-    public String filePath;
-    public FileType fileType;
-    public List<String> fileSplittingKeys;
-    public Integer headerLines;
-    public String recordsKey;
-    public Integer maxRetryTimeInMinutes;
-    public String encoding;
-    public Decryption decryption;
+    public SourceInformation sourceInformation;
+
+    public <T> T accept(DecryptionVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

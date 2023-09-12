@@ -14,17 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
 
-import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.CredentialSecret;
 
-public class FileAcquisitionProtocol extends AcquisitionProtocol
+public class PGPDecryption extends Decryption
 {
-    public String connection;
-    public String filePath;
-    public FileType fileType;
-    public List<String> fileSplittingKeys;
-    public Integer headerLines;
-    public String recordsKey;
-    public Integer maxRetryTimeInMinutes;
-    public String encoding;
-    public Decryption decryption;
+    public CredentialSecret privateKey;
+    public CredentialSecret passPhrase;
 }
