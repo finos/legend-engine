@@ -105,9 +105,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private List<FieldValue> primaryKeyFieldsAndFromFieldForSelection;
     private List<FieldValue> dataFields;
 
-    BitemporalDeltaPlanner(Datasets datasets, BitemporalDelta ingestMode, PlannerOptions plannerOptions)
+    BitemporalDeltaPlanner(Datasets datasets, BitemporalDelta ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
         {
@@ -201,7 +201,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
 

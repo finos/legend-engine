@@ -464,7 +464,7 @@ public abstract class RelationalIngestorAbstract
                 .batchIdPattern(BATCH_ID_PATTERN)
                 .build();
 
-        planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions());
+        planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());
         generatorResult = generator.generateOperations(enrichedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
     }
 
@@ -533,8 +533,10 @@ public abstract class RelationalIngestorAbstract
         {
             executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
         }
-
         results.add(result);
+        // Clean up
+        executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
+
         return results;
     }
 

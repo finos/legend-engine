@@ -174,7 +174,7 @@ public abstract class RelationalGeneratorAbstract
         Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
-        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());
+        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions(), relationalSink().capabilities());
         return generateOperations(enrichedDatasets, resources, planner, ingestModeWithCaseConversion);
     }
 
@@ -225,11 +225,11 @@ public abstract class RelationalGeneratorAbstract
             schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
 
             // update main dataset with evolved schema and re-initialize planner
-            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions());
+            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
         }
 
         // ingest
-        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources, relationalSink().capabilities());
+        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
         // metadata-ingest
