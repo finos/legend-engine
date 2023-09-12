@@ -21,7 +21,6 @@ import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSeria
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -46,11 +45,6 @@ public class ArrowRuntimeExtension implements ExternalFormatRuntimeExtension
     {
         try
         {
-//            if (!(node.implementation instanceof JavaPlatformImplementation))
-//            {
-//                throw new RuntimeException("Only Java implementations are currently supported, found: " + node.implementation);
-//            }
-
             if (result instanceof RelationalResult)
             {
                 return streamArrowFromRelational((RelationalResult) result);

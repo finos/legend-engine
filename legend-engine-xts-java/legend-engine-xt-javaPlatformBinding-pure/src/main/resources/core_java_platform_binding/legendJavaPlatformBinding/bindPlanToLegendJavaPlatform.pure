@@ -31,7 +31,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
 {
    let legendJavaConfig   = $platformBindingConfig->convertToLegendJavaPlatformBindingConfigIfPossible();
    let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
-
    let baseProject        = $generationContext->generateTypes($debug);
    let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
    let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();

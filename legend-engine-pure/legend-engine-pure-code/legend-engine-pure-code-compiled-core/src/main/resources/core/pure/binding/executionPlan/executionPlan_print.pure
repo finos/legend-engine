@@ -33,6 +33,15 @@ function meta::external::format::shared::executionPlan::toString::printPlanNodeT
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'
       },
+      {node:ExternalFormatExternalizeTDSExecutionNode[1] |
+         'ExternalFormat_ExternalizeTDS\n' + 
+         $space + '(' + header($node, $space, $extensions) + '\n' +
+         $space + '  checked = ' + $node.checked->toString() + '\n' +
+         $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
+         $node->childrenToString($space+'  ', $extensions) + '\n' +
+         $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
+         $space + ')\n'
+      },
       {node:ExternalFormatInternalizeExecutionNode[1] |
          'ExternalFormat_Internalize\n' +
          $space + '(' + header($node, $space, $extensions) + '\n' +
