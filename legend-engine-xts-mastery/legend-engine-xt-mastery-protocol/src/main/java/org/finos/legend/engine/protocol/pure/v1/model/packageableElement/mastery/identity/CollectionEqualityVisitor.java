@@ -12,19 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity;
 
-import java.util.List;
-
-public class FileAcquisitionProtocol extends AcquisitionProtocol
+public interface CollectionEqualityVisitor<T>
 {
-    public String connection;
-    public String filePath;
-    public FileType fileType;
-    public List<String> fileSplittingKeys;
-    public Integer headerLines;
-    public String recordsKey;
-    public Integer maxRetryTimeInMinutes;
-    public String encoding;
-    public Decryption decryption;
+        T visit(CollectionEquality val);
 }

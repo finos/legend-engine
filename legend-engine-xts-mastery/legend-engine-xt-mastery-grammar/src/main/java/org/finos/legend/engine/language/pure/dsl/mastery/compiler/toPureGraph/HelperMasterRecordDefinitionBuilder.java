@@ -28,10 +28,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordService;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourcePartition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
@@ -68,6 +68,19 @@ public class HelperMasterRecordDefinitionBuilder
     {
         Class<?> modelClass = context.resolveClass(val.modelClass);
         return modelClass;
+    }
+
+    public static RichIterable<Root_meta_pure_mastery_metamodel_identity_CollectionEquality> buildCollectionEqualities(List<CollectionEquality> collectionEqualities, CompileContext context)
+    {
+        if (collectionEqualities == null)
+        {
+            return null;
+        }
+        return ListIterate.collect(collectionEqualities, collectionEquality ->
+                new Root_meta_pure_mastery_metamodel_identity_CollectionEquality_Impl("")
+                        ._modelClass(context.resolveClass(collectionEquality.modelClass))
+                        ._equalityFunction(BuilderUtil.buildService(collectionEquality.equalityFunction, context, collectionEquality.sourceInformation))
+        );
     }
 
     private static String determineFullPath(Type type)
@@ -349,11 +362,12 @@ public class HelperMasterRecordDefinitionBuilder
             List<Function2<Authorization, CompileContext, Root_meta_pure_mastery_metamodel_authorization_Authorization>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraAuthorizationProcessors);
             List<Function2<Trigger, CompileContext, Root_meta_pure_mastery_metamodel_trigger_Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraTriggerProcessors);
 
-            String KEY_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::RecordSourceStatus";
+            String RECORD_SOURCE_STATUS_KEY_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::RecordSourceStatus";
+            String PROFILE_KEY_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::Profile";
             Root_meta_pure_mastery_metamodel_RecordSource pureSource = new Root_meta_pure_mastery_metamodel_RecordSource_Impl("");
             pureSource._id(protocolSource.id);
             pureSource._description(protocolSource.description);
-            pureSource._status(context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolSource.status.name()));
+            pureSource._status(context.resolveEnumValue(RECORD_SOURCE_STATUS_KEY_TYPE_FULL_PATH, protocolSource.status.name()));
             pureSource._sequentialData(protocolSource.sequentialData);
             pureSource._stagedLoad(protocolSource.stagedLoad);
             pureSource._createPermitted(protocolSource.createPermitted);
@@ -361,8 +375,12 @@ public class HelperMasterRecordDefinitionBuilder
             pureSource._dataProvider(buildDataProvider(protocolSource, context));
             pureSource._recordService(protocolSource.recordService == null ? null : buildRecordService(protocolSource.recordService, context));
             pureSource._allowFieldDelete(protocolSource.allowFieldDelete);
+            pureSource._timeoutInMinutes(protocolSource.timeoutInMinutes == null ? null : Long.valueOf(protocolSource.timeoutInMinutes));
             pureSource._authorization(protocolSource.authorization == null ? null : IMasteryCompilerExtension.process(protocolSource.authorization, processors, context));
             pureSource._trigger(protocolSource.trigger == null ? null : IMasteryCompilerExtension.process(protocolSource.trigger, triggerProcessors, context));
+            pureSource._dependencies(buildDependencies(protocolSource));
+            pureSource._runProfile(protocolSource.runProfile == null ? null : context.resolveEnumValue(PROFILE_KEY_TYPE_FULL_PATH, protocolSource.runProfile.name()));
+            pureSource._raiseExceptionWorkflow(protocolSource.raiseExceptionWorkflow);
             return pureSource;
         }
 
@@ -384,6 +402,17 @@ public class HelperMasterRecordDefinitionBuilder
                     ._parseService(BuilderUtil.buildService(recordService.parseService, context, recordService.sourceInformation))
                     ._transformService(BuilderUtil.buildService(recordService.transformService, context, recordService.sourceInformation))
                     ._acquisitionProtocol(recordService.acquisitionProtocol == null ? null : IMasteryCompilerExtension.process(recordService.acquisitionProtocol, processors, context));
+        }
+
+        private static RichIterable<Root_meta_pure_mastery_metamodel_RecordSourceDependency> buildDependencies(RecordSource recordSource)
+        {
+            if (recordSource.dependencies == null)
+            {
+                return null;
+            }
+            return ListIterate.collect(recordSource.dependencies, dependency ->
+                   new Root_meta_pure_mastery_metamodel_RecordSourceDependency_Impl("")._dependentRecordSourceId(dependency.dependentRecordSourceId)
+            );
         }
     }
 

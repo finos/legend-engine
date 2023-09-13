@@ -23,20 +23,22 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.MasteryParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.acquisition.AcquisitionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordService;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceDependency;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionKeyType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
@@ -124,7 +126,7 @@ public class MasteryParseTreeWalker
 
         //modelClass
         MasteryParserGrammar.ModelClassContext modelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.modelClass(), "modelClass", walkerSourceInformation.getSourceInformation(ctx));
-        masterRecordDefinition.modelClass = visitModelClass(modelClassContext);
+        masterRecordDefinition.modelClass = visitQualifiedName(modelClassContext.qualifiedName());
 
         //IdentityResolution
         MasteryParserGrammar.IdentityResolutionContext identityResolutionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.identityResolution(), "identityResolution", masterRecordDefinition.sourceInformation);
@@ -146,7 +148,30 @@ public class MasteryParseTreeWalker
         MasteryParserGrammar.PostCurationEnrichmentServiceContext postCurationEnrichmentServiceContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.postCurationEnrichmentService(), "postCurationEnrichmentService", masterRecordDefinition.sourceInformation);
         if (postCurationEnrichmentServiceContext != null)
         {
-            masterRecordDefinition.postCurationEnrichmentService = PureGrammarParserUtility.fromQualifiedName(postCurationEnrichmentServiceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : postCurationEnrichmentServiceContext.qualifiedName().packagePath().identifier(), postCurationEnrichmentServiceContext.qualifiedName().identifier());
+            masterRecordDefinition.postCurationEnrichmentService = visitQualifiedName(postCurationEnrichmentServiceContext.qualifiedName());
+        }
+
+        //Collection Equality
+        MasteryParserGrammar.CollectionEqualitiesContext collectionEqualitiesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.collectionEqualities(), "collectionEqualities", masterRecordDefinition.sourceInformation);
+        if (collectionEqualitiesContext != null)
+        {
+            masterRecordDefinition.collectionEqualities = ListIterate.collect(collectionEqualitiesContext.collectionEquality(), this::visitCollectionEquality);
+        }
+
+        //Elastic Search Config
+        MasteryParserGrammar.PublishToElasticSearchContext publishToElasticSearchContext  = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.publishToElasticSearch(), "publishToElasticSearch", masterRecordDefinition.sourceInformation);
+        masterRecordDefinition.publishToElasticSearch = evaluateBoolean(publishToElasticSearchContext, (publishToElasticSearchContext != null ? publishToElasticSearchContext.boolean_value() : null), null);
+        MasteryParserGrammar.ElasticSearchTransformServiceContext elasticSearchTransformServiceContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.elasticSearchTransformService(), "elasticSearchTransformService", masterRecordDefinition.sourceInformation);
+        if (elasticSearchTransformServiceContext != null)
+        {
+            masterRecordDefinition.elasticSearchTransformService = visitQualifiedName(elasticSearchTransformServiceContext.qualifiedName());
+        }
+
+        //Exception Workflow Service
+        MasteryParserGrammar.ExceptionWorkflowTransformServiceContext exceptionWorkflowTransformServiceContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.exceptionWorkflowTransformService(), "exceptionWorkflowTransformService", masterRecordDefinition.sourceInformation);
+        if (exceptionWorkflowTransformServiceContext != null)
+        {
+            masterRecordDefinition.exceptionWorkflowTransformService = visitQualifiedName(exceptionWorkflowTransformServiceContext.qualifiedName());
         }
 
         return masterRecordDefinition;
@@ -496,11 +521,29 @@ public class MasteryParseTreeWalker
         MasteryParserGrammar.AllowFieldDeleteContext allowFieldDeleteContext  = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.allowFieldDelete(), "allowFieldDelete", source.sourceInformation);
         source.allowFieldDelete = evaluateBoolean(allowFieldDeleteContext, (allowFieldDeleteContext != null ? allowFieldDeleteContext.boolean_value() : null), null);
 
+        MasteryParserGrammar.TimeoutInMinutesContext timeoutInMinutesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.timeoutInMinutes(), "timeoutInMinutes", source.sourceInformation);
+        if (timeoutInMinutesContext != null)
+        {
+            source.timeoutInMinutes = Integer.parseInt(timeoutInMinutesContext.INTEGER().getText());
+        }
+
         MasteryParserGrammar.DataProviderContext dataProviderContext  = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dataProvider(), "dataProvider", source.sourceInformation);
 
         if (dataProviderContext != null)
         {
             source.dataProvider = PureGrammarParserUtility.fromQualifiedName(dataProviderContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataProviderContext.qualifiedName().packagePath().identifier(), dataProviderContext.qualifiedName().identifier());
+        }
+
+        MasteryParserGrammar.RaiseExceptionWorkflowContext raiseExceptionWorkflowContext  = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.raiseExceptionWorkflow(), "raiseExceptionWorkflow", source.sourceInformation);
+        source.raiseExceptionWorkflow = evaluateBoolean(raiseExceptionWorkflowContext, (raiseExceptionWorkflowContext != null ? raiseExceptionWorkflowContext.boolean_value() : null), null);
+
+        MasteryParserGrammar.RunProfileContext runProfileContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.runProfile(), "runProfile", source.sourceInformation);
+        source.runProfile = visitRunProfile(runProfileContext);
+
+        MasteryParserGrammar.DependenciesContext dependenciesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dependencies(), "dependencies", source.sourceInformation);
+        if (dependenciesContext != null)
+        {
+            source.dependencies = ListIterate.collect(dependenciesContext.recordSourceDependency(), this::visitRecordSourceDependency);
         }
 
         // record Service
@@ -538,12 +581,12 @@ public class MasteryParseTreeWalker
 
         if (parseServiceContext != null)
         {
-            recordService.parseService = PureGrammarParserUtility.fromQualifiedName(parseServiceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : parseServiceContext.qualifiedName().packagePath().identifier(), parseServiceContext.qualifiedName().identifier());
+            recordService.parseService = visitQualifiedName(parseServiceContext.qualifiedName());
         }
 
         if (transformServiceContext != null)
         {
-            recordService.transformService = PureGrammarParserUtility.fromQualifiedName(transformServiceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : transformServiceContext.qualifiedName().packagePath().identifier(), transformServiceContext.qualifiedName().identifier());
+            recordService.transformService = visitQualifiedName(transformServiceContext.qualifiedName());
         }
 
         MasteryParserGrammar.AcquisitionProtocolContext acquisitionProtocolContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.acquisitionProtocol(), "acquisitionProtocol", sourceInformation);
@@ -606,6 +649,41 @@ public class MasteryParseTreeWalker
         throw new EngineException("Unrecognized record status", sourceInformation, EngineErrorType.PARSER);
     }
 
+    private Profile visitRunProfile(MasteryParserGrammar.RunProfileContext ctx)
+    {
+        if (ctx == null || ctx.isEmpty())
+        {
+            return null;
+        }
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.RECORD_SOURCE_RUN_PROFILE_XTRA_SMALL() != null)
+        {
+            return Profile.ExtraSmall;
+        }
+        if (ctx.RECORD_SOURCE_RUN_PROFILE_SMALL() != null)
+        {
+            return Profile.Small;
+        }
+        if (ctx.RECORD_SOURCE_RUN_PROFILE_MEDIUM() != null)
+        {
+            return Profile.Medium;
+        }
+        if (ctx.RECORD_SOURCE_RUN_PROFILE_LARGE() != null)
+        {
+            return Profile.Large;
+        }
+
+        throw new EngineException("Unrecognized run profile", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private RecordSourceDependency visitRecordSourceDependency(MasteryParserGrammar.RecordSourceDependencyContext recordSourceDependencyContext)
+    {
+        RecordSourceDependency recordSourceDependency = new RecordSourceDependency();
+        recordSourceDependency.sourceInformation = walkerSourceInformation.getSourceInformation(recordSourceDependencyContext);
+        recordSourceDependency.dependentRecordSourceId = PureGrammarParserUtility.fromIdentifier(recordSourceDependencyContext.masteryIdentifier());
+        return recordSourceDependency;
+    }
+
     /*
      * Identity and Resolution
      */
@@ -650,13 +728,6 @@ public class MasteryParseTreeWalker
     private Lambda visitLambda(MasteryParserGrammar.LambdaFunctionContext ctx)
     {
         return domainParser.parseLambda(ctx.getText(), "", 0, 0, true);
-    }
-
-
-    private String visitModelClass(MasteryParserGrammar.ModelClassContext ctx)
-    {
-        MasteryParserGrammar.QualifiedNameContext qualifiedNameContext = ctx.qualifiedName();
-        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
     }
 
     private ResolutionKeyType visitResolutionKeyType(MasteryParserGrammar.ResolutionQueryKeyTypeContext ctx)
@@ -753,5 +824,21 @@ public class MasteryParseTreeWalker
         return legendServiceAcquisitionProtocol;
     }
 
+    private CollectionEquality visitCollectionEquality(MasteryParserGrammar.CollectionEqualityContext ctx)
+    {
+        CollectionEquality collectionEquality = new CollectionEquality();
+        collectionEquality.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
+        MasteryParserGrammar.ModelClassContext modelClassContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.modelClass(), "modelClass", collectionEquality.sourceInformation);
+        collectionEquality.modelClass = visitQualifiedName(modelClassContext.qualifiedName());
+        MasteryParserGrammar.EqualityFunctionContext equalityFunctionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.equalityFunction(), "equalityFunction", collectionEquality.sourceInformation);
+        collectionEquality.equalityFunction = visitQualifiedName(equalityFunctionContext.qualifiedName());
+
+        return collectionEquality;
+    }
+
+    private String visitQualifiedName(MasteryParserGrammar.QualifiedNameContext qualifiedNameContext)
+    {
+        return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
+    }
 }

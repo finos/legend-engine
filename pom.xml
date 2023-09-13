@@ -2444,6 +2444,12 @@
                 <version>${opentracing.contrib.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-mock</artifactId>
+                <version>${opentracing.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>io.zipkin.reporter2</groupId>
                 <artifactId>zipkin-reporter</artifactId>
                 <version>${zipkin.reporter.version}</version>

@@ -124,7 +124,9 @@ public class MasteryParserExtension implements IMasteryParserExtension
             else if (ACQUISITION_TYPES.contains(code.getType()))
             {
                 AcquisitionParserGrammar acquisitionParserGrammar = getAcquisitionParserGrammar(code);
-                AcquisitionProtocolParseTreeWalker acquisitionProtocolParseTreeWalker = new AcquisitionProtocolParseTreeWalker(code.getWalkerSourceInformation());
+                List<IMasteryParserExtension> extensions = IMasteryParserExtension.getExtensions();
+                List<Function<SpecificationSourceCode, CredentialSecret>> credentialSecretProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraCredentialSecretParsers);
+                AcquisitionProtocolParseTreeWalker acquisitionProtocolParseTreeWalker = new AcquisitionProtocolParseTreeWalker(code.getWalkerSourceInformation(), credentialSecretProcessors);
                 return acquisitionProtocolParseTreeWalker.visitAcquisitionProtocol(acquisitionParserGrammar);
             }
             return null;

@@ -101,6 +101,45 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseInfer
    assertEquals('VARCHAR(12)', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
 }
 
+function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithDecimalInference_Decimal_Integer():Boolean[1]
+{
+   let mapping = meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+      ->rootClassMappingByClass(meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel)->toOne()
+      ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation);
+      
+   let intPropDType = $mapping->propertyMappingsByPropertyName('intProp')
+                  ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
+                  ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
+ 
+   assertEquals('DECIMAL(3, 0)', $intPropDType->meta::relational::metamodel::datatype::dataTypeToSqlText());
+}
+
+function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithDecimalInference_Decimal_Double():Boolean[1]
+{
+   let mapping = meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+      ->rootClassMappingByClass(meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel)->toOne()
+      ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation);
+      
+   let floatPropDType = $mapping->propertyMappingsByPropertyName('floatProp')
+                  ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
+                  ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
+
+   assertEquals('DECIMAL(4, 1)', $floatPropDType->meta::relational::metamodel::datatype::dataTypeToSqlText());
+}
+
+function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithDecimalInference_Decimal_Numeric():Boolean[1]
+{
+   let mapping = meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+      ->rootClassMappingByClass(meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel)->toOne()
+      ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation);
+      
+   let numericPropDType = $mapping->propertyMappingsByPropertyName('numericProp')
+                  ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
+                  ->meta::relational::functions::typeInference::inferRelationalType()->toOne();                                    
+
+   assertEquals('DECIMAL(7, 4)', $numericPropDType->meta::relational::metamodel::datatype::dataTypeToSqlText());   
+}
+
 function <<test.Test>> meta::relational::tests::typeInference::testDynaComplexInference1():Boolean[1]
 {
    let dType = meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin->rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->propertyMappingsByPropertyName('firstName')
@@ -205,3 +244,42 @@ function <<test.Test>> meta::relational::tests::runtime::extractDBs::testExtract
    assertSize($dbs, 1);
    assert($dbs->at(0) == meta::relational::tests::runtime::extractDBs::SubstitutionTestDB1);
 }
+
+###Relational
+Database meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB
+(
+  Table DecimalCompatibilityTable(
+    prop1 Decimal(3, 0),
+    prop2 Decimal(4, 1),
+    prop3 Numeric(4, 4),
+    prop4 INTEGER,
+    prop5 DOUBLE
+  )
+)
+
+###Pure
+Class meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel
+{
+  intProp: Integer[1];
+  floatProp: Float[1];
+  numericProp: Decimal[1];
+}
+
+###Mapping
+Mapping meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+(
+   meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel : Relational {
+      intProp: case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop1),
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop1, 
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop4
+      ),
+      floatProp: case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2),
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2, 
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop5
+      ),
+      numericProp:  case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2),
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2, 
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop3
+      )
+   }
+)

@@ -90,7 +90,11 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             MAPPING_AND_CONNECTION +
             "###Service\n" +
             "Service org::dataeng::ParseWidget\n" + WIDGET_SERVICE_BODY + "\n" +
-            "Service org::dataeng::TransformWidget\n" + WIDGET_SERVICE_BODY +
+            "Service org::dataeng::TransformWidget\n" + WIDGET_SERVICE_BODY + "\n" +
+            "Service org::dataeng::PostCurationWidget\n" + WIDGET_SERVICE_BODY + "\n" +
+            "Service org::dataeng::EqualityFunctionMilestonedIdentifier\n" + WIDGET_SERVICE_BODY + "\n" +
+            "Service org::dataeng::ElasticSearchTransformService\n" + WIDGET_SERVICE_BODY + "\n" +
+            "Service org::dataeng::ExceptionWorkflowTransformService\n" + WIDGET_SERVICE_BODY +
             "\n\n###Mastery\n" +
             "MasterRecordDefinition alloy::mastery::WidgetMasterRecord\n" +
             "{\n" +
@@ -147,7 +151,16 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      ];\n" +
             "    }\n" +
             "  ]\n" +
-            "  postCurationEnrichmentService: org::dataeng::ParseWidget;\n" +
+            "  postCurationEnrichmentService: org::dataeng::PostCurationWidget;\n" +
+            "  publishToElasticSearch: true;\n" +
+            "  elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;\n" +
+            "  exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;\n" +
+            "  collectionEqualities: [\n" +
+            "    {\n" +
+            "      modelClass: org::dataeng::MilestonedIdentifier;\n" +
+            "      equalityFunction: org::dataeng::EqualityFunctionMilestonedIdentifier;\n" +
+            "    }\n" +
+            "  ]\n" +
             "  recordSources:\n" +
             "  [\n" +
             "    widget-file-source-ftp: {\n" +
@@ -160,6 +173,8 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "          fileType: CSV;\n" +
             "          filePath: '/download/day-file.csv';\n" +
             "          headerLines: 0;\n" +
+            "          maxRetryTimeMinutes: 180;\n" +
+            "          encoding: 'Windows-1252';\n" +
             "          connection: alloy::mastery::connection::FTPConnection;\n" +
             "        }#;\n" +
             "      };\n" +
@@ -170,6 +185,12 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      createPermitted: true;\n" +
             "      createBlockedException: false;\n" +
             "      allowFieldDelete: true;\n" +
+            "      raiseExceptionWorkflow: true;\n" +
+            "      runProfile: Medium;\n" +
+            "      timeoutInMinutes: 180;\n" +
+            "      dependencies: [\n" +
+            "        RecordSourceDependency {widget-file-source-sftp}\n" +
+            "      ];\n" +
             "    },\n" +
             "    widget-file-source-sftp: {\n" +
             "      description: 'Widget SFTP File source';\n" +
@@ -464,7 +485,19 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         assertNotNull(idRes);
 
         // enrichment service
-        assertNotNull(masterRecordDefinition._postCurationEnrichmentService());
+        assertNotNull("PostCurationWidget", masterRecordDefinition._postCurationEnrichmentService()._name());
+
+        // Collection equality
+        RichIterable<? extends Root_meta_pure_mastery_metamodel_identity_CollectionEquality> collectionEqualities = masterRecordDefinition._collectionEqualities();
+        assertEquals(1, collectionEqualities.size());
+        assertEquals("MilestonedIdentifier", collectionEqualities.getOnly()._modelClass()._name());
+        assertEquals("EqualityFunctionMilestonedIdentifier", collectionEqualities.getOnly()._equalityFunction()._name());
+
+        //elastic search and exception workflow
+        assertTrue(masterRecordDefinition._publishToElasticSearch());
+        assertEquals("ElasticSearchTransformService", masterRecordDefinition._elasticSearchTransformService()._name());
+        assertEquals("ExceptionWorkflowTransformService", masterRecordDefinition._exceptionWorkflowTransformService()._name());
+
 
         // Resolution Queries
         Object[] queriesArray = idRes._resolutionQueries().toArray();
@@ -673,6 +706,9 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 assertEquals(false, source._stagedLoad());
                 assertEquals(true, source._createPermitted());
                 assertEquals(false, source._createBlockedException());
+                assertEquals(true, source._raiseExceptionWorkflow());
+                assertEquals("Medium", source._runProfile().getName());
+                assertEquals(180L, (long) source._timeoutInMinutes());
 
                 assertTrue(source._allowFieldDelete());
                 assertTrue(source._trigger() instanceof Root_meta_pure_mastery_metamodel_trigger_ManualTrigger);
@@ -683,7 +719,13 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 assertEquals(acquisitionProtocol._filePath(), "/download/day-file.csv");
                 assertEquals(acquisitionProtocol._headerLines(), 0);
                 assertNotNull(acquisitionProtocol._fileType());
+                assertEquals("Windows-1252", acquisitionProtocol._encoding());
                 assertTrue(acquisitionProtocol._connection() instanceof Root_meta_pure_mastery_metamodel_connection_FTPConnection);
+                assertEquals(180L, (long) acquisitionProtocol._maxRetryTimeInMinutes());
+
+                RichIterable<? extends Root_meta_pure_mastery_metamodel_RecordSourceDependency> dependencies = source._dependencies();
+                assertEquals(1, dependencies.size());
+                assertEquals("widget-file-source-sftp", dependencies.getOnly()._dependentRecordSourceId());
 
                 assertNotNull(source._dataProvider());
 

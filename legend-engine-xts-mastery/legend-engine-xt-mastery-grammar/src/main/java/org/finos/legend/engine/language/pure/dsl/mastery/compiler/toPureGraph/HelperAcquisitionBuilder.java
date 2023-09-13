@@ -18,9 +18,12 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.DESDecryption;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.Decryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.PGPDecryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.RestAcquisitionProtocol;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_AcquisitionProtocol;
@@ -31,6 +34,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisit
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_LegendServiceAcquisitionProtocol;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_LegendServiceAcquisitionProtocol_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_RestAcquisitionProtocol_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_file_DESDecryption_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_file_Decryption;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_file_PGPDecryption_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_connection_FileConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_connection_KafkaConnection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -86,7 +92,28 @@ public class HelperAcquisitionBuilder
                 ._fileType(context.resolveEnumValue("meta::pure::mastery::metamodel::acquisition::file::FileType", acquisitionProtocol.fileType.name()))
                 ._headerLines(acquisitionProtocol.headerLines)
                 ._recordsKey(acquisitionProtocol.recordsKey)
-                ._fileSplittingKeys(acquisitionProtocol.fileSplittingKeys == null ? null : Lists.fixedSize.ofAll(acquisitionProtocol.fileSplittingKeys));
+                ._fileSplittingKeys(acquisitionProtocol.fileSplittingKeys == null ? null : Lists.fixedSize.ofAll(acquisitionProtocol.fileSplittingKeys))
+                ._maxRetryTimeInMinutes(acquisitionProtocol.maxRetryTimeInMinutes == null ? null : Long.valueOf(acquisitionProtocol.maxRetryTimeInMinutes))
+                ._encoding(acquisitionProtocol.encoding)
+                ._decryption(acquisitionProtocol.decryption == null ? null : buildDecryption(acquisitionProtocol.decryption, context));
+    }
+
+    public static Root_meta_pure_mastery_metamodel_acquisition_file_Decryption buildDecryption(Decryption decryption, CompileContext context)
+    {
+        if (decryption instanceof PGPDecryption)
+        {
+            return new Root_meta_pure_mastery_metamodel_acquisition_file_PGPDecryption_Impl("")
+                        ._privateKey(HelperAuthenticationBuilder.buildCredentialSecret(((PGPDecryption) decryption).privateKey, context))
+                        ._passPhrase(HelperAuthenticationBuilder.buildCredentialSecret(((PGPDecryption) decryption).passPhrase, context));
+        }
+        if (decryption instanceof DESDecryption)
+        {
+           return new Root_meta_pure_mastery_metamodel_acquisition_file_DESDecryption_Impl("")
+            ._decryptionKey(HelperAuthenticationBuilder.buildCredentialSecret(((DESDecryption) decryption).decryptionKey, context))
+            ._capOption(((DESDecryption) decryption).capOption)
+            ._uuEncode(((DESDecryption) decryption).uuEncode);
+        }
+        return null;
     }
 
     public static Root_meta_pure_mastery_metamodel_acquisition_KafkaAcquisitionProtocol buildKafkaAcquisitionProtocol(KafkaAcquisitionProtocol acquisitionProtocol, CompileContext context)

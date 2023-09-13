@@ -33,6 +33,15 @@ RECORD_SOURCE_TRIGGER:                          'trigger';
 RECORD_SOURCE_SERVICE:                          'recordService';
 RECORD_SOURCE_ALLOW_FIELD_DELETE:               'allowFieldDelete';
 RECORD_SOURCE_AUTHORIZATION:                    'authorization';
+RECORD_SOURCE_DEPENDENCIES:                     'dependencies';
+RECORD_SOURCE_DEPENDENCY:                       'RecordSourceDependency';
+RECORD_SOURCE_TIMEOUT_IN_MINUTES:               'timeoutInMinutes';
+RECORD_SOURCE_RAISE_EXCEPTION_WORKFLOW:         'raiseExceptionWorkflow';
+RECORD_SOURCE_RUN_PROFILE:                      'runProfile';
+RECORD_SOURCE_RUN_PROFILE_LARGE:                'Large';
+RECORD_SOURCE_RUN_PROFILE_MEDIUM:               'Medium';
+RECORD_SOURCE_RUN_PROFILE_SMALL:                'Small';
+RECORD_SOURCE_RUN_PROFILE_XTRA_SMALL:           'ExtraSmall';
 
 //SourcePartitions - these are now deprecated, keeping for backwards compatibility
 SOURCE_PARTITIONS:                              'partitions';
@@ -80,3 +89,8 @@ TAGS:                                           'tags';
 PRECEDENCE:                                     'precedence';
 POST_CURATION_ENRICHMENT_SERVICE:               'postCurationEnrichmentService';
 SPECIFICATION:                                  'specification';
+EXCEPTION_WORKFLOW_TRANSFORM_SERVICE:           'exceptionWorkflowTransformService';
+ELASTIC_SEARCH_TRANSFORM_SERVICE:               'elasticSearchTransformService';
+PUBLISH_TO_ELASTIC_SEARCH:                      'publishToElasticSearch';
+COLLECTION_EQUALITIES:                          'collectionEqualities';
+EQUALITY_FUNCTION:                              'equalityFunction';

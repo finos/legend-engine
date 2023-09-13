@@ -45,6 +45,28 @@ description:                                DESCRIPTION COLON STRING SEMI_COLON
 ;
 postCurationEnrichmentService:              POST_CURATION_ENRICHMENT_SERVICE COLON qualifiedName SEMI_COLON
 ;
+exceptionWorkflowTransformService:          EXCEPTION_WORKFLOW_TRANSFORM_SERVICE COLON qualifiedName SEMI_COLON
+;
+elasticSearchTransformService:              ELASTIC_SEARCH_TRANSFORM_SERVICE COLON qualifiedName SEMI_COLON
+;
+publishToElasticSearch:                     PUBLISH_TO_ELASTIC_SEARCH COLON boolean_value SEMI_COLON
+;
+collectionEqualities:                       COLLECTION_EQUALITIES COLON
+                                            BRACKET_OPEN
+                                            (
+                                            collectionEquality (COMMA collectionEquality)*
+                                            )
+                                            BRACKET_CLOSE
+;
+collectionEquality:                         BRACE_OPEN
+                                            (
+                                                modelClass
+                                                | equalityFunction
+                                            )*
+                                            BRACE_CLOSE
+;
+equalityFunction:                           EQUALITY_FUNCTION COLON qualifiedName SEMI_COLON
+;
 
 // -------------------------------------- MASTER_RECORD_DEFINITION --------------------------------------
 
@@ -56,6 +78,10 @@ masterRecordDefinition:                       MASTER_RECORD_DEFINITION qualified
                                                     | recordSources
                                                     | precedenceRules
                                                     | postCurationEnrichmentService
+                                                    | exceptionWorkflowTransformService
+                                                    | elasticSearchTransformService
+                                                    | publishToElasticSearch
+                                                    | collectionEqualities
                                                 )*
                                                 BRACE_CLOSE
 ;
@@ -89,6 +115,10 @@ recordSource:                               masteryIdentifier COLON BRACE_OPEN
                                                 | allowFieldDelete
                                                 | authorization
                                                 | sourcePartitions
+                                                | dependencies
+                                                | timeoutInMinutes
+                                                | runProfile
+                                                | raiseExceptionWorkflow
                                             )*
                                             BRACE_CLOSE
 ;
@@ -128,6 +158,19 @@ allowFieldDelete:                           RECORD_SOURCE_ALLOW_FIELD_DELETE COL
 ;
 dataProvider:                               RECORD_SOURCE_DATA_PROVIDER COLON qualifiedName SEMI_COLON
 ;
+timeoutInMinutes:                           RECORD_SOURCE_TIMEOUT_IN_MINUTES COLON INTEGER SEMI_COLON
+;
+raiseExceptionWorkflow:                     RECORD_SOURCE_RAISE_EXCEPTION_WORKFLOW COLON boolean_value SEMI_COLON
+;
+runProfile:                                 RECORD_SOURCE_RUN_PROFILE COLON
+                                            (
+                                                RECORD_SOURCE_RUN_PROFILE_LARGE
+                                                    | RECORD_SOURCE_RUN_PROFILE_MEDIUM
+                                                    | RECORD_SOURCE_RUN_PROFILE_SMALL
+                                                    | RECORD_SOURCE_RUN_PROFILE_XTRA_SMALL
+                                            )
+                                            SEMI_COLON
+;
 
 // -------------------------------------- RECORD SERVICE --------------------------------------
 
@@ -163,6 +206,23 @@ dataProviderDef:                           identifier qualifiedName SEMI_COLON
 // -------------------------------------- AUTHORIZATION --------------------------------------
 
 authorization:                              RECORD_SOURCE_AUTHORIZATION COLON islandSpecification SEMI_COLON
+;
+
+// -------------------------------------- DEPENDENCIES --------------------------------------
+
+dependencies:                               RECORD_SOURCE_DEPENDENCIES COLON
+                                            BRACKET_OPEN
+                                            (
+                                            recordSourceDependency (COMMA recordSourceDependency)*
+                                            )
+                                            BRACKET_CLOSE
+                                            SEMI_COLON
+;
+
+recordSourceDependency:                     RECORD_SOURCE_DEPENDENCY
+                                            BRACE_OPEN
+                                            masteryIdentifier
+                                            BRACE_CLOSE
 ;
 
 // -------------------------------------- CONNECTION --------------------------------------
