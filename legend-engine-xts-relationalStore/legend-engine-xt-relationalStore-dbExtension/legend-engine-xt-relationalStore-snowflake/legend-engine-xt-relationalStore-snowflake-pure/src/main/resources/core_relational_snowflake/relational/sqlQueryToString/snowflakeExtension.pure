@@ -224,7 +224,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processDateDiffDurationUnitForSnowflake(durationUnit:String[1]):String[1]
 {
    let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
-   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second',''];
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second','millisecond'];
    $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
 }
 
