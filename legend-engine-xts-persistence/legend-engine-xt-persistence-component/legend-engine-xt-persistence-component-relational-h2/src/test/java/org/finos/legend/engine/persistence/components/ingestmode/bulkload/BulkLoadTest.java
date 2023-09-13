@@ -22,6 +22,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -94,7 +96,7 @@ public class BulkLoadTest extends BaseTest
 
         BulkLoad bulkLoad = BulkLoad.builder()
                 .batchIdField("batch_id")
-                .generateDigest(false)
+                .digestGenStrategy(NoDigestGenStrategy.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                 .build();
 
@@ -166,7 +168,7 @@ public class BulkLoadTest extends BaseTest
         String filePath = "src/test/resources/data/bulk-load/input/staged_file2.csv";
 
         BulkLoad bulkLoad = BulkLoad.builder()
-            .generateDigest(false)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
             .auditing(NoAuditing.builder().build())
             .batchIdField("batch_id")
             .build();
@@ -239,9 +241,7 @@ public class BulkLoadTest extends BaseTest
         String filePath = "src/test/resources/data/bulk-load/input/staged_file3.csv";
 
         BulkLoad bulkLoad = BulkLoad.builder()
-            .generateDigest(true)
-            .digestField(DIGEST)
-            .digestUdfName(DIGEST_UDF)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).digestField(DIGEST).build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .batchIdField("batch_id")
             .build();
@@ -317,9 +317,7 @@ public class BulkLoadTest extends BaseTest
 
         BulkLoad bulkLoad = BulkLoad.builder()
             .batchIdField("batch_id")
-            .generateDigest(true)
-            .digestField(DIGEST)
-            .digestUdfName(DIGEST_UDF)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).digestField(DIGEST).build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
 
@@ -392,16 +390,14 @@ public class BulkLoadTest extends BaseTest
         try
         {
             BulkLoad bulkLoad = BulkLoad.builder()
-                    .batchIdField("batch_id")
-                    .generateDigest(true)
-                    .digestUdfName("LAKEHOUSE_UDF")
+                    .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).build())
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertTrue(e.getMessage().contains("For digest generation, digestField & digestUdfName are mandatory"));
+            Assertions.assertTrue(e.getMessage().contains("Cannot build UDFBasedDigestGenStrategy, some of required attributes are not set [digestField]"));
         }
     }
 
@@ -411,16 +407,15 @@ public class BulkLoadTest extends BaseTest
         try
         {
             BulkLoad bulkLoad = BulkLoad.builder()
-                    .generateDigest(true)
+                    .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).build())
                     .batchIdField("batch_id")
-                    .digestField("digest")
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertTrue(e.getMessage().contains("For digest generation, digestField & digestUdfName are mandatory"));
+            Assertions.assertTrue(e.getMessage().contains("Cannot build UDFBasedDigestGenStrategy, some of required attributes are not set [digestUdfName]"));
         }
     }
 
@@ -430,9 +425,8 @@ public class BulkLoadTest extends BaseTest
         try
         {
             BulkLoad bulkLoad = BulkLoad.builder()
-                    .digestField("digest")
                     .batchIdField("batch_id")
-                    .generateDigest(false)
+                    .digestGenStrategy(NoDigestGenStrategy.builder().build())
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
 

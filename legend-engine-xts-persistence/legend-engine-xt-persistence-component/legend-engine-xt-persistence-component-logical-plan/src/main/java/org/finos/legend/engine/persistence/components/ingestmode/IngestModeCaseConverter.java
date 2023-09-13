@@ -25,6 +25,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.V
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
@@ -161,9 +166,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return BulkLoad.builder()
                 .batchIdField(applyCase(bulkLoad.batchIdField()))
-                .digestField(applyCase(bulkLoad.digestField()))
-                .digestUdfName(bulkLoad.digestUdfName())
-                .generateDigest(bulkLoad.generateDigest())
+                .digestGenStrategy(bulkLoad.digestGenStrategy().accept(new DigestGenStrategyCaseConverter()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
                 .build();
     }
@@ -216,6 +219,26 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .build();
         }
     }
+
+    private class DigestGenStrategyCaseConverter implements DigestGenStrategyVisitor<DigestGenStrategy>
+    {
+
+        @Override
+        public DigestGenStrategy visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return noDigestGenStrategy;
+        }
+
+        @Override
+        public DigestGenStrategy visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
+        {
+            return UDFBasedDigestGenStrategy.builder()
+                    .digestUdfName(udfBasedDigestGenStrategy.digestUdfName())
+                    .digestField(applyCase(udfBasedDigestGenStrategy.digestField()))
+                    .build();
+        }
+    }
+
 
     private class TransactionMilestoningCaseConverter implements TransactionMilestoningVisitor<TransactionMilestoning>
     {

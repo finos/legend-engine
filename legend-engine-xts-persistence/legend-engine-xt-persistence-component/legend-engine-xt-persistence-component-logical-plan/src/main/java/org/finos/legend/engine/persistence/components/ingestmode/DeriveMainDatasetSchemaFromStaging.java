@@ -142,9 +142,10 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        if (bulkLoad.generateDigest())
+        Optional<String> digestField = bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+        if (digestField.isPresent())
         {
-            addDigestField(mainSchemaFields, bulkLoad.digestField().get());
+            addDigestField(mainSchemaFields, digestField.get());
         }
         Field batchIdField = Field.builder()
                 .name(bulkLoad.batchIdField())
@@ -210,7 +211,6 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
             return false;
         }
     }
-
 
     public static class EnrichSchemaWithMergeStrategy implements MergeStrategyVisitor<Void>
     {

@@ -21,6 +21,9 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
@@ -84,18 +87,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Digest Generation
-        if (ingestMode().generateDigest())
-        {
-            Value digestValue = DigestUdf
-                    .builder()
-                    .udfName(ingestMode().digestUdfName().orElseThrow(IllegalStateException::new))
-                    .addAllFieldNames(stagingDataset().schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-                    .addAllValues(fieldsToSelect)
-                    .build();
-            String digestField = ingestMode().digestField().orElseThrow(IllegalStateException::new);
-            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(digestField).build());
-            fieldsToSelect.add(digestValue);
-        }
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -183,6 +175,44 @@ class BulkLoadPlanner extends Planner
         catch (JsonProcessingException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+
+    static class DigestGeneration implements DigestGenStrategyVisitor<Void>
+    {
+        private List<Value> fieldsToSelect;
+        private List<Value> fieldsToInsert;
+        private Dataset stagingDataset;
+        private Dataset mainDataset;
+
+        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
+        {
+            this.mainDataset = mainDataset;
+            this.stagingDataset = stagingDataset;
+            this.fieldsToSelect = fieldsToSelect;
+            this.fieldsToInsert = fieldsToInsert;
+        }
+
+        @Override
+        public Void visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
+        {
+            Value digestValue = DigestUdf
+                    .builder()
+                    .udfName(udfBasedDigestGenStrategy.digestUdfName())
+                    .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
+                    .addAllValues(fieldsToSelect)
+                    .build();
+            String digestField = udfBasedDigestGenStrategy.digestField();
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());
+            fieldsToSelect.add(digestValue);
+            return null;
         }
     }
 

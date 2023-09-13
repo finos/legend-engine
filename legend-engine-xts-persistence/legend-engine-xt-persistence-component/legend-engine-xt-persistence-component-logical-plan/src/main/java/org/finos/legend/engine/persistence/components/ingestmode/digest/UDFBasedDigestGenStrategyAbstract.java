@@ -26,6 +26,10 @@ import org.immutables.value.Value;
 )
 public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
 {
+    String digestUdfName();
+
+    String digestField();
+
     @Override
     default <T> T accept(DigestGenStrategyVisitor<T> visitor)
     {
