@@ -26,4 +26,9 @@ import org.immutables.value.Value;
 )
 public interface ParquetFileFormatAbstract extends FileFormat
 {
+    @Override
+    default String getFormatName()
+    {
+        return "PARQUET";
+    }
 }

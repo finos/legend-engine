@@ -58,7 +58,10 @@ public enum Clause
     NOT_ENFORCED("NOT ENFORCED"),
     DATA_TYPE("DATA TYPE"),
     CONVERT("CONVERT"),
-    ARRAY("ARRAY");
+    ARRAY("ARRAY"),
+    LOAD_DATA("LOAD DATA"),
+    OVERWRITE("OVERWRITE"),
+    FROM_FILES("FROM FILES");
 
     private final String clause;
 

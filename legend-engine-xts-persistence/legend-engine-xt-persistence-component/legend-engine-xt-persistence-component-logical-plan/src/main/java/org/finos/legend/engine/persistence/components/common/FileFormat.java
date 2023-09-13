@@ -16,4 +16,5 @@ package org.finos.legend.engine.persistence.components.common;
 
 public interface FileFormat
 {
+    String getFormatName();
 }

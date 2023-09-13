@@ -12,39 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
 
+package org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets;
+
+import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
 )
-public interface CsvFileFormatAbstract extends FileFormat
+public interface BigQueryStagedFilesDatasetPropertiesAbstract extends StagedFilesDatasetProperties
 {
-    Optional<String> fieldDelimiter();
-
-    Optional<String> encoding();
-
-    Optional<String> nullMarker();
-
-    Optional<String> quote();
-
-    Optional<Long> skipLeadingRows();
-
-    Optional<Long> maxBadRecords();
-
-    Optional<String> compression();
-
-    @Override
-    default String getFormatName()
-    {
-        return "CSV";
-    }
+    FileFormat fileFormat();
 }

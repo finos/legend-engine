@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.common;
 
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @Value.Style(
     typeAbstract = "*Abstract",
@@ -26,4 +28,13 @@ import org.immutables.value.Value;
 )
 public interface JsonFileFormatAbstract extends FileFormat
 {
+    Optional<Long> maxBadRecords();
+
+    Optional<String> compression();
+
+    @Override
+    default String getFormatName()
+    {
+        return "JSON";
+    }
 }
