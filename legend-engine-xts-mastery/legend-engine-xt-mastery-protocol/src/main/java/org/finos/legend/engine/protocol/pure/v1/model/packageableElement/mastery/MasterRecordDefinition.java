@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.master
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.ModelGenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.PrecedenceRule;
 
@@ -29,6 +30,10 @@ public class MasterRecordDefinition extends ModelGenerationSpecification
     public IdentityResolution identityResolution;
     public List<RecordSource> sources = Collections.emptyList();
     public List<PrecedenceRule> precedenceRules;
+    public List<CollectionEquality> collectionEqualities;
+    public Boolean publishToElasticSearch;
+    public String elasticSearchTransformService;
+    public String exceptionWorkflowTransformService;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

@@ -80,6 +80,10 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
                     pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, context));
                     pureMasteryMetamodelMasterRecordDefinition._sources(HelperMasterRecordDefinitionBuilder.buildRecordSources(masterRecordDefinition.sources, context));
                     pureMasteryMetamodelMasterRecordDefinition._postCurationEnrichmentService(BuilderUtil.buildService(masterRecordDefinition.postCurationEnrichmentService, context, masterRecordDefinition.sourceInformation));
+                    pureMasteryMetamodelMasterRecordDefinition._exceptionWorkflowTransformService(BuilderUtil.buildService(masterRecordDefinition.exceptionWorkflowTransformService, context, masterRecordDefinition.sourceInformation));
+                    pureMasteryMetamodelMasterRecordDefinition._elasticSearchTransformService(BuilderUtil.buildService(masterRecordDefinition.elasticSearchTransformService, context, masterRecordDefinition.sourceInformation));
+                    pureMasteryMetamodelMasterRecordDefinition._publishToElasticSearch(masterRecordDefinition.publishToElasticSearch);
+                    pureMasteryMetamodelMasterRecordDefinition._collectionEqualities(HelperMasterRecordDefinitionBuilder.buildCollectionEqualities(masterRecordDefinition.collectionEqualities, context));
                     if (masterRecordDefinition.precedenceRules != null)
                     {
                         List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
