@@ -27,21 +27,6 @@ import meta::pure::extension::configuration::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::graphFetch::execution::*;
 
-function <<LocalPlatformBinding.TestPlanBinder, doc.deprecated>> meta::pure::extension::configuration::localPlatformBinding::bindTestPlanToPlatform(): LocalPlatformBinder[1]
-{
-   ^LocalPlatformBinder
-   (
-      overrides = [
-         meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform__LocalPlatformBinder_1_
-      ],
-
-      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-         fail('This flow is not supported');
-         $plan;
-      }
-   ) 
-}
-
 function <<access.private, doc.deprecated>> meta::pure::extension::configuration::localPlatformBinding::coreLegendJavaPlatformBinding(): PlatformBinding[1]
 {
    legendJavaPlatformBinding([
