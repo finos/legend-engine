@@ -14,6 +14,6 @@
 
 package org.finos.legend.connection;
 
-public abstract class ConnectionSpecification<T>
+public abstract class ConnectionSpecification
 {
 }

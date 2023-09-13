@@ -18,18 +18,8 @@ import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
-import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
-import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
-import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
-import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionFactoryFlowProvider;
-import org.finos.legend.connection.DefaultConnectionFactoryFlowProvider;
 
-import java.util.Properties;
 import java.util.function.Function;
 
 public class ConnectionFactoryBundle<C extends Configuration> implements ConfiguredBundle<C>
@@ -50,37 +40,37 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
     @Override
     public void run(C configuration, Environment environment)
     {
-        final ConnectionFactoryConfiguration config = this.configSupplier.apply(configuration);
-        // TODO: @akphi allow, through deployment configuration to load more credential providers
-        // what we have right here is just the bare minimum for setting up the credential providers
-
-        // TEMP: for testing
-        Properties properties = new Properties();
-        properties.put("passwordRef", "password");
-        PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
-
-        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
-                .with(propertiesFileCredentialVault)
-                .build();
-
-        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
-                .with(platformCredentialVaultProvider)
-                .build();
-
-        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
-                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
-                .build();
-
-        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
-                .with(new UserPasswordCredentialProvider())
-                .with(intermediationRuleProvider)
-                .build();
-
-        ConnectionFactoryFlowProvider connectionFactoryFlowProvider = new DefaultConnectionFactoryFlowProvider();
-        connectionFactoryFlowProvider.configure();
-
-        connectionFactory = new ConnectionFactory(connectionFactoryFlowProvider, credentialProviderProvider);
-        connectionFactory.initialize();
+        // TODO: @akphi - clean this up to use the new connection factory
+//        final ConnectionFactoryConfiguration config = this.configSupplier.apply(configuration);
+//        // what we have right here is just the bare minimum for setting up the credential providers
+//
+//        // TEMP: for testing
+//        Properties properties = new Properties();
+//        properties.put("passwordRef", "password");
+//        PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
+//
+//        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+//                .with(propertiesFileCredentialVault)
+//                .build();
+//
+//        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
+//                .with(platformCredentialVaultProvider)
+//                .build();
+//
+//        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
+//                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
+//                .build();
+//
+//        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+//                .with(new UserPasswordCredentialProvider())
+//                .with(intermediationRuleProvider)
+//                .build();
+//
+//        ConnectionFactoryFlowProvider connectionFactoryFlowProvider = new DefaultConnectionFactoryFlowProvider();
+//        connectionFactoryFlowProvider.configure();
+//
+//        connectionFactory = new ConnectionFactory(connectionFactoryFlowProvider, credentialProviderProvider);
+//        connectionFactory.initialize();
     }
 
     public static ConnectionFactory getConnectionFactory()

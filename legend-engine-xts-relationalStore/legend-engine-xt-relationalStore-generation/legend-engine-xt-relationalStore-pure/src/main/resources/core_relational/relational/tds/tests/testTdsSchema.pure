@@ -73,6 +73,20 @@ function <<test.Test>> meta::relational::tds::schema::tests::resolveSchemaTest()
             ->sort(asc('first_name'))
    }); 
 
+   assertSchemaRoundTripEquality(
+      [
+         ^TDSColumn(name = 'ID', offset= 0, type = Integer), 
+         ^TDSColumn(name = 'FIRSTNAME', offset = 1, type = String),
+         ^TDSColumn(name = 'LASTNAME', offset = 2, type = String),
+         ^TDSColumn(name = 'AGE', offset = 3, type = Integer),
+         ^TDSColumn(name = 'ADDRESSID', offset = 4, type = Integer),
+         ^TDSColumn(name = 'FIRMID', offset = 5, type = Integer),
+         ^TDSColumn(name = 'MANAGERID', offset = 6, type = Integer)
+      ], 
+      {|
+      tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','personTable'))
+   });    
+
   assertSchemaRoundTripEquality({|
          Trade.all()
             ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
