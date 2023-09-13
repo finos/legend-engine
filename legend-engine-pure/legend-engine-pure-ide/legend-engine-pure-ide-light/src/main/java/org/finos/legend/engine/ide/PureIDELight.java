@@ -30,11 +30,6 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        System.setProperty("legend.test.server.host","localhost");
-        System.setProperty("legend.test.server.port","6200");
-        System.setProperty("legend.test.h2.port","90902");
-        System.setProperty("legend.test.clientVersion","vX_X_X");
-        System.setProperty("legend.test.serverVersion","v1");
         new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
     }
 
@@ -106,7 +101,6 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure","service"))
                 .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure","external-tableformat-iceberg"))
                 .with(this.buildCore("legend-engine-xts-arrow/legend-engine-xt-arrow-pure", "external-format-arrow"))
-
                 ;
     }
 
