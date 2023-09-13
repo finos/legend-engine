@@ -2017,11 +2017,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-arrow-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-arrow-shared</artifactId>
                 <version>${project.version}</version>
             </dependency>

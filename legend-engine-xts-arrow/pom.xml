@@ -15,7 +15,6 @@
 
     <modules>
         <module>legend-engine-xt-arrow-pure</module>
-        <module>legend-engine-xt-arrow-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-arrow-runtime</module>
         <module>legend-engine-xt-arrow-shared</module>
 

@@ -50,3 +50,11 @@ Class meta::external::format::shared::executionPlan::ExternalFormatInternalizeEx
 
   config            : ExternalFormatInternalizeConfig[0..1];   
 }
+
+
+Class meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode extends ExecutionNode
+{
+  binding : Binding[1];
+  checked : Boolean[1];
+  config  : ExternalFormatExternalizeConfig[0..1];
+}
