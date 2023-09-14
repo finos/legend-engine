@@ -217,6 +217,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'ascii',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
+            )
+         ])
+      ),       
+
+      pair(
          'asin',
          list([
             pair(
@@ -309,6 +319,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'char',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 1)}
+            )
+         ])
+      ),       
+
+      pair(
          'coalesce',
          list([
             pair(
@@ -377,6 +397,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'cot',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),      
 
       pair(
          'count',
@@ -579,6 +609,46 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'firstHourOfDay',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
+            )
+         ])
+      ),      
+
+      pair(
+         'firstMinuteOfHour',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
+            )
+         ])
+      ),         
+
+      pair(
+         'firstSecondOfMinute',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
+            )
+         ])
+      ),   
+
+      pair(
+         'firstMillisecondOfSecond',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
+            )
+         ])
+      ),         
+
+      pair(
          'floor',
          list([
             pair(
@@ -777,6 +847,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'log10',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),      
+
+      pair(
          'ltrim',
          list([
             pair(
@@ -799,6 +879,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'md5',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 32)}
+            )
+         ])
+      ),      
 
       pair(
          'min',
@@ -1045,6 +1135,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'reverse',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
+            )
+         ])
+      ),      
+
+      pair(
          'right',
          list([
             pair(
@@ -1101,6 +1201,36 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'sha1',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 40)}
+            )
+         ])
+      ),          
+
+      pair(
+         'sha256',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 64)}
+            )
+         ])
+      ),        
+
+      pair(
+         'sign',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
+            )
+         ])
+      ),      
 
       pair(
          'sin',
@@ -1319,6 +1449,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'variancePopulation',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
+         'varianceSample',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
+            )
+         ])
+      ),
+
+      pair(
          'weekOfYear',
          list([
             pair(
@@ -1391,8 +1541,33 @@ function <<access.private>> meta::relational::functions::typeInference::getSafeT
 
    if($safeType->instanceOf(meta::relational::metamodel::datatype::Char) || $safeType->instanceOf(meta::relational::metamodel::datatype::Varchar),
       | ^meta::relational::metamodel::datatype::Varchar(size = [if($type1->instanceOf(meta::relational::metamodel::datatype::Other), | 0, | $type1->getSize()), if($type2->instanceOf(meta::relational::metamodel::datatype::Other), | 0, | $type2->getSize())]->max()),
-      | $safeType
+      | if($safeType->instanceOf(meta::relational::metamodel::datatype::Numeric) || $safeType->instanceOf(meta::relational::metamodel::datatype::Decimal),
+        {| 
+          let scale = max([getDecimalScale($type1), getDecimalScale($type2)]);
+          let precision = max([getDecimalIntegerPrecision($type1), getDecimalIntegerPrecision($type2)]) + $scale;
+          ^meta::relational::metamodel::datatype::Decimal(precision = $precision, scale = $scale);
+        },
+        | $safeType
+      )
    );
+}
+
+function <<access.private>> meta::relational::functions::typeInference::getDecimalScale(t: meta::relational::metamodel::datatype::DataType[1]):Integer[1]
+{
+   $t->match([
+      c:meta::relational::metamodel::datatype::Numeric[1]|$c.scale,
+      c:meta::relational::metamodel::datatype::Decimal[1]|$c.scale,
+      a:Any[1]|0
+   ])
+}
+
+function <<access.private>> meta::relational::functions::typeInference::getDecimalIntegerPrecision(t: meta::relational::metamodel::datatype::DataType[1]):Integer[1]
+{
+   $t->match([
+      c:meta::relational::metamodel::datatype::Numeric[1]|$c.precision - $c.scale,
+      c:meta::relational::metamodel::datatype::Decimal[1]|$c.precision - $c.scale,
+      a:Any[1]|0
+   ])
 }
 
 function <<access.private>> meta::relational::functions::typeInference::getSize(t: meta::relational::metamodel::datatype::DataType[1]):Integer[1]
@@ -1407,18 +1582,20 @@ function <<access.private>> meta::relational::functions::typeInference::getSize(
 function <<access.private>> meta::relational::functions::typeInference::safeTypeMap():Map<Class<Any>, List<Class<Any>>>[1]
 {
    newMap([
-      pair(meta::relational::metamodel::datatype::TinyInt, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double])),
-      pair(meta::relational::metamodel::datatype::SmallInt, list([meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double])),
-      pair(meta::relational::metamodel::datatype::Integer, list([meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double])),
-      pair(meta::relational::metamodel::datatype::BigInt, list([meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double])),
-      pair(meta::relational::metamodel::datatype::Float, list([meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::Double])),
-      pair(meta::relational::metamodel::datatype::Double, list([meta::relational::metamodel::datatype::Double])),
+      pair(meta::relational::metamodel::datatype::TinyInt, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::SmallInt, list([meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::Integer, list([meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::BigInt, list([meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::Float, list([meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::Double, list([meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::Numeric, list([meta::relational::metamodel::datatype::Numeric, meta::relational::metamodel::datatype::Decimal])),
+      pair(meta::relational::metamodel::datatype::Decimal, list([meta::relational::metamodel::datatype::Decimal, meta::relational::metamodel::datatype::Numeric])),
       pair(meta::relational::metamodel::datatype::Char, list([meta::relational::metamodel::datatype::Char, meta::relational::metamodel::datatype::Varchar])),
       pair(meta::relational::metamodel::datatype::Varchar, list([meta::relational::metamodel::datatype::Char, meta::relational::metamodel::datatype::Varchar])),
       pair(meta::relational::metamodel::datatype::Date, list([meta::relational::metamodel::datatype::Date])),
       pair(meta::relational::metamodel::datatype::Timestamp, list([meta::relational::metamodel::datatype::Timestamp])),
       pair(meta::relational::metamodel::datatype::Bit, list([meta::relational::metamodel::datatype::Bit])),
-      pair(meta::relational::metamodel::datatype::Other, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double,
-                                                               meta::relational::metamodel::datatype::Char, meta::relational::metamodel::datatype::Varchar, meta::relational::metamodel::datatype::Date, meta::relational::metamodel::datatype::Timestamp, meta::relational::metamodel::datatype::Bit, meta::relational::metamodel::datatype::Other]))
+      pair(meta::relational::metamodel::datatype::Other, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, 
+                                                               meta::relational::metamodel::datatype::Decimal, meta::relational::metamodel::datatype::Char, meta::relational::metamodel::datatype::Varchar, meta::relational::metamodel::datatype::Date, meta::relational::metamodel::datatype::Timestamp, meta::relational::metamodel::datatype::Bit, meta::relational::metamodel::datatype::Other]))
    ])
 }

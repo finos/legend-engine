@@ -200,6 +200,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', javaDouble(), 'average', [javaParam(javaList(javaNumber()), 'p0')]))
       ->addMethod(javaMethod('public', javaLong(), 'ceiling', [javaParam(javaNumber(), 'p0')]))
       ->addMethod(javaMethod('public', javaList(javaString()), 'chunk', [javaParam(javaString(), 'p0'), javaParam(javaInt(), 'p1')]))
+      ->addMethod(javaMethod('public', javaDouble(), 'coTangent', [javaParam(javaDouble(), 'p0')]))
       ->addMethod(javaMethod('public', javaInt(), 'compareInt', [javaParam(javaTypeVar('T'), 'p0'), javaParam(javaTypeVar('T'), 'p1')]))
       ->addMethod(javaMethod('public', javaInt(), 'compareUnmatchedNumbers', [javaParam(javaNumber(), 'p0'), javaParam(javaNumber(), 'p1')]))
       ->addMethod(javaMethod('public', javaLong(), 'dateDiff', [javaParam($jPureDate, 'p0'), javaParam($jPureDate, 'p1'), javaParam($jDurationUnit, 'p2')]))
@@ -222,6 +223,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfThisYear', []))
       ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfWeek', [javaParam($jPureDate, 'p0')]))
       ->addMethod(javaMethod('public', $jPureDate, 'firstDayOfYear', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstHourOfDay', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstMinuteOfHour', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstSecondOfMinute', [javaParam($jPureDate, 'p0')]))
+      ->addMethod(javaMethod('public', $jPureDate, 'firstMillisecondOfSecond', [javaParam($jPureDate, 'p0')]))
       ->addMethod(javaMethod('public', javaDouble(), 'floatMultiply', [javaParam(javaDouble(), 'p0'), javaParam(javaDouble(), 'p1')]))
       ->addMethod(javaMethod('public', javaDouble(), 'floatPlus', [javaParam(javaDouble(), 'p0'), javaParam(javaDouble(), 'p1')]))
       ->addMethod(javaMethod('public', javaLong(), 'floor', [javaParam(javaNumber(), 'p0')]))
@@ -275,6 +280,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', javaString(), 'toRepresentation', [javaParam(javaObject(), 'p0')]))
       ->addMethod(javaMethod('public', javaString(), 'toUpperFirstCharacter', [javaParam(javaString(), 'p0')]))
       ->addMethod(javaMethod('public', $jPureDate, 'today', []))
+      ->addMethod(javaMethod('public', javaDouble(), 'variance', [javaParam(javaArray(javaDouble()), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaNumber(), 'variance', [javaParam(javaList(javaNumber()), 'p0'), javaParam(javaBoolean(), 'p1')]))
       ->addMethod(javaMethod('public', javaLong(), 'weekOfYear', [javaParam($jPureDate, 'p0')]));
 
    let jMonth = javaClass('public', 'org.finos.legend.engine.plan.dependencies.domain.date.Month')

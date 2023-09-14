@@ -32,7 +32,7 @@ public class DataPushServer extends BaseDataPushServer
     {
         super.initialize(bootstrap);
 
-        bootstrap.addBundle(new ConnectionFactoryBundle<>(DataPushServerConfiguration::getConnectionFactoryConfiguration));
+//        bootstrap.addBundle(new ConnectionFactoryBundle<>(DataPushServerConfiguration::getConnectionFactoryConfiguration));
         bootstrap.addBundle(new LegendPac4jBundle<>(BaseServerConfiguration::getPac4jConfiguration));
     }
 

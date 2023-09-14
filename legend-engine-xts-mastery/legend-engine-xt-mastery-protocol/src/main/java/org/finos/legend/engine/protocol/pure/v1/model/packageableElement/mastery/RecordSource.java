@@ -15,26 +15,35 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolutionVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RecordSource implements Tagable
+public class RecordSource
 {
-    public String id;
-    public String description;
     public String parseService;
     public String transformService;
+    public List<String> tags = new ArrayList<String>();
+    public List<RecordSourcePartition> partitions = Collections.emptyList();
+    public String id;
+    public String description;
     public RecordSourceStatus status;
     public Boolean sequentialData;
     public Boolean stagedLoad;
     public Boolean createPermitted;
     public Boolean createBlockedException;
-    public List<String> tags = new ArrayList<String>();
-    public List<RecordSourcePartition> partitions = Collections.emptyList();
-
+    public Boolean allowFieldDelete;
+    public RecordService recordService;
+    public String dataProvider;
+    public Trigger trigger;
+    public Authorization authorization;
+    public Boolean raiseExceptionWorkflow;
+    public Profile runProfile;
+    public Integer timeoutInMinutes;
+    public List<RecordSourceDependency> dependencies;
     public SourceInformation sourceInformation;
 
     public List<String> getTags()

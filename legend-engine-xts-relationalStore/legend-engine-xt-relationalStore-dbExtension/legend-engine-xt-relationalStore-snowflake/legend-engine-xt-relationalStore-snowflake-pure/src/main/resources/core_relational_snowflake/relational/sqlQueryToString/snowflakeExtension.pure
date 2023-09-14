@@ -118,11 +118,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='DATE_TRUNC(\'DAY\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='DATE_TRUNC(\'SECOND\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='DATE_TRUNC(\'HOUR\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='DATE_TRUNC(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
@@ -142,10 +147,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),    
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
@@ -216,7 +224,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processDateDiffDurationUnitForSnowflake(durationUnit:String[1]):String[1]
 {
    let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
-   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second',''];
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second','millisecond'];
    $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
 }
 

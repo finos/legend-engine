@@ -37,6 +37,20 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::repeatString::testRepeatString(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='repeatString', parameters=[^Literal(value='a'), ^Literal(value=3)]);
+  let expected = ^Literal(value='aaa');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::reverseString::testReverseString(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='reverseString', parameters=[^Literal(value='abc')]);
+  let expected = ^Literal(value='cba');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::replace::testCharReplace(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='replace', parameters=[^Literal(value='Joe'), ^Literal(value='J'), ^Literal(value='P') ]);           //case sensitive matching is supported by only a few dbs 
@@ -291,5 +305,19 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name='matches', parameters=[^Literal(value='Blo$ggs'), ^Literal(value='^[A-Za-z0-9]*$')]);
   let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::char::testChar(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='char', parameters=[^Literal(value=97)]);
+  let expected = ^Literal(value='a');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::ascii::testAscii(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='ascii', parameters=[^Literal(value='a')]);
+  let expected = ^Literal(value=97);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }

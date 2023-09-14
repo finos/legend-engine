@@ -47,8 +47,8 @@ function meta::pure::platform::executionPlan::generation::processValueSpecificat
 function <<access.private>> meta::pure::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->recursivelyFetchClusteredValueSpecification(false))->map(v|$v->processValueSpecification($state, $extensions, $debug));
-   let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
-   let varInputs = $funcParams->filter(x| $state.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+   let funcParams = $fe->findVariableExpressionsInValueSpecification(false)->removeDuplicatesBy(v | $v.name);
+   let varInputs = $funcParams->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
 
    ^PureExpressionPlatformExecutionNode
    (
