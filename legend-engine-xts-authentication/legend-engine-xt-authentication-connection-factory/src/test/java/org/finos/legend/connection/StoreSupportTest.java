@@ -12,17 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection;
 
-import java.util.List;
-import java.util.Properties;
-
-public interface JDBCConnectionDriver
+public class StoreSupportTest
 {
-    List<String> getIds();
-
-    // TODO?: @akphi - should we port over the driver wrapper stuffs from DatabaseManager as well?
-    String getDriver();
-
-    String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties);
+    // TODO: test store instance instatiation: auth mechanism is limitted or auto-picked to be everything
 }

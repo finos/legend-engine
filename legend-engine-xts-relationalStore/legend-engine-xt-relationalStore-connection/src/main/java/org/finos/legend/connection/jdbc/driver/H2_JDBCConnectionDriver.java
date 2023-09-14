@@ -29,14 +29,14 @@ public class H2_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
-    {
-        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
-    }
-
-    @Override
     public String getDriver()
     {
         return "org.h2.Driver";
+    }
+
+    @Override
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    {
+        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
     }
 }

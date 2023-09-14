@@ -20,6 +20,8 @@ import java.util.Properties;
 
 public class ConnectionFactoryTest
 {
+    // TODO: test BFS algo
+
     @Test
     public void testConnection() throws Exception
     {

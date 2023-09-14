@@ -19,13 +19,14 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 
 import java.util.List;
+import java.util.Objects;
 
-public abstract class StoreSupport
+public class StoreSupport
 {
     private final String identifier;
     private final List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes;
 
-    public StoreSupport(String identifier, List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes)
+    protected StoreSupport(String identifier, List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes)
     {
         this.identifier = identifier;
         this.authenticationSpecificationTypes = authenticationSpecificationTypes;
@@ -39,5 +40,37 @@ public abstract class StoreSupport
     public ImmutableList<Class<? extends AuthenticationSpecification>> getAuthenticationSpecificationTypes()
     {
         return Lists.immutable.withAll(authenticationSpecificationTypes);
+    }
+
+    public static class Builder
+    {
+        private String identifier;
+        private final List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes = Lists.mutable.empty();
+
+        public Builder withIdentifier(String identifier)
+        {
+            this.identifier = identifier;
+            return this;
+        }
+
+        public Builder withAuthenticationSpecificationTypes(List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes)
+        {
+            this.authenticationSpecificationTypes.addAll(authenticationSpecificationTypes);
+            return this;
+        }
+
+        public Builder withAuthenticationSpecificationType(Class<? extends AuthenticationSpecification> authenticationSpecificationType)
+        {
+            this.authenticationSpecificationTypes.add(authenticationSpecificationType);
+            return this;
+        }
+
+        public StoreSupport build()
+        {
+            return new StoreSupport(
+                    Objects.requireNonNull(this.identifier, "Store support identifier is required"),
+                    this.authenticationSpecificationTypes
+            );
+        }
     }
 }

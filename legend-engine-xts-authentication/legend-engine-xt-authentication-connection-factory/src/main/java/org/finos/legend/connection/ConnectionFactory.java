@@ -69,20 +69,20 @@ public class ConnectionFactory
         return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
     }
 
-    public ConnectionAuthentication authenticate(Identity identity, String storeInstanceIdentifier, AuthenticationSpecification authenticationSpecification)
+    public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationSpecification authenticationSpecification)
     {
-        return this.authenticate(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationSpecification);
+        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationSpecification);
     }
 
-    public ConnectionAuthentication authenticate(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification)
+    public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification)
     {
         if (!storeInstance.getAuthenticationSpecificationTypes().contains(authenticationSpecification.getClass()))
         {
-            throw new RuntimeException(String.format("Can't authenticate: authentication specification of type '%s' is not supported by store '%s'", authenticationSpecification.getClass().getSimpleName(), storeInstance.getIdentifier()));
+            throw new RuntimeException(String.format("Can't get authenticator: authentication specification of type '%s' is not supported by store '%s'", authenticationSpecification.getClass().getSimpleName(), storeInstance.getIdentifier()));
         }
 
         AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationSpecification, storeInstance.getConnectionSpecification());
-        return new ConnectionAuthentication(identity, storeInstance, authenticationSpecification, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.sourceCredentialType)));
+        return new Authenticator(identity, storeInstance, authenticationSpecification, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.sourceCredentialType)));
     }
 
     private static class AuthenticationFlowResolver
@@ -279,23 +279,23 @@ public class ConnectionFactory
 
     public <T> T getConnection(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification) throws Exception
     {
-        return this.getConnection(this.authenticate(identity, storeInstance, authenticationSpecification));
+        return this.getConnection(this.getAuthenticator(identity, storeInstance, authenticationSpecification));
     }
 
     public <T> T getConnection(Identity identity, String storeInstanceIdentifier, AuthenticationSpecification authenticationSpecification) throws Exception
     {
-        return this.getConnection(this.authenticate(identity, storeInstanceIdentifier, authenticationSpecification));
+        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier, authenticationSpecification));
     }
 
-    public <T> T getConnection(ConnectionAuthentication connectionAuthentication) throws Exception
+    public <T> T getConnection(Authenticator authenticator) throws Exception
     {
-        Credential credential = connectionAuthentication.makeCredential(this.environmentConfiguration);
-        Optional<ConnectionBuilder<T, Credential, ConnectionSpecification>> compatibleConnectionBuilder = Optional.ofNullable((ConnectionBuilder<T, Credential, ConnectionSpecification>) this.connectionBuildersIndex.get(new ConnectionBuilder.Key(connectionAuthentication.getStoreInstance().getConnectionSpecification().getClass(), credential.getClass())));
+        Credential credential = authenticator.makeCredential(this.environmentConfiguration);
+        Optional<ConnectionBuilder<T, Credential, ConnectionSpecification>> compatibleConnectionBuilder = Optional.ofNullable((ConnectionBuilder<T, Credential, ConnectionSpecification>) this.connectionBuildersIndex.get(new ConnectionBuilder.Key(authenticator.getStoreInstance().getConnectionSpecification().getClass(), credential.getClass())));
         ConnectionBuilder<T, Credential, ConnectionSpecification> flow = compatibleConnectionBuilder.orElseThrow(() -> new RuntimeException(String.format("Can't find any compatible connection builders (Store=%s, Credential=%s)",
                 credential.getClass().getSimpleName(),
-                connectionAuthentication.getStoreInstance().getIdentifier()
+                authenticator.getStoreInstance().getIdentifier()
         )));
-        return flow.getConnection(credential, connectionAuthentication.getStoreInstance().getConnectionSpecification(), connectionAuthentication.getStoreInstance());
+        return flow.getConnection(credential, authenticator.getStoreInstance().getConnectionSpecification(), authenticator.getStoreInstance());
     }
 
     public static class Builder

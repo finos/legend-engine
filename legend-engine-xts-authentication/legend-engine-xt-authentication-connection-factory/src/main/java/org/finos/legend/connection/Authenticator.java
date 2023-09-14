@@ -20,7 +20,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
 
-public class ConnectionAuthentication
+public class Authenticator
 {
     private final Identity identity;
     private final StoreInstance storeInstance;
@@ -29,7 +29,7 @@ public class ConnectionAuthentication
     private final List<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
 
-    public ConnectionAuthentication(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
     {
         this.identity = identity;
         this.storeInstance = storeInstance;
