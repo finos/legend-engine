@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.common.CsvFileFormat;
+import org.finos.legend.engine.persistence.components.common.AvroFileFormatAbstract;
+import org.finos.legend.engine.persistence.components.common.CsvFileFormatAbstract;
 import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.JsonFileFormat;
+import org.finos.legend.engine.persistence.components.common.FileFormatVisitor;
+import org.finos.legend.engine.persistence.components.common.JsonFileFormatAbstract;
+import org.finos.legend.engine.persistence.components.common.ParquetFileFormatAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets.BigQueryStagedFilesDatasetProperties;
@@ -42,9 +45,24 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         FileFormat fileFormat = datasetProperties.fileFormat();
         loadOptionsMap.put("uris", "[" + String.join(",", datasetProperties.files()) + "]");
         loadOptionsMap.put("format", fileFormat.getFormatName());
-        if (fileFormat instanceof CsvFileFormat)
+        fileFormat.accept(new RetrieveLoadOptions(loadOptionsMap));
+        prev.push(loadOptionsMap);
+
+        return new VisitorResult(null);
+    }
+
+    private static class RetrieveLoadOptions implements FileFormatVisitor<Void>
+    {
+        private Map<String, String> loadOptionsMap;
+
+        RetrieveLoadOptions(Map<String, String> loadOptionsMap)
         {
-            CsvFileFormat csvFileFormat = (CsvFileFormat) fileFormat;
+            this.loadOptionsMap = loadOptionsMap;
+        }
+
+        @Override
+        public Void visitCsvFileFormat(CsvFileFormatAbstract csvFileFormat)
+        {
             csvFileFormat.fieldDelimiter().ifPresent(property -> loadOptionsMap.put("field_delimiter", property));
             csvFileFormat.encoding().ifPresent(property -> loadOptionsMap.put("encoding", property));
             csvFileFormat.nullMarker().ifPresent(property -> loadOptionsMap.put("null_marker", property));
@@ -52,15 +70,27 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
             csvFileFormat.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property.toString()));
             csvFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property.toString()));
             csvFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
+            return null;
         }
-        else if (fileFormat instanceof JsonFileFormat)
+
+        @Override
+        public Void visitJsonFileFormat(JsonFileFormatAbstract jsonFileFormat)
         {
-            JsonFileFormat jsonFileFormat = (JsonFileFormat) fileFormat;
             jsonFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property.toString()));
             jsonFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
+            return null;
         }
-        prev.push(loadOptionsMap);
 
-        return new VisitorResult(null);
+        @Override
+        public Void visitAvroFileFormat(AvroFileFormatAbstract avroFileFormat)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visitParquetFileFormat(ParquetFileFormatAbstract parquetFileFormat)
+        {
+            return null;
+        }
     }
 }

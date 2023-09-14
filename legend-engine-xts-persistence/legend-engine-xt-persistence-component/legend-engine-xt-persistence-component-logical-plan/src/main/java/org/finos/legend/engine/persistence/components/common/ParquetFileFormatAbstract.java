@@ -31,4 +31,10 @@ public interface ParquetFileFormatAbstract extends FileFormat
     {
         return "PARQUET";
     }
+
+    @Override
+    default <T> T accept(FileFormatVisitor<T> visitor)
+    {
+        return visitor.visitParquetFileFormat(this);
+    }
 }

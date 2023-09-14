@@ -31,4 +31,10 @@ public interface AvroFileFormatAbstract extends FileFormat
     {
         return "AVRO";
     }
+
+    @Override
+    default <T> T accept(FileFormatVisitor<T> visitor)
+    {
+        return visitor.visitAvroFileFormat(this);
+    }
 }

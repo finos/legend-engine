@@ -72,13 +72,13 @@ class BulkLoadPlanner extends Planner
         allowExtraFieldsWhileCopying = capabilities.contains(Capability.ALLOW_EXTRA_FIELDS_WHILE_COPYING);
         if (!allowExtraFieldsWhileCopying)
         {
-            tempDataset = DatasetDefinition.builder()
+            tempDataset = datasets.tempDataset().orElse(DatasetDefinition.builder()
                 .schema(datasets.stagingDataset().schema())
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
                 .name(datasets.mainDataset().datasetReference().name() + UNDERSCORE + TEMP_DATASET_BASE_NAME)
                 .alias(TEMP_DATASET_BASE_NAME)
-                .build();
+                .build());
         }
     }
 

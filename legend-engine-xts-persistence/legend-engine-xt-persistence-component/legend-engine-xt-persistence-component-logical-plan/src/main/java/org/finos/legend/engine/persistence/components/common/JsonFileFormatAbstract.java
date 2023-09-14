@@ -37,4 +37,10 @@ public interface JsonFileFormatAbstract extends FileFormat
     {
         return "JSON";
     }
+
+    @Override
+    default <T> T accept(FileFormatVisitor<T> visitor)
+    {
+        return visitor.visitJsonFileFormat(this);
+    }
 }

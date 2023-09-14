@@ -47,4 +47,10 @@ public interface CsvFileFormatAbstract extends FileFormat
     {
         return "CSV";
     }
+
+    @Override
+    default <T> T accept(FileFormatVisitor<T> visitor)
+    {
+        return visitor.visitCsvFileFormat(this);
+    }
 }

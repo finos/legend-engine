@@ -14,9 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.common;
 
-public interface FileFormat
+public interface FileFormatVisitor<T>
 {
-    String getFormatName();
+    T visitCsvFileFormat(CsvFileFormatAbstract csvFileFormat);
 
-    <T> T accept(FileFormatVisitor<T> visitor);
+    T visitJsonFileFormat(JsonFileFormatAbstract jsonFileFormat);
+
+    T visitAvroFileFormat(AvroFileFormatAbstract avroFileFormat);
+
+    T visitParquetFileFormat(ParquetFileFormatAbstract parquetFileFormat);
 }
