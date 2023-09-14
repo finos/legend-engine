@@ -284,7 +284,6 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
          let classMappings = $mappingClassMappings->get($setImplementation.parent).values;
 
          let qpTarget = getQualifiedPropertyTarget($qp, $classMappings, $setImplementation, $class, $target, $rootClassMappings);
-
          $qp->buildProperty(
             $qualifiedPropertyType->toOne(), $qpTarget.second, $qp->getPropertyInfo($propertiesMap), $config
          ); //TODO check how types work with qp's.we n eed to filter on whether the type is root supported currently
@@ -292,9 +291,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 
    // handle auto mapped properties 
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
-                                    ->filter(pm| $pm->instanceOf(SemiStructuredEmbeddedRelationalInstanceSetImplementation)
-                                            || meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped($pm.property->cast(@AbstractProperty<Any>),
-                                              $pm.owner->toOne()->cast(@InstanceSetImplementation)));
+                                                     ->filter(pm| meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
    let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm | processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), 'autoMapped_', $config));
    let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),

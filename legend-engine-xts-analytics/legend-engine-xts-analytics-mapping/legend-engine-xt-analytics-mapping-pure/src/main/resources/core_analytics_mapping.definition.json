@@ -8,6 +8,7 @@
     "platform_store_relational",
     "platform_functions_json",
     "core_functions",
+    "core_relational",
     "core_external_compiler",
     "core"
   ]
