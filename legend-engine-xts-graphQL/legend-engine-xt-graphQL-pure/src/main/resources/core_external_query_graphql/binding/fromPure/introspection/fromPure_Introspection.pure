@@ -1,4 +1,5 @@
 ###Pure
+import meta::pure::functions::doc::*;
 import meta::external::query::graphQL::metamodel::introspection::*;
 import meta::external::query::graphQL::transformation::introspection::*;
 import meta::external::query::graphQL::binding::fromPure::introspection::*;
@@ -34,7 +35,14 @@ function meta::external::query::graphQL::binding::fromPure::introspection::build
     __schema = ^__Schema(
                   queryType = $res->filter(c|$c.name == $cl.name)->toOne(),
                   types = $res,
-                  directives = [^__Directive(name='echo', description='A preliminary test directive to ensure the working of directives in a query',locations=[__DirectiveLocation.FIELD])]
+                  directives = [
+                    ^__Directive(name='echo', description='A preliminary test directive to ensure the working of directives in a query',locations=[__DirectiveLocation.FIELD]),
+                    ^__Directive(
+                      name='totalCount', 
+                      description='Directive to return total number of records for a field excluding any pagination i.e. limit, offset, pageNumber, pageSize, etc. parameters while computing but including all other specified filters such as name, age, country, etc. The directive is currently supported at a root level field.',
+                      locations=[__DirectiveLocation.FIELD]
+                    )
+                  ]
                 )
   );
 }
@@ -42,13 +50,21 @@ function meta::external::query::graphQL::binding::fromPure::introspection::build
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::transformPureToGraphQL(types:Type[*]):__Type[*]
 {
   // PASS 1
-  let res = $types->map(c|
+  let res = $types->map(t|
     pair(
-      $c.name->toOne(),
-      ^__Type(
-        kind = __TypeKind.OBJECT,
-        name = $c.name
-      )
+      $t.name->toOne(),
+      $t->match([
+        c:Class<Any>[1] | ^__Type(
+                            kind = __TypeKind.OBJECT,
+                            name = $c.name,
+                            description = $c->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
+                          ),
+        e:Enumeration<Any>[1] | ^__Type(
+                                kind = __TypeKind.ENUM,
+                                name = $t.name->toOne(),
+                                description = $e->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
+                              )
+      ])
     )
   )->concatenate(
     [
@@ -59,14 +75,15 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
       pair('Date',^__Type(kind = __TypeKind.SCALAR,name = 'Date')),
       pair('DateTime',^__Type(kind = __TypeKind.SCALAR,name = 'DateTime')),
       pair('Decimal',^__Type(kind = __TypeKind.SCALAR,name = 'BigDecimal')),
-      pair('StrictDate',^__Type(kind = __TypeKind.SCALAR,name = 'StrictDate'))
+      pair('StrictDate',^__Type(kind = __TypeKind.SCALAR,name = 'StrictDate')),
+      pair('Number',^__Type(kind = __TypeKind.SCALAR,name = 'Number'))
     ]
   )->newMap();
 
   // PASS 2
-  $types->map(c|
-    let type = $res->get($c.name->toOne())->toOne();
-    $c->match(
+  $types->map(t|
+    let type = $res->get($t.name->toOne())->toOne();
+    $t->match(
       [
         c:Class<Any>[1] |
             let fields = $c->allProperties()->map(p|
@@ -75,6 +92,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
                                         name = $p.name->toOne(),
                                         isDeprecated = false,
                                         type = buildType($p, $res),
+                                        description = $p->cast(@AnnotatedElement)->getDocs()->joinStrings('\n'),
                                         args = if ($p->instanceOf(QualifiedProperty),
                                                     |$p->functionType().parameters->evaluateAndDeactivate()->tail()->map(parameter|
                                                                     ^__InputValue
@@ -87,7 +105,16 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
                                                )
                                       );
                                    );
-            $type->mutateAdd('fields', $fields);
+            $type->mutateAdd('fields', $fields);,
+          e:Enumeration<Any>[1] |
+            let values = $e->enumValues()->map(v|
+              ^__EnumValue(
+                isDeprecated=false,
+                name = $v->toString(),
+                description = $v->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
+              )
+            );
+            $type->mutateAdd('enumValues',$values);
       ]
     );
     $type;

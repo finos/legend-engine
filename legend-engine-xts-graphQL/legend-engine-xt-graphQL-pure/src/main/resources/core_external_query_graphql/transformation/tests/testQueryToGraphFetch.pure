@@ -32,10 +32,13 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '        types {\n' +
                 '            kind, \n' +
                 '            name, \n' +
+                '            description, \n' +
                 '            fields {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                args {\n' +
                 '                    name, \n' +
+                '                    description, \n' +
                 '                    type {\n' +
                 '                        kind, \n' +
                 '                        name, \n' +
@@ -107,6 +110,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '            }, \n' +
                 '            inputFields {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                type {\n' +
                 '                    kind, \n' +
                 '                    name, \n' +
@@ -175,6 +179,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '            }, \n' +
                 '            enumValues {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                isDeprecated, \n' +
                 '                deprecationReason\n' +
                 '            }, \n' +
@@ -213,9 +218,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '        }, \n' +
                 '        directives {\n' +
                 '            name, \n' +
+                '            description, \n' +
                 '            locations, \n' +
                 '            args {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                type {\n' +
                 '                    kind, \n' +
                 '                    name, \n' +
@@ -294,6 +301,18 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   }: Person[*];
 
   personByName(name: String[1]){Person.all()->filter(p|$p.fullName == $name)->first()}: Person[0..1];
+
+  persons() {Person.all()}: Person[*];
+
+  personsPaginated(pageNumber: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->paginated($pageNumber, 1)}: Person[*];
+
+  personsWithSlice(limit: Integer[1],offset: Integer[1]) {let end = $limit + $offset; Person.all()->sortBy(#/Person/fullName#)->slice($offset,$end);}: Person[*];
+
+  personsWithLimit(limit: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->limit($limit)}: Person[*];
+
+  personsWithDrop(offset: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->drop($offset)}: Person[*];
+
+  personsWithTake(take: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->take($take)}: Person[*];
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]

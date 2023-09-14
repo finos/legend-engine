@@ -97,27 +97,28 @@ import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::extension::*;
 
-Profile meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinding
+// Marking deprecated as platformId parameter needs to be passed in
+// mayExecuteLegendTest function should provide the parameter
+function <<doc.deprecated>> meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions(plan: ExecutionPlan[1]): ExecutionPlan[1]
 {
-   stereotypes : [
-      TestPlanBinder
-   ]; 
+  let defaultTestPlanPlatformBindingId = 'LegendJava';
+  $plan->bindTestPlanToPlatformLocallyWithClasspathExtensions($defaultTestPlanPlatformBindingId);
 }
 
-Class meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinder
+function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions(plan: ExecutionPlan[1], platformId: String[1]): ExecutionPlan[1]
 {
-   overrides       : ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>[*];
-   bindingFunction : Function<{ExecutionPlan[1], Extension[*] -> ExecutionPlan[1]}>[1];
+  generatePlatformCode($plan, $platformId, ^PlatformBindingConfig(), extractClasspathExtensions())
 }
 
-function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally(plan: ExecutionPlan[1], extensions: Extension[*]): ExecutionPlan[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions(): Extension[*]
 {
-   let localPlatformBinderFunctions = LocalPlatformBinding->stereotype('TestPlanBinder').modelElements->cast(@ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>);
-   let overridenBinderFunctions     = $localPlatformBinderFunctions->map(f | $f->eval().overrides)->removeDuplicates();
-   let filtered                     = $localPlatformBinderFunctions->filter(f | !$f->in($overridenBinderFunctions));
-   assert($filtered->size() == 1, 'Did not find a local platform binder which overrides all other platform binders in: ' + $localPlatformBinderFunctions->map(x | $x->elementToPath())->joinStrings('[', ', ', ']'));
-
-   $filtered->toOne()->eval().bindingFunction->eval($plan, $extensions);
+  let errorMessage = 'bindTestPlanToPlatformWithClasspathExtensions works only if meta::pure::extension::runtime::getExtensions__Extension_MANY__ function (defined in core_external_extensions repo) is available';
+  
+  meta::pure::extension.children
+    ->filter(x | $x->instanceOf(Package) && $x.name == 'runtime')->toOne($errorMessage)
+    ->cast(@Package).children
+    ->filter(x | $x->elementToPath() == 'meta::pure::extension::runtime::getExtensions__Extension_MANY_')->toOne($errorMessage)
+    ->cast(@Function<{->Extension[*]}>)->eval();
 }
 
 // --------------------------------------------------------------------- Local Binding

@@ -101,20 +101,26 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
          fc1(sin_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('sin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(asin_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('asin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(cot_Number_1__Float_1_,                                   {ctx,num        | $library->j_invoke('coTangent', [$num->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
          fc1(acos_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('acos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(tan_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('tan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),  
          fc1(atan_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('atan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc2(atan2_Number_1__Number_1__Float_1_,                       {ctx,num1,num2  | javaMath()->j_invoke('atan2', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+
+         fc1(sign_Number_1__Integer_1_,                                {ctx,num        | javaMath()->j_invoke('signum', $num->j_box()->j_invoke('doubleValue', []), javaLong())}),
                              
          fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
          fc1(log_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('log', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(log10_Number_1__Float_1_,                                 {ctx,num        | javaMath()->j_invoke('log10', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(exp_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('exp', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('sqrt', $num, javaDouble())}),
          fc1(cbrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('cbrt', $num, javaDouble())}),
 
          fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx,int1,int2  | javaMath()->j_invoke('floorMod', [$int1, $int2], javaLong())}),
          
-         fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())})
+         fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())}),
+         fc1(varianceSample_Number_MANY__Number_1_,                    {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(true)], javaNumber())}),
+         fc1(variancePopulation_Number_MANY__Number_1_,                {ctx,collection | $library->j_invoke('variance', [$collection, j_boolean(false)], javaNumber())})
       ]);
 
    $conventions->registerLibrary($lib);

@@ -964,7 +964,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
         for (Method keyGetter : keyGetters)
         {
-            Object key = keyGetter.invoke(obj);
+            Object key = keyGetter.invoke(RelationalGraphFetchUtils.resolveValueIfIChecked(obj));
             pkRowTransformed.add(key);
             pkRowNormalized.add(key);
         }
@@ -1979,8 +1979,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             }
                         }
 
-                        for (Object parent : parents)
+                        for (Object parentObj : parents)
                         {
+                            Object parent = RelationalGraphFetchUtils.resolveValueIfIChecked(parentObj);
                             if (!parentToChildMap.containsKey(parent))
                             {
                                 parentToChildMap.put(parent, new ArrayList<>());

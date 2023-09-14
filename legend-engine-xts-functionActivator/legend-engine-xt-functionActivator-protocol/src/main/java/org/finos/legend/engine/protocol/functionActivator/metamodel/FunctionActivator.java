@@ -29,4 +29,5 @@ public abstract class FunctionActivator extends PackageableElement
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public String function;
+    public DeploymentConfiguration activationConfiguration;
 }

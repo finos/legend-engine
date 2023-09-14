@@ -30,7 +30,18 @@ import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServi
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.MemSQLConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.RedshiftConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.SnowflakeConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.SqlServerConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.TrinoConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.extensions.SpannerConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceStoreExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
@@ -53,6 +64,27 @@ public class TestExtensions
                 .with(ServiceStoreExecutionExtension.class)
                 .with(org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBStoreExecutionExtension.class)
                 .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class);
+    }
+
+    @Test
+    public void testConnectionExtensions()
+    {
+        assertHasExtensions(expectedConnectionExtensions(), ConnectionExtension.class);
+    }
+
+    protected MutableList<Class<? extends ConnectionExtension>> expectedConnectionExtensions()
+    {
+        return Lists.mutable.<Class<? extends ConnectionExtension>>empty()
+                .with(AthenaConnectionExtension.class)
+                .with(BigQueryConnectionExtension.class)
+                .with(DatabricksConnectionExtension.class)
+                .with(MemSQLConnectionExtension.class)
+                .with(PostgresConnectionExtension.class)
+                .with(RedshiftConnectionExtension.class)
+                .with(SnowflakeConnectionExtension.class)
+                .with(SpannerConnectionExtension.class)
+                .with(SqlServerConnectionExtension.class)
+                .with(TrinoConnectionExtension.class);
     }
 
     @Test

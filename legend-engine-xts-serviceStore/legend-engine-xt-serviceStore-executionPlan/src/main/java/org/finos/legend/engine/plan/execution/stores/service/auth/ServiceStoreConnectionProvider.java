@@ -22,8 +22,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.connection.ConnectionProvider;
-import org.finos.legend.connection.ConnectionSpecification;
+import org.finos.legend.connection.legacy.ConnectionProvider;
+import org.finos.legend.connection.legacy.ConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.service.IServiceStoreExecutionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SingleAuthenticationSchemeRequirement;
@@ -32,7 +32,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;

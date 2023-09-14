@@ -130,6 +130,7 @@ public class RelationalValidator
                     relationalException(pureModel, "Mapping error on mapping " + mappingID + ". The property '" + property.getName() + "' returns a data type. However it's mapped to a Join.", sourceInfo, true);
                 }
             }
+            validateEnumPropertyHasEnumMapping(pureModel, propertyMapping);
         }
         else
         {
@@ -178,6 +179,15 @@ public class RelationalValidator
                 }
             }
         }
+    }
+
+    private static boolean validateEnumPropertyHasEnumMapping(PureModel pureModel, PropertyMapping pm)
+    {
+        if (pm._property()._genericType()._rawType().getClassifier() != null && pm._property()._genericType()._rawType().getClassifier().equals(pureModel.getType("meta::pure::metamodel::type::Enumeration")) && (pm.getValueForMetaPropertyToOne("transformer") == null))
+        {
+            pureModel.addWarnings(Lists.mutable.with(new Warning(org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper.fromM3SourceInformation(pm.getSourceInformation()), "Missing an EnumerationMapping for the enum property '" + pm._property()._name() + "'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.")));
+        }
+        return true;
     }
 
     private static String getRelationalElementIdentifier(RelationalOperationElement element)

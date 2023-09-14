@@ -21,7 +21,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.MiddleTierUserNamePasswordAuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SnowflakePublicAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TestDatabaseAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
@@ -32,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 
@@ -70,15 +68,6 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
             ApiTokenAuthenticationStrategy apiSpecification = (ApiTokenAuthenticationStrategy) authenticationStrategy;
             return new ApiTokenAuthenticationStrategyKey(
                     apiSpecification.apiToken
-            );
-        }
-        else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
-        {
-            SnowflakePublicAuthenticationStrategy snowflakeDatasourceSpecification = (SnowflakePublicAuthenticationStrategy) authenticationStrategy;
-            return new SnowflakePublicAuthenticationStrategyKey(
-                    snowflakeDatasourceSpecification.privateKeyVaultReference,
-                    snowflakeDatasourceSpecification.passPhraseVaultReference,
-                    snowflakeDatasourceSpecification.publicUserName
             );
         }
         else if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)

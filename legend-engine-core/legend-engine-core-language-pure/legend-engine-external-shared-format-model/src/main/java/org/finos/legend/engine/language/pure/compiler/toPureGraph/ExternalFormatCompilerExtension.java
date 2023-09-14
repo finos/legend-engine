@@ -60,7 +60,7 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
     {
-        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
+        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_24_0");
         List<String> elements = versions.collect(v -> "meta::protocols::pure::" + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
         return ListIterate.collect(elements, this::registerElement);
     }
@@ -71,7 +71,9 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 3))
+                                handlers.m(handlers.m(handlers.h("meta::external::format::shared::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 3)),
+                                        handlers.m(handlers.h("meta::external::format::shared::functions::externalize_TabularDataSet_1__String_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
+                                )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
@@ -80,8 +82,13 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                                 )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::pure::dataQuality::defaultDefectTree__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 0))
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
                                         handlers.m(handlers.h("meta::pure::dataQuality::checked_T_MANY__Checked_MANY_", false, ps -> handlers.res(handlers.res("meta::pure::dataQuality::Checked", "one").genericType._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"), ps -> ps.size() == 1)),
+                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "RootGraphFetchTree".equals(ps.get(1)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_RootGraphFetchTree_1__RootGraphFetchTree_1__RootGraphFetchTree_$0_1$__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 3)),
                                         handlers.m(handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "Binding".equals(ps.get(1)._genericType()._rawType()._name()))),
                                         handlers.m(handlers.h("meta::external::format::shared::functions::checked_RootGraphFetchTree_1__String_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name()))))
                         )

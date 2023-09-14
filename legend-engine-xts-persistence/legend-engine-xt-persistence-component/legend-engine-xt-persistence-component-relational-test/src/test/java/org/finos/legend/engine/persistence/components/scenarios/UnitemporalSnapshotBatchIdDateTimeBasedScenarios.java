@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 
 import java.util.Arrays;
@@ -49,6 +50,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -91,6 +93,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .build())
                 .addAllPartitionFields(Arrays.asList(partitionKeys))
                 .putAllPartitionValuesByField(partitionFilter)
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }

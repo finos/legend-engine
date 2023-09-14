@@ -82,29 +82,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterInWithResultS
    assertEquals($expected, $result->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));                 
 }
 
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
-{  
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root"."time" as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.SybaseIQ, $expectedPlan);                     
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_DB2():Boolean[1]      
 {
    let expectedPlan ='Sequence\n'+
@@ -127,80 +104,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
    assertPlanGenerationForOptionalParameter(DatabaseType.DB2, $expectedPlan);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Sybase():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Sybase")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Sybase, $expectedPlan); 
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]      
-{
-   let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
-   let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Time,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[optionalID:String[0..1],optionalActive:Boolean[0..1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Time,Integer,INT,"")]resultColumns=[("Time",INT)]sql=select"root".timeas"Time"frominteractionTableas"root"where((${optionalVarPlaceHolderOperationSelector(optionalID![],\'"root".ID=${varPlaceHolderToString(optionalID![]"\\\'""\\\'"{"\\\'":"\\\'\\\'"}"null")}\',\'"root".IDisnull\')})and(${optionalVarPlaceHolderOperationSelector(optionalActive![],\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'end=${varPlaceHolderToString(optionalActive![]"\\\'""\\\'"{}"null")}\',\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'endisnull\')}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
-   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-   assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Presto():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "" "" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Presto")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Presto, $expectedPlan);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Redshift():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Redshift")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Redshift, $expectedPlan);
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Composite():Boolean[1]      
 {
    let expectedPlan ='Sequence\n'+
@@ -221,50 +124,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '  )\n'+
                      ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.Composite, $expectedPlan);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Hive():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Hive")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Hive, $expectedPlan);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Postgres():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "Text\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "Boolean\\\'" "\\\'" {} "null")}\', \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "Postgres")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.Postgres, $expectedPlan);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_H2():Boolean[1]      
@@ -608,31 +467,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
    assertEquals($expected, $result);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]
-{  
-   let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age>$optionalAgeLowerLimit && ($p.age<=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalAgeLowerLimit:Integer[0..1], optionalAgeHigherLimit:Integer[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
-                     '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}))\n'+
-                     '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_H2():Boolean[1]      
-{  
+function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_H2():Boolean[1]
+{
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age>$optionalAgeLowerLimit && ($p.age<=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -651,33 +487,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThan
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan); 
+   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
-{  
-   let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age<$optionalAgeLowerLimit && ($p.age>=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalAgeLowerLimit:Integer[0..1], optionalAgeHigherLimit:Integer[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
-                     '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" {} "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" {} "null")}))\n'+
-                     '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan); 
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThanEqualsWithOptionalParameter_H2():Boolean[1]      
+function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThanEqualsWithOptionalParameter_H2():Boolean[1]
 {  
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age<$optionalAgeLowerLimit && ($p.age>=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
@@ -1681,96 +1494,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBRenameColumns():Bo
    true;
 }
 
-function meta::pure::executionPlan::tests::twoDBRunTimeSybaseIQ():meta::pure::runtime::Runtime[1]
-{
-   ^meta::pure::runtime::Runtime
-   (
-      connections = [^TestDatabaseConnection(
-                        element = dbInc,
-                        type=DatabaseType.SybaseIQ
-                    ),^TestDatabaseConnection(
-                        element = database2,
-                        type=DatabaseType.SybaseIQ
-                    )]
-   );
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSpaceIdentifierSybaseIQ():Boolean[1]
-{
-    let result = executionPlan({|
-        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
-        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first name')=='Adam' &&   $f.getString('legalName')=='Firm X')
-        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
-
-    assertEquals('Sequence\n'+
-    '(\n'+
-     '  type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '  (\n'+
-     '    Allocation\n'+
-     '    (\n'+
-     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar_0\n'+
-     '      value = \n'+
-     '        (\n'+
-     '          Relational\n'+
-     '          (\n'+
-     '            type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '            resultColumns = [("first name", VARCHAR(200)), ("eID", INT)]\n'+
-     '            sql = select \"root\".FIRSTNAME as \"first name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
-     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
-     '          )\n'+
-     '        )\n'+
-     '    )\n'+
-     '    Relational\n'+
-     '    (\n'+
-     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("first name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select "tdsvar_0_0"."first name" as "first name", "tdsvar_0_0".eID as "eID", "tdsvar_0_0"."fID" as "fID", "tdsvar_0_0"."legalName" as "legalName" from (select * from (${tdsVar_0}) as "tdsvar_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar_0_1".eID = "firmtable_0"."fID")) as "tdsvar_0_0" where ("tdsvar_0_0"."first name" = \'Adam\' and "tdsvar_0_0"."legalName" = \'Firm X\')\n'+
-     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
-     '    )\n'+
-     '  )\n'+
-    ')\n'
-    , $result->planToString(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSlashSybaseIQ():Boolean[1]
-{
-    let result = executionPlan({|
-        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first/name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
-        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first/name')=='Adam' &&   $f.getString('legalName')=='Firm X')
-        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
-
-    assertEquals('Sequence\n'+
-    '(\n'+
-     '  type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '  (\n'+
-     '    Allocation\n'+
-     '    (\n'+
-     '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '      name = tdsVar_0\n'+
-     '      value = \n'+
-     '        (\n'+
-     '          Relational\n'+
-     '          (\n'+
-     '            type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
-     '            resultColumns = [("first/name", VARCHAR(200)), ("eID", INT)]\n'+
-     '            sql = select \"root\".FIRSTNAME as \"first/name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
-     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
-     '          )\n'+
-     '        )\n'+
-     '    )\n'+
-     '    Relational\n'+
-     '    (\n'+
-     '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("first/name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
-     '      sql = select "tdsvar_0_0"."first/name" as "first/name", "tdsvar_0_0".eID as "eID", "tdsvar_0_0"."fID" as "fID", "tdsvar_0_0"."legalName" as "legalName" from (select * from (${tdsVar_0}) as "tdsvar_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar_0_1".eID = "firmtable_0"."fID")) as "tdsvar_0_0" where ("tdsvar_0_0"."first/name" = \'Adam\' and "tdsvar_0_0"."legalName" = \'Firm X\')\n'+
-     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
-     '    )\n'+
-     '  )\n'+
-    ')\n'
-    , $result->planToString(meta::relational::extension::relationalExtensions()));
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Boolean[1]
 {
     let result = executionPlan({|
@@ -2161,27 +1884,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<access.private>> meta::pure::executionPlan::tests::relationalConnectionForSnowflake(queryTags: Boolean[1]): RelationalDatabaseConnection[1]
-{
-  ^RelationalDatabaseConnection(
-    element = relationalDB, 
-    datasourceSpecification = ^SnowflakeDatasourceSpecification(region='', warehouseName= '', databaseName = '', accountName = '', enableQueryTags = $queryTags), 
-    authenticationStrategy = ^AuthenticationStrategy(), 
-    type=DatabaseType.Snowflake
-  )
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForNotInWithCollectionInputForSnowflake() : Boolean[1]
-{
-   let res = executionPlan(
-      {name:String[*] |_Person.all()->filter(x | !$x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions()
-   );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_nameas"legend_temp_db.legend_temp_schema.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
-   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithIntegerCollection():Boolean[1]
 {
    let res = executionPlan(
@@ -2189,16 +1891,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions()
    );
    let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"wherechar_length("root".fullname)in(${renderCollection(lengths![]","""""{}"null")})connection=DatabaseConnection(type="H2"))))';
-   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForMultipleInWithCollectionAndConstantInputs() : Boolean[1]
-{
-   let res = executionPlan(
-      {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in(['A', 'B']))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.SybaseIQ)), meta::relational::extension::relationalExtensions()
-   );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2211,36 +1903,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
    let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=SESSION.tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_name1as"session.temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=SESSION.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_nameas"session.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
       'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=SESSION.tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_nameas"session.temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name1]tempTableName=SESSION.tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"session.temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromSESSION.tempTableForIn_name1as"session.temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForMultipleInWithTwoCollectionInputsForSnowflake() : Boolean[1]
-{
-   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
-                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];
-   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
-   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationWithQueryTagsForSnowflake() : Boolean[1]
-{
-   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(true)), meta::relational::extension::relationalExtensions());
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))',
-                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))'];           
-   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
-   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, 'ALTER SESSION UNSET QUERY_TAG;');
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationWithoutQueryTagsForSnowflake() : Boolean[1]
-{
-   let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping, ^Runtime(connections=meta::pure::executionPlan::tests::relationalConnectionForSnowflake(false)), meta::relational::extension::relationalExtensions());
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))',
-                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[ids]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_idsas"legend_temp_db.legend_temp_schema.temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]","""""{}"null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[dates]tempTableName=LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=RelationalDatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"legend_temp_db.legend_temp_schema.temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromLEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_datesas"legend_temp_db.legend_temp_schema.temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'::timestamp"{}"null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=RelationalDatabaseConnection(type="Snowflake"))))'];
-   assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
-   assertEquals($res.rootExecutionNode->cast(@RelationalBlockExecutionNode).finallyExecutionNodes->cast(@SQLExecutionNode).sqlQuery, []);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithVarAndConstantInputs():Boolean[1]
@@ -2273,60 +1935,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForIn
                      '  )\n'+
                      ')\n';
    assertEquals($expectedPlan, $result);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithTimeZone():Boolean[1]
-{
-   let res = executionPlan({dates:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($dates))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping,
-                           ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Presto, timeZone='US/Arizona')),
-                           meta::relational::extension::relationalExtensions());
-   let expected =
-      'Sequence\n'+
-      '(\n'+
-      '  type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '  (\n'+
-      '    FunctionParametersValidationNode\n'+
-      '    (\n'+
-      '      functionParameters = [dates:DateTime[*]]\n'+
-      '    )\n'+
-      '    Relational\n'+
-      '    (\n'+
-      '      type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '      resultColumns = [(\"TradeId\", INT)]\n'+
-      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".settlementDateTime in (${renderCollectionWithTz(dates![] \"[US/Arizona]\" \",\" \"Timestamp\'\" \"\'\" \"null\")})\n'+
-      '      connection = DatabaseConnection(type = \"Presto\")\n'+
-      '    )\n'+
-      '  )\n'+
-      ')\n';
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithStrictDate():Boolean[1]
-{
-   let res = executionPlan({dates:StrictDate[*] |Trade.all()->filter(t|$t.date->in($dates))->project([x | $x.id], ['TradeId'])},
-                           simpleRelationalMapping,
-                           ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Sybase)),
-                           meta::relational::extension::relationalExtensions());
-   let expected =
-      'Sequence\n'+
-      '(\n'+
-      '  type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '  (\n'+
-      '    FunctionParametersValidationNode\n'+
-      '    (\n'+
-      '      functionParameters = [dates:StrictDate[*]]\n'+
-      '    )\n'+
-      '    Relational\n'+
-      '    (\n'+
-      '      type = TDS[(TradeId, Integer, INT, \"\")]\n'+
-      '      resultColumns = [(\"TradeId\", INT)]\n'+
-      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".tradeDate in (${renderCollection(dates![] \",\" \"convert(DATE, \'\" \"\', 101)\" {} \"null\")})\n'+
-      '      connection = DatabaseConnection(type = \"Sybase\")\n'+
-      '    )\n'+
-      '  )\n'+
-      ')\n';
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::relationalTDSTypeForColumnsAndQuoting():Boolean[1]
@@ -2566,28 +2174,28 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
   assertEquals(['a','b'], $transformedPlan.rootExecutionNode.executionNodes->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode).connection->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection).datasourceSpecification->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification).testDataSetupSqls);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnWithQueryTag():Boolean[1]
-{
-  let conn = ^RelationalDatabaseConnection(
-                  element = 'database',
-                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='ALLOY_DEV_WH',databaseName='ALLOY_INTEGRATION_TEST_DB1',accountName = 'sfceawseast1d01'),
-                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
-                  type=DatabaseType.Snowflake
-              );
-  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
-  let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Name,String,VARCHAR(200),"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
-  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
 
-function <<test.Test>> meta::pure::executionPlan::tests::execution::testRelationalDatabaseConnDisableQueryTag():Boolean[1]
-{
-  let conn = ^RelationalDatabaseConnection(
-                  element = 'database',
-                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-east-1', warehouseName='DEMO_WH',databaseName='SNOWFLAKE_SAMPLE_DATA',accountName = 'sfceawseast1d01', enableQueryTags = false),
-                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
-                  type=DatabaseType.Snowflake
-              );
-  let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connections = $conn), meta::relational::extension::relationalExtensions());
-  let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
-  assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
+ function <<test.Test>> meta::pure::executionPlan::tests::testRelationalProjectionWithExternalFormat():Boolean[1]
+ {
+
+    let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
+    let result = executionPlan({|Product.all()->project(p|$p.name, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::relational::tests::testRuntime(), $extensions);
+    assertEquals (
+    'ExternalFormat_Externalize\n' +
+               '(\n' +
+               '  type = String\n' +
+               '  resultSizeRange = 1\n' +
+               '  checked = false\n' +
+               '  binding = meta::external::format::shared::executionPlan::generatedBinding\n' +
+               '\n' +
+               '  (\n' +
+               '    Relational\n' +
+               '    (\n' +
+               '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
+               '      resultColumns = [("name", VARCHAR(200))]\n'+
+               '      sql = select "root".NAME as "name" from productSchema.productTable as "root"\n'+
+               '      connection = TestDatabaseConnection(type = "H2")\n'+
+               '    )\n' +
+               '  )\n' +
+               ')\n', $result->planToString($extensions));
+ }

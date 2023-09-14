@@ -234,6 +234,26 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNoopFunction
       $result->sqlRemoveFormatting());   
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFirstNotNullFunction():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->extend([
+          col({row:TDSRow[1]|meta::pure::tds::extensions::firstNotNull([$row.getString('firstName'), 'N/A'])}, 'first')
+          ]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($result.values.columns, 2);   
+   
+   assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName", coalesce("root".FIRSTNAME, \'N/A\') as "first" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
 
 // Alloy exclusion reason: 10. Tricky usage of variables
 function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::tds::tdsExtend::testExtendWithVariables1():Boolean[1]
@@ -313,10 +333,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringConcat
    
    let sqlResultH2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultH2, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", concat("root".FIRSTNAME, "root".LASTNAME) as "exprString3" from personTable as "root"');
- 
-   let sqlResultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals($sqlResultSybaseIQ, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", "root".FIRSTNAME+"root".LASTNAME as "exprString3" from personTable as "root"');  
-   
+
    let sqlResultDB2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultDB2, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ("root".FIRSTNAME concat "root".LASTNAME) as "exprString3" from personTable as "root"'
 );

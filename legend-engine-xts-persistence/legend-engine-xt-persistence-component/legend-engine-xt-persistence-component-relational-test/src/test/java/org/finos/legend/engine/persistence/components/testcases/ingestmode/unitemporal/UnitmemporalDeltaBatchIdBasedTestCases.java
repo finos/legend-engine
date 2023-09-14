@@ -48,6 +48,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
                 .createStagingDataset(true)
+                .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaNoDeleteIndNoAuditing(operations);
@@ -113,6 +114,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .caseConversion(CaseConversion.TO_UPPER)
                 .collectStatistics(true)
+                .enableConcurrentSafety(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithUpperCaseOptimizer(operations);

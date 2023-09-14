@@ -33,8 +33,3 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::execut
    checked           : Boolean[1];
    tree              : RootGraphFetchTree[0..1];
 }
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
-{
-   url : String[1];
-}

@@ -193,7 +193,7 @@ public class CreateTableTest
                 "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
                 "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
                 "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
-                "\"col_varbinary\" BINARY(10))";
+                "\"col_varbinary\" BINARY(10)) ICEBERG_TABLE_2022 = true";
 
         Assertions.assertEquals(expected, list.get(0));
     }

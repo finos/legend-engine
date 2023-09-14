@@ -19,6 +19,14 @@ import meta::pure::tds::extensions::*;
 import meta::pure::tds::schema::tests::*;
 import meta::pure::tests::model::simple::*;
 
+function <<access.private>> meta::pure::tds::schema::tests::tdsFunc(date:Date[1]):TabularDataSet[1]
+{
+      Person.all()
+         ->project([
+               col(p|$p.firstName,'firstName'),
+               col(p|$date,'date')
+            ])
+}
 
 function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Boolean[1]
 {
@@ -28,6 +36,15 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
                col(p|$p.firstName,'firstName')
             )
    });   
+
+   assertSchemaRoundTripEquality({| meta::pure::tds::schema::tests::tdsFunc(%2023-01-01)});
+
+   assertSchemaRoundTripEquality(
+    [
+      ^TDSColumn(name='firstName', offset = 0, type = String),
+      ^TDSColumn(name='date', offset = 1, type = Date)
+    ],
+    {date:Date[1] | meta::pure::tds::schema::tests::tdsFunc($date)});
 
    assertSchemaRoundTripEquality({|
     let const = 1;
@@ -306,7 +323,7 @@ function meta::pure::tds::schema::tests::assertSchemaEquality(expected:TDSColumn
             $theProperties->forAll(property|
                $property->eval($p.first) == $property->eval($p.second);
                );
-            ));
+            ));       
    
    if ($areEqual, 
        | $areEqual, 

@@ -25,6 +25,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.javacrumbs.jsonunit.JsonAssert;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -59,11 +60,11 @@ public class TestRelationalElementApi
         Assert.assertNotNull(inputGrammar);
         PureModelContextData inputPmcd = compilePmcd(inputGrammar);
         String databasePath = "meta::relational::transform::autogen::tests::testDB";
-        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd);
+        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd, null);
         RelationalElementAPI relationalElementAPI = new RelationalElementAPI(DeploymentMode.PROD, null);
         Response response = relationalElementAPI.generateModelsFromDatabaseSpecification(inputJson, null);
         Assert.assertNotNull(response);
         String actualJson = response.getEntity().toString();
-        Assert.assertEquals(expectedJson, actualJson);
+        JsonAssert.assertJsonEquals(expectedJson, actualJson);
     }
 }

@@ -111,3 +111,31 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
   runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::varianceSample::testVarianceSample(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'varianceSample' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=69.57);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::variancePopulation::testVariancePopulation(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'variancePopulation' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=59.63);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}

@@ -495,7 +495,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let changedDriverQuery  = $nonPrimitiveQuery->changeDriverToTempWithPkProjection(tempTableName($parentIdx), $parentSets, $extensions);
    let pkFilteredQuery     = ^$changedDriverQuery
                              (
-                                filteringOperation = andFilters($changedDriverQuery.filteringOperation->concatenate($changedDriverQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(x | ^DynaFunction(name = 'isNotNull', parameters =  $x.relationalElement))->orFilters($extensions)), $extensions)
+                                filteringOperation = andFilters($changedDriverQuery.filteringOperation->concatenate($changedDriverQuery.columns->cast(@Alias)->filter(x | $x.name->startsWith('"pk_'))->map(x | ^DynaFunction(name = 'isNotNull', parameters =  $x.relationalElement))->andFilters($extensions)), $extensions)
                              );
    let postProcessorResult = $pkFilteredQuery->postProcessSQLQuery($store, [], $mapping, $runtime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
