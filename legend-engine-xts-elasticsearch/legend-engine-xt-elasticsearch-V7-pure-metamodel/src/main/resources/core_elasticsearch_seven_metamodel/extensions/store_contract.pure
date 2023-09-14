@@ -35,7 +35,14 @@ function meta::external::store::elasticsearch::v7::extension::elasticsearchV7Ext
       availableStores = [
         elasticsearchV7StoreContract()
       ],
-      serializerExtension = meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension_String_1__String_1_
+      serializerExtension = meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension_String_1__String_1_,
+      tdsSchema_resolveSchemaImpl = {fe:FunctionExpression[1], openVars:Map<String, List<Any>>[1], extensions:Extension[*]|
+                                      [
+                                          pair(meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_->cast(@Function<Any>), {|
+                                              meta::pure::tds::schema::createSchemaState($fe->reactivate()->cast(@TabularDataSet).columns);
+                                          })                                          
+                                      ]
+                                    }
    )
 }
 
