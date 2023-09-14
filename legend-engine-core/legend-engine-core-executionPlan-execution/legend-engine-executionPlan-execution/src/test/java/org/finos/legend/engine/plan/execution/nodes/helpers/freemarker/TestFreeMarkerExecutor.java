@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 
+import java.util.Arrays;
 import java.util.Collections;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
@@ -67,12 +68,29 @@ public class TestFreeMarkerExecutor
     public void testParametersProcessedWithNoTemplates()
     {
         Map rootMap = new HashMap();
-        rootMap.put("testCollection", new ConstantResult("foo"));
+        rootMap.put("testParam", new ConstantResult("foo"));
         ExecutionState state = new ExecutionState(rootMap, Collections.emptyList(), Collections.emptyList(), false, 0);
-        String query = "${testCollection}";
+        String query = "${testParam}";
         String result = FreeMarkerExecutor.process(query, state);
         Assert.assertEquals("foo", result.trim());
     }
+
+    @Test
+    public void testTemplateWithEmbeddedFreeMarker()
+    {
+        String template =       "<#function withEmbedded>" +
+                                "<#return  \"${embeddedParam}\"> " +
+                               "</#function>";
+        Map rootMap = new HashMap();
+        rootMap.put("embeddedParam", new ConstantResult("embeddedFoo"));
+        rootMap.put("outsideParam", new ConstantResult("outsideFoo"));
+        List<String> templates = Arrays.asList(template);
+        ExecutionState state = new ExecutionState(rootMap, templates, Collections.emptyList(), false, 0);
+        String query = "${outsideParam} ${withEmbedded()}";
+        String result = FreeMarkerExecutor.process(query, state,template);
+        Assert.assertEquals("outsideFoo embeddedFoo", result.trim());
+    }
+
 
     public static String collectionSizeTemplate()
     {

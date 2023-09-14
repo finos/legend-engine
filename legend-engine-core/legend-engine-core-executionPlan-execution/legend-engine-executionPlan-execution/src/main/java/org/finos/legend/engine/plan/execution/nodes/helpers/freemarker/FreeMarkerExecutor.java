@@ -32,6 +32,14 @@ import java.util.Map;
 
 public class FreeMarkerExecutor
 {
+    private static Configuration freemarkerConfig = new Configuration();
+    private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
+
+    static
+    {
+        freemarkerConfig.setNumberFormat("computer");
+    }
+
     public static String process(String input, ExecutionState executionState)
     {
         return process(input, executionState, null, null);
@@ -86,14 +94,10 @@ public class FreeMarkerExecutor
         StringWriter stringWriter = new StringWriter();
         try
         {
-            Configuration cfg = new Configuration();
-            cfg.setNumberFormat("computer");
-            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")), cfg);
-            Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
+            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")), freemarkerConfig);
             template.setCustomDateFormats(customDateFormats);
             template.setDateFormat("@alloyDate");
             template.process(variableMap, stringWriter);
-
             return stringWriter.toString();
         }
         catch (Exception e)
