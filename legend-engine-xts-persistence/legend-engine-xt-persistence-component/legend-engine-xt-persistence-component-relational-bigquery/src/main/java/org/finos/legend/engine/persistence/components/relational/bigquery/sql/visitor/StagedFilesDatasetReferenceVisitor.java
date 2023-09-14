@@ -41,21 +41,22 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         }
         BigQueryStagedFilesDatasetProperties datasetProperties = (BigQueryStagedFilesDatasetProperties) current.properties();
 
-        Map<String, String> loadOptionsMap = new HashMap<>();
+        Map<String, Object> loadOptionsMap = new HashMap<>();
         FileFormat fileFormat = datasetProperties.fileFormat();
-        loadOptionsMap.put("uris", "[" + String.join(",", datasetProperties.files()) + "]");
         loadOptionsMap.put("format", fileFormat.getFormatName());
         fileFormat.accept(new RetrieveLoadOptions(loadOptionsMap));
         prev.push(loadOptionsMap);
+
+        prev.push(datasetProperties.files());
 
         return new VisitorResult(null);
     }
 
     private static class RetrieveLoadOptions implements FileFormatVisitor<Void>
     {
-        private Map<String, String> loadOptionsMap;
+        private Map<String, Object> loadOptionsMap;
 
-        RetrieveLoadOptions(Map<String, String> loadOptionsMap)
+        RetrieveLoadOptions(Map<String, Object> loadOptionsMap)
         {
             this.loadOptionsMap = loadOptionsMap;
         }
@@ -67,8 +68,8 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
             csvFileFormat.encoding().ifPresent(property -> loadOptionsMap.put("encoding", property));
             csvFileFormat.nullMarker().ifPresent(property -> loadOptionsMap.put("null_marker", property));
             csvFileFormat.quote().ifPresent(property -> loadOptionsMap.put("quote", property));
-            csvFileFormat.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property.toString()));
-            csvFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property.toString()));
+            csvFileFormat.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property));
+            csvFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
             csvFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
             return null;
         }
@@ -76,7 +77,7 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         @Override
         public Void visitJsonFileFormat(JsonFileFormatAbstract jsonFileFormat)
         {
-            jsonFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property.toString()));
+            jsonFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
             jsonFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
             return null;
         }

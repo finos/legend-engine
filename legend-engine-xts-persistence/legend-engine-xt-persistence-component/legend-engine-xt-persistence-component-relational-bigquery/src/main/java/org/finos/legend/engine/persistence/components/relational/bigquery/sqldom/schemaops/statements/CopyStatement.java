@@ -45,6 +45,8 @@ public class CopyStatement implements DMLStatement
         builder.append(WHITE_SPACE);
         builder.append(OVERWRITE.get());
         builder.append(WHITE_SPACE);
+        table.genSqlWithoutAlias(builder);
+        builder.append(WHITE_SPACE);
 
         selectFromFileStatement.genSql(builder);
     }

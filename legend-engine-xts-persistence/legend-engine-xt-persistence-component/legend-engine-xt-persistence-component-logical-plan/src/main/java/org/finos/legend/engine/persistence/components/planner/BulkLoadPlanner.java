@@ -76,7 +76,7 @@ class BulkLoadPlanner extends Planner
                 .schema(datasets.stagingDataset().schema())
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
-                .name(datasets.mainDataset().datasetReference().name() + UNDERSCORE + TEMP_DATASET_BASE_NAME)
+                .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
                 .alias(TEMP_DATASET_BASE_NAME)
                 .build());
         }
@@ -134,12 +134,12 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsertIntoTemp = new ArrayList<>(tempDataset.schemaReference().fieldValues());
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
-        operations.add(Copy.of(mainDataset(), selectStage, fieldsToInsertIntoTemp));
+        operations.add(Copy.of(tempDataset, selectStage, fieldsToInsertIntoTemp));
 
 
         // Operation 2: Transfer from temp table into target table, adding extra columns at the same time
         List<Value> fieldsToSelectFromTemp = new ArrayList<>(tempDataset.schemaReference().fieldValues());
-        List<Value> fieldsToInsertIntoMain = new ArrayList<>(mainDataset().schemaReference().fieldValues());
+        List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
 
         if (ingestMode().generateDigest())
         {

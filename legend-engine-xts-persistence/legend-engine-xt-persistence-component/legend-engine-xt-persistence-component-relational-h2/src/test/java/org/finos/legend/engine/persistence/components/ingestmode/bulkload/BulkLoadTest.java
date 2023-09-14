@@ -100,7 +100,7 @@ public class BulkLoadTest extends BaseTest
                 .stagedFilesDatasetProperties(
                         H2StagedFilesDatasetProperties.builder()
                             .fileFormat(CsvFileFormat.builder().build())
-                           .addAllFiles(Collections.singletonList(filePath)).build())
+                            .addAllFiles(Collections.singletonList(filePath)).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
 

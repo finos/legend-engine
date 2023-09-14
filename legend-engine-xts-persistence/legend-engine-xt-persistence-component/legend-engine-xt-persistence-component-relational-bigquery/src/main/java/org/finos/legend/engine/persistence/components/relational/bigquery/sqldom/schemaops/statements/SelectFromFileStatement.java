@@ -27,14 +27,18 @@ import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.ASSIGNMENT_OPERATOR;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_SQUARE_BRACKET;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_SQUARE_BRACKET;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class SelectFromFileStatement extends SelectExpression
 {
     private final List<Value> columns;
-    private Map<String, String> loadOptions;
+    private List<String> files;
+    private Map<String, Object> loadOptions;
 
     public SelectFromFileStatement()
     {
@@ -52,31 +56,54 @@ public class SelectFromFileStatement extends SelectExpression
         validate();
 
         builder.append(OPEN_PARENTHESIS);
-        SqlGen.genSqlList(builder, columns, WHITE_SPACE, COMMA);
+        SqlGen.genSqlList(builder, columns, EMPTY, COMMA);
         builder.append(CLOSING_PARENTHESIS);
 
         builder.append(WHITE_SPACE);
         builder.append(Clause.FROM_FILES.get());
         builder.append(WHITE_SPACE);
 
+        builder.append(OPEN_PARENTHESIS);
+        builder.append("uris");
+        builder.append(ASSIGNMENT_OPERATOR);
+        builder.append(OPEN_SQUARE_BRACKET);
+        for (int ctr = 0; ctr < files.size(); ctr++)
+        {
+            builder.append(SqlGenUtils.singleQuote(files.get(ctr)));
+            if (ctr < (files.size() - 1))
+            {
+                builder.append(COMMA);
+            }
+        }
+        builder.append(CLOSING_SQUARE_BRACKET);
+
         if (loadOptions != null && loadOptions.size() > 0)
         {
-            builder.append(OPEN_PARENTHESIS);
-
-            int counter = 0;
+            builder.append(COMMA);
+            builder.append(WHITE_SPACE);
+            int ctr = 0;
             for (String option : loadOptions.keySet())
             {
-                counter++;
+                ctr++;
                 builder.append(option);
                 builder.append(ASSIGNMENT_OPERATOR);
-                builder.append(SqlGenUtils.singleQuote(loadOptions.get(option)));
-                if (counter < columns.size())
+                if (loadOptions.get(option) instanceof String)
+                {
+                    builder.append(SqlGenUtils.singleQuote(loadOptions.get(option)));
+                }
+                else
+                {
+                    // number
+                    builder.append(loadOptions.get(option));
+                }
+
+                if (ctr < loadOptions.size())
                 {
                     builder.append(COMMA + WHITE_SPACE);
                 }
             }
-            builder.append(CLOSING_PARENTHESIS);
         }
+        builder.append(CLOSING_PARENTHESIS);
     }
 
     @Override
@@ -88,15 +115,19 @@ public class SelectFromFileStatement extends SelectExpression
         }
         if (node instanceof Map)
         {
-            loadOptions = (Map<String, String>) node;
+            loadOptions = (Map<String, Object>) node;
+        }
+        if (node instanceof List)
+        {
+            files = (List<String>) node;
         }
     }
 
     void validate() throws SqlDomException
     {
-        if (!loadOptions.containsKey("uris"))
+        if (files == null || files.isEmpty())
         {
-            throw new SqlDomException("uris are mandatory for loading from files");
+            throw new SqlDomException("files are mandatory for loading from files");
         }
         if (!loadOptions.containsKey("format"))
         {
