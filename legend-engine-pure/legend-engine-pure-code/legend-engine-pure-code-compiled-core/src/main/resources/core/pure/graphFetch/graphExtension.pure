@@ -492,7 +492,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], true));
+               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false)));
             }
          ]);
 
