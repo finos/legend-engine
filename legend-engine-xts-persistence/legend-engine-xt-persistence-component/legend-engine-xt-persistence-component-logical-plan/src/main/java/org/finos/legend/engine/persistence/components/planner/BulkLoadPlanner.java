@@ -35,6 +35,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -125,7 +126,7 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
         AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
-        String batchSourceInfo = jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties().files());
+        String batchSourceInfo = jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties());
 
         StringValue appendDatasetName = StringValue.of(mainDataset().datasetReference().name());
         StringValue batchIdValue = StringValue.of(options().appendBatchIdValue().orElseThrow(IllegalStateException::new));
@@ -163,9 +164,10 @@ class BulkLoadPlanner extends Planner
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
 
-    public static String jsonifyBatchSourceInfo(List<String> files)
+    private String jsonifyBatchSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties)
     {
-        Map batchSourceMap = new HashMap();
+        List<String> files = stagedFilesDatasetProperties.files();
+        Map<String, Object> batchSourceMap = new HashMap();
         batchSourceMap.put("files", files);
         ObjectMapper objectMapper = new ObjectMapper();
         try

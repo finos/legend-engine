@@ -66,7 +66,7 @@ public abstract class AppendLogDatasetUtilsTest
     {
         AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
         StringValue batchIdValue = StringValue.of("batch_id_123");
-        StringValue appendLogTableName = StringValue.of("appeng_log_table_name");
+        StringValue appendLogTableName = StringValue.of("APPEND_LOG_TABLE_NAME");
         StringValue batchStatusValue = StringValue.of(IngestStatus.SUCCEEDED.toString());
         StringValue batchLineageValue = StringValue.of("my_lineage_value");
 
