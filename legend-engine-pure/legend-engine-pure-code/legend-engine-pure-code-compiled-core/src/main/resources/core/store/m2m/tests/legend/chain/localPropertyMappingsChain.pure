@@ -1,0 +1,152 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::dest::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::chainMappingWithLocalPropertyMappings(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         name,
+         dateOfBirth {
+            day,
+            month,
+            year
+         }
+      }
+   }#;
+
+   let sourcePersons = '[{"name":"P1", "dateOfBirth": "2023-01-02"}, {"name":"P2", "dateOfBirth": "2023-06-07"}]';
+   
+   let result = execute(
+      {|Person.all()->graphFetch($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Person, url = 'data:application/json,' + $sourcePersons)
+         ]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '[{"name":"P1","dateOfBirth":{"month":1,"year":2023,"day":2}},{"name":"P2","dateOfBirth":{"month":6,"year":2023,"day":7}}]';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::chainMappingWithLocalPropertyMappingsChecked(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         name,
+         dateOfBirth {
+            day,
+            month,
+            year
+         }
+      }
+   }#;
+
+   let sourcePersons = '[{"name":"P1", "dateOfBirth": "2023-01-02"}, {"name":"P2", "dateOfBirth": "2023-06-07"}]';
+   
+   let result = execute(
+      {|Person.all()->graphFetchChecked($tree)->serialize($tree)},
+      BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Person, url = 'data:application/json,' + $sourcePersons)
+         ]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '['+
+    '{"defects":[],"source":{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"P1\\",\\"dateOfBirth\\":\\"2023-01-02\\"}"},"value":{"name":"P1","dateOfBirth":"2023-01-02"}},"value":{"name":"P1","dateOfBirth":"2023-01-02"}},"value":{"name":"P1","dateOfBirth":{"month":1,"year":2023,"day":2}}},'+
+    '{"defects":[],"source":{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"name\\":\\"P2\\",\\"dateOfBirth\\":\\"2023-06-07\\"}"},"value":{"name":"P2","dateOfBirth":"2023-06-07"}},"value":{"name":"P2","dateOfBirth":"2023-06-07"}},"value":{"name":"P2","dateOfBirth":{"month":6,"year":2023,"day":7}}}'+
+  ']';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+###Pure
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::dest::*;
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::src::__Person
+{
+   name: String[1];
+   dateOfBirth: StrictDate[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::bridge::_Person
+{
+   name: String[1];
+   dateOfBirth: StrictDate[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::dest::Person
+{
+   name: String[1];
+   dateOfBirth: DateOfBirth[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::dest::DateOfBirth
+{
+   day: Integer[1];
+   month: Integer[1];
+   year: Integer[1];
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::bridge::*;
+import meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::dest::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::BridgeToDestMapping
+(
+   Person: Pure {
+      ~src _Person
+      name: $src.name,
+      dateOfBirth: $src
+   }
+
+   DateOfBirth: Pure {
+      ~src _Person
+      day: $src.dateOfBirth->dayOfMonth(),
+      month: $src.dateOfBirth->monthNumber(),
+      year: $src.dateOfBirth->year()
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::chain::localPropertyMappings::SrcToBridgeMapping
+(
+   _Person: Pure {
+      ~src __Person
+      +localProp: String[1] : '',
+      name: $src.name,
+      dateOfBirth: $src.dateOfBirth
+   }
+)

@@ -429,15 +429,12 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 { 
-  //if source is a mappingclass skip the filter
   let sourceClass = $targetSet->sourceClass($extensions);
-  let sourceClassMappings = $targetSet.parent->_classMappingByClass($sourceClass)->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
   let targetSrcJType = $context.conventions->className($sourceClass);
 
-  if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
+  if($targetSet->instanceOf(PureInstanceSetImplementation),
      |let interParam  = j_parameter(javaClassType(), 'interParam');
-      $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType())) 
-          ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
+      $input->js_filter(j_lambda($propertyType, $propertyType->j_instanceof($targetSrcJType)));,
      |$input
      );
   
