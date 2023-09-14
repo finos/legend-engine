@@ -414,7 +414,6 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
-                .with(ArrowJavaBindingPureCoreExtension.class)
                 .with(ArrowPureCoreExtension.class)
                 ;
     }
