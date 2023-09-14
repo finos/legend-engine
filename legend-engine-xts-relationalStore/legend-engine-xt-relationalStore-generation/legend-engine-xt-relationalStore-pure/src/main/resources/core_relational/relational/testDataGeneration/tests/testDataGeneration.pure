@@ -2472,7 +2472,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    },{| true});
 }
 
-function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
+function <<meta::pure::profiles::test.ToFix>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
 {
    let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
@@ -2925,7 +2925,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    },{| true});
 }
 
-function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::model::alloy::testAlloyTestDatGenForNestedViews():Boolean[1]
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenForNestedViews():Boolean[1]
 {
   let query = {|meta::relational::testDataGeneration::tests::model::Student.all()->project([s | $s.school.id],['id'])};
   let mapping = meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping;
@@ -2942,9 +2942,9 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
   ])
 ];
-  
+
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
     assertTestData('default\n'+
                 'StudentTable\n'+
                 'ID,SCHOOL_ID\n'+
@@ -2957,6 +2957,45 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                 'sc1,school1\n'+
                 'sc2,school2\n'+
                 '-----\n', $result->cast(@String)->toOne(), $db);
+  },{| true});
+}
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenWithViewAsDriver():Boolean[1]
+{
+  let query = {|OrderPnl.all()->project([o | $o.pnl, o | $o.order.settlementDateTime], ['pnl', 'settlementDateTime'])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let db = meta::relational::tests::db;
+  let runtime = meta::relational::tests::testRuntime();
+  meta::relational::tests::createTablesAndFillDb();
+
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+    assertTestData('default\n' +
+                  'accountTable\n' +
+                  'ID\n' +
+                  '1\n' +
+                  '2\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'orderPnlTable\n' +
+                  'ORDER_ID,pnl\n' +
+                  '1,100.0\n' +
+                  '2,200.0\n' +
+                  '4,150.0\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'orderTable\n' +
+                  'ID,accountID,settlementDateTime\n' +
+                  '1,1,2014-12-02 21:00:00\n' +
+                  '2,2,2014-12-02 21:00:00\n' +
+                  '4,2,2014-12-03 21:00:00\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'salesPersonTable\n' +
+                  'ACCOUNT_ID,NAME,PERSON_ID\n' +
+                  '1,Peter Smith,1\n' +
+                  '2,John Johnson,2\n' +
+                  '-----\n', $result->cast(@String)->toOne(), $db);
   },{| true});
 }
 

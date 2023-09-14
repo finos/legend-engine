@@ -847,7 +847,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
          |  let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($tree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, true, [], $config, $extensions);
             if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
                | $nestedNodes,
-               | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
+               | let viewResultVarName = $nestedNodes->at(0)->cast(@AllocationExecutionNode).varName;
                  let childNodes = $tree->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
                  $nestedNodes->concatenate($childNodes);
             );,
@@ -933,7 +933,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
            let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($child, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, false, $nodeResPlaceHolder, $config, $extensions);
            if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
               | $nestedNodes,
-              | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
+              | let viewResultVarName = $nestedNodes->at(0)->cast(@AllocationExecutionNode).varName;
                 let childNodes =  $child->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
                 $nestedNodes->concatenate($childNodes);
            );,
