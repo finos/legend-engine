@@ -525,8 +525,6 @@ public class TestExtensions
                 .with("core_nonrelational_mongodb")
                 .with("core_nonrelational_mongodb_java_platform_binding")
                 .with("core_external_format_arrow")
-                .with("core_external_format_arrow_java_platform_binding")
-
                 ;
     }
 }
