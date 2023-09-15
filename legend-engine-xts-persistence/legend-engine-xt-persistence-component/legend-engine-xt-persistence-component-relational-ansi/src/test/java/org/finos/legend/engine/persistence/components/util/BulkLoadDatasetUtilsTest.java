@@ -65,7 +65,7 @@ public abstract class BulkLoadDatasetUtilsTest
     public void testInsertMetadataInUpperCase()
     {
         BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
-        StringValue bulkLoadTableName = StringValue.of("APPEND_LOG_TABLE_NAME");
+        StringValue bulkLoadTableName = StringValue.of("BULK_LOAD_TABLE_NAME");
         StringValue batchLineageValue = StringValue.of("my_lineage_value");
 
         Insert operation = bulkLoadMetadataUtils.insertMetaData(bulkLoadTableName, batchLineageValue);

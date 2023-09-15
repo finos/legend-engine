@@ -31,7 +31,7 @@ public class BulkLoadDatasetUtilsBigQueryTest extends BulkLoadDatasetUtilsTest
     {
         return "INSERT INTO BULK_LOAD_BATCH_METADATA " +
                 "(`BATCH_ID`, `TABLE_NAME`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `BATCH_SOURCE_INFO`) " +
-                "(SELECT 'batch_id_123','APPEND_LOG_TABLE_NAME',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
+                "(SELECT 'batch_id_123','BULK_LOAD_TABLE_NAME',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
     }
 
     public RelationalSink getRelationalSink()
