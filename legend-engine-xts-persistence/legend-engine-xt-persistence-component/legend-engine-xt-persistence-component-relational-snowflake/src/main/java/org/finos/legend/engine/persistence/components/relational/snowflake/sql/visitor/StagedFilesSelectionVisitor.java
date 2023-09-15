@@ -14,27 +14,31 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
-import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class StagedFilesDatasetVisitor implements LogicalPlanVisitor<StagedFilesDataset>
+public class StagedFilesSelectionVisitor implements LogicalPlanVisitor<StagedFilesSelection>
 {
+
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, StagedFilesDataset current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, StagedFilesSelection current, VisitorContext context)
     {
-        List<Value> allColumns = LogicalPlanUtils.extractStagedFilesFieldValues(current);
-        StagedFilesSelection selection = StagedFilesSelection.builder()
-            .source(current)
-            .addAllFields(allColumns)
-            .alias(current.datasetReference().alias())
-            .build();
-        return new StagedFilesSelectionVisitor().visit(prev, selection, context);
+        SelectStatement selectStatement = new SelectStatement();
+        current.alias().ifPresent(selectStatement::setAlias);
+        prev.push(selectStatement);
+
+        List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
+        logicalPlanNodeList.add(current.source().datasetReference());
+        logicalPlanNodeList.addAll(current.fields());
+        selectStatement.setSelectItemsSize((long) current.fields().size());
+
+        return new VisitorResult(selectStatement, logicalPlanNodeList);
     }
 }

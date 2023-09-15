@@ -12,28 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.values;
+package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.immutables.value.Value;
 
-import java.util.Optional;
+import java.util.List;
 
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
-
-@Immutable
-@Style(
+@Value.Immutable
+@Value.Style(
     typeAbstract = "*Abstract",
     typeImmutable = "*",
     jdkOnly = true,
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
+public interface StagedFilesDatasetReferenceAbstract extends DatasetReference
 {
-    Integer columnNumber();
+    StagedFilesDatasetProperties properties();
 
-    Optional<String> elementPath();
-
-    FieldType fieldType();
+    List<String> columns();
 }

@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
+package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -36,14 +35,17 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
     {
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
-        List<Value> values = new ArrayList<>();
+        List<Value> columnNameList = new ArrayList<>();
+        List<Value> columnValueList = new ArrayList<>();
         for (int i = 0; i < current.values().size(); i++)
         {
-            values.add(StringValue.of(current.fieldNames().get(i)));
-            values.add(current.values().get(i));
+            columnNameList.add(StringValue.of(current.fieldNames().get(i)));
+            columnValueList.add(current.values().get(i));
         }
 
-        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.OBJECT_CONSTRUCT).addAllValue(values).build();
-        return new VisitorResult(udf, Arrays.asList(function));
+        ToArrayFunction columnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
+        ToArrayFunction columnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
+
+        return new VisitorResult(udf, Arrays.asList(columnNames, columnValues));
     }
 }

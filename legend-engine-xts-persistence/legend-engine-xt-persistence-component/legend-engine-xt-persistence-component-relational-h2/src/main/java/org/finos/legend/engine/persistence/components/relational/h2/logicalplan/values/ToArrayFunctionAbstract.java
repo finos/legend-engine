@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.values;
+package org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Style;
 
-import java.util.Optional;
-
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
+import java.util.List;
 
 @Immutable
 @Style(
@@ -29,11 +28,7 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
+public interface ToArrayFunctionAbstract extends Value
 {
-    Integer columnNumber();
-
-    Optional<String> elementPath();
-
-    FieldType fieldType();
+    List<Value> values();
 }

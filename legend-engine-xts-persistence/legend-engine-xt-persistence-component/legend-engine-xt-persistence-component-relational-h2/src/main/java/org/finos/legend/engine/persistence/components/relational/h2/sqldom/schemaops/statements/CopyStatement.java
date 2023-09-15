@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements;
+package org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.statements;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
-import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DMLStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
@@ -24,10 +23,11 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.INSERT_INTO;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class CopyStatement implements DMLStatement
 {
@@ -48,20 +48,18 @@ public class CopyStatement implements DMLStatement
     }
 
     /*
-     Copy GENERIC PLAN for Snowflake:
-        COPY INTO [<namespace>.]<table_name> (COLUMN_LIST)
-        FROM
-        ( SELECT [<alias>.]$<file_col_num>[:<element>] [ , [<alias>.]$<file_col_num>[:<element>] , ...  ]
-            FROM { <internal_location> | <external_location> }
-        [ ( FILE_FORMAT => '<namespace>.<named_file_format>', PATTERN => '<regex_pattern>' ) ] [ <alias> ] )
-        on_error = 'ABORT_STATEMENT'
+     Copy GENERIC PLAN for H2:
+        INSERT INTO table_name (COLUMN_LIST)
+        SELECT [CONVERT("column_name", column_type) , ...]
+        FROM CSVREAD('{FILE_PATH}','{CSV_COLUMN_NAMES}','{CSV_OPTIONS}')
      */
 
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
         validate();
-        builder.append("COPY INTO ");
+        builder.append(INSERT_INTO.get());
+        builder.append(WHITE_SPACE);
 
         // Add table name
         table.genSqlWithoutAlias(builder);
@@ -82,14 +80,9 @@ public class CopyStatement implements DMLStatement
             builder.append(CLOSING_PARENTHESIS);
         }
 
-        builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE);
-
-        builder.append(OPEN_PARENTHESIS);
-        selectStatement.genSql(builder);
-        builder.append(CLOSING_PARENTHESIS);
-
         builder.append(WHITE_SPACE);
-        builder.append("on_error = 'ABORT_STATEMENT'");
+
+        selectStatement.genSql(builder);
     }
 
     @Override

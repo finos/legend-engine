@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.values;
+package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.immutables.value.Value.Derived;
+import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Style;
 
+import java.util.List;
 import java.util.Optional;
-
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
 
 @Immutable
 @Style(
@@ -29,11 +31,19 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
+public interface StagedFilesSelectionAbstract extends Dataset, Operation
 {
-    Integer columnNumber();
+    List<Value> fields();
 
-    Optional<String> elementPath();
+    StagedFilesDataset source();
 
-    FieldType fieldType();
+    Optional<String> alias();
+
+    @Derived
+    default DatasetReference datasetReference()
+    {
+        return DatasetReferenceImpl.builder()
+            .alias(alias())
+            .build();
+    }
 }

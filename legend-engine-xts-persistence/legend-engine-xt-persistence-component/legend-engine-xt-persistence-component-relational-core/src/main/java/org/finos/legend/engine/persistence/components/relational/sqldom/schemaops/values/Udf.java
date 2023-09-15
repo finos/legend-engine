@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values;
-
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
+package org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values;
 
 import java.util.ArrayList;
 

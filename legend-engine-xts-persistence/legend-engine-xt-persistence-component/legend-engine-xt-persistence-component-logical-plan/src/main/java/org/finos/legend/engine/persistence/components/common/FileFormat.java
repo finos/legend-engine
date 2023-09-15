@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.datasets;
+package org.finos.legend.engine.persistence.components.common;
 
-import java.util.List;
-
-public interface StagedFilesDatasetProperties
+public enum FileFormat
 {
-    List<String> files();
+    CSV,
+    JSON,
+    AVRO,
+    PARQUET
 }
