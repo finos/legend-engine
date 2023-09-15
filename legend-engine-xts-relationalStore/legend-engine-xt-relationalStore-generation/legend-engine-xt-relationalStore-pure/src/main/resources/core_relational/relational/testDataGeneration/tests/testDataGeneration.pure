@@ -2472,14 +2472,15 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    },{| true});
 }
 
-function <<meta::pure::profiles::test.ToFix>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
 {
-   let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
-   let mapping = meta::relational::tests::simpleRelationalMapping;
-   let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+  let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let db = meta::relational::tests::db;
+  let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+  meta::relational::tests::createTablesAndFillDb();
 
-   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
       let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'accountTable\n'+
@@ -2503,7 +2504,7 @@ function <<meta::pure::profiles::test.ToFix>> {serverVersion.start='V1_5_0'} met
                       '3,1\n'+
                       '4,2\n'+
                       '-----\n', $result->cast(@String)->toOne(), $db);
-   },{| true});
+  },{| true});
 }
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByChild_Alloy():Boolean[1]
@@ -3050,6 +3051,23 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
     '            resultSizeRange = *\n' +
     '            resultColumns = [("alternativeID", INT), ("entityID", INT)]\n' +
     '            sql = select top 20 "root".alternativeID as "alternativeID", "root".entityID as "entityID" from (select top 20 "altidtoentitymapping_0".root_pk_gen_alternativeID as "alternativeID", "altidtoentitymapping_0".root_pk_gen_entityID as "entityID" from (select * from (${res_c0}) as "root") as "res_c0_1" inner join (select "root".alternativeID as altID, "root".entityID as entityID, "root".alternativeID as root_pk_gen_alternativeID, "root".entityID as root_pk_gen_entityID from E.AltIDToEntityMapping as "root") as "altidtoentitymapping_0" on ("res_c0_1"."entityID" = "altidtoentitymapping_0".entityID)) as "res_c0_0" inner join E.AltIDToEntityMapping as "root" on ("res_c0_0"."entityID" = "root".entityID and "res_c0_0"."alternativeID" = "root".alternativeID)\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0_c0\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("altID", INT), ("entityID", INT)]\n' +
+    '            sql = select top 20 "root"."alternativeID" as "altID", "root"."entityID" as "entityID" from (select * from (${res_c0_c0_v}) as "root") as "root"\n' +
     '            connection = TestDatabaseConnection(type = "H2")\n' +
     '          )\n' +
     '        )\n' +
