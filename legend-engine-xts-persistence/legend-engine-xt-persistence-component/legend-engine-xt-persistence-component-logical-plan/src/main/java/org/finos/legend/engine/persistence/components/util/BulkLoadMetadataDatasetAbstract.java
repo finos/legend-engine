@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 
 import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.DEFAULT_APPENDLOG_META_TABLE;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.DEFAULT_BULK_LOAD_META_TABLE;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 import static org.immutables.value.Value.Default;
@@ -37,7 +37,7 @@ import static org.immutables.value.Value.Derived;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface AppendLogMetadataDatasetAbstract
+public interface BulkLoadMetadataDatasetAbstract
 {
 
     Optional<String> database();
@@ -47,7 +47,7 @@ public interface AppendLogMetadataDatasetAbstract
     @Default
     default String name()
     {
-        return DEFAULT_APPENDLOG_META_TABLE;
+        return DEFAULT_BULK_LOAD_META_TABLE;
     }
 
     @Default

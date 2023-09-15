@@ -57,7 +57,7 @@ import java.util.stream.Collectors;
 public abstract class RelationalGeneratorAbstract
 {
 
-    public static final String APPEND_BATCH_STATUS_PATTERN = "{APPEND_BATCH_STATUS_PLACEHOLDER}";
+    public static final String BULK_LOAD_BATCH_STATUS_PATTERN = "{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}";
 
     //---------- FLAGS ----------
 
@@ -113,12 +113,12 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    public abstract Optional<String> appendBatchIdValue();
+    public abstract Optional<String> bulkLoadBatchIdValue();
 
     @Default
-    public String appendBatchStatusPattern()
+    public String bulkLoadBatchStatusPattern()
     {
-        return APPEND_BATCH_STATUS_PATTERN;
+        return BULK_LOAD_BATCH_STATUS_PATTERN;
     }
 
     //---------- FIELDS ----------
@@ -136,8 +136,6 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
-            .appendBatchIdValue(appendBatchIdValue())
-            .appendBatchStatusPattern(appendBatchStatusPattern())
             .build();
     }
 
@@ -149,6 +147,8 @@ public abstract class RelationalGeneratorAbstract
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
             .infiniteBatchIdValue(infiniteBatchIdValue())
+            .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
+            .bulkLoadBatchStatusPattern(bulkLoadBatchStatusPattern())
             .batchIdPattern(batchIdPattern());
 
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);

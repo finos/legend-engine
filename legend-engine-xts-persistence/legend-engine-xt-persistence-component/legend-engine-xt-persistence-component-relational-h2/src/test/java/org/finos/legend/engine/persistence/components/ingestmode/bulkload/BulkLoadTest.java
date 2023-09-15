@@ -121,7 +121,7 @@ public class BulkLoadTest extends BaseTest
                 .relationalSink(H2Sink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .appendBatchIdValue("xyz123")
+                .bulkLoadBatchIdValue("xyz123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -158,8 +158,8 @@ public class BulkLoadTest extends BaseTest
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
 
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from appendlog_batch_metadata").get(0);
-        verifyAppendMetadata(appendMetadata, filePath);
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath);
     }
 
     @Test
@@ -194,7 +194,7 @@ public class BulkLoadTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .appendBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue("xyz123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -228,8 +228,8 @@ public class BulkLoadTest extends BaseTest
 
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from appendlog_batch_metadata").get(0);
-        verifyAppendMetadata(appendMetadata, filePath);
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath);
     }
 
     @Test
@@ -266,7 +266,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .appendBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue("xyz123")
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
@@ -303,8 +303,8 @@ public class BulkLoadTest extends BaseTest
 
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from appendlog_batch_metadata").get(0);
-        verifyAppendMetadata(appendMetadata, filePath);
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath);
     }
 
     @Test
@@ -341,7 +341,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .appendBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue("xyz123")
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
@@ -380,8 +380,8 @@ public class BulkLoadTest extends BaseTest
 
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER);
         executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from APPENDLOG_BATCH_METADATA").get(0);
-        verifyAppendMetadataForUpperCase(appendMetadata, filePath);
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from BULK_LOAD_BATCH_METADATA").get(0);
+        verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath);
     }
 
     @Test
@@ -443,7 +443,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(bulkLoad)
                     .relationalSink(H2Sink.get())
-                    .appendBatchIdValue("xyz123")
+                    .bulkLoadBatchIdValue("xyz123")
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
                     .build();
@@ -505,13 +505,13 @@ public class BulkLoadTest extends BaseTest
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
-                .appendBatchIdValue("xyz123")
+                .bulkLoadBatchIdValue("xyz123")
                 .enableConcurrentSafety(true)
                 .caseConversion(caseConversion)
                 .build();
     }
 
-    private void verifyAppendMetadata(Map<String, Object> appendMetadata, String fileName)
+    private void verifyBulkLoadMetadata(Map<String, Object> appendMetadata, String fileName)
     {
         Assertions.assertEquals("xyz123", appendMetadata.get("batch_id"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("batch_status"));
@@ -521,7 +521,7 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_end_ts_utc").toString());
     }
 
-    private void verifyAppendMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName)
+    private void verifyBulkLoadMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName)
     {
         Assertions.assertEquals("xyz123", appendMetadata.get("BATCH_ID"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("BATCH_STATUS"));

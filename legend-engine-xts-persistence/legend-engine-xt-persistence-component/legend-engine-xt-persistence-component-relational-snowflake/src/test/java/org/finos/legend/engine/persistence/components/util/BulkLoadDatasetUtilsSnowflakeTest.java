@@ -17,20 +17,20 @@ package org.finos.legend.engine.persistence.components.util;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 
-public class AppendLogDatasetUtilsSnowflakeTest extends AppendLogDatasetUtilsTest
+public class BulkLoadDatasetUtilsSnowflakeTest extends BulkLoadDatasetUtilsTest
 {
 
-    public String getExpectedSqlForAppendMetadata()
+    public String getExpectedSqlForMetadata()
     {
-        return "INSERT INTO appendlog_batch_metadata " +
+        return "INSERT INTO bulk_load_batch_metadata " +
                 "(\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT 'batch_id_123','appeng_log_table_name','2000-01-01 00:00:00',SYSDATE(),'SUCCEEDED',PARSE_JSON('my_lineage_value'))";
+                "(SELECT 'batch_id_123','appeng_log_table_name','2000-01-01 00:00:00',SYSDATE(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
     }
 
-    public String getExpectedSqlForAppendMetadataUpperCase()
+    public String getExpectedSqlForMetadataUpperCase()
     {
-        return "INSERT INTO APPENDLOG_BATCH_METADATA (\"BATCH_ID\", \"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
-                "(SELECT 'batch_id_123','APPEND_LOG_TABLE_NAME','2000-01-01 00:00:00',SYSDATE(),'SUCCEEDED',PARSE_JSON('my_lineage_value'))";
+        return "INSERT INTO BULK_LOAD_BATCH_METADATA (\"BATCH_ID\", \"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
+                "(SELECT 'batch_id_123','APPEND_LOG_TABLE_NAME','2000-01-01 00:00:00',SYSDATE(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
     }
 
     public RelationalSink getRelationalSink()

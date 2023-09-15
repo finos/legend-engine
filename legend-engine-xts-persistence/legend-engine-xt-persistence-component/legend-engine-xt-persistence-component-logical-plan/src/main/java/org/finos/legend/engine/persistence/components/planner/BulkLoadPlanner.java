@@ -30,7 +30,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
-import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -44,8 +43,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.DigestU
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
-import org.finos.legend.engine.persistence.components.util.AppendLogMetadataUtils;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataUtils;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
@@ -59,7 +59,7 @@ class BulkLoadPlanner extends Planner
 
     private StagedFilesDataset stagedFilesDataset;
 
-    private AppendLogMetadataDataset appendLogMetadataDataset;
+    private BulkLoadMetadataDataset bulkLoadMetadataDataset;
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
     {
@@ -72,7 +72,7 @@ class BulkLoadPlanner extends Planner
         }
 
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
-        appendLogMetadataDataset = appendLogMetadataDataset().orElseThrow(IllegalStateException::new);
+        bulkLoadMetadataDataset = bulkLoadMetadataDataset().orElseThrow(IllegalStateException::new);
     }
 
     @Override
@@ -92,7 +92,7 @@ class BulkLoadPlanner extends Planner
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
-        fieldsToSelect.add(StringValue.of(options().appendBatchIdValue()));
+        fieldsToSelect.add(BulkLoadBatchIdValue.INSTANCE);
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
@@ -111,7 +111,7 @@ class BulkLoadPlanner extends Planner
     {
         List<Operation> operations = new ArrayList<>();
         operations.add(Create.of(true, mainDataset()));
-        operations.add(Create.of(true, appendLogMetadataDataset.get()));
+        operations.add(Create.of(true, bulkLoadMetadataDataset.get()));
         return LogicalPlan.of(operations);
     }
 
@@ -125,14 +125,10 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
+        BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
         String batchSourceInfo = jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties());
-
-        StringValue appendDatasetName = StringValue.of(mainDataset().datasetReference().name());
-        StringValue batchIdValue = StringValue.of(options().appendBatchIdValue().orElseThrow(IllegalStateException::new));
-        StringValue appendBatchStatusPattern = StringValue.of(options().appendBatchStatusPattern().orElseThrow(IllegalStateException::new));
-
-        Insert insertMetaData = appendLogMetadataUtils.insertMetaData(batchIdValue, appendDatasetName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, appendBatchStatusPattern, StringValue.of(batchSourceInfo));
+        StringValue datasetName = StringValue.of(mainDataset().datasetReference().name());
+        Insert insertMetaData = bulkLoadMetadataUtils.insertMetaData(datasetName, StringValue.of(batchSourceInfo));
         return LogicalPlan.of(Arrays.asList(insertMetaData));
     }
 

@@ -20,7 +20,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.junit.jupiter.api.Assertions;
@@ -31,57 +30,55 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public abstract class AppendLogDatasetUtilsTest
+public abstract class BulkLoadDatasetUtilsTest
 {
 
     private final ZonedDateTime executionZonedDateTime = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-    private final TransformOptions transformOptions = TransformOptions.builder().executionTimestampClock(Clock.fixed(executionZonedDateTime.toInstant(), ZoneOffset.UTC)).build();
+    private final TransformOptions transformOptions = TransformOptions
+            .builder()
+            .executionTimestampClock(Clock.fixed(executionZonedDateTime.toInstant(), ZoneOffset.UTC))
+            .bulkLoadBatchIdValue("batch_id_123")
+            .bulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>")
+            .build();
 
-    private AppendLogMetadataDataset appendLogMetadataDataset = AppendLogMetadataDataset.builder().build();
-
+    private BulkLoadMetadataDataset bulkLoadMetadataDataset = BulkLoadMetadataDataset.builder().build();
 
     @Test
-    public void testInsertAppendMetadata()
+    public void testInsertMetadata()
     {
-        AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
-        StringValue batchIdValue = StringValue.of("batch_id_123");
-        StringValue appendLogTableName = StringValue.of("appeng_log_table_name");
-        StringValue batchStatusValue = StringValue.of(IngestStatus.SUCCEEDED.toString());
+        BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
+        StringValue bulkLoadTableName = StringValue.of("appeng_log_table_name");
         StringValue batchLineageValue = StringValue.of("my_lineage_value");
-        Insert operation = appendLogMetadataUtils.insertMetaData(batchIdValue, appendLogTableName, BatchStartTimestamp.INSTANCE,
-                BatchEndTimestampAbstract.INSTANCE, batchStatusValue, batchLineageValue);
+        Insert operation = bulkLoadMetadataUtils.insertMetaData(bulkLoadTableName, batchLineageValue);
 
         RelationalTransformer transformer = new RelationalTransformer(getRelationalSink(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = getExpectedSqlForAppendMetadata();
+        String expectedSql = getExpectedSqlForMetadata();
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
-    public abstract String getExpectedSqlForAppendMetadata();
+    public abstract String getExpectedSqlForMetadata();
 
     @Test
-    public void testInsertAppendMetadataInUpperCase()
+    public void testInsertMetadataInUpperCase()
     {
-        AppendLogMetadataUtils appendLogMetadataUtils = new AppendLogMetadataUtils(appendLogMetadataDataset);
-        StringValue batchIdValue = StringValue.of("batch_id_123");
-        StringValue appendLogTableName = StringValue.of("APPEND_LOG_TABLE_NAME");
-        StringValue batchStatusValue = StringValue.of(IngestStatus.SUCCEEDED.toString());
+        BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
+        StringValue bulkLoadTableName = StringValue.of("APPEND_LOG_TABLE_NAME");
         StringValue batchLineageValue = StringValue.of("my_lineage_value");
 
-        Insert operation = appendLogMetadataUtils.insertMetaData(batchIdValue, appendLogTableName,
-                BatchStartTimestamp.INSTANCE, BatchEndTimestampAbstract.INSTANCE, batchStatusValue, batchLineageValue);
+        Insert operation = bulkLoadMetadataUtils.insertMetaData(bulkLoadTableName, batchLineageValue);
 
         RelationalTransformer transformer = new RelationalTransformer(getRelationalSink(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = getExpectedSqlForAppendMetadataUpperCase();
+        String expectedSql = getExpectedSqlForMetadataUpperCase();
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
-    public abstract String getExpectedSqlForAppendMetadataUpperCase();
+    public abstract String getExpectedSqlForMetadataUpperCase();
 
     public abstract RelationalSink getRelationalSink();
 }

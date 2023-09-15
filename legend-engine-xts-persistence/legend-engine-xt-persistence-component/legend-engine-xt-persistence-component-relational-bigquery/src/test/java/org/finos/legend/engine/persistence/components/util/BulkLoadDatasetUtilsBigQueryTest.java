@@ -17,21 +17,21 @@ package org.finos.legend.engine.persistence.components.util;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 
-public class AppendLogDatasetUtilsBigQueryTest extends AppendLogDatasetUtilsTest
+public class BulkLoadDatasetUtilsBigQueryTest extends BulkLoadDatasetUtilsTest
 {
 
-    public String getExpectedSqlForAppendMetadata()
+    public String getExpectedSqlForMetadata()
     {
-        return "INSERT INTO appendlog_batch_metadata " +
+        return "INSERT INTO bulk_load_batch_metadata " +
                 "(`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-                "(SELECT 'batch_id_123','appeng_log_table_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'SUCCEEDED',PARSE_JSON('my_lineage_value'))";
+                "(SELECT 'batch_id_123','appeng_log_table_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
     }
 
-    public String getExpectedSqlForAppendMetadataUpperCase()
+    public String getExpectedSqlForMetadataUpperCase()
     {
-        return "INSERT INTO APPENDLOG_BATCH_METADATA " +
+        return "INSERT INTO BULK_LOAD_BATCH_METADATA " +
                 "(`BATCH_ID`, `TABLE_NAME`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `BATCH_SOURCE_INFO`) " +
-                "(SELECT 'batch_id_123','APPEND_LOG_TABLE_NAME',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'SUCCEEDED',PARSE_JSON('my_lineage_value'))";
+                "(SELECT 'batch_id_123','APPEND_LOG_TABLE_NAME',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
     }
 
     public RelationalSink getRelationalSink()

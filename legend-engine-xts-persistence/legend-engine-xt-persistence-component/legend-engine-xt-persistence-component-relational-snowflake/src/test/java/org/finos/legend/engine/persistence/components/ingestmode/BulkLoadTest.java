@@ -102,7 +102,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .appendBatchIdValue("batch123")
+                .bulkLoadBatchIdValue("batch123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -120,8 +120,8 @@ public class BulkLoadTest
                 "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage)" +
                 " on_error = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO appendlog_batch_metadata (\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT 'batch123','my_name','2000-01-01 00:00:00',SYSDATE(),'{APPEND_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+        String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
+                "(SELECT 'batch123','my_name','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -161,7 +161,7 @@ public class BulkLoadTest
                 .ingestMode(bulkLoad)
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
-                .appendBatchIdValue("batch123")
+                .bulkLoadBatchIdValue("batch123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -215,7 +215,7 @@ public class BulkLoadTest
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .caseConversion(CaseConversion.TO_UPPER)
-                .appendBatchIdValue("batch123")
+                .bulkLoadBatchIdValue("batch123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -307,7 +307,7 @@ public class BulkLoadTest
                     .relationalSink(SnowflakeSink.get())
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
-                    .appendBatchIdValue("batch123")
+                    .bulkLoadBatchIdValue("batch123")
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
@@ -347,7 +347,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .appendBatchIdValue("batch123")
+                .bulkLoadBatchIdValue("batch123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));

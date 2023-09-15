@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
-import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -47,12 +47,12 @@ public class ApiUtils
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        AppendLogMetadataDataset appendLogMetadataDataset = datasets.appendLogMetadataDataset().orElse(AppendLogMetadataDataset.builder().build());
+        BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
         LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
         Datasets enrichedDatasets = datasets
                 .withMetadataDataset(metadataDataset)
                 .withLockInfoDataset(lockInfoDataset)
-                .withAppendLogMetadataDataset(appendLogMetadataDataset);
+                .withBulkLoadMetadataDataset(bulkLoadMetadataDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.util.AppendLogMetadataDataset;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -152,18 +152,18 @@ public class DatasetCaseConverter
                 .build();
     }
 
-    public AppendLogMetadataDataset applyCaseOnAppendLogMetadataDataset(AppendLogMetadataDataset appendLogMetadataDataset, Function<String, String> strategy)
+    public BulkLoadMetadataDataset applyCaseOnBulkLoadMetadataDataset(BulkLoadMetadataDataset bulkLoadMetadataDataset, Function<String, String> strategy)
     {
-        return AppendLogMetadataDataset.builder()
-                .database(appendLogMetadataDataset.database().map(strategy))
-                .group(appendLogMetadataDataset.group().map(strategy))
-                .name(strategy.apply(appendLogMetadataDataset.name()))
-                .batchIdField(strategy.apply(appendLogMetadataDataset.batchIdField()))
-                .tableNameField(strategy.apply(appendLogMetadataDataset.tableNameField()))
-                .batchStartTimeField(strategy.apply(appendLogMetadataDataset.batchStartTimeField()))
-                .batchEndTimeField(strategy.apply(appendLogMetadataDataset.batchEndTimeField()))
-                .batchStatusField(strategy.apply(appendLogMetadataDataset.batchStatusField()))
-                .batchSourceInfoField(strategy.apply(appendLogMetadataDataset.batchSourceInfoField()))
+        return BulkLoadMetadataDataset.builder()
+                .database(bulkLoadMetadataDataset.database().map(strategy))
+                .group(bulkLoadMetadataDataset.group().map(strategy))
+                .name(strategy.apply(bulkLoadMetadataDataset.name()))
+                .batchIdField(strategy.apply(bulkLoadMetadataDataset.batchIdField()))
+                .tableNameField(strategy.apply(bulkLoadMetadataDataset.tableNameField()))
+                .batchStartTimeField(strategy.apply(bulkLoadMetadataDataset.batchStartTimeField()))
+                .batchEndTimeField(strategy.apply(bulkLoadMetadataDataset.batchEndTimeField()))
+                .batchStatusField(strategy.apply(bulkLoadMetadataDataset.batchStatusField()))
+                .batchSourceInfoField(strategy.apply(bulkLoadMetadataDataset.batchSourceInfoField()))
                 .build();
     }
 

@@ -106,15 +106,6 @@ public class Planners
         @Override
         public Planner visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            // Validation:
-            if (!plannerOptions.appendBatchIdValue().isPresent())
-            {
-                throw new IllegalArgumentException("appendBatchIdValue is mandatory for BulkLoad Ingest mode");
-            }
-            if (!plannerOptions.appendBatchStatusPattern().isPresent())
-            {
-                throw new IllegalArgumentException("appendBatchStatusPattern is mandatory for BulkLoad Ingest mode");
-            }
             return new BulkLoadPlanner(datasets, (BulkLoad) bulkLoad, plannerOptions);
         }
     }

@@ -24,19 +24,21 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEn
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AppendLogMetadataUtils
+public class BulkLoadMetadataUtils
 {
-    private final AppendLogMetadataDataset appendLogMetadataDataset;
+    private final BulkLoadMetadataDataset bulkLoadMetadataDataset;
     private final Dataset dataset;
 
-    public AppendLogMetadataUtils(AppendLogMetadataDataset appendLogMetadataDataset)
+    public BulkLoadMetadataUtils(BulkLoadMetadataDataset bulkLoadMetadataDataset)
     {
-        this.appendLogMetadataDataset = appendLogMetadataDataset;
-        this.dataset = appendLogMetadataDataset.get();
+        this.bulkLoadMetadataDataset = bulkLoadMetadataDataset;
+        this.dataset = bulkLoadMetadataDataset.get();
     }
 
     /*
@@ -45,37 +47,35 @@ public class AppendLogMetadataUtils
     (SELECT '<batch_id>','<table_name>','{BATCH_START_TIMESTAMP_PLACEHOLDER}','{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     '<batch_status>','<batch_source_info>');
      */
-    public Insert insertMetaData(StringValue batchIdValue, StringValue appendLogTableName,
-                                 BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp,
-                                 StringValue batchStatusValue, StringValue batchSourceInfoValue)
+    public Insert insertMetaData(StringValue tableNameValue, StringValue batchSourceInfoValue)
     {
         DatasetReference metaTableRef = this.dataset.datasetReference();
-        FieldValue batchId = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.batchIdField()).build();
-        FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.tableNameField()).build();
+        FieldValue batchId = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.batchIdField()).build();
+        FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.tableNameField()).build();
 
-        FieldValue batchStartTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.batchStartTimeField()).build();
-        FieldValue batchEndTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.batchEndTimeField()).build();
+        FieldValue batchStartTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.batchStartTimeField()).build();
+        FieldValue batchEndTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.batchEndTimeField()).build();
 
-        FieldValue batchStatus = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.batchStatusField()).build();
-        FieldValue batchSourceInfo = FieldValue.builder().datasetRef(metaTableRef).fieldName(appendLogMetadataDataset.batchSourceInfoField()).build();
+        FieldValue batchStatus = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.batchStatusField()).build();
+        FieldValue batchSourceInfo = FieldValue.builder().datasetRef(metaTableRef).fieldName(bulkLoadMetadataDataset.batchSourceInfoField()).build();
 
         List<Value> metaInsertFields = new ArrayList<>();
         List<Value> metaSelectFields = new ArrayList<>();
 
         metaInsertFields.add(batchId);
-        metaSelectFields.add(batchIdValue);
+        metaSelectFields.add(BulkLoadBatchIdValue.INSTANCE);
 
         metaInsertFields.add(tableName);
-        metaSelectFields.add(appendLogTableName);
+        metaSelectFields.add(tableNameValue);
 
         metaInsertFields.add(batchStartTs);
-        metaSelectFields.add(batchStartTimestamp);
+        metaSelectFields.add(BatchStartTimestamp.INSTANCE);
 
         metaInsertFields.add(batchEndTs);
-        metaSelectFields.add(batchEndTimestamp);
+        metaSelectFields.add(BatchEndTimestamp.INSTANCE);
 
         metaInsertFields.add(batchStatus);
-        metaSelectFields.add(batchStatusValue);
+        metaSelectFields.add(BulkLoadBatchStatusValue.INSTANCE);
 
         metaInsertFields.add(batchSourceInfo);
         metaSelectFields.add(ParseJsonFunction.builder().jsonString(batchSourceInfoValue).build());
