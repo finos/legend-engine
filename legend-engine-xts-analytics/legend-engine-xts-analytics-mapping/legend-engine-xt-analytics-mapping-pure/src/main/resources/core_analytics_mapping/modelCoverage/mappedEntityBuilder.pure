@@ -293,7 +293,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
                                                      ->filter(pm| meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
-   let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm | processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), 'autoMapped_', $config));
+   let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm | processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), 'autoMapped_', $config, []));
    let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
                                  |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $config),
                                  |[]);
@@ -310,7 +310,8 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMapping(
   property: AbstractProperty<Any>[1],
   prefix: String[1],
-  config: AnalysisConfiguration[1]
+  config: AnalysisConfiguration[1],
+  visited: Pair<Class<Any>, String>[*]
 ): AutoMappedHelperClass[1]
 {
    if($property->isPrimitiveValueProperty(),
@@ -319,14 +320,26 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
                               | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()), 
                               | []));                             
       ^AutoMappedHelperClass(mappedProperties = [$mappedProp], mappedEntities=[]);,
-     | let entityPath = $prefix + $property.name->toOne();
-       let children = $property.genericType.rawType->toOne()->cast(@Class<Any>).properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $config));
-       let entityMappedProp = ^EntityMappedProperty(entityPath=$entityPath,name=$property.name->toOne(),
+     | 
+
+       if($visited->map(p|$p.first->elementToPath())->contains($property.genericType.rawType->toOne()->elementToPath()),
+         |let entityMappedProp = ^EntityMappedProperty(entityPath=$visited->filter(p|$p.first->elementToPath()==$property.genericType.rawType->toOne()->elementToPath())->at(0).second,
+                                                    name=$property.name->toOne(),
                                                     info = if($config.returnMappedPropertyInfo == true, 
                                                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
                                                              | []));
-       let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties));
-       ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[$currentMappedEntity]->concatenate($children->map(c|$c.mappedEntities)));
+         
+         ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[]);,
+         |let entityPath = $prefix + $property.name->toOne();
+         let entityMappedProp = ^EntityMappedProperty(entityPath=$entityPath,name=$property.name->toOne(),
+                                                    info = if($config.returnMappedPropertyInfo == true, 
+                                                             | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
+                                                             | []));
+          let newVisited = $visited->concatenate([^Pair<Class<Any>, String>(first = $property.genericType.rawType->toOne()->cast(@Class<Any>), second = $entityPath)]);
+          let children = $property.genericType.rawType->toOne()->cast(@Class<Any>).properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $config, $newVisited));
+          let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties));
+         ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[$currentMappedEntity]->concatenate($children->map(c|$c.mappedEntities)));
+         );
      )
 }
 
