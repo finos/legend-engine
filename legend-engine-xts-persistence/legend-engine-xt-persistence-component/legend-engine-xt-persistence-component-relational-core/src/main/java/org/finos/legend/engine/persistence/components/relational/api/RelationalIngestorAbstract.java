@@ -75,6 +75,7 @@ import java.util.Optional;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
@@ -156,7 +157,11 @@ public abstract class RelationalIngestorAbstract
         return Collections.emptySet();
     }
 
-    public abstract Optional<String> bulkLoadBatchIdValue();
+    @Default
+    public String bulkLoadBatchIdValue()
+    {
+        return UUID.randomUUID().toString();
+    }
 
     //---------- FIELDS ----------
 

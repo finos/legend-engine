@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Immutable
 @Style(
@@ -113,7 +114,11 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    public abstract Optional<String> bulkLoadBatchIdValue();
+    @Default
+    public String bulkLoadBatchIdValue()
+    {
+        return UUID.randomUUID().toString();
+    }
 
     @Default
     public String bulkLoadBatchStatusPattern()

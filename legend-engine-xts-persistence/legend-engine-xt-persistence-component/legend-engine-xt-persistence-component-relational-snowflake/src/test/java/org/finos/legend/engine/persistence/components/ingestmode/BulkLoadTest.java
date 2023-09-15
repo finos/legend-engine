@@ -42,6 +42,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.*;
 
@@ -187,7 +189,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithDigestGeneratedWithUpperCaseConversion()
+    public void testBulkLoadWithUpperCaseConversionAndDefaultBatchId()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
                 .batchIdField("batch_id")
@@ -215,7 +217,6 @@ public class BulkLoadTest
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .caseConversion(CaseConversion.TO_UPPER)
-                .bulkLoadBatchIdValue("batch123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -224,6 +225,15 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
+        // Extract the generated UUID
+        Pattern pattern = Pattern.compile("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}");
+        Matcher matcher = pattern.matcher(ingestSql.get(0));
+        String uuid = "";
+        if (matcher.find())
+        {
+            uuid = matcher.group();
+        }
+
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
                 "\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"BATCH_ID\" VARCHAR,\"APPEND_TIME\" DATETIME)";
         String expectedIngestSql = "COPY INTO \"MY_DB\".\"MY_NAME\" " +
@@ -231,13 +241,13 @@ public class BulkLoadTest
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "'batch123','2000-01-01 00:00:00' " +
+                "'%s','2000-01-01 00:00:00' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', " +
                 "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals(String.format(expectedIngestSql, uuid), ingestSql.get(0));
 
         Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
