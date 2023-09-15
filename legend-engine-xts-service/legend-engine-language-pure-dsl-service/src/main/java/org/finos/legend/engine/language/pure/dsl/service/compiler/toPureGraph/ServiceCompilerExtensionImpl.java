@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.HelperServiceBuilder.processOwnershipModel;
+
 public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 {
     @Override
@@ -72,13 +74,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 Processor.newProcessor(
                         Service.class,
                         Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class, ExecutionEnvironmentInstance.class),
-                        (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl(service.name, null, context.pureModel.getClass("meta::legend::service::metamodel::Service"))
-                                ._name(service.name)
-                                ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                                ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
-                                ._pattern(service.pattern)
-                                ._owners(Lists.mutable.withAll(service.owners))
-                                ._documentation(service.documentation),
+                        (service, context) -> processserviceFirstPass(service, context),
                         (service, context) ->
                         {
                             Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));
@@ -201,6 +197,26 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             pureExecEnv._executionParameters(ListIterate.collect(execEnv.executionParameters, params -> HelperServiceBuilder.processExecutionParameters(params, context)));
                         })
         );
+    }
+
+    public Root_meta_legend_service_metamodel_Service processserviceFirstPass(Service service, CompileContext context)
+    {
+        if (!service.owners.isEmpty() && service.ownership != null)
+        {
+            throw new EngineException("Cannot use both ownership model and explicit owners list.", service.sourceInformation, EngineErrorType.COMPILATION);
+        }
+//        if (service.owners == null && service.ownership == null)
+//        {
+//            throw new EngineException("Must use either ownership model or explicit owners list.", service.sourceInformation, EngineErrorType.COMPILATION);
+//        }
+        return new Root_meta_legend_service_metamodel_Service_Impl(service.name, null, context.pureModel.getClass("meta::legend::service::metamodel::Service"))
+                ._name(service.name)
+                ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
+                ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
+                ._pattern(service.pattern)
+                ._owners(Lists.mutable.withAll(service.owners))
+                ._ownership(service.ownership != null ? processOwnershipModel(service.ownership) : null)
+                ._documentation(service.documentation);
     }
 
     @Override

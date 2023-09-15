@@ -44,6 +44,22 @@ public class HelperServiceBuilder
         return ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), ServiceCompilerExtension.class);
     }
 
+    public static Root_meta_legend_service_metamodel_Ownership processOwnershipModel(Ownership o)
+    {
+        if (o instanceof DeploymentOwnership)
+        {
+            return new Root_meta_legend_service_metamodel_DeploymentOwner_Impl("")._identifier(((DeploymentOwnership) o).identifier);
+        }
+        else if (o instanceof UserListOwnership)
+        {
+            return new Root_meta_legend_service_metamodel_UserListOwner_Impl("")._usersAddAll(Lists.mutable.withAll(((UserListOwnership) o).users));
+        }
+        else
+        {
+            throw new EngineException("Ownership model not supported. Type: " + o.getClass().getSimpleName(), EngineErrorType.COMPILATION);
+        }
+    }
+
     private static void inferEmbeddedRuntimeMapping(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime runtime, String mappingPath)
     {
         // If the runtime is embedded and no mapping is specified, we will take the mapping of the execution as the mapping for the runtime

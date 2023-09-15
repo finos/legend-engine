@@ -34,7 +34,8 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
 ]
 {
    pattern : String[1];
-   owners : String[*];
+   <<doc.deprecated>> owners : String[*];
+   ownership: Ownership[0..1];
    autoActivateUpdates : Boolean[1];
    documentation : String[1];
    execution : Execution[1];
@@ -42,6 +43,21 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    postValidations: PostValidation<Any|*>[*];
 
    <<doc.deprecated>> test: Test[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::legend::service::metamodel::Ownership
+{
+
+}
+
+Class meta::legend::service::metamodel::DeploymentOwner extends Ownership
+{
+  identifier: String[1];
+}
+
+Class meta::legend::service::metamodel::UserListOwner extends Ownership
+{
+  users: String[*];
 }
 
 Class meta::legend::service::metamodel::ServiceTag
