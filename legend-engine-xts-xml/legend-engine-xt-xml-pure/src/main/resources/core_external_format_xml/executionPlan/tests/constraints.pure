@@ -1,0 +1,166 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::xsd::tests::toPure::*;
+import meta::external::format::xml::executionPlan::test::*;
+import meta::external::format::xml::metamodel::xml::*;
+import meta::external::format::xml::metamodel::xsd::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::functions::*;
+import meta::external::shared::functions::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::model::unit::*;
+import meta::pure::runtime::*;
+import meta::legend::*;
+import meta::pure::dataQuality::*;
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::constraints::testXmlConstraintViolation(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::Personwithfirmconstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::Personwithfirmconstraint->internalize($binding, $data)->checked()->serialize($tree)};
+  let data = '<personwithfirmconstraint>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <age>-1</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Anson</street>\n'+
+    '  </addresses>\n'+
+    '</personwithfirmconstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Personwithfirmconstraint","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::xml::executionPlan::test::Personwithfirmconstraint","path":[]}],"source":{"number":1,"record":"<personwithfirmconstraint><firstName>John</firstName><lastName>Doe</lastName><age>-1</age><dateOfBirth>2000-01-01</dateOfBirth><firm><legalName>FirmName</legalName><firmAddress><street>Mapletree</street></firmAddress><active>true</active></firm><addresses><street>Anson</street></addresses></personwithfirmconstraint>"},"value":{"firstName":"John","lastName":"Doe","age":-1,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"}],"active":true},"addresses":[{"street":"Anson"}]}}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::constraints::testXmlConstraintViolationCheckedUnexpanded(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::Personwithfirmconstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::Personwithfirmconstraint->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)->serialize($tree)};
+  let data = '<personwithfirmconstraint>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <age>-1</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Anson</street>\n'+
+    '  </addresses>\n'+
+    '</personwithfirmconstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":"0","externalId":null,"message":"Constraint :[0] violated in the Class Personwithfirmconstraint","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::xml::executionPlan::test::Personwithfirmconstraint","path":[]}],"source":{"number":1,"record":"<personwithfirmconstraint><firstName>John</firstName><lastName>Doe</lastName><age>-1</age><dateOfBirth>2000-01-01</dateOfBirth><firm><legalName>FirmName</legalName><firmAddress><street>Mapletree</street></firmAddress><active>true</active></firm><addresses><street>Anson</street></addresses></personwithfirmconstraint>"},"value":{"firstName":"John","lastName":"Doe","age":-1,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"}],"active":true},"addresses":[{"street":"Anson"}]}}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::constraints::testXmlConstraintPassUnexpanded(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::Personwithfirmconstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::Personwithfirmconstraint->internalize($binding, $data)->graphFetchUnexpanded($tree)->serialize($tree)};
+  let data = '<personwithfirmconstraint>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <age>23</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Anson</street>\n'+
+    '  </addresses>\n'+
+    '</personwithfirmconstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"}],"active":true},"addresses":[{"street":"Anson"}]}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::constraints::testXmlConstraintPassGraphFetch(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::Personwithfirmconstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::Personwithfirmconstraint->internalize($binding, $data)->graphFetch($tree)->serialize($tree)};
+  let data = '<personwithfirmconstraint>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <age>23</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Anson</street>\n'+
+    '  </addresses>\n'+
+    '</personwithfirmconstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"}],"active":true},"addresses":[{"street":"Anson"}]}}', $result);
+}
+
+function  <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::constraints::testXmlConstraintPassNoGraphFetch(): Boolean[1]
+{
+  let tree = #{meta::external::format::xml::executionPlan::test::Personwithfirmconstraint{firstName, lastName, age, dateOfBirth, firm{legalName, firmAddress{street}, active}, addresses{street}}}#;
+  let binding = compileLegendGrammar(readFile('/core_external_format_xml/executionPlan/tests/resources/constraint.txt')->toOne())->filter(e | $e->instanceOf(Binding))->cast(@Binding)->toOne();
+  let query   = {data:String[1]| meta::external::format::xml::executionPlan::test::Personwithfirmconstraint->internalize($binding, $data)->serialize($tree)};
+  let data = '<personwithfirmconstraint>\n'+
+    '  <firstName>John</firstName>\n'+
+    '  <lastName>Doe</lastName>\n'+
+    '  <age>23</age>\n'+
+    '  <dateOfBirth>2000-01-01</dateOfBirth>\n'+
+    '  <firm>\n'+
+    '    <legalName>FirmName</legalName>\n'+
+    '    <firmAddress>\n' +
+    '      <street>Mapletree</street>\n'+
+    '    </firmAddress>\n'+
+    '    <active>true</active>\n'+
+    '  </firm>\n'+
+    '  <addresses>\n'+
+    '    <street>Anson</street>\n'+
+    '  </addresses>\n'+
+    '</personwithfirmconstraint>';
+
+  let result  = meta::external::format::xml::executionPlan::test::executeXsdSchemaBindingQuery($query, pair('data', $data));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe","age":23,"dateOfBirth":"2000-01-01","firm":{"legalName":"FirmName","firmAddress":[{"street":"Mapletree"}],"active":true},"addresses":[{"street":"Anson"}]}}', $result);
+}

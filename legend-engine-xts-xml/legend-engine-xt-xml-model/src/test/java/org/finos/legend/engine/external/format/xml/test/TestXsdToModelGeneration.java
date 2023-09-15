@@ -969,6 +969,71 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         assertModelTexts(modelTextsFromResource("ngm-sample/exchangeGenResult.txt"), modelTextsFromContextData(exchModel));
     }
 
+    @Test
+    public void testContraintName()
+    {
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::simpleWithConstraint", "XSD")
+                .withSchemaText(null, "simpleWithConstraint.xsd", "<?xml version='1.0'?>\n" +
+                        "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                        "    <xsd:simpleType name=\"NonNegativeDecimal\">\n" +
+                        "        <xsd:annotation>\n" +
+                        "            <xsd:documentation xml:lang=\"en\">\n" +
+                        "                A type defining a number specified as non negative decimal greater than 0 inclusive.\n" +
+                        "            </xsd:documentation>\n" +
+                        "        </xsd:annotation>\n" +
+                        "        <xsd:restriction base=\"xsd:decimal\">\n" +
+                        "            <xsd:minInclusive value=\"0\" />\n" +
+                        "        </xsd:restriction>\n" +
+                        "    </xsd:simpleType>\n" +
+                        "    <xsd:complexType name=\"Shape\">\n" +
+                        "        <xsd:sequence>\n" +
+                        "            <xsd:element name=\"area\" type=\"NonNegativeDecimal\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n" +
+                        "        </xsd:sequence>\n" +
+                        "    </xsd:complexType>\n" +
+                        "    <xsd:complexType name=\"Rectangle\">\n" +
+                        "        <xsd:complexContent>\n" +
+                        "            <xsd:extension base=\"Shape\">\n" +
+                        "                <xsd:sequence>\n" +
+                        "                    <xsd:element name=\"height\" type=\"NonNegativeDecimal\" minOccurs=\"1\" maxOccurs=\"unbounded\">\n" +
+                        "                            <xsd:annotation>\n" +
+                        "                                <xsd:documentation xml:lang=\"en\">\n" +
+                        "                                    One of two dimensions of a rectangle\n" +
+                        "                                </xsd:documentation>\n" +
+                        "                            </xsd:annotation>\n" +
+                        "                    </xsd:element>\n" +
+                        "                    <xsd:element name=\"width\" type=\"NonNegativeDecimal\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n" +
+                        "                </xsd:sequence>\n" +
+                        "            </xsd:extension>\n" +
+                        "        </xsd:complexContent>\n" +
+                        "    </xsd:complexType>\n" +
+                        "</xsd:schema>\n")
+                .build();
+
+        PureModelContextData model = generateModel(schemaCode, config("test::simpleWithConstraint", "test::gen", true, true));
+
+        String expected = ">>>test::gen::Rectangle\n" +
+                "Class test::gen::Rectangle extends test::gen::Shape\n" +
+                "[\n" +
+                "  c1_range_Rectangle: $this.height->forAll(x: Decimal[1]|$x >= 0),\n" +
+                "  c2_range_Rectangle: $this.width->forAll(x: Decimal[1]|$x >= 0)\n" +
+                "]\n" +
+                "{\n" +
+                "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Decimal[1..*];\n" +
+                "  width: Decimal[*];\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::Shape\n" +
+                "Class test::gen::Shape\n" +
+                "[\n" +
+                "  c1_range_Shape: $this.area->forAll(x: Decimal[1]|$x >= 0)\n" +
+                "]\n" +
+                "{\n" +
+                "  area: Decimal[*];\n" +
+                "}";
+
+        Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
+    }
+
     private XsdToModelConfiguration config(String sourceSchemaSet, String targetPackage)
     {
         return config(sourceSchemaSet, targetPackage, false, false);

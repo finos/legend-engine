@@ -34,6 +34,41 @@ Class meta::external::format::xml::executionPlan::test::Person
   lastName  : String[1];
 }
 
+Class meta::external::format::xml::executionPlan::test::Personwithfirm
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::Personwithfirmconstraint
+[
+  $this.age > 0
+]
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::Firm
+{
+  legalName : String[1];
+  firmAddress: Address[*];
+  active    : Boolean[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::Address
+{
+  street : String[1];
+}
+
 Class meta::external::format::xml::executionPlan::test::TargetPerson
 {
   fullName : String[1];

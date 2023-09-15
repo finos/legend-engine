@@ -100,7 +100,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
       enumeration = $enums->map(e| ^meta::external::language::java::metamodel::EnumerationEntry(name=$conventions->identifier($e->cast(@Enum).name))),
       methods     = [
          javaMethod('public', meta::external::language::java::factory::javaString(), 'getName', [], 'return this.name();'),
-         javaMethod(['public', 'static'], $enumPkgAndName, 'getEnumFromPureName', javaParam(javaString(), 'pureName'), $enumPkgAndName->j_invoke('valueOf', j_parameter(javaString(), 'pureName'), $enumPkgAndName)->j_return())
+         javaMethod(['public', 'static'], $enumPkgAndName, 'getEnumFromPureName', javaParam(javaString(), 'pureName'), $enumPkgAndName->j_invoke('valueOf', j_parameter(javaString(), 'pureName'), $enumPkgAndName)->j_return()),
+         javaMethod(['public', 'static'], javaString(), typeNameMethod(), [], [j_return(j_string($type.name->toOne()))]),
+         javaMethod(['public', 'static'], javaString(), typePathMethod(), [], [j_return(j_string($type->cast(@meta::pure::metamodel::type::Enumeration<Any>)->elementToPath()))])
       ]
    );
 }
@@ -133,7 +135,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
       methods     = [
          javaMethod('public', meta::external::language::java::factory::javaString(), 'getName', [], 'return this.pureName;'),
          javaMethod(['public', 'static'], $enumPkgAndName, 'getEnumFromPureName', $pureName, $getEnumFromPureNameCode),
-         javaMethod(['private', 'static'], $mapType, 'initValues', [], $initCode)
+         javaMethod(['private', 'static'], $mapType, 'initValues', [], $initCode),
+         javaMethod(['public', 'static'], javaString(), typeNameMethod(), [], [j_return(j_string($type.name->toOne()))]),
+         javaMethod(['public', 'static'], javaString(), typePathMethod(), [], [j_return(j_string($type->cast(@meta::pure::metamodel::type::Enumeration<Any>)->elementToPath()))])
       ],
       fields      = [javaField('private', javaString(), 'pureName'), $pureNameToEnumMap]
    )

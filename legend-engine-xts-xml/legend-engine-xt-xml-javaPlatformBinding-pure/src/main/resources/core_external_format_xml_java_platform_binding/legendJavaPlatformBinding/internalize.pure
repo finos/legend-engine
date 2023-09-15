@@ -216,7 +216,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
                       {|
                          let addToType         = javaParameterizedType($conventions->className(_AddEnumToObject), [$dataClass, $itemType]);
                          let simpleTypeHandler = $ctxParam->j_invoke('stringSimpleTypeHandler', [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaString()));
-                         j_new($addToType, [$getAdder, $simpleTypeHandler, $itemType->j_field('class')]);
+                         j_new($addToType, [$getAdder, $simpleTypeHandler, $itemType->j_field('class'), j_string($propType->elementToPath())]);
                       },
                       |
                    if($itemType == javaBoolean(),

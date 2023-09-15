@@ -751,7 +751,7 @@ function <<access.private>> meta::external::format::xml::transformation::toPure:
       let num      = $indexed.first;
       let category = $indexed.second.first;
       let expr     = $indexed.second.second;
-      let name     = 'c'+toString($num+1)+'_'+$category;
+      let name     = 'c'+toString($num+1)+'_'+$category+'_'+$cls.name->toOne();
       ^meta::pure::metamodel::constraint::Constraint(name=$name, functionDefinition=$f->lambda($thisVar, $expr));
    });
 }

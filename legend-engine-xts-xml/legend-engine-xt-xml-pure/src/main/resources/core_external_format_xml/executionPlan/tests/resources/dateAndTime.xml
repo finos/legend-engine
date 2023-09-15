@@ -1,0 +1,4 @@
+<DateWithTimezoneTest>
+	<date>2022-12-12Z</date>
+	<dateTime>2023-12-12+08:00</dateTime>
+</DateWithTimezoneTest>
