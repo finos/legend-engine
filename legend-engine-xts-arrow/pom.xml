@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.27.2-SNAPSHOT</version>
+        <version>4.28.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xts-arrow</artifactId>
@@ -16,7 +16,6 @@
     <modules>
         <module>legend-engine-xt-arrow-pure</module>
         <module>legend-engine-xt-arrow-runtime</module>
-        <module>legend-engine-xt-arrow-shared</module>
 
     </modules>
 

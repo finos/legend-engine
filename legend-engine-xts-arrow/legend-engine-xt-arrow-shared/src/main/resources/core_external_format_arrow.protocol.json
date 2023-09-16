@@ -1,6 +1,0 @@
-{
-  "purePackage": "meta::external::format::arrow::metamodel",
-  "javaPackage": "org.finos.legend.engine.protocol.arrow.metamodel",
-  "elementsToBeExcluded": [
-  ]
-}

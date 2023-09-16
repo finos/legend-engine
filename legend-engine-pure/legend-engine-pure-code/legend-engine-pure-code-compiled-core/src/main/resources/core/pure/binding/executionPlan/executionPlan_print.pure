@@ -36,8 +36,7 @@ function meta::external::format::shared::executionPlan::toString::printPlanNodeT
       {node:ExternalFormatExternalizeTDSExecutionNode[1] |
          'ExternalFormat_ExternalizeTDS\n' + 
          $space + '(' + header($node, $space, $extensions) + '\n' +
-         $space + '  checked = ' + $node.checked->toString() + '\n' +
-         $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
+         $space + '  contentType = ' + $node.contentType + '\n' +
          $node->childrenToString($space+'  ', $extensions) + '\n' +
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'

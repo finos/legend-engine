@@ -144,25 +144,12 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 {
    let parameters      = $fe.parametersValues->evaluateAndDeactivate();
    let children        = $parameters->at(0)->processValueSpecification($state, $extensions, $debug)->toOneMany();
-
-   let inScopeVars     = $state.inScopeVars;
-
-   let inputType       = $parameters->at(0)->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression).genericType.rawType;
-   let checked         = $inputType == meta::pure::dataQuality::Checked;
-
-
-   let bindingArg      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper();
-   let binding         = $bindingArg->cast(@InstanceValue).values->match([
-                                                                    b:meta::external::format::shared::binding::Binding[1] | $b,
-                                                                    s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::external::format::shared::executionPlan, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes =TabularDataSet))
-                                                                  ]);
-
+   let contentType      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper()->cast(@InstanceValue).values->at(0)->cast(@String);
    ^ExternalFormatExternalizeTDSExecutionNode
    (
       resultType      = ^ResultType(type=String),
       resultSizeRange = PureOne,
-      checked         = $checked,
-      binding         = $binding,
+      contentType         = $contentType,
       executionNodes  = $children
    );
 }

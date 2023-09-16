@@ -485,6 +485,7 @@ public class TestExtensions
                 .with("core_external_format_openapi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
+                .with("core_external_format_arrow")
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
                 .with("core_external_query_sql_metamodel")
@@ -524,7 +525,6 @@ public class TestExtensions
                 .with("core_elasticsearch_seven_metamodel")
                 .with("core_nonrelational_mongodb")
                 .with("core_nonrelational_mongodb_java_platform_binding")
-                .with("core_external_format_arrow")
                 ;
     }
 }

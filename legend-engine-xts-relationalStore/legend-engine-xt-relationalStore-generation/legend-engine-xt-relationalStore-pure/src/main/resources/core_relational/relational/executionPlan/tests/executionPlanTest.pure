@@ -2185,8 +2185,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
                '(\n' +
                '  type = String\n' +
                '  resultSizeRange = 1\n' +
-               '  checked = false\n' +
-               '  binding = meta::external::format::shared::executionPlan::generatedBinding\n' +
+               '  contentType = text/example\n' +
                '\n' +
                '  (\n' +
                '    Relational\n' +

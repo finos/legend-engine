@@ -36,8 +36,7 @@ Class meta::external::format::shared::executionPlan::ExternalFormatExternalizeEx
 
 Class meta::external::format::shared::executionPlan::ExternalFormatExternalizeTDSExecutionNode extends ExecutionNode
 {
-  binding : Binding[1];
-  checked : Boolean[1];
+  contentType : String[1];
   config  : ExternalFormatExternalizeConfig[0..1];
 }
 

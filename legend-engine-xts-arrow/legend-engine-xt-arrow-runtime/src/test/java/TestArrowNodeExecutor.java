@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
@@ -22,9 +25,8 @@ import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSeria
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
@@ -34,7 +36,6 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -47,8 +48,7 @@ public class TestArrowNodeExecutor
     public void testExternalize() throws Exception
     {
         ArrowRuntimeExtension extension = new ArrowRuntimeExtension();
-        ExternalFormatExternalizeExecutionNode node = new ExternalFormatExternalizeExecutionNode();
-        node.implementation = new JavaPlatformImplementation();
+        ExternalFormatExternalizeTDSExecutionNode node = new ExternalFormatExternalizeTDSExecutionNode();
         //create a real result from H2
         RelationalExecutionNode mockExecutionNode = Mockito.mock(RelationalExecutionNode.class);
         DatabaseConnection mockDatabaseConnection = Mockito.mock(DatabaseConnection.class);
@@ -56,72 +56,45 @@ public class TestArrowNodeExecutor
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); )
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
         {
             //setup table
             conn.createStatement().execute("DROP TABLE IF EXISTS testtable");
-            conn.createStatement().execute("Create Table testtable (testC INTEGER )");
-            conn.createStatement().execute("INSERT INTO  testtable (testC) VALUES(1)");
+            conn.createStatement().execute("Create Table testtable (testInt INTEGER, testString VARCHAR(255), testDate TIMESTAMP, testBool BOOLEAN)");
+            conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,'B', '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT testC FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testC", "INTEGER")), null, null, conn, null, null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "GMT", conn, null, null, null, new RequestContext());
 
-            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeExecutionNode(node, result, null, null);
+            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
 
             nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
-            outputStream.flush();
-            ByteArrayInputStream input = new ByteArrayInputStream(outputStream.toByteArray());
-            outputStream.close();
-            assertArrow(input, "TESTC\n" +
-                    "1\n");
+            assertArrow(outputStream, "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\n" +
+                    "1\tA\t1577854800000\ttrue\n" +
+                    "2\tB\t1577844000000\tfalse\n" +
+                    "3\tB\t1577854800000\tfalse\n");
         }
 
     }
 
-
-    private String generateExpectedArrow(InputStream input)
+    private void assertArrow(ByteArrayOutputStream actualOutputStream, String expectedTSV) throws IOException //input a TSV String
     {
-        String response = "";
-        try (
-                BufferAllocator rootAllocator = new RootAllocator();
-                ArrowStreamReader reader = new ArrowStreamReader(input, rootAllocator)
-        )
-        {
-            while (reader.loadNextBatch())
-            {
-                VectorSchemaRoot vectorSchemaRootRecover = reader.getVectorSchemaRoot();
-                System.out.print(vectorSchemaRootRecover.contentToTSVString());
-                response += vectorSchemaRootRecover.contentToTSVString();
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
+        actualOutputStream.flush();
+        ByteArrayInputStream input = new ByteArrayInputStream(actualOutputStream.toByteArray());
+        actualOutputStream.close();
 
-        }
-        return response;
-    }
-
-
-    private void assertArrow(InputStream actualInput, String expectedTSV) //input a TSV String
-    {
-
-        VectorSchemaRoot expectedSchema = null;
         VectorSchemaRoot actualSchema = null;
         String actualTSV = "";
         try (
                 BufferAllocator rootAllocator = new RootAllocator();
-                ArrowStreamReader actualReader = new ArrowStreamReader(actualInput, rootAllocator)
+                ArrowStreamReader actualReader = new ArrowStreamReader(input, rootAllocator)
 
         )
         {
-
             while (actualReader.loadNextBatch())
             {
                 actualSchema = actualReader.getVectorSchemaRoot();
                 actualTSV += actualSchema.contentToTSVString();
-
             }
-
         }
         catch (Exception e)
         {
@@ -132,5 +105,26 @@ public class TestArrowNodeExecutor
 
     }
 
+    /*
+     * This is a utility for generating arrow raw data to a file  for test setup
+     */
+    protected void arrowFileCreationUtility(VectorSchemaRoot vectorSchemaRoot, String file)
+    {
+
+        try (
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                ArrowFileWriter writer = new ArrowFileWriter(vectorSchemaRoot, null, fileOutputStream.getChannel())
+        )
+        {
+            writer.start();
+            writer.writeBatch();
+            writer.end();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
 
 }
