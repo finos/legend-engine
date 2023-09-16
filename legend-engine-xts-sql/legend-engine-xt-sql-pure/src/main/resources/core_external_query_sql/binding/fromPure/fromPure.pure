@@ -2210,7 +2210,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       sfe(isEmpty_Any_$0_1$__Boolean_1_, $left),
       sfe(isEmpty_Any_$0_1$__Boolean_1_, $right)
     ]),
-    sfe(isTrue_Boolean_$0_1$__Boolean_1_, sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$left, $right]))
+    sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$left, $right])
   ]);
 }
 

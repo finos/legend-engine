@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
 import java.util.Optional;
 
@@ -35,5 +35,5 @@ public interface StagedFilesFieldValueAbstract extends FieldValueAbstract
 
     Optional<String> elementPath();
 
-    DataType dataType();
+    FieldType fieldType();
 }

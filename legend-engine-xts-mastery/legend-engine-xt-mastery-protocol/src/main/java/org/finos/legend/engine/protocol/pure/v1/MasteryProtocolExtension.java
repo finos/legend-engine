@@ -23,9 +23,12 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.DESDecryption;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.Decryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.PGPDecryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.RestAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.NTLMAuthenticationStrategy;
@@ -63,6 +66,12 @@ public class MasteryProtocolExtension implements PureProtocolExtension
                         .withSubtype(FileAcquisitionProtocol.class, "fileAcquisitionProtocol")
                         .withSubtype(KafkaAcquisitionProtocol.class, "kafkaAcquisitionProtocol")
                         .withSubtype(LegendServiceAcquisitionProtocol.class, "legendServiceAcquisitionProtocol")
+                        .build(),
+
+                // Decryption
+                ProtocolSubTypeInfo.newBuilder(Decryption.class)
+                        .withSubtype(PGPDecryption.class, "pgpDecryption")
+                        .withSubtype(DESDecryption.class, "desDecryption")
                         .build(),
 
                 // Trigger
