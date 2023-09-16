@@ -14,29 +14,29 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.expressions.table.StagedFilesTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.stream.Collectors;
 
-public class StagedFilesDatasetPropertiesVisitor implements LogicalPlanVisitor<StagedFilesDatasetProperties>
+public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<StagedFilesDatasetReference>
 {
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, StagedFilesDatasetProperties current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, StagedFilesDatasetReference current, VisitorContext context)
     {
-        if (!(current instanceof SnowflakeStagedFilesDatasetProperties))
+        if (!(current.properties() instanceof SnowflakeStagedFilesDatasetProperties))
         {
             throw new IllegalStateException("Only SnowflakeStagedFilesDatasetProperties are supported for Snowflake Sink");
         }
-        SnowflakeStagedFilesDatasetProperties datasetProperties = (SnowflakeStagedFilesDatasetProperties) current;
+        SnowflakeStagedFilesDatasetProperties datasetProperties = (SnowflakeStagedFilesDatasetProperties) current.properties();
         StagedFilesTable stagedFiles = new StagedFilesTable(datasetProperties.location());
         datasetProperties.fileFormat().ifPresent(stagedFiles::setFileFormat);
         stagedFiles.setFilePattern(datasetProperties.files().stream().map(s -> '(' + s + ')').collect(Collectors.joining("|")));
-        datasetProperties.alias().ifPresent(stagedFiles::setAlias);
+        current.alias().ifPresent(stagedFiles::setAlias);
         prev.push(stagedFiles);
         return new VisitorResult(null);
     }

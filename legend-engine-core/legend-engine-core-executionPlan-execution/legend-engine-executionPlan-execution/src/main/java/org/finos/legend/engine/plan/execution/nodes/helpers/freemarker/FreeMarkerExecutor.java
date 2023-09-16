@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 import freemarker.core.TemplateDateFormatFactory;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -31,6 +32,14 @@ import java.util.Map;
 
 public class FreeMarkerExecutor
 {
+    private static Configuration freemarkerConfig = new Configuration();
+    private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
+
+    static
+    {
+        freemarkerConfig.setNumberFormat("computer");
+    }
+
     public static String process(String input, ExecutionState executionState)
     {
         return process(input, executionState, null, null);
@@ -66,7 +75,8 @@ public class FreeMarkerExecutor
         });
         String templateFunctions = String.join("", executionState.getTemplateFunctions());
         variableMap.put("instanceOf", new FreemarkerInstanceOfMethod());
-        return processRecursively(input, variableMap, templateFunctions);
+
+        return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
@@ -84,10 +94,7 @@ public class FreeMarkerExecutor
         StringWriter stringWriter = new StringWriter();
         try
         {
-            Configuration cfg = new Configuration();
-            cfg.setNumberFormat("computer");
-            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")), cfg);
-            Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
+            Template template = new Template("template", new StringReader(templateFunctions + input.replace("\\\"", "\"")), freemarkerConfig);
             template.setCustomDateFormats(customDateFormats);
             template.setDateFormat("@alloyDate");
             template.process(variableMap, stringWriter);

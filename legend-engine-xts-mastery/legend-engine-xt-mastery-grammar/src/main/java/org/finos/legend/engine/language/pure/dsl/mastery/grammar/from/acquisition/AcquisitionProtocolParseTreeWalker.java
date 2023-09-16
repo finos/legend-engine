@@ -213,7 +213,6 @@ public class AcquisitionProtocolParseTreeWalker
             {
                 text.append(fragment.getText());
             }
-            String textToParse = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
 
             // prepare island grammar walker source information
             int startLine = islandValueContext.ISLAND_OPEN().getSymbol().getLine();
@@ -223,7 +222,7 @@ public class AcquisitionProtocolParseTreeWalker
             ParseTreeWalkerSourceInformation triggerValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(walkerSourceInformation.getReturnSourceInfo()).build();
             SourceInformation triggerValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-            return new SpecificationSourceCode(textToParse, ctx.islandType().getText(), triggerValueSourceInformation, triggerValueWalkerSourceInformation);
+            return new SpecificationSourceCode(text.toString(), ctx.islandType().getText(), triggerValueSourceInformation, triggerValueWalkerSourceInformation);
         }
         else
         {

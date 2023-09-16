@@ -280,4 +280,25 @@ public class TestExternalFormatCompilation
                 "COMPILATION error at [17:1-24:1]: Can't find the packageable element 'meta::firm::Unknown'"
         );
     }
+
+    @Test
+    public void testCompilationOfCheckedFunction()
+    {
+        test("###Pure\n" +
+                        "Class meta::firm::Person\n" +
+                        "{\n" +
+                        "  fullName: String[1];\n" +
+                        "}\n" +
+                        "Class meta::firm::TargetPerson\n" +
+                        "{\n" +
+                        "  firstName: String[1];\n" +
+                        "  lastName: String[1];\n" +
+                        "}\n" +
+                        "function meta::firm::checkCheckedFunctionCompilation():Any[*]\n" +
+                        "{\n" +
+                        "   checked(#{meta::firm::TargetPerson{firstName, lastName}}#, defaultDefectTree());\n" +
+                        "   checked(#{meta::firm::TargetPerson{firstName, lastName}}#, defaultDefectTree(), #{meta::firm::Person{fullName}}#);\n" +
+                        "}\n"
+        );
+    }
 }

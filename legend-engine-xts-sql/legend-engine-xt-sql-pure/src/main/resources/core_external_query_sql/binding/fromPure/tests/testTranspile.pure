@@ -514,9 +514,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->filter(row |
-        !(($row.getString('String')->isEmpty() && 'ABC'->isEmpty()) || (isTrue($row.getString('String') == 'ABC')))
+        !(($row.getString('String')->isEmpty() && 'ABC'->isEmpty()) || ($row.getString('String') == 'ABC'))
         ||
-        (($row.getString('String')->isEmpty() && 'DEF'->isEmpty()) || (isTrue($row.getString('String') == 'DEF')))
+        (($row.getString('String')->isEmpty() && 'DEF'->isEmpty()) || ($row.getString('String') == 'DEF'))
       )
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());

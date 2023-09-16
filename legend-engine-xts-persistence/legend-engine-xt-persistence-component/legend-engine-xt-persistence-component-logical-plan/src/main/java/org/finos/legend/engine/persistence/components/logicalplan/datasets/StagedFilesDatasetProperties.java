@@ -16,12 +16,7 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import java.util.List;
 
-public interface StagedFilesDatasetProperties extends DatasetReference
+public interface StagedFilesDatasetProperties
 {
     List<String> files();
-
-    default StagedFilesDatasetProperties datasetReference()
-    {
-        return this;
-    }
 }
