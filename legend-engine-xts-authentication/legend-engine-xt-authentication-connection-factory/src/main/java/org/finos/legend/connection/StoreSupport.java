@@ -16,20 +16,27 @@ package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class StoreSupport
 {
     private final String identifier;
-    private final List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes;
+    private final List<AuthenticationMechanism> authenticationMechanisms;
+    private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
 
-    protected StoreSupport(String identifier, List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes)
+    protected StoreSupport(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
     {
         this.identifier = identifier;
-        this.authenticationSpecificationTypes = authenticationSpecificationTypes;
+        this.authenticationMechanisms = authenticationMechanisms;
+        this.authenticationConfigurationTypes = ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType);
     }
 
     public String getIdentifier()
@@ -37,15 +44,20 @@ public class StoreSupport
         return identifier;
     }
 
-    public ImmutableList<Class<? extends AuthenticationSpecification>> getAuthenticationSpecificationTypes()
+    public List<AuthenticationMechanism> getAuthenticationMechanisms()
     {
-        return Lists.immutable.withAll(authenticationSpecificationTypes);
+        return authenticationMechanisms;
+    }
+
+    public ImmutableList<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()
+    {
+        return Lists.immutable.withAll(authenticationConfigurationTypes);
     }
 
     public static class Builder
     {
         private String identifier;
-        private final List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes = Lists.mutable.empty();
+        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
         public Builder withIdentifier(String identifier)
         {
@@ -53,15 +65,21 @@ public class StoreSupport
             return this;
         }
 
-        public Builder withAuthenticationSpecificationTypes(List<Class<? extends AuthenticationSpecification>> authenticationSpecificationTypes)
+        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
         {
-            this.authenticationSpecificationTypes.addAll(authenticationSpecificationTypes);
+            this.authenticationMechanisms.addAll(authenticationMechanisms);
             return this;
         }
 
-        public Builder withAuthenticationSpecificationType(Class<? extends AuthenticationSpecification> authenticationSpecificationType)
+        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
         {
-            this.authenticationSpecificationTypes.add(authenticationSpecificationType);
+            this.authenticationMechanisms.addAll(Lists.mutable.of(authenticationMechanisms));
+            return this;
+        }
+
+        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
+        {
+            this.authenticationMechanisms.add(authenticationMechanism);
             return this;
         }
 
@@ -69,7 +87,7 @@ public class StoreSupport
         {
             return new StoreSupport(
                     Objects.requireNonNull(this.identifier, "Store support identifier is required"),
-                    this.authenticationSpecificationTypes
+                    new ArrayList<>(this.authenticationMechanisms)
             );
         }
     }

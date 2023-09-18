@@ -14,7 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -24,16 +24,16 @@ public class Authenticator
 {
     private final Identity identity;
     private final StoreInstance storeInstance;
-    private final AuthenticationSpecification authenticationSpecification;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     private final List<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
 
-    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
     {
         this.identity = identity;
         this.storeInstance = storeInstance;
-        this.authenticationSpecification = authenticationSpecification;
+        this.authenticationConfiguration = authenticationConfiguration;
         this.credentialBuilders = credentialBuilders;
         this.connectionBuilder = connectionBuilder;
     }
@@ -43,7 +43,7 @@ public class Authenticator
         Credential credential = null;
         for (CredentialBuilder credentialBuilder : this.credentialBuilders)
         {
-            credential = credentialBuilder.makeCredential(this.identity, this.authenticationSpecification, credential, configuration);
+            credential = credentialBuilder.makeCredential(this.identity, this.authenticationConfiguration, credential, configuration);
         }
         return credential;
     }

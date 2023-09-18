@@ -14,6 +14,7 @@
 
 package org.finos.legend.connection;
 
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
 import java.lang.reflect.ParameterizedType;

@@ -15,7 +15,8 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -50,7 +51,7 @@ public class ConnectionFactory
         }
         for (CredentialBuilder<?, ?, ?> builder : credentialBuilders)
         {
-            this.credentialBuildersIndex.put(new CredentialBuilder.Key(builder.getAuthenticationSpecificationType(), builder.getInputCredentialType(), builder.getOutputCredentialType()), builder);
+            this.credentialBuildersIndex.put(new CredentialBuilder.Key(builder.getAuthenticationConfigurationType(), builder.getInputCredentialType(), builder.getOutputCredentialType()), builder);
         }
         this.storeInstancesIndex = storeInstancesIndex;
     }
@@ -69,20 +70,32 @@ public class ConnectionFactory
         return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
     }
 
-    public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationSpecification authenticationSpecification)
+    public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration)
     {
-        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationSpecification);
+        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationConfiguration);
     }
 
-    public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification)
+    public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
     {
-        if (!storeInstance.getAuthenticationSpecificationTypes().contains(authenticationSpecification.getClass()))
+        if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
         {
-            throw new RuntimeException(String.format("Can't get authenticator: authentication specification of type '%s' is not supported by store '%s'", authenticationSpecification.getClass().getSimpleName(), storeInstance.getIdentifier()));
+            throw new RuntimeException(String.format("Can't get authenticator: authentication configuration of type '%s' is not supported by store '%s'", authenticationConfiguration.getClass().getSimpleName(), storeInstance.getIdentifier()));
         }
 
-        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationSpecification, storeInstance.getConnectionSpecification());
-        return new Authenticator(identity, storeInstance, authenticationSpecification, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.sourceCredentialType)));
+        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
+        return new Authenticator(identity, storeInstance, authenticationConfiguration, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.sourceCredentialType)));
+    }
+
+    public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier)
+    {
+        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier));
+    }
+
+    public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance)
+    {
+        throw new RuntimeException("Not implemented");
+        // TODO: @akphi - implement this and the generic authentication config form
+//        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationConfiguration);
     }
 
     private static class AuthenticationFlowResolver
@@ -93,13 +106,13 @@ public class ConnectionFactory
         private final FlowNode startNode;
         private final FlowNode endNode;
 
-        private AuthenticationFlowResolver(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationSpecification authenticationSpecification, ConnectionSpecification connectionSpecification)
+        private AuthenticationFlowResolver(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
         {
             this.startNode = new FlowNode(identity);
             identity.getCredentials().forEach(cred -> this.processEdge(this.startNode, new FlowNode(cred.getClass())));
             this.processEdge(this.startNode, new FlowNode(Credential.class)); // add a node for catch-all credential builders
             credentialBuildersIndex.values().stream()
-                    .filter(builder -> builder.getAuthenticationSpecificationType().equals(authenticationSpecification.getClass()))
+                    .filter(builder -> builder.getAuthenticationConfigurationType().equals(authenticationConfiguration.getClass()))
                     .forEach(builder ->
                     {
                         this.processEdge(new FlowNode(builder.getInputCredentialType()), new FlowNode(builder.getOutputCredentialType()));
@@ -133,7 +146,7 @@ public class ConnectionFactory
             }
         }
 
-        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationSpecification authenticationSpecification, ConnectionSpecification connectionSpecification)
+        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
         {
             // try to short-circuit this first
             Set<Class<? extends Credential>> compatibleCredentials = connectionBuildersIndex.values().stream()
@@ -146,7 +159,7 @@ public class ConnectionFactory
             }
 
             // if not possible, attempt to resolve using BFS algo
-            AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationSpecification, connectionSpecification);
+            AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationConfiguration, connectionSpecification);
             boolean found = false;
 
             Set<FlowNode> visitedNodes = new HashSet<>(); // Create a set to keep track of visited vertices
@@ -190,7 +203,7 @@ public class ConnectionFactory
 
             if (!found)
             {
-                throw new RuntimeException(String.format("Can't resolve connection authentication flow for specified identity (AuthenticationSpecification=%s, ConnectionSpecification=%s)", authenticationSpecification.getClass().getSimpleName(), connectionSpecification.getClass().getSimpleName()));
+                throw new RuntimeException(String.format("Can't resolve connection authentication flow for specified identity (AuthenticationConfiguration=%s, ConnectionSpecification=%s)", authenticationConfiguration.getClass().getSimpleName(), connectionSpecification.getClass().getSimpleName()));
             }
 
             // resolve the path
@@ -277,14 +290,24 @@ public class ConnectionFactory
         }
     }
 
-    public <T> T getConnection(Identity identity, StoreInstance storeInstance, AuthenticationSpecification authenticationSpecification) throws Exception
+    public <T> T getConnection(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstance, authenticationSpecification));
+        return this.getConnection(this.getAuthenticator(identity, storeInstance, authenticationConfiguration));
     }
 
-    public <T> T getConnection(Identity identity, String storeInstanceIdentifier, AuthenticationSpecification authenticationSpecification) throws Exception
+    public <T> T getConnection(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier, authenticationSpecification));
+        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier, authenticationConfiguration));
+    }
+
+    public <T> T getConnection(Identity identity, StoreInstance storeInstance) throws Exception
+    {
+        return this.getConnection(this.getAuthenticator(identity, storeInstance));
+    }
+
+    public <T> T getConnection(Identity identity, String storeInstanceIdentifier) throws Exception
+    {
+        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier));
     }
 
     public <T> T getConnection(Authenticator authenticator) throws Exception

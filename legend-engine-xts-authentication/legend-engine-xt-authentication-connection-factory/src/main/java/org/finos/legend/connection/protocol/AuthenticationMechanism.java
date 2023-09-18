@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.protocol;
 
-public abstract class ConnectionSpecification
+public interface AuthenticationMechanism
 {
+    Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType();
 }

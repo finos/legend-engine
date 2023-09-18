@@ -12,22 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc;
+package org.finos.legend.connection.impl;
 
-import org.finos.legend.connection.protocol.ConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 
-public class StaticJDBCConnectionSpecification extends ConnectionSpecification
+public class KerberosAuthenticationConfiguration extends AuthenticationConfiguration
 {
-    public String host;
-    public int port;
-    public String databaseName;
-    public DatabaseType databaseType;
-
-    public StaticJDBCConnectionSpecification(String host, int port, String databaseName)
+    public KerberosAuthenticationConfiguration()
     {
-        this.host = host;
-        this.port = port;
-        this.databaseName = databaseName;
+
     }
 }

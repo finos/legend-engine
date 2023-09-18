@@ -14,13 +14,13 @@
 
 package org.finos.legend.connection;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.jdbc.StaticJDBCConnectionSpecification;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanismType;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.test.PostgresTestContainerWrapper;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.AfterClass;
@@ -70,10 +70,9 @@ public class PostgresConnectionFactoryTest
         RelationalDatabaseStoreSupport storeSupport = new RelationalDatabaseStoreSupport.Builder()
                 .withIdentifier("Postgres")
                 .withDatabaseType("Postgres")
-                .withAuthenticationSpecificationTypes(Lists.mutable.of(
-                        UserPasswordAuthenticationSpecification.class,
-                        ApiKeyAuthenticationSpecification.class
-                ))
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD
+                )
                 .build();
 
         EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
@@ -102,13 +101,15 @@ public class PostgresConnectionFactoryTest
         StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
                 .withIdentifier(STORE_NAME)
                 .withStoreSupportIdentifier("Postgres")
-                .withAuthenticationSpecificationTypes(Lists.mutable.of(UserPasswordAuthenticationSpecification.class))
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD
+                )
                 .withConnectionSpecification(connectionSpecification)
                 .build();
         connectionFactory.registerStoreInstance(testStore);
 
-        AuthenticationSpecification authenticationSpecification = new UserPasswordAuthenticationSpecification(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
-        Authenticator authenticator = connectionFactory.getAuthenticator(identity, STORE_NAME, authenticationSpecification);
+        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
+        Authenticator authenticator = connectionFactory.getAuthenticator(identity, STORE_NAME, authenticationConfiguration);
         Connection connection = connectionFactory.getConnection(authenticator);
     }
 }
