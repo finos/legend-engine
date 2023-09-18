@@ -41,7 +41,7 @@ public abstract class CredentialBuilder<SPEC extends AuthenticationConfiguration
         return (Class<? extends Credential>) actualTypeArguments()[2];
     }
 
-    private Type[] actualTypeArguments()
+    protected Type[] actualTypeArguments()
     {
         Type genericSuperClass = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;

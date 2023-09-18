@@ -60,7 +60,7 @@ public class EnvironmentConfiguration
         Class<? extends CredentialVaultSecret> secretClass = credentialVaultSecret.getClass();
         if (!this.vaultsIndex.containsKey(secretClass))
         {
-            throw new RuntimeException(String.format("CredentialVault for secret of type '%s' has not been registered in the system", secretClass));
+            throw new RuntimeException(String.format("CredentialVault for secret of type '%s' has not been registered in the system", secretClass.getSimpleName()));
         }
         CredentialVault vault = this.vaultsIndex.get(secretClass);
         return vault.lookupSecret(credentialVaultSecret, identity);

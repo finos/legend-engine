@@ -19,21 +19,24 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Authenticator
 {
     private final Identity identity;
     private final StoreInstance storeInstance;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final Class<? extends Credential> sourceCredentialType;
 
     private final List<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
 
-    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
     {
         this.identity = identity;
         this.storeInstance = storeInstance;
         this.authenticationConfiguration = authenticationConfiguration;
+        this.sourceCredentialType = sourceCredentialType;
         this.credentialBuilders = credentialBuilders;
         this.connectionBuilder = connectionBuilder;
     }
@@ -41,6 +44,19 @@ public class Authenticator
     public Credential makeCredential(EnvironmentConfiguration configuration) throws Exception
     {
         Credential credential = null;
+        // no need to resolve the source credential if the flow starts with generic `Credential` node
+        if (!this.sourceCredentialType.equals(Credential.class))
+        {
+            Optional<Credential> credentialOptional = this.identity.getCredential((Class<Credential>) this.sourceCredentialType);
+            if (!credentialOptional.isPresent())
+            {
+                throw new RuntimeException(String.format("Can't resolve source credential of type '%s' from the provided identity", this.sourceCredentialType.getSimpleName()));
+            }
+            else
+            {
+                credential = credentialOptional.get();
+            }
+        }
         for (CredentialBuilder credentialBuilder : this.credentialBuilders)
         {
             credential = credentialBuilder.makeCredential(this.identity, this.authenticationConfiguration, credential, configuration);
