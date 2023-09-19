@@ -91,14 +91,40 @@ public class ConnectionFactoryTest
         {
             env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
         });
-        Assert.assertEquals("Can't get authenticator: authentication mechanism 'AuthenticationConfiguration_Z' is not supported by store 'test' (supported mechanism(s): X, Y)", exception.getMessage());
+        Assert.assertEquals("Can't get authenticator: authentication mechanism 'Z' is not supported by store 'test' (supported mechanism(s): X, Y)", exception.getMessage());
 
         // error: unresolvable authentication flow
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
         });
-        Assert.assertEquals("Can't resolve connection authentication flow for the specified identity (store: test, authentication mechanism: Y, authentication config: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
+        Assert.assertEquals("Can't get authenticator: no authentication flow can be resolved for the specified identity using authentication mechanism 'Y' for store 'test' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
+
+        // alternate error message when authentication mechanisms are not properly registered
+        TestEnv env2 = TestEnv.create(
+                Lists.mutable.with(),
+                Lists.mutable.with(),
+                Lists.mutable.empty(),
+                Lists.mutable.with(
+                        TestAuthenticationMechanismType.X,
+                        TestAuthenticationMechanismType.Y
+                )
+        ).newStore("test", Lists.mutable.empty());
+
+        // error: unsupported authentication mechanism
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            env2.connectionFactory.getConnection(env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
+        });
+        Assert.assertEquals("Can't get authenticator: authentication mechanism with configuration 'AuthenticationConfiguration_Z' is not supported by store 'test' (supported mechanism(s): X, Y)", exception.getMessage());
+
+        // error: unresolvable authentication flow
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            env2.connectionFactory.getConnection(env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
+        });
+        Assert.assertEquals("Can't get authenticator: no authentication flow can be resolved for the specified identity using authentication mechanism with configuration 'AuthenticationConfiguration_Y' for store 'test' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
+
     }
 
     /**
@@ -251,13 +277,14 @@ public class ConnectionFactoryTest
         final EnvironmentConfiguration environmentConfiguration;
         final ConnectionFactory connectionFactory;
 
-        private TestEnv(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms)
+        private TestEnv(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
         {
             this.environmentConfiguration = new EnvironmentConfiguration.Builder()
                     .withStoreSupport(new StoreSupport.Builder()
                             .withIdentifier("test")
-                            .withAuthenticationMechanisms(authenticationMechanisms)
+                            .withAuthenticationMechanisms(supportedAuthenticationMechanisms)
                             .build())
+                    .withAuthenticationMechanisms(authenticationMechanisms)
                     .build();
 
             this.connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
@@ -279,12 +306,21 @@ public class ConnectionFactoryTest
 
         static TestEnv create()
         {
-            return new TestEnv(Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty());
+            return new TestEnv(Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty());
         }
 
-        static TestEnv create(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms)
+        static TestEnv create(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
         {
-            return new TestEnv(credentialBuilders, connectionBuilders, authenticationMechanisms);
+            return new TestEnv(credentialBuilders, connectionBuilders, authenticationMechanisms, supportedAuthenticationMechanisms);
+        }
+
+        static TestEnv create(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        {
+            return new TestEnv(credentialBuilders, connectionBuilders, Lists.mutable.with(
+                    TestAuthenticationMechanismType.X,
+                    TestAuthenticationMechanismType.Y,
+                    TestAuthenticationMechanismType.Z
+            ), supportedAuthenticationMechanisms);
         }
     }
 

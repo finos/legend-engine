@@ -78,6 +78,7 @@ public class PostgresConnectionFactoryTest
         EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
                 .withVault(propertiesFileCredentialVault)
                 .withStoreSupport(storeSupport)
+                .withAuthenticationMechanismProvider(new DefaultAuthenticationMechanismProvider())
                 .build();
 
         IdentityFactory identityFactory = new IdentityFactory.Builder(environmentConfiguration)

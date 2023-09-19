@@ -20,13 +20,17 @@ import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.authentication.vault.CredentialVault;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * This is meant to the place we package common configs, such as vaults,
@@ -38,7 +42,9 @@ public class EnvironmentConfiguration
     private final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
     private final Map<String, StoreSupport> storeSupportsIndex;
 
-    private EnvironmentConfiguration(List<CredentialVault<? extends CredentialVaultSecret>> vaults, Map<String, StoreSupport> storeSupportsIndex)
+    private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new HashMap<>();
+
+    private EnvironmentConfiguration(List<CredentialVault<? extends CredentialVaultSecret>> vaults, Map<String, StoreSupport> storeSupportsIndex, List<AuthenticationMechanism> authenticationMechanisms)
     {
         this.vaults = Lists.immutable.withAll(vaults);
         MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<?>> vaultsIndex = Maps.mutable.empty();
@@ -48,6 +54,7 @@ public class EnvironmentConfiguration
         }
         this.vaultsIndex = Maps.immutable.withAll(vaultsIndex);
         this.storeSupportsIndex = storeSupportsIndex;
+        authenticationMechanisms.forEach(mechanism -> this.authenticationMechanismsIndex.put(mechanism.getAuthenticationConfigurationType().getSimpleName(), mechanism));
     }
 
     public StoreSupport findStoreSupport(String identifier)
@@ -66,10 +73,17 @@ public class EnvironmentConfiguration
         return vault.lookupSecret(credentialVaultSecret, identity);
     }
 
+    public AuthenticationMechanism findAuthenticationMechanismForConfiguration(AuthenticationConfiguration configuration)
+    {
+        return this.authenticationMechanismsIndex.get(configuration.getClass().getSimpleName());
+    }
+
     public static class Builder
     {
         private final List<CredentialVault<? extends CredentialVaultSecret>> vaults = Lists.mutable.empty();
         private final Map<String, StoreSupport> storeSupportsIndex = new HashMap<>();
+        private AuthenticationMechanismProvider authenticationMechanismProvider;
+        private final Set<AuthenticationMechanism> authenticationMechanisms = new HashSet<>();
 
         public Builder()
         {
@@ -109,9 +123,29 @@ public class EnvironmentConfiguration
             this.storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
         }
 
+        public Builder withAuthenticationMechanismProvider(AuthenticationMechanismProvider authenticationMechanismProvider)
+        {
+            this.authenticationMechanismProvider = authenticationMechanismProvider;
+            return this;
+        }
+
+        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
+        {
+            this.authenticationMechanisms.addAll(authenticationMechanisms);
+            return this;
+        }
+
+        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
+        {
+            this.authenticationMechanisms.add(authenticationMechanism);
+            return this;
+        }
+
         public EnvironmentConfiguration build()
         {
-            return new EnvironmentConfiguration(this.vaults, this.storeSupportsIndex);
+            List<AuthenticationMechanism> authenticationMechanisms = this.authenticationMechanismProvider != null ? this.authenticationMechanismProvider.getMechanisms() : Lists.mutable.empty();
+            authenticationMechanisms.addAll(this.authenticationMechanisms);
+            return new EnvironmentConfiguration(this.vaults, this.storeSupportsIndex, authenticationMechanisms);
         }
     }
 }

@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -77,16 +78,26 @@ public class ConnectionFactory
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
     {
+        AuthenticationMechanism authenticationMechanism = environmentConfiguration.findAuthenticationMechanismForConfiguration(authenticationConfiguration);
+        String authenticationMechanismLabel = authenticationMechanism != null ? ("authentication mechanism '" + authenticationMechanism.getLabel() + "'") : ("authentication mechanism with configuration '" + authenticationConfiguration.getClass().getSimpleName() + "'");
         if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
         {
-            throw new RuntimeException(String.format("Can't get authenticator: authentication mechanism '%s' is not supported by store '%s' (supported mechanism(s): %s)",
-                    authenticationConfiguration.getClass().getSimpleName(),
+            throw new RuntimeException(String.format("Can't get authenticator: %s is not supported by store '%s' (supported mechanism(s): %s)",
+                    authenticationMechanismLabel,
                     storeInstance.getIdentifier(),
                     storeInstance.getAuthenticationMechanisms().stream().map(Object::toString).collect(Collectors.joining(", ")))
             );
         }
-
-        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, storeInstance, authenticationConfiguration);
+        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
+        if (result == null)
+        {
+            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow can be resolved for the specified identity using %s for store '%s' (authentication configuration: %s, connection specification: %s)",
+                    authenticationMechanismLabel,
+                    storeInstance.getIdentifier(),
+                    authenticationConfiguration.getClass().getSimpleName(),
+                    storeInstance.getConnectionSpecification().getClass().getSimpleName())
+            );
+        }
         return new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
     }
 
@@ -185,10 +196,8 @@ public class ConnectionFactory
         /**
          * Resolves the authentication flow in order to build a connection for a specified identity
          */
-        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
+        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
         {
-            ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
-
             // using BFS algo to search for the shortest (non-cyclic) path
             AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationConfiguration, connectionSpecification);
             boolean found = false;
@@ -234,12 +243,7 @@ public class ConnectionFactory
 
             if (!found)
             {
-                throw new RuntimeException(String.format("Can't resolve connection authentication flow for the specified identity (store: %s, authentication mechanism: %s, authentication config: %s, connection specification: %s)",
-                        storeInstance.getIdentifier(),
-                        storeInstance.getStoreSupport().findAuthenticationMechanismForConfiguration(authenticationConfiguration),
-                        authenticationConfiguration.getClass().getSimpleName(),
-                        connectionSpecification.getClass().getSimpleName())
-                );
+                return null;
             }
 
             // resolve the path
