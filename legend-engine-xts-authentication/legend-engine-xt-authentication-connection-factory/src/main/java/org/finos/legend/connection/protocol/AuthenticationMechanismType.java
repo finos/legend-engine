@@ -14,10 +14,13 @@
 
 package org.finos.legend.connection.protocol;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.connection.impl.ApiKeyAuthenticationConfiguration;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.impl.KerberosAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
+
+import java.util.List;
 
 public enum AuthenticationMechanismType implements AuthenticationMechanism
 {
@@ -66,5 +69,11 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
     public String getLabel()
     {
         return this.toString();
+    }
+
+    @Override
+    public List<AuthenticationMechanism> getMechanisms()
+    {
+        return Lists.mutable.with(AuthenticationMechanismType.values());
     }
 }

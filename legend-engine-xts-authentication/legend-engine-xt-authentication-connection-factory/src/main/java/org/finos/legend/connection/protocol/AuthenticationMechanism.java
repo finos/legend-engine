@@ -14,6 +14,8 @@
 
 package org.finos.legend.connection.protocol;
 
+import java.util.List;
+
 public interface AuthenticationMechanism
 {
     String getLabel();
@@ -24,4 +26,6 @@ public interface AuthenticationMechanism
     {
         return null;
     }
+
+    List<AuthenticationMechanism> getMechanisms();
 }

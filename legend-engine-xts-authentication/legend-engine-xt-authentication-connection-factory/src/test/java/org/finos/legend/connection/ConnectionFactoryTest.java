@@ -239,31 +239,6 @@ public class ConnectionFactoryTest
     }
 
     /**
-     * Test Case: A -> A -> [Connection]
-     */
-    @Test
-    public void testGetConnection_WithCredentialExtractor() throws Exception
-    {
-        TestEnv env = TestEnv.create(
-                Lists.mutable.with(
-                        new CredentialExtractor_A__withX()
-                ),
-                Lists.mutable.with(
-                        new ConnectionBuilder_A()
-                ),
-                Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
-                )
-        ).newStore("test", Lists.mutable.empty());
-
-        Identity identity = new Identity("test", new Credential_A());
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
-                "Credential_A->Credential_A [AuthenticationConfiguration_X]"
-        ), ConnectionBuilder_A.class);
-    }
-
-    /**
      * Test Case: A -> B -> [Connection]
      */
     @Test
@@ -298,6 +273,76 @@ public class ConnectionFactoryTest
             env.connectionFactory.getAuthenticator(new Identity("test"), "test");
         });
         Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using auto-generated authentication configuration. Try specifying an authentication mechanism by providing a configuration of one of the following types:\n- AuthenticationConfiguration_X (mechanism: X)\n- AuthenticationConfiguration_Z (mechanism: Z)", exception.getMessage());
+    }
+
+    /**
+     * Test Case: A -> A -> [Connection]
+     */
+    @Test
+    public void testGetConnection_WithCredentialExtractor() throws Exception
+    {
+        TestEnv env = TestEnv.create(
+                Lists.mutable.with(
+                        new CredentialExtractor_A__withX()
+                ),
+                Lists.mutable.with(
+                        new ConnectionBuilder_A()
+                ),
+                Lists.mutable.with(
+                        TestAuthenticationMechanismType.X
+                )
+        ).newStore("test", Lists.mutable.empty());
+
+        Identity identity = new Identity("test", new Credential_A());
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
+        assertAuthenticator(env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
+                "Credential_A->Credential_A [AuthenticationConfiguration_X]"
+        ), ConnectionBuilder_A.class);
+
+        // if no extractor is specified, but an extractor like credential builder is, this should still work
+        TestEnv env2 = TestEnv.create(
+                Lists.mutable.with(
+                        new CredentialBuilder_A_to_A__withX()
+                ),
+                Lists.mutable.with(
+                        new ConnectionBuilder_A()
+                ),
+                Lists.mutable.with(
+                        TestAuthenticationMechanismType.X
+                )
+        ).newStore("test", Lists.mutable.empty());
+
+        authenticator = env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
+        assertAuthenticator(env2.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
+                "Credential_A->Credential_A [AuthenticationConfiguration_X]"
+        ), ConnectionBuilder_A.class);
+    }
+
+    /**
+     * Test Case: A x A -> [Connection]
+     * No credential extractor is provided, short-circuit resolution should NOT happen
+     */
+    @Test
+    public void testGetConnection_WithoutCredentialExtractor() throws Exception
+    {
+        TestEnv env = TestEnv.create(
+                Lists.mutable.with(
+                        // no extractor is specified
+                ),
+                Lists.mutable.with(
+                        new ConnectionBuilder_A()
+                ),
+                Lists.mutable.with(
+                        TestAuthenticationMechanismType.X
+                )
+        ).newStore("test", Lists.mutable.empty());
+
+        Identity identity = new Identity("test", new Credential_A());
+        Exception exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
+        });
+        Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism 'X' (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
     private void assertAuthenticator(ConnectionFactory connectionFactory, Authenticator authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
@@ -426,6 +471,21 @@ public class ConnectionFactoryTest
         {
             return this.toString();
         }
+
+        @Override
+        public List<AuthenticationMechanism> getMechanisms()
+        {
+            return Lists.mutable.with(TestAuthenticationMechanismType.values());
+        }
+    }
+
+    private static class CredentialBuilder_A_to_A__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_A, Credential_A>
+    {
+        @Override
+        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, EnvironmentConfiguration configuration) throws Exception
+        {
+            return new Credential_A();
+        }
     }
 
     private static class CredentialBuilder_A_to_B__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_A, Credential_B>
@@ -474,10 +534,6 @@ public class ConnectionFactoryTest
     }
 
     private static class CredentialExtractor_A__withX extends CredentialExtractor<AuthenticationConfiguration_X, Credential_A>
-    {
-    }
-
-    private static class CredentialExtractor_A__withY extends CredentialExtractor<AuthenticationConfiguration_Y, Credential_A>
     {
     }
 
