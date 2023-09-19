@@ -287,7 +287,7 @@ public class ConnectionFactoryTest
         Identity identity = new Identity("test", new Credential_A());
 
         // success
-        Authenticator authenticator= env.connectionFactory.getAuthenticator(identity, "test");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test");
         assertAuthenticator(env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_B [AuthenticationConfiguration_Y]"
         ), ConnectionBuilder_B.class);
