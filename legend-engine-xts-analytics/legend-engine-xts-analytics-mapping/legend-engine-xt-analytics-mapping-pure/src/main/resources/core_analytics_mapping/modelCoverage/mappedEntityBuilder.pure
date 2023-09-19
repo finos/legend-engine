@@ -293,7 +293,14 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
                                                      ->filter(pm| meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
-   let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm | processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), 'autoMapped_', $config, []));
+   let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
+    let id = if($pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
+                | let pureInstanceSetImplementation = $pm.owner->toOne()->cast(@PureInstanceSetImplementation);
+                  let targetClassPath = if($pureInstanceSetImplementation.class->isNotEmpty(),|$pureInstanceSetImplementation.class->toOne()->cast(@Class<Any>)->elementToPath(),|'');
+                  let srcClassPath = if($pureInstanceSetImplementation.srcClass->isNotEmpty(),|$pureInstanceSetImplementation.srcClass->toOne()->cast(@Class<Any>)->elementToPath(),|'');
+                  $targetClassPath + '_' + $srcClassPath;,
+                |$pm.targetSetImplementationId);
+    processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', $config, []););
    let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
                                  |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $config),
                                  |[]);
