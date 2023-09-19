@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode;
+package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
-import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -26,17 +24,10 @@ import org.immutables.value.Value;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public interface BulkLoadAbstract extends IngestMode
+public interface NoDigestGenStrategyAbstract extends DigestGenStrategy
 {
-    String batchIdField();
-
-    DigestGenStrategy digestGenStrategy();
-
-    Auditing auditing();
-
-    @Override
-    default <T> T accept(IngestModeVisitor<T> visitor)
+    default <T> T accept(DigestGenStrategyVisitor<T> visitor)
     {
-        return visitor.visitBulkLoad(this);
+        return visitor.visitNoDigestGenStrategy(this);
     }
 }

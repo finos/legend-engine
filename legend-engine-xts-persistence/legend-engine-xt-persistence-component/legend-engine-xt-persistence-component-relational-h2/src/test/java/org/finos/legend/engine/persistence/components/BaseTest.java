@@ -172,7 +172,13 @@ public class BaseTest
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .enableConcurrentSafety(true)
                 .build();
+        return executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, verifyStagingFilters);
+    }
 
+    protected IngestorResult executePlansAndVerifyResults(RelationalIngestor ingestor, Datasets datasets, String[] schema,
+                                                          String expectedDataPath, Map<String, Object> expectedStats, boolean verifyStagingFilters) throws Exception
+    {
+        // Execute physical plans
         IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
@@ -269,7 +275,11 @@ public class BaseTest
                 .schemaEvolutionCapabilitySet(Collections.emptySet())
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
+        return executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
+    }
 
+    public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    {
         Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
 
         datasets = ingestor.create(datasets);

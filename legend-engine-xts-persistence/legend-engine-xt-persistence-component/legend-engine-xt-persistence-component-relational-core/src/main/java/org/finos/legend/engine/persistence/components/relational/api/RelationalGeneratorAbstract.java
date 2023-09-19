@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Immutable
 @Style(
@@ -56,6 +57,9 @@ import java.util.stream.Collectors;
 )
 public abstract class RelationalGeneratorAbstract
 {
+
+    public static final String BULK_LOAD_BATCH_STATUS_PATTERN = "{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}";
+
     //---------- FLAGS ----------
 
     @Default
@@ -110,6 +114,18 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
+    @Default
+    public String bulkLoadBatchIdValue()
+    {
+        return UUID.randomUUID().toString();
+    }
+
+    @Default
+    public String bulkLoadBatchStatusPattern()
+    {
+        return BULK_LOAD_BATCH_STATUS_PATTERN;
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -136,6 +152,8 @@ public abstract class RelationalGeneratorAbstract
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
             .infiniteBatchIdValue(infiniteBatchIdValue())
+            .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
+            .bulkLoadBatchStatusPattern(bulkLoadBatchStatusPattern())
             .batchIdPattern(batchIdPattern());
 
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);

@@ -75,10 +75,12 @@ import java.util.Optional;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Immutable
@@ -153,6 +155,12 @@ public abstract class RelationalIngestorAbstract
     public Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet()
     {
         return Collections.emptySet();
+    }
+
+    @Default
+    public String bulkLoadBatchIdValue()
+    {
+        return UUID.randomUUID().toString();
     }
 
     //---------- FIELDS ----------
@@ -462,6 +470,7 @@ public abstract class RelationalIngestorAbstract
                 .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
+                .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());
@@ -531,6 +540,9 @@ public abstract class RelationalIngestorAbstract
         // Execute metadata ingest SqlPlan
         if (generatorResult.metadataIngestSqlPlan().isPresent())
         {
+            // add batchEndTimestamp
+            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, result.status().name());
             executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
         }
         results.add(result);
