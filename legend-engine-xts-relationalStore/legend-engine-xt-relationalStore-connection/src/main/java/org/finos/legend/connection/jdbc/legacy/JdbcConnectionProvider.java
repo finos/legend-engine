@@ -58,7 +58,6 @@ public class JdbcConnectionProvider extends ConnectionProvider<Connection>
             throw new UnsupportedOperationException(message);
         }
         PlaintextUserPasswordCredential plaintextUserPasswordCredential = (PlaintextUserPasswordCredential) credential;
-        Class.forName("org.h2.Driver");
         Properties properties = new Properties();
         properties.setProperty("user", plaintextUserPasswordCredential.getUser());
         properties.setProperty("password", plaintextUserPasswordCredential.getPassword());

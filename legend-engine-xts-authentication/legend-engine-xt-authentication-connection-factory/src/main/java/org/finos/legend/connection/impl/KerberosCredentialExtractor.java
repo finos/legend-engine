@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.impl;
 
-public abstract class ConnectionSpecification
+import org.finos.legend.connection.CredentialExtractor;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+
+public class KerberosCredentialExtractor extends CredentialExtractor<KerberosAuthenticationConfiguration, LegendKerberosCredential>
 {
 }

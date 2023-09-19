@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.impl;
 
-import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 
-import java.util.List;
-import java.util.ServiceLoader;
-
-public class DefaultCredentialBuilderProvider implements CredentialBuilderProvider
+public class KerberosAuthenticationConfiguration extends AuthenticationConfiguration
 {
-    @Override
-    public List<CredentialBuilder> getBuilders()
+    public KerberosAuthenticationConfiguration()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(CredentialBuilder.class));
+
     }
 }

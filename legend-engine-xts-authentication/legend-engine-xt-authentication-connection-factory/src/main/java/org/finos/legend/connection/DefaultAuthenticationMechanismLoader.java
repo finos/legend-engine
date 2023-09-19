@@ -15,15 +15,16 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
+import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
-public class DefaultCredentialBuilderProvider implements CredentialBuilderProvider
+public class DefaultAuthenticationMechanismLoader implements AuthenticationMechanismLoader
 {
     @Override
-    public List<CredentialBuilder> getBuilders()
+    public List<AuthenticationMechanism> getMechanisms()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(CredentialBuilder.class));
+        return Lists.mutable.with(AuthenticationMechanismType.values());
     }
 }

@@ -19,11 +19,11 @@ import org.eclipse.collections.api.factory.Lists;
 import java.util.List;
 import java.util.ServiceLoader;
 
-public class DefaultCredentialBuilderProvider implements CredentialBuilderProvider
+public class DefaultAuthenticationMechanismProvider implements AuthenticationMechanismProvider
 {
     @Override
-    public List<CredentialBuilder> getBuilders()
+    public List<AuthenticationMechanismLoader> getLoaders()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(CredentialBuilder.class));
+        return Lists.mutable.withAll(ServiceLoader.load(AuthenticationMechanismLoader.class));
     }
 }
