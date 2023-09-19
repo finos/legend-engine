@@ -68,7 +68,7 @@ class BulkLoadPlanner extends Planner
     private StagedFilesDataset stagedFilesDataset;
     private BulkLoadMetadataDataset bulkLoadMetadataDataset;
 
-    BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
+    BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
@@ -118,12 +118,57 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
-        // Digest Generation
-        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
+        // Add digest
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert, fieldsToSelect));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
         fieldsToSelect.add(BulkLoadBatchIdValue.INSTANCE);
+
+        // Add auditing
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            addAuditing(fieldsToInsert, fieldsToSelect);
+        }
+
+        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
+        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
+    }
+
+    private LogicalPlan buildLogicalPlanForIngestUsingCopyAndInsert(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+
+
+        // Operation 1: Copy into a temp table
+        List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
+        List<Value> fieldsToInsertIntoTemp = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
+        operations.add(Copy.of(tempDataset, selectStage, fieldsToInsertIntoTemp));
+
+
+        // Operation 2: Transfer from temp table into target table, adding extra columns at the same time
+        List<Value> fieldsToSelectFromTemp = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+
+        // Add digest
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelectFromTemp, fieldsToInsertIntoMain, fieldsToSelectFromStage));
+
+        // Add batch_id field
+        fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelectFromTemp.add(BulkLoadBatchIdValue.INSTANCE);
+
+        // Add auditing
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            addAuditing(fieldsToInsertIntoMain, fieldsToSelectFromTemp);
+        }
+
+        operations.add(Insert.of(mainDataset(), Selection.builder().source(tempDataset).addAllFields(fieldsToSelectFromTemp).build(), fieldsToInsertIntoMain));
+
+
+        return LogicalPlan.of(operations);
+    }
 
     private void addAuditing(List<Value> fieldsToInsert, List<Value> fieldsToSelect)
     {
@@ -131,10 +176,6 @@ class BulkLoadPlanner extends Planner
         String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         fieldsToSelect.add(batchStartTimestamp);
-    }
-
-        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
-        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
     @Override
@@ -231,15 +272,17 @@ class BulkLoadPlanner extends Planner
     {
         private List<Value> fieldsToSelect;
         private List<Value> fieldsToInsert;
+        private List<Value> fieldsForDigestCalculation;
         private Dataset stagingDataset;
         private Dataset mainDataset;
 
-        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
+        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<Value> fieldsForDigestCalculation)
         {
             this.mainDataset = mainDataset;
             this.stagingDataset = stagingDataset;
             this.fieldsToSelect = fieldsToSelect;
             this.fieldsToInsert = fieldsToInsert;
+            this.fieldsForDigestCalculation = fieldsForDigestCalculation;
         }
 
         @Override
@@ -255,7 +298,7 @@ class BulkLoadPlanner extends Planner
                     .builder()
                     .udfName(udfBasedDigestGenStrategy.digestUdfName())
                     .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-                    .addAllValues(fieldsToSelect)
+                    .addAllValues(fieldsForDigestCalculation)
                     .build();
             String digestField = udfBasedDigestGenStrategy.digestField();
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());

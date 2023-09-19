@@ -63,11 +63,12 @@ public class BulkLoadTest extends BaseTest
     private static final String APPEND_TIME = "append_time";
     private static final String DIGEST = "digest";
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
+    private static final String BATCH_ID = "batch_id";
+    private static final String BATCH_ID_VALUE = "xyz123";
     private static final String col_int = "col_int";
     private static final String col_string = "col_string";
     private static final String col_decimal = "col_decimal";
     private static final String col_datetime = "col_datetime";
-    private static final String BATCH_ID = "batch_id";
 
     private static Field col1 = Field.builder()
             .name(col_int)
@@ -96,7 +97,7 @@ public class BulkLoadTest extends BaseTest
         String filePath = "src/test/resources/data/bulk-load/input/staged_file1.csv";
 
         BulkLoad bulkLoad = BulkLoad.builder()
-                .batchIdField("batch_id")
+                .batchIdField(BATCH_ID)
                 .digestGenStrategy(NoDigestGenStrategy.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                 .build();
@@ -122,7 +123,7 @@ public class BulkLoadTest extends BaseTest
                 .relationalSink(H2Sink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadBatchIdValue("xyz123")
+                .bulkLoadBatchIdValue(BATCH_ID_VALUE)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -171,7 +172,7 @@ public class BulkLoadTest extends BaseTest
         BulkLoad bulkLoad = BulkLoad.builder()
             .digestGenStrategy(NoDigestGenStrategy.builder().build())
             .auditing(NoAuditing.builder().build())
-            .batchIdField("batch_id")
+            .batchIdField(BATCH_ID)
             .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
@@ -195,7 +196,7 @@ public class BulkLoadTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -244,7 +245,7 @@ public class BulkLoadTest extends BaseTest
         BulkLoad bulkLoad = BulkLoad.builder()
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).digestField(DIGEST).build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
-            .batchIdField("batch_id")
+            .batchIdField(BATCH_ID)
             .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
@@ -267,7 +268,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
@@ -317,7 +318,7 @@ public class BulkLoadTest extends BaseTest
         String filePath = "src/test/resources/data/bulk-load/input/staged_file4.csv";
 
         BulkLoad bulkLoad = BulkLoad.builder()
-            .batchIdField("batch_id")
+            .batchIdField(BATCH_ID)
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).digestField(DIGEST).build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
@@ -342,7 +343,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadBatchIdValue("xyz123")
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
@@ -392,6 +393,7 @@ public class BulkLoadTest extends BaseTest
         {
             BulkLoad bulkLoad = BulkLoad.builder()
                     .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).build())
+                    .batchIdField(BATCH_ID)
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
             Assertions.fail("Exception was not thrown");
@@ -409,7 +411,7 @@ public class BulkLoadTest extends BaseTest
         {
             BulkLoad bulkLoad = BulkLoad.builder()
                     .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).build())
-                    .batchIdField("batch_id")
+                    .batchIdField(BATCH_ID)
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
             Assertions.fail("Exception was not thrown");
@@ -426,7 +428,7 @@ public class BulkLoadTest extends BaseTest
         try
         {
             BulkLoad bulkLoad = BulkLoad.builder()
-                    .batchIdField("batch_id")
+                    .batchIdField(BATCH_ID)
                     .digestGenStrategy(NoDigestGenStrategy.builder().build())
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
@@ -444,7 +446,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(bulkLoad)
                     .relationalSink(H2Sink.get())
-                    .bulkLoadBatchIdValue("xyz123")
+                    .bulkLoadBatchIdValue(BATCH_ID_VALUE)
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
                     .build();
@@ -506,7 +508,7 @@ public class BulkLoadTest extends BaseTest
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
-                .bulkLoadBatchIdValue("xyz123")
+                .bulkLoadBatchIdValue(BATCH_ID_VALUE)
                 .enableConcurrentSafety(true)
                 .caseConversion(caseConversion)
                 .build();
