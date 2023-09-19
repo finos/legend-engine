@@ -105,7 +105,8 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_navigate\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_parse FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_json_parse\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_decode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_decode\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_encode\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_base64_encode\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_reverse_string FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_reverse_string\";"
         );
     }
 
@@ -115,7 +116,10 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_navigate FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_json_navigate\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_json_parse FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_json_parse\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_decode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_base64_decode\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_base64_encode\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_base64_encode FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_base64_encode\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_reverse_string FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_reverse_string\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_hash_md5 FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_hash_md5\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_hash_sha1 FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_hash_sha1\";"
         );
     }
 }

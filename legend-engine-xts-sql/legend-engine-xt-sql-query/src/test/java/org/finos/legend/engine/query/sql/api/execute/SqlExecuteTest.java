@@ -152,7 +152,35 @@ public class SqlExecuteTest
     {
         String all = resources.target("sql/v1/execution/executeQueryString")
                 .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date=>'2023-08-24')")).readEntity(String.class);
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithEnumParams() throws JsonProcessingException
+    {
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24', type => 'Type1')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithExpressionParams() throws JsonProcessingException
+    {
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date => cast('2023-08-24' as DATE))")).readEntity(String.class);
 
         TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))

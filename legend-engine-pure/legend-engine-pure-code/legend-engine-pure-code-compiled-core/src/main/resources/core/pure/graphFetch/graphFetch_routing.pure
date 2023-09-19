@@ -517,7 +517,7 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
          if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
 
       rp: RoutedPropertyGraphFetchTree[1] |
-         $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne() + ']') +
+         $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne()  + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') + ']') +
          if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
       rp: PropertyGraphFetchTree[1] |

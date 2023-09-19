@@ -204,6 +204,48 @@ function meta::pure::functions::date::firstDayOfWeek(date:Date[1]):Date[1]
    $date->mostRecentDayOfWeek(DayOfWeek.Monday);
 }
 
+function meta::pure::functions::date::firstHourOfDay(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), 0);
+}
+
+function meta::pure::functions::date::firstMinuteOfHour(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), 0);
+}
+
+function meta::pure::functions::date::firstSecondOfMinute(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+  assert($date->hasMinute(), 'date must have minute');
+
+  date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), $date->minute(), 0);
+}
+
+function meta::pure::functions::date::firstMillisecondOfSecond(date:Date[1]):DateTime[1]
+{
+  assert($date->hasMonth(), 'date must have month');
+  assert($date->hasDay(), 'date must have day');
+  assert($date->hasHour(), 'date must have hour');
+  assert($date->hasMinute(), 'date must have minute');
+  assert($date->hasSecond(), 'date must have second');
+  assert($date->hasSubsecond(), 'date must have subsecond');
+
+  let result = date($date->year(), $date->monthNumber(), $date->dayOfMonth(), $date->hour(), $date->minute(), $date->second());
+  let diff = dateDiff($date, $result, DurationUnit.MILLISECONDS);
+
+  $date->adjust($diff, DurationUnit.MILLISECONDS)->cast(@DateTime);
+}
+
 function meta::pure::functions::date::datePart(d:Date[0..1]):Date[0..1]
 {
     $d->toOne()->datePart();

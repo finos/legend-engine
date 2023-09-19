@@ -219,7 +219,6 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ];
 
   let wrongResults = [
-    meta::pure::functions::boolean::tests::testEqualEmptyCollections__Boolean_1_,
     meta::pure::functions::boolean::tests::testEqualMixedCollections__Boolean_1_,
     meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_,
     meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_,

@@ -221,7 +221,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_]),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                 let resolvedParameters     = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
-                                                                                                                     f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reprocessRuntimeWithVariablePlaceHolder($inScopeVars).value->cast(@ValueSpecification);
+                                                                                                                     f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
                 let fromMapping            = $resolvedParameters->at(0)->cast(@Mapping);
@@ -306,61 +306,6 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
         }
     )
   ]
-}
-
-Class <<access.private>> meta::pure::router::store::routing::RuntimeProcessingState
-{
-   value:Any[1];
-   vState:RuntimeProcessingVariableState[*];
-}
-
-Class <<access.private>> meta::pure::router::store::routing::RuntimeProcessingVariableState
-{
-   v:VariableExpression[1];
-   shouldReplace : Boolean[1];
-   sourceType : Type[0..1];
-}
-
-function <<access.private>> meta::pure::router::store::routing::rebuildGenericType(g:GenericType[1], vState:RuntimeProcessingVariableState[*]):GenericType[1]
-{
-   let l = {t:Type[1]| if($vState.sourceType->contains($t),|RoutedVariablePlaceHolder,|$t)};
-
-   ^$g(rawType=$l->eval($g.rawType), typeArguments=$g.typeArguments->map(a|$a->rebuildGenericType($vState)));
-}
-
-function <<access.private>> meta::pure::router::store::routing::replaceTypesWithVariablePlaceHolder(ve:VariableExpression[1], inScopeVars:Map<String, List<Any>>[1]):RuntimeProcessingState[1]
-{
-   let genericType = $ve.genericType;
-   let shouldReplace = $inScopeVars->get($ve.name)->isNotEmpty() && $inScopeVars->get($ve.name).values->at(0)->instanceOf(RoutedVariablePlaceHolder);
-   let updatedVe = if($shouldReplace,|^$ve(genericType=^$genericType(rawType=RoutedVariablePlaceHolder)),|$ve);
-   ^RuntimeProcessingState(value=$updatedVe, vState=^RuntimeProcessingVariableState(v=$ve, shouldReplace=$shouldReplace, sourceType=$ve.genericType.rawType));
-}
-
-function <<access.private>> meta::pure::router::store::routing::replaceTypesWithVariablePlaceHolder(fe:FunctionExpression[1], reprocessedParameters:RuntimeProcessingState[*]):FunctionExpression[1]
-{
-   let updatedGenericType = $fe.genericType->toOne()->rebuildGenericType($reprocessedParameters.vState);
-   let resolvedTypeParameters = range(0, $fe.resolvedTypeParameters->size())->zip($fe.resolvedTypeParameters);
-   let updateResolvedTypeParameters = $resolvedTypeParameters->map(rtp| $rtp.second->rebuildGenericType($reprocessedParameters->at($rtp.first).vState));
-   ^$fe(genericType=$updatedGenericType, resolvedTypeParameters=$updateResolvedTypeParameters);
-}
-
-function meta::pure::router::store::routing::reprocessRuntimeWithVariablePlaceHolder(vs:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1]):RuntimeProcessingState[1]
-{
-   $vs->match([   fe:FunctionExpression[1] | let params = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->reprocessRuntimeWithVariablePlaceHolder($inScopeVars));
-                                             let updatedFe = ^$fe(parametersValues= $params.value->cast(@ValueSpecification))->replaceTypesWithVariablePlaceHolder($params);
-                                             ^RuntimeProcessingState(value=$updatedFe, vState=$params.vState);,
-                        i:InstanceValue[1] | let values = $i.values->evaluateAndDeactivate()->map(v|$v->match([ e:ValueSpecification[1]| $e->reprocessRuntimeWithVariablePlaceHolder($inScopeVars),
-                                                                                                           f:FunctionDefinition<Any>[1]| let expressions = $f.expressionSequence->map(e|$e->reprocessRuntimeWithVariablePlaceHolder($inScopeVars));
-                                                                                                                                         ^RuntimeProcessingState(value= ^$f(expressionSequence = $expressions.value->cast(@ValueSpecification)), vState=$expressions.vState );,
-                                                                                                                    k: KeyExpression[1]| let key = $k.key->reprocessRuntimeWithVariablePlaceHolder($inScopeVars)->cast(@RuntimeProcessingState).value->cast(@InstanceValue);
-                                                                                                                                         let expression = $k.expression->reprocessRuntimeWithVariablePlaceHolder($inScopeVars);
-                                                                                                                                         let nk = ^$k(key=$key, expression= $expression.value->cast(@ValueSpecification));
-                                                                                                                                         ^RuntimeProcessingState(value=$nk, vState=$expression.vState );,
-                                                                                                             a:Any[1]| ^RuntimeProcessingState(value=$a)]));
-                                             ^RuntimeProcessingState(value=^$i(values = $values.value), vState=$values.vState);,
-                   v:VariableExpression[1] | $v->replaceTypesWithVariablePlaceHolder($inScopeVars),
-                 val:ValueSpecification[1] | ^RuntimeProcessingState(value=$val)
-             ]);
 }
 
 // ===================================================================================

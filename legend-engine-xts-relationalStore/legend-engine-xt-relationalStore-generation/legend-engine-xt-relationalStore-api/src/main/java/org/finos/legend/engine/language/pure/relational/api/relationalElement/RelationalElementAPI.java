@@ -120,7 +120,7 @@ public class RelationalElementAPI
 
     private String getTargetPackageFromDatabasePath(String databasePath)
     {
-        int lastColonIndex = databasePath.lastIndexOf(":");
-        return databasePath.substring(0, lastColonIndex + 1);
+        int lastColonIndex = databasePath.lastIndexOf("::");
+        return databasePath.substring(0, lastColonIndex);
     }
 }

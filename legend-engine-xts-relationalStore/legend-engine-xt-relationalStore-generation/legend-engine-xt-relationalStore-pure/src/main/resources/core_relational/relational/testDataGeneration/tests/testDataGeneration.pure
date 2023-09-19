@@ -1466,6 +1466,57 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                  '  ])\n', $seedDataString);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::TestDatGenForNestedViews():Boolean[1]
+{
+  let query = {|meta::relational::testDataGeneration::tests::model::Student.all()->project([s | $s.school.id],['id'])};
+  let mapping1 = meta::relational::testDataGeneration::tests::model::VeiwOnViewMapping;
+  let mapping2 = meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping;
+  let db = meta::relational::testDataGeneration::tests::model::db;
+  let runtime = meta::relational::testDataGeneration::tests::model::setUp();
+
+  let tableRowIdentifiers = [
+    meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'StudentTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['1', 'SURAJ', 'sc1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['2', 'MAN', 'sc2'])
+    ]),
+      meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'SchoolTable', [
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc1', 'school1']),
+        meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
+    ])
+  ];
+
+  let testData1 = generateTestData($query, $mapping1, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+  let testData2 = generateTestData($query, $mapping2, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
+
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData1.dataCsvString, $db);
+  assertTestData('default\n'+
+                  'StudentTable\n'+
+                  'ID,SCHOOL_ID\n'+
+                  '1,sc1\n'+
+                  '2,sc2\n'+
+                  '-----\n'+
+                  'default\n'+
+                  'SchoolTable\n'+
+                  'ID,NAME\n'+
+                  'sc1,school1\n'+
+                  'sc2,school2\n'+
+                  '-----\n', $testData2.dataCsvString, $db);
+
+  loadAndTestExecution($query, [], $mapping1, $runtime, $testData1.dataCsvString, $db);
+  loadAndTestExecution($query, [], $mapping2, $runtime, $testData2.dataCsvString, $db);
+}
+
 function <<access.protected>> meta::relational::testDataGeneration::tests::initDatabase():Runtime[1]
 {
    let connection = meta::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connections->toOne()->cast(@TestDatabaseConnection);
@@ -1758,8 +1809,6 @@ function <<access.private>> meta::relational::testDataGeneration::tests::loadAnd
    let result = $plan->execute($parametersValues, meta::relational::extension::relationalExtensions());
    $result.values->isNotEmpty() && (!$result.values->at(0)->instanceOf(TabularDataSet) || $result.values->at(0)->cast(@TabularDataSet).rows->isNotEmpty());
 }
-
-
 
 
 
@@ -2425,12 +2474,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
 {
-   let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
-   let mapping = meta::relational::tests::simpleRelationalMapping;
-   let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+  let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let db = meta::relational::tests::db;
+  let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+  meta::relational::tests::createTablesAndFillDb();
 
-   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
       let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'accountTable\n'+
@@ -2454,7 +2504,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                       '3,1\n'+
                       '4,2\n'+
                       '-----\n', $result->cast(@String)->toOne(), $db);
-   },{| true});
+  },{| true});
 }
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByChild_Alloy():Boolean[1]
@@ -2874,4 +2924,205 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                      'Anthony,Allen,4\n'+
                      '-----\n', $result->cast(@String)->toOne(), $db);
    },{| true});
+}
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenForNestedViews():Boolean[1]
+{
+  let query = {|meta::relational::testDataGeneration::tests::model::Student.all()->project([s | $s.school.id],['id'])};
+  let mapping = meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping;
+  let db = meta::relational::testDataGeneration::tests::model::db;
+  let runtime = meta::relational::testDataGeneration::tests::model::setUp();
+
+  let tableRowIdentifiers = [
+  meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'StudentTable', [
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['1', 'SURAJ', 'sc1']),
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name', 'school_id'], ['2', 'MAN', 'sc2'])
+  ]),
+    meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::testDataGeneration::tests::model::db, 'default', 'SchoolTable', [
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc1', 'school1']),
+      meta::relational::testDataGeneration::createRowIdentifier(['id', 'name'], ['sc2', 'school2'])
+  ])
+];
+
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+    assertTestData('default\n'+
+                'StudentTable\n'+
+                'ID,SCHOOL_ID\n'+
+                '1,sc1\n'+
+                '2,sc2\n'+
+                '-----\n'+
+                'default\n'+
+                'SchoolTable\n'+
+                'ID,NAME\n'+
+                'sc1,school1\n'+
+                'sc2,school2\n'+
+                '-----\n', $result->cast(@String)->toOne(), $db);
+  },{| true});
+}
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenWithViewAsDriver():Boolean[1]
+{
+  let query = {|OrderPnl.all()->project([o | $o.pnl, o | $o.order.settlementDateTime], ['pnl', 'settlementDateTime'])};
+  let mapping = meta::relational::tests::simpleRelationalMapping;
+  let db = meta::relational::tests::db;
+  let runtime = meta::relational::tests::testRuntime();
+  meta::relational::tests::createTablesAndFillDb();
+
+  meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+    assertTestData('default\n' +
+                  'accountTable\n' +
+                  'ID\n' +
+                  '1\n' +
+                  '2\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'orderPnlTable\n' +
+                  'ORDER_ID,pnl\n' +
+                  '1,100.0\n' +
+                  '2,200.0\n' +
+                  '4,150.0\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'orderTable\n' +
+                  'ID,accountID,settlementDateTime\n' +
+                  '1,1,2014-12-02 21:00:00\n' +
+                  '2,2,2014-12-02 21:00:00\n' +
+                  '4,2,2014-12-03 21:00:00\n' +
+                  '-----\n' +
+                  'default\n' +
+                  'salesPersonTable\n' +
+                  'ACCOUNT_ID,NAME,PERSON_ID\n' +
+                  '1,Peter Smith,1\n' +
+                  '2,John Johnson,2\n' +
+                  '-----\n', $result->cast(@String)->toOne(), $db);
+  },{| true});
+}
+
+function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testAlloyTestDatGenWithQuotedColumnsForViews():Boolean[1]
+{
+  // Purposefully asserting on plan string to assert we add quotes in join columns
+
+  let query = {|meta::pure::lineage::scanRelations::test::Party.all()->project([r | $r.identifier.identifier],['id'])->distinct()};
+  let mapping = meta::pure::lineage::scanRelations::test::MappingWithJoinToSchemaInAnotherView;
+  let db = meta::pure::lineage::scanRelations::test::DB2;
+  let runtime = meta::relational::tests::testRuntime();
+
+  let tableRowIdentifiers = [
+    meta::relational::testDataGeneration::createTableRowIdentifiers($db, 'E', 'Entity', [
+        meta::relational::testDataGeneration::createRowIdentifier(['entityID'], ['2'])
+    ])
+  ];
+
+  let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+  assertEquals(
+    'MultiResultSequence\n' +
+    '(\n' +
+    '  type = meta::pure::metamodel::type::Any\n' +
+    '  (\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=Entity, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=Entity, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("entityID", INT)]\n' +
+    '            sql = select top 20 "root".entityID as "entityID" from E.Entity as "root" where "root".entityID = \'2\'\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=AltIDToEntityMapping, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("alternativeID",INT), ("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0_c0_v\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=AltIDToEntityMapping, type=TABLE, schema=E, database=meta::pure::lineage::scanRelations::test::DB1, columns=[("alternativeID",INT), ("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("alternativeID", INT), ("entityID", INT)]\n' +
+    '            sql = select top 20 "root".alternativeID as "alternativeID", "root".entityID as "entityID" from (select top 20 "altidtoentitymapping_0".root_pk_gen_alternativeID as "alternativeID", "altidtoentitymapping_0".root_pk_gen_entityID as "entityID" from (select * from (${res_c0}) as "root") as "res_c0_1" inner join (select "root".alternativeID as altID, "root".entityID as entityID, "root".alternativeID as root_pk_gen_alternativeID, "root".entityID as root_pk_gen_entityID from E.AltIDToEntityMapping as "root") as "altidtoentitymapping_0" on ("res_c0_1"."entityID" = "altidtoentitymapping_0".entityID)) as "res_c0_0" inner join E.AltIDToEntityMapping as "root" on ("res_c0_0"."entityID" = "root".entityID and "res_c0_0"."alternativeID" = "root".alternativeID)\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '    Allocation\n' +
+    '    (\n' +
+    '      type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '      resultSizeRange = *\n' +
+    '      name = res_c0_c0\n' +
+    '      value = \n' +
+    '        (\n' +
+    '          Relational\n' +
+    '          (\n' +
+    '            type = Relation[name=AltID_View, type=VIEW, schema=ViewSchema, database=meta::pure::lineage::scanRelations::test::DB2, columns=[("altID",INT), ("entityID",INT)]]\n' +
+    '            resultSizeRange = *\n' +
+    '            resultColumns = [("altID", INT), ("entityID", INT)]\n' +
+    '            sql = select top 20 "root"."alternativeID" as "altID", "root"."entityID" as "entityID" from (select * from (${res_c0_c0_v}) as "root") as "root"\n' +
+    '            connection = TestDatabaseConnection(type = "H2")\n' +
+    '          )\n' +
+    '        )\n' +
+    '    )\n' +
+    '  )\n' +
+    ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
+}
+
+
+// -----------------------------------------------------   TEST QUERY SCHEMA GENERATION   -----------------------------------------------------
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::testGenerateNecessaryTableColumnsForSingleTable():Boolean[1]
+{
+
+   let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
+   let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
+   let relationalCsvData = meta::relational::testDataGeneration::getRelationalCSVDataFromQuery($query, $mapping);
+   assertEquals(1, $relationalCsvData.tables->size());
+   assertEquals('default\n'+
+                'Person\n'+
+                'ID,name', $relationalCsvData.tables->map(t | $t.schema + '\n' + $t.table + '\n' + $t.values)->joinStrings('\n-------\n'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::testGenerateNecessaryTableColumnsForMultiTables():Boolean[1]
+{
+   let query = {|Trade.all()->project([t|$t.product.name, t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],['prodName', 'synName'])};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let relationalCsvData = meta::relational::testDataGeneration::getRelationalCSVDataFromQuery($query, $mapping);
+   assertEquals(3, $relationalCsvData.tables->size());
+   assertEquals('default\n'+
+                'tradeTable\n'+
+                'ID,prodId\n'+
+                '-------\n'+
+                'productSchema\n'+
+                'productTable\n'+
+                'ID,NAME\n'+
+                '-------\n'+
+                'productSchema\n'+
+                'synonymTable\n' +
+                'ID,NAME,PRODID,TYPE'
+                , $relationalCsvData.tables->sortBy(t | $t.schema +  $t.table)->map(t | $t.schema + '\n' + $t.table + '\n' + $t.values)->joinStrings('\n-------\n'));
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneration::tests::testGenerateNecessaryTableColumnsForMilestoningTable():Boolean[1]
+{
+   let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
+   let mapping = meta::relational::tests::milestoning::milestoningmap;
+   let relationalCsvData = meta::relational::testDataGeneration::getRelationalCSVDataFromQuery($query, $mapping);
+   assertEquals(2, $relationalCsvData.tables->size());
+   assertEquals('default\n'+
+                'ProductClassificationTable\n'+
+                'type,from_z,thru_z\n'+
+                '-------\n'+
+                'default\n'+
+                'ProductTable\n'+
+                'id,name,type,from_z,thru_z',
+                $relationalCsvData.tables->sortBy(t | $t.schema +  $t.table)->map(t | $t.schema + '\n' + $t.table + '\n' + $t.values)->joinStrings('\n-------\n'));
 }

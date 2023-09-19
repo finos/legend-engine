@@ -37,6 +37,35 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    'ownerName',\n" +
                 "    'ownerName2'\n" +
                 "  ];\n" +
+                "  ownership: DID { identifier: '12345' };\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle2\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl2/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName',\n" +
+                "    'ownerName2'\n" +
+                "  ];\n" +
+                "  ownership: UserList { users: ['12345', '789'] };\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +

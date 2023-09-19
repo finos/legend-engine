@@ -197,6 +197,11 @@ function meta::external::query::sql::transformation::queryToPure::tests::service
 
 function meta::external::query::sql::transformation::queryToPure::tests::createService(pattern:String[1], f:FunctionDefinition<Any>[1]): Service[1]
 {
+  createService($pattern, $f, dummyMapping, dummyRuntime())
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::createService(pattern:String[1], f:FunctionDefinition<Any>[1], mapping:Mapping[0..1], runtime:Runtime[0..1]): Service[1]
+{
   ^Service
   (
     pattern = $pattern,
@@ -206,8 +211,8 @@ function meta::external::query::sql::transformation::queryToPure::tests::createS
     execution = ^PureSingleExecution
     (
       func = $f,
-      mapping = dummyMapping,
-      runtime = dummyRuntime()
+      mapping = $mapping,
+      runtime = $runtime
     ),
     test = ^SingleExecutionTest(
       data = '',

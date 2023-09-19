@@ -32,10 +32,13 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '        types {\n' +
                 '            kind, \n' +
                 '            name, \n' +
+                '            description, \n' +
                 '            fields {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                args {\n' +
                 '                    name, \n' +
+                '                    description, \n' +
                 '                    type {\n' +
                 '                        kind, \n' +
                 '                        name, \n' +
@@ -107,6 +110,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '            }, \n' +
                 '            inputFields {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                type {\n' +
                 '                    kind, \n' +
                 '                    name, \n' +
@@ -175,6 +179,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '            }, \n' +
                 '            enumValues {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                isDeprecated, \n' +
                 '                deprecationReason\n' +
                 '            }, \n' +
@@ -213,9 +218,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                 '        }, \n' +
                 '        directives {\n' +
                 '            name, \n' +
+                '            description, \n' +
                 '            locations, \n' +
                 '            args {\n' +
                 '                name, \n' +
+                '                description, \n' +
                 '                type {\n' +
                 '                    kind, \n' +
                 '                    name, \n' +
