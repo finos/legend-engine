@@ -20,5 +20,5 @@ import java.util.List;
 
 public interface AuthenticationMechanismProvider
 {
-    List<AuthenticationMechanism> getMechanisms();
+    List<AuthenticationMechanismLoader> getLoaders();
 }

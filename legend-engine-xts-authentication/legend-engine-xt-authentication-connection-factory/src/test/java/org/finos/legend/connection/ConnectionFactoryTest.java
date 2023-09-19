@@ -433,7 +433,7 @@ public class ConnectionFactoryTest
     {
     }
 
-    private static enum TestAuthenticationMechanismType implements AuthenticationMechanism
+    private enum TestAuthenticationMechanismType implements AuthenticationMechanism
     {
         X
                 {
@@ -470,12 +470,6 @@ public class ConnectionFactoryTest
         public String getLabel()
         {
             return this.toString();
-        }
-
-        @Override
-        public List<AuthenticationMechanism> getMechanisms()
-        {
-            return Lists.mutable.with(TestAuthenticationMechanismType.values());
         }
     }
 

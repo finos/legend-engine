@@ -19,14 +19,18 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import javax.ws.rs.core.Link;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,9 +85,9 @@ public class EnvironmentConfiguration
     public static class Builder
     {
         private final List<CredentialVault<? extends CredentialVaultSecret>> vaults = Lists.mutable.empty();
-        private final Map<String, StoreSupport> storeSupportsIndex = new HashMap<>();
+        private final Map<String, StoreSupport> storeSupportsIndex = new LinkedHashMap<>();
         private AuthenticationMechanismProvider authenticationMechanismProvider;
-        private final Set<AuthenticationMechanism> authenticationMechanisms = new HashSet<>();
+        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
         public Builder()
         {
@@ -143,9 +147,9 @@ public class EnvironmentConfiguration
 
         public EnvironmentConfiguration build()
         {
-            List<AuthenticationMechanism> authenticationMechanisms = this.authenticationMechanismProvider != null ? this.authenticationMechanismProvider.getMechanisms() : Lists.mutable.empty();
+            List<AuthenticationMechanism> authenticationMechanisms = this.authenticationMechanismProvider != null ? ListIterate.flatCollect(this.authenticationMechanismProvider.getLoaders(), AuthenticationMechanismLoader::getMechanisms) : Lists.mutable.empty();
             authenticationMechanisms.addAll(this.authenticationMechanisms);
-            Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new HashMap<>();
+            Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new LinkedHashMap<>();
             authenticationMechanisms.forEach(mechanism ->
             {
                 String key = mechanism.getAuthenticationConfigurationType().getSimpleName();
@@ -155,6 +159,15 @@ public class EnvironmentConfiguration
                             authenticationMechanismsIndex.get(key).getLabel(),
                             mechanism.getLabel(),
                             key
+                    ));
+                }
+                AuthenticationConfiguration configuration = mechanism.generateConfiguration();
+                if (configuration != null && !configuration.getClass().equals(mechanism.getAuthenticationConfigurationType()))
+                {
+                    throw new IllegalStateException(String.format("Can't build environment configuration: authentication mechanism '%s' is misconfigured, its associated configuration type is '%s' and its generated configuration type is '%s'",
+                            mechanism.getLabel(),
+                            mechanism.getAuthenticationConfigurationType().getSimpleName(),
+                            configuration.getClass().getSimpleName()
                     ));
                 }
                 authenticationMechanismsIndex.put(key, mechanism);

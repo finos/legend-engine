@@ -15,7 +15,6 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -23,8 +22,8 @@ import java.util.ServiceLoader;
 public class DefaultAuthenticationMechanismProvider implements AuthenticationMechanismProvider
 {
     @Override
-    public List<AuthenticationMechanism> getMechanisms()
+    public List<AuthenticationMechanismLoader> getLoaders()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(AuthenticationMechanism.class)).flatCollect(AuthenticationMechanism::getMechanisms);
+        return Lists.mutable.withAll(ServiceLoader.load(AuthenticationMechanismLoader.class));
     }
 }

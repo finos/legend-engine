@@ -14,62 +14,114 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class EnvironmentConfigurationTest
 {
     @Test
-    public void testValidateStoreInstanceBuilder()
+    public void testValidateBuilder()
     {
-        EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
-                .withStoreSupport(new StoreSupport.Builder()
-                        .withIdentifier("test")
-                        .withAuthenticationMechanisms(
-                                AuthenticationMechanismType.USER_PASSWORD,
-                                AuthenticationMechanismType.KERBEROS
-                        )
-                        .build())
-                .build();
+        // success
+        new EnvironmentConfiguration.Builder()
+                .withAuthenticationMechanisms(Lists.mutable.of(
+                        TestAuthenticationMechanismType.X,
+                        TestAuthenticationMechanismType.Y
+                )).build();
 
-//        // success
-//        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
-//                .withIdentifier("test-store")
-//                .withStoreSupportIdentifier("test")
-//                .withAuthenticationMechanisms(AuthenticationMechanismType.USER_PASSWORD)
-//                .withConnectionSpecification(new StoreSupportTest.TestConnectionSpecification())
-//                .build();
-//        Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD}, testStore.getAuthenticationMechanisms().toArray());
-//
-//        // make sure if no auth mechanisms is specified, all mechanisms will be supported
-//        StoreInstance testStore2 = new StoreInstance.Builder(environmentConfiguration)
-//                .withIdentifier("test-store")
-//                .withStoreSupportIdentifier("test")
-//                .withConnectionSpecification(new StoreSupportTest.TestConnectionSpecification())
-//                .build();
-//        Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD, AuthenticationMechanismType.KERBEROS}, testStore2.getAuthenticationMechanisms().toArray());
-//
-//        // failure
-//        Exception exception;
-//
-//        exception = Assert.assertThrows(RuntimeException.class, () ->
-//        {
-//            new StoreInstance.Builder(environmentConfiguration)
-//                    .withIdentifier("test-store")
-//                    .withStoreSupportIdentifier("test")
-//                    .build();
-//        });
-//        Assert.assertEquals("Store instance connection specification is required", exception.getMessage());
-//
-//        exception = Assert.assertThrows(RuntimeException.class, () ->
-//        {
-//            new StoreInstance.Builder(environmentConfiguration)
-//                    .withIdentifier("test-store")
-//                    .withStoreSupportIdentifier("test")
-//                    .withAuthenticationMechanisms(AuthenticationMechanismType.API_KEY)
-//                    .withConnectionSpecification(new StoreSupportTest.TestConnectionSpecification())
-//                    .build();
-//        });
-//        Assert.assertEquals("Store instance specified with authentication configuration types (API_KEY) which are not covered by its store support 'test'", exception.getMessage());
+        Exception exception;
+
+        // failure: found invalid mechanism
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            new EnvironmentConfiguration.Builder()
+                    .withAuthenticationMechanisms(Lists.mutable.of(
+                            TestAuthenticationMechanismType.X,
+                            TestAuthenticationMechanismType.Y,
+                            TestAuthenticationMechanismType.Z
+                    )).build();
+        });
+        Assert.assertEquals("Can't build environment configuration: authentication mechanism 'Z' is misconfigured, its associated configuration type is 'AuthenticationConfiguration_Z' and its generated configuration type is 'AuthenticationConfiguration_X'", exception.getMessage());
+
+        // failure: found conflicting mechanisms
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            new EnvironmentConfiguration.Builder()
+                    .withAuthenticationMechanisms(Lists.mutable.of(
+                            TestAuthenticationMechanismType.X,
+                            TestAuthenticationMechanismType.Y,
+                            TestAuthenticationMechanismType.T
+                    )).build();
+        });
+        Assert.assertEquals("Can't build environment configuration: found multiple authentication mechanisms (Y, T) associated with the same configuration type 'AuthenticationConfiguration_Y'", exception.getMessage());
+    }
+
+    private static class AuthenticationConfiguration_X extends AuthenticationConfiguration
+    {
+    }
+
+    private static class AuthenticationConfiguration_Y extends AuthenticationConfiguration
+    {
+    }
+
+    private static class AuthenticationConfiguration_Z extends AuthenticationConfiguration
+    {
+    }
+
+    private enum TestAuthenticationMechanismType implements AuthenticationMechanism
+    {
+        X
+                {
+                    @Override
+                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
+                    {
+                        return AuthenticationConfiguration_X.class;
+                    }
+                },
+        Y
+                {
+                    @Override
+                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
+                    {
+                        return AuthenticationConfiguration_Y.class;
+                    }
+
+                    @Override
+                    public AuthenticationConfiguration generateConfiguration()
+                    {
+                        return new AuthenticationConfiguration_Y();
+                    }
+                },
+        Z
+                {
+                    @Override
+                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
+                    {
+                        return AuthenticationConfiguration_Z.class;
+                    }
+
+                    @Override
+                    public AuthenticationConfiguration generateConfiguration()
+                    {
+                        return new AuthenticationConfiguration_X();
+                    }
+                },
+        T
+                {
+                    @Override
+                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
+                    {
+                        return AuthenticationConfiguration_Y.class;
+                    }
+                };
+
+        @Override
+        public String getLabel()
+        {
+            return this.toString();
+        }
     }
 }

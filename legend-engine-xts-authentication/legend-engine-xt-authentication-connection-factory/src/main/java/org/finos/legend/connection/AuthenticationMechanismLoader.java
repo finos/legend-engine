@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.protocol;
+package org.finos.legend.connection;
+
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
 import java.util.List;
 
-public interface AuthenticationMechanism
+public interface AuthenticationMechanismLoader
 {
-    String getLabel();
-
-    Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType();
-
-    default AuthenticationConfiguration generateConfiguration()
-    {
-        return null;
-    }
+    List<AuthenticationMechanism> getMechanisms();
 }
