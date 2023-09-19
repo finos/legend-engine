@@ -54,6 +54,11 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 {
                     return KerberosAuthenticationConfiguration.class;
                 }
-            }
+            };
 
+    @Override
+    public String getLabel()
+    {
+        return this.toString();
+    }
 }

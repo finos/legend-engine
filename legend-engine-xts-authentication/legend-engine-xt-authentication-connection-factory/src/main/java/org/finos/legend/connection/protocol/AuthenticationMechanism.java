@@ -16,5 +16,6 @@ package org.finos.legend.connection.protocol;
 
 public interface AuthenticationMechanism
 {
+    String getLabel();
     Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType();
 }

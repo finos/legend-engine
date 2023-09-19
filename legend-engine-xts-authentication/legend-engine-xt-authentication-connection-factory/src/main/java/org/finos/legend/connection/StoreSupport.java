@@ -21,8 +21,10 @@ import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,12 +33,14 @@ public class StoreSupport
     private final String identifier;
     private final List<AuthenticationMechanism> authenticationMechanisms;
     private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
+    private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new HashMap<>();
 
     protected StoreSupport(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
     {
         this.identifier = identifier;
         this.authenticationMechanisms = authenticationMechanisms;
         this.authenticationConfigurationTypes = ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType);
+        this.authenticationMechanisms.forEach(mechanism -> this.authenticationMechanismsIndex.put(mechanism.getAuthenticationConfigurationType().getSimpleName(), mechanism));
     }
 
     public String getIdentifier()
@@ -47,6 +51,11 @@ public class StoreSupport
     public List<AuthenticationMechanism> getAuthenticationMechanisms()
     {
         return authenticationMechanisms;
+    }
+
+    public AuthenticationMechanism findAuthenticationMechanismForConfiguration(AuthenticationConfiguration configuration)
+    {
+        return this.authenticationMechanismsIndex.get(configuration.getClass().getSimpleName());
     }
 
     public ImmutableList<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()

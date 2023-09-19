@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,12 +33,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ConnectionFactory
 {
     private final EnvironmentConfiguration environmentConfiguration;
-    private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new HashMap<>();
-    private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new HashMap<>();
+    private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
+    private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
     private final Map<String, StoreInstance> storeInstancesIndex;
 
     private ConnectionFactory(EnvironmentConfiguration environmentConfiguration, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, Map<String, StoreInstance> storeInstancesIndex)
@@ -77,10 +79,14 @@ public class ConnectionFactory
     {
         if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
         {
-            throw new RuntimeException(String.format("Can't get authenticator: authentication configuration of type '%s' is not supported by store '%s'", authenticationConfiguration.getClass().getSimpleName(), storeInstance.getIdentifier()));
+            throw new RuntimeException(String.format("Can't get authenticator: authentication mechanism '%s' is not supported by store '%s' (supported mechanism(s): %s)",
+                    authenticationConfiguration.getClass().getSimpleName(),
+                    storeInstance.getIdentifier(),
+                    storeInstance.getAuthenticationMechanisms().stream().map(Object::toString).collect(Collectors.joining(", ")))
+            );
         }
 
-        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
+        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, storeInstance, authenticationConfiguration);
         return new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
     }
 
@@ -142,9 +148,9 @@ public class ConnectionFactory
                         if (!(builder instanceof CredentialExtractor))
                         {
                             this.processEdge(new FlowNode(builder.getInputCredentialType()), new FlowNode(builder.getOutputCredentialType()));
-                            this.credentialBuildersIndex.put(createCredentialBuilderKey(builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName()), builder);
                         }
                         this.processEdge(new FlowNode(identity, builder.getInputCredentialType()), new FlowNode(builder.getOutputCredentialType()));
+                        this.credentialBuildersIndex.put(createCredentialBuilderKey(builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName()), builder);
                     });
             // add end node (i.e. connection node)
             this.endNode = new FlowNode(connectionSpecification);
@@ -179,8 +185,10 @@ public class ConnectionFactory
         /**
          * Resolves the authentication flow in order to build a connection for a specified identity
          */
-        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
+        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
         {
+            ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
+
             // using BFS algo to search for the shortest (non-cyclic) path
             AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationConfiguration, connectionSpecification);
             boolean found = false;
@@ -226,7 +234,12 @@ public class ConnectionFactory
 
             if (!found)
             {
-                throw new RuntimeException(String.format("Can't resolve connection authentication flow for specified identity (AuthenticationConfiguration=%s, ConnectionSpecification=%s)", authenticationConfiguration.getClass().getSimpleName(), connectionSpecification.getClass().getSimpleName()));
+                throw new RuntimeException(String.format("Can't resolve connection authentication flow for the specified identity (store: %s, authentication mechanism: %s, authentication config: %s, connection specification: %s)",
+                        storeInstance.getIdentifier(),
+                        storeInstance.getStoreSupport().findAuthenticationMechanismForConfiguration(authenticationConfiguration),
+                        authenticationConfiguration.getClass().getSimpleName(),
+                        connectionSpecification.getClass().getSimpleName())
+                );
             }
 
             // resolve the path
@@ -240,14 +253,14 @@ public class ConnectionFactory
 
             if (nodes.size() < 2)
             {
-                throw new RuntimeException("Can't resolve connection authentication flow for specified identity: invalid non short-circuit flow found!");
+                throw new IllegalStateException("Can't resolve connection authentication flow for specified identity: invalid flow state found!");
             }
             List<CredentialBuilder> flow = new ArrayList<>();
             for (int i = 0; i < nodes.size() - 1; i++)
             {
                 flow.add(Objects.requireNonNull(
                         state.credentialBuildersIndex.get(createCredentialBuilderKey(nodes.get(i).credentialType.getSimpleName(), nodes.get(i + 1).credentialType.getSimpleName())),
-                        String.format("Can't find credential builder: input=%s, output=%s", nodes.get(i).credentialType.getSimpleName(), nodes.get(i + 1).credentialType.getSimpleName()
+                        String.format("Can't find a matching credential builder (input: %s, output: %s)", nodes.get(i).credentialType.getSimpleName(), nodes.get(i + 1).credentialType.getSimpleName()
                         )));
             }
 

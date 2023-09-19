@@ -35,7 +35,7 @@ public abstract class CredentialExtractor<SPEC extends AuthenticationConfigurati
         Optional<CRED> credentialOptional = identity.getCredential((Class<CRED>) this.getOutputCredentialType());
         if (!credentialOptional.isPresent())
         {
-            throw new RuntimeException(String.format("Can't extract credential of type '%s' from the provided identity", this.getOutputCredentialType().getSimpleName()));
+            throw new RuntimeException(String.format("Can't extract credential of type '%s' from the specified identity", this.getOutputCredentialType().getSimpleName()));
         }
         return credentialOptional.get();
     }

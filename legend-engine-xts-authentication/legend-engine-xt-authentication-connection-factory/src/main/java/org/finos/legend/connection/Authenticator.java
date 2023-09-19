@@ -50,7 +50,7 @@ public class Authenticator
             Optional<Credential> credentialOptional = this.identity.getCredential((Class<Credential>) this.sourceCredentialType);
             if (!credentialOptional.isPresent())
             {
-                throw new RuntimeException(String.format("Can't resolve source credential of type '%s' from the provided identity", this.sourceCredentialType.getSimpleName()));
+                throw new RuntimeException(String.format("Can't resolve source credential of type '%s' from the specified identity", this.sourceCredentialType.getSimpleName()));
             }
             else
             {
@@ -72,5 +72,15 @@ public class Authenticator
     public StoreInstance getStoreInstance()
     {
         return storeInstance;
+    }
+
+    public Class<? extends Credential> getSourceCredentialType()
+    {
+        return sourceCredentialType;
+    }
+
+    public List<CredentialBuilder> getCredentialBuilders()
+    {
+        return credentialBuilders;
     }
 }
