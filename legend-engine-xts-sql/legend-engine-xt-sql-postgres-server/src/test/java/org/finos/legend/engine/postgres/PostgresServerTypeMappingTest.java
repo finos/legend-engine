@@ -213,7 +213,6 @@ public class PostgresServerTypeMappingTest
                 "      \"sql\": \"select ...\"\n" +
                 "    }\n" +
                 "  ],\n" +
-                "  \"_UUID\": \"b609c103-45f8-47ff-90f9-c5fee561d108\",\n" +
                 "  \"result\": {\n" +
                 "    \"columns\": [\n" +
                 "      \"column1\"\n" +

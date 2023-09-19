@@ -1,0 +1,18 @@
+{
+  "builder": {
+    "_type": "tdsBuilder",
+    "columns": [
+      {
+        "name": "stringColumn",
+        "type": "String",
+        "relationalType": "sqlType"
+      }
+    ]
+  },
+  "activities": [
+    {
+      "_type": "relational",
+      "sql": "select ..."
+    }
+  ]
+}
