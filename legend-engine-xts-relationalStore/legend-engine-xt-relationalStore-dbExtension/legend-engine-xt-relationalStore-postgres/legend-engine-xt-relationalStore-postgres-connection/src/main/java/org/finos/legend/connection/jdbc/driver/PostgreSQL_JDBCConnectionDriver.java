@@ -29,14 +29,14 @@ public class PostgreSQL_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
-    {
-        return String.format("jdbc:postgresql://%s:%s/%s", host, port, databaseName);
-    }
-
-    @Override
     public String getDriver()
     {
         return "org.postgresql.Driver";
+    }
+
+    @Override
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    {
+        return String.format("jdbc:postgresql://%s:%s/%s", host, port, databaseName);
     }
 }

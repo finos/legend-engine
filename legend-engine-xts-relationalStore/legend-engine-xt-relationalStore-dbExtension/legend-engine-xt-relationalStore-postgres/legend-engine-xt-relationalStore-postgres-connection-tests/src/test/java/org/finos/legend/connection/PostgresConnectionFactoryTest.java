@@ -14,19 +14,20 @@
 
 package org.finos.legend.connection;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.jdbc.StaticJDBCConnectionSpecification;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanismType;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.test.PostgresTestContainerWrapper;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.util.Properties;
 
 import static org.junit.Assume.assumeTrue;
@@ -69,15 +70,15 @@ public class PostgresConnectionFactoryTest
         RelationalDatabaseStoreSupport storeSupport = new RelationalDatabaseStoreSupport.Builder()
                 .withIdentifier("Postgres")
                 .withDatabaseType("Postgres")
-                .withAuthenticationSpecificationTypes(Lists.mutable.of(
-                        UserPasswordAuthenticationSpecification.class,
-                        ApiKeyAuthenticationSpecification.class
-                ))
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD
+                )
                 .build();
 
         EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
                 .withVault(propertiesFileCredentialVault)
                 .withStoreSupport(storeSupport)
+                .withAuthenticationMechanismProvider(new DefaultAuthenticationMechanismProvider())
                 .build();
 
         IdentityFactory identityFactory = new IdentityFactory.Builder(environmentConfiguration)
@@ -101,14 +102,15 @@ public class PostgresConnectionFactoryTest
         StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
                 .withIdentifier(STORE_NAME)
                 .withStoreSupportIdentifier("Postgres")
-                // TODO: @akphi - check if we already verify right here - we should throw if this is not specified in the store support
-                .withAuthenticationSpecificationTypes(Lists.mutable.of(UserPasswordAuthenticationSpecification.class))
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD
+                )
                 .withConnectionSpecification(connectionSpecification)
                 .build();
         connectionFactory.registerStoreInstance(testStore);
 
-        AuthenticationSpecification authenticationSpecification = new UserPasswordAuthenticationSpecification(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
-        ConnectionAuthentication connectionAuthentication = connectionFactory.authenticate(identity, STORE_NAME, authenticationSpecification);
-        connectionFactory.getConnection(connectionAuthentication);
+        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
+        Authenticator authenticator = connectionFactory.getAuthenticator(identity, STORE_NAME, authenticationConfiguration);
+        Connection connection = connectionFactory.getConnection(authenticator);
     }
 }

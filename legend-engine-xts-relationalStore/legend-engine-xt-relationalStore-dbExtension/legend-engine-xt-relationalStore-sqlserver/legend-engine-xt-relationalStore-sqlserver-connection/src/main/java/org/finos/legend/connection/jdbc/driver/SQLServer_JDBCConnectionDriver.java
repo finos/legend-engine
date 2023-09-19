@@ -29,14 +29,14 @@ public class SQLServer_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
-    {
-        return String.format("jdbc:sqlserver://%s:%s;databaseName=%s", host, port, databaseName);
-    }
-
-    @Override
     public String getDriver()
     {
         return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    }
+
+    @Override
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    {
+        return String.format("jdbc:sqlserver://%s:%s;databaseName=%s", host, port, databaseName);
     }
 }
