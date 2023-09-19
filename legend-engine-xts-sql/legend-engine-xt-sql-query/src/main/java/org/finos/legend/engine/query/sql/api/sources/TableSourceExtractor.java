@@ -396,7 +396,7 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
             return null;
         }
 
-        throw new IllegalArgumentException("Table function arguments must be primitive");
+        return expression;
     }
 
     @Override

@@ -15,7 +15,8 @@ identifier:                             VALID_STRING | STRING
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
-                                        | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
+                                        | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES | SERVICE_OWNERSHIP
+                                        | SERVICE_OWNERSHIP_DEPLOYMENT | SERVICE_OWNERSHIP_DEPLOYMENT_ID | SERVICE_OWNERSHIP_USERLIST | SERVICE_OWNERSHIP_USERLIST_USERS
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
@@ -39,6 +40,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                 (
                                                     servicePattern
                                                     | serviceOwners
+                                                    | serviceOwnership
                                                     | serviceDocumentation
                                                     | serviceAutoActivateUpdates
                                                     | serviceExec
@@ -64,6 +66,27 @@ serviceOwners:                          SERVICE_OWNERS COLON
                                             BRACKET_CLOSE
                                         SEMI_COLON
 ;
+
+serviceOwnership:                       SERVICE_OWNERSHIP COLON
+                                             (deployment | userList)
+                                        SEMI_COLON
+;
+
+deployment:                             SERVICE_OWNERSHIP_DEPLOYMENT
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_DEPLOYMENT_ID COLON STRING
+                                            BRACE_CLOSE
+;
+
+userList:                               SERVICE_OWNERSHIP_USERLIST
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_USERLIST_USERS COLON
+                                                    BRACKET_OPEN
+                                                        (STRING (COMMA STRING)*)?
+                                                    BRACKET_CLOSE
+                                            BRACE_CLOSE
+;
+
 serviceDocumentation:                   SERVICE_DOCUMENTATION COLON STRING SEMI_COLON
 ;
 serviceAutoActivateUpdates:             SERVICE_AUTO_ACTIVATE_UPDATES COLON BOOLEAN SEMI_COLON

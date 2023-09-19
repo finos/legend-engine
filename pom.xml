@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.26.7-SNAPSHOT</version>
+    <version>4.28.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -108,7 +108,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.14</legend.pure.version>
+        <legend.pure.version>4.6.0</legend.pure.version>
         <legend.shared.version>0.24.1</legend.shared.version>
 
         <!-- SONAR -->
@@ -640,7 +640,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-pure</artifactId>
@@ -654,6 +653,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -940,6 +944,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-connection-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2416,6 +2425,12 @@
                 <groupId>io.opentracing.contrib</groupId>
                 <artifactId>opentracing-concurrent</artifactId>
                 <version>${opentracing.contrib.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-mock</artifactId>
+                <version>${opentracing.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>io.zipkin.reporter2</groupId>

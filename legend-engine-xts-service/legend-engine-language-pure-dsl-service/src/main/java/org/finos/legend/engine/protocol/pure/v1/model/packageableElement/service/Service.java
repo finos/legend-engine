@@ -30,7 +30,9 @@ public class Service extends PackageableElement
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
     public String pattern;
-    public List<String> owners;
+    @Deprecated
+    public List<String> owners = Collections.emptyList();
+    public Ownership ownership;
     public String documentation;
     public boolean autoActivateUpdates = true;
     public Execution execution;

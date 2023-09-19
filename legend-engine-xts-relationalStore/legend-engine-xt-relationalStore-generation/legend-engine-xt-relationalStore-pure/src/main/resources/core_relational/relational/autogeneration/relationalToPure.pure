@@ -24,7 +24,7 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
    (
       _type = 'class',
       name = createValidClassName($table.name),
-      package = $packageStr + $table.schema.name,
+      package = $packageStr + '::' + $table.schema.name->makeCamelCase(),
       properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
            ->map(c | $c->columnToProperty()),
@@ -100,7 +100,7 @@ function meta::relational::transform::autogen::joinToAssociation(join:Join[1], p
    (
      _type = 'association',
      name = $joinName,
-     package = $packageStr->removeTrailingColonsFromPackageString(),
+     package = $packageStr,
      properties = [$p1, $p2],
      taggedValues = [createPureGeneratedTaggedDoc()]
    );
@@ -138,13 +138,8 @@ function <<access.private>> meta::relational::transform::autogen::generateAssoci
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
      name = $propertyName->createSQLSafeName()->createValidPropertyName(),
      multiplicity = $multiplicity->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-     type = $packageStr + $schemaName + '::' + createValidClassName($tableName)
+     type = $packageStr + '::' + $schemaName + '::' + createValidClassName($tableName)
    );
-}
-
-function <<access.private>> meta::relational::transform::autogen::removeTrailingColonsFromPackageString(packageStr:String[1]):String[1]
-{
-   $packageStr->substring(0, $packageStr->length() - 2);
 }
 
 function meta::relational::transform::autogen::databaseToMappingWithClassMappings(database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1]):meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1]
@@ -158,7 +153,7 @@ function meta::relational::transform::autogen::databaseToMappingWithClassMapping
    (
       _type = 'mapping',
       name = $database.name->toOne() + 'Mapping',
-      package = $mappingPackageStr->removeTrailingColonsFromPackageString(),
+      package = $mappingPackageStr,
       classMappings = $database.schemas->map(s | $s.tables->map(t | $t->tableToClassMapping($classPackageStr, $database, $columnFilterFunction)))
    )
 }
@@ -167,7 +162,7 @@ function <<access.private>> meta::relational::transform::autogen::tableToClassMa
 {
    let tableName = $table.name;
    let schemaName = $table.schema.name;
-   let classPath = $classPackageStr + $schemaName + '::' + createValidClassName($tableName);
+   let classPath = $classPackageStr + '::' + $schemaName + '::' + createValidClassName($tableName);
    let databasePath = $database->elementToPath();
    let tableAlias = ^TableAlias(name=$tableName, relationalElement=$table, database=$database, schema=$schemaName);
 
@@ -274,7 +269,7 @@ function <<access.private>> meta::relational::transform::autogen::generateRelati
 
 function <<access.private>> meta::relational::transform::autogen::findMatchingClassID(mapping:meta::protocols::pure::vX_X_X::metamodel::mapping::Mapping[1], classPath:String[1]):String[1]
 {
-   $mapping.classMappings->filter(cm | $cm->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping).class == $classPath).id->toOne();
+  $mapping.classMappings->filter(cm | $cm->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::mapping::RootRelationalClassMapping).class == $classPath).id->toOne();
 }
 
 function <<access.private>> meta::relational::transform::autogen::getClassNameFromClassPath(classPath:String[1]):String[1]

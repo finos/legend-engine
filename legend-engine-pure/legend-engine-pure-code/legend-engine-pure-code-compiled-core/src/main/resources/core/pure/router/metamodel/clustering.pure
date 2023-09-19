@@ -54,13 +54,13 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
           ]);
 
 
-            
+
 
           let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
           let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $sc.mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
           ^$res(fromCluster=$cluster);,
       ef:ExternalFormatClusteredValueSpecification[1] |
-          let state = ^meta::external::format::shared::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne());
+          let state = ^meta::external::format::shared::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne(), binding = $ef.binding);
           $fe->meta::external::format::shared::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
       pl:PlatformClusteredValueSpecification[1] |
           let state = ^meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());

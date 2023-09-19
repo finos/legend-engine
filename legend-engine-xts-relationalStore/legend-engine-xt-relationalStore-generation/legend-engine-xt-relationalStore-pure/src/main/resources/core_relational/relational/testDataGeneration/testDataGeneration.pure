@@ -595,6 +595,9 @@ function <<access.protected>> meta::relational::testDataGeneration::recursiveAdd
    let rootRelElement = $rootAlias.relationalElement;
 
    $rootRelElement->match([
+      v: ViewSelectSQLQuery[1] | ^$selectSQL(columns = $selectSQL.columns->concatenate($mainTable.primaryKey->map(k | ^Alias(relationalElement = ^TableAliasColumn(alias = $rootAlias, column = ^$k(name = 'root_pk_gen_' + $k.name)), name = 'root_pk_gen_' + $k.name))),
+                                 groupBy = if($selectSQL.groupBy->isEmpty(), | [], | $selectSQL.groupBy->concatenate($mainTable.primaryKey->map(k | ^TableAliasColumn(alias = $rootAlias, column = ^$k(name = 'root_pk_gen_' + $k.name))))),
+                                 data=^$rootData(alias = ^$rootAlias(relationalElement = ^$v(selectSQLQuery = $v.selectSQLQuery->recursiveAddPksWithMilestoning($mainTable, $config, $extensions)))));,
       t: Table[1] | assert($t == $mainTable, 'Select SQL main table and view query main table are different');
                     let select_PreMilestoning = ^$selectSQL(columns = $selectSQL.columns->concatenate($mainTable.primaryKey->map(k | ^Alias(relationalElement = ^TableAliasColumn(alias = $rootAlias, column = $k), name = 'root_pk_gen_' + $k.name))),
                                                             groupBy = if($selectSQL.groupBy->isEmpty(), | [], | $selectSQL.groupBy->concatenate($mainTable.primaryKey->map(k | ^TableAliasColumn(alias = $rootAlias, column = $k)))));
@@ -745,12 +748,26 @@ function meta::relational::testDataGeneration::getMilestoningFilter(table: Table
    )
 }
 
-function meta::relational::testDataGeneration::getTableFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1]):Table[*]
+function meta::relational::testDataGeneration::getRelationalCSVDataFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1]):meta::relational::metamodel::data::RelationalCSVData[1]
 {
-   let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries;
-   $sql->map(q | $q->meta::relational::validation::functions::getTables())
-      ->removeDuplicates()
-      ->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+  let propertyTree = $query.expressionSequence->at(0)->evaluateAndDeactivate()->meta::pure::lineage::scanProperties::scanProperties(^List<meta::pure::lineage::scanProperties::PropertyPathNode>(), [], [])
+  .result->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree();
+  let columns = $propertyTree->meta::pure::lineage::scanColumns::scanColumns($mapping).column->removeDuplicates();
+
+  let finalTableToColumnsMap = $columns->filter(c | $c.owner->isNotEmpty() && $c.owner->toOne()->instanceOf(Table))->fold({column, tableToColumnsMap | 
+                                let table = $column.owner->toOne()->cast(@Table);
+                                let existingColumnList = $tableToColumnsMap->get($table);
+                                let list = if($existingColumnList->isEmpty(),| ^List<Column>(values = [$column]) ,| ^List<Column>(values = $existingColumnList.values->add($column)))->cast(@List<Column>)->toOne();
+                                $tableToColumnsMap->put($table, $list);
+       },  ^Map<Table,List<Column>>());
+  
+  let relationalCSVTables = $finalTableToColumnsMap->keyValues()->map(tableColumnsPair | let table = $tableColumnsPair.first;                                                           
+                                                                                         let primaryKeys = $table.primaryKey->sortBy(pk | $pk.name);
+                                                                                         let milestoningColumns = $table->meta::relational::milestoning::getMilestoningDateColumns()->sortBy(c | $c.name);
+                                                                                         let columns = $primaryKeys->concatenate($tableColumnsPair.second.values->sortBy(c | $c->cast(@Column).name))->concatenate($milestoningColumns)->removeDuplicates();
+                                                                                       ^meta::relational::metamodel::data::RelationalCSVTable(schema = $table.schema.name, table = $table.name, values = $columns->map(c|$c->cast(@Column).name)->joinStrings(','));
+                                                                              )->sortBy(t | $t.schema + $t.table);
+  ^meta::relational::metamodel::data::RelationalCSVData(tables=$relationalCSVTables);
 }
 
 /*** Plan Generation ***/
@@ -844,7 +861,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
          |  let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($tree, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, true, [], $config, $extensions);
             if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
                | $nestedNodes,
-               | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
+               | let viewResultVarName = $nestedNodes->last()->toOne()->cast(@AllocationExecutionNode).varName;
                  let childNodes = $tree->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
                  $nestedNodes->concatenate($childNodes);
             );,
@@ -930,7 +947,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
            let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($child, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, false, $nodeResPlaceHolder, $config, $extensions);
            if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
               | $nestedNodes,
-              | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
+              | let viewResultVarName = $nestedNodes->last()->toOne()->cast(@AllocationExecutionNode).varName;
                 let childNodes =  $child->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
                 $nestedNodes->concatenate($childNodes);
            );,
@@ -1001,190 +1018,181 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 
 function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
-   let view = $relationTree.view;
-   let mainRelation = $view->mainRelation();
-   let currentIndices = $indices->add('v');
-   let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
-               
-   let initialNodes = $mainRelation->match([
-      {table : Table[1] |
-         let pksAndErrorNodes = if ($root,
-                                    | planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $dbConnection, true, $view, $config, $extensions),
-                                    | ^Pair<List<RowIdentifier>, List<ExecutionNode>>(first = ^List<RowIdentifier>(), second = ^List<ExecutionNode>())
-                                );
-         let pks = $pksAndErrorNodes.first.values;
-         let errorNodes = $pksAndErrorNodes.second.values;
+  let view               = $relationTree.view;
+  let currentIndices     = $indices->add('v');
+  let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
+  let table              = meta::relational::metamodel::mainTable($view);          
 
-         if($errorNodes->isEmpty(),
-            | 
-              let rootAlias = ^TableAlias(name = 'root', relationalElement = $table);
-              let rootSelect_PreMilestoning = 
-                  if ($root,
-                      | let columns = $relationColumnMap->get($table)->toOne().values->sortBy(x | $x.name);
-                        ^RelationDataSelectSqlQuery(
-                           relation = $table,
-                           columnSubset = $columns,
-                           distinct = false,
-                           toRow = ^Literal(value=20),
-                           columns = $columns->map(y | ^Alias(name=$y.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$rootAlias, column=$y))),
-                           data = ^RootJoinTreeNode(
-                              alias = $rootAlias
-                           ),
-                           filteringOperation = $pks->map({onePk |
-                              let columnValues = $onePk.columnValuePairs;
-                              $columnValues->map(cv | ^DynaFunction(name = 'equal', parameters=[^TableAliasColumn(alias=$rootAlias, column=$table.columns->cast(@Column)->filter(x|$x.name==$cv.first)->toOne()), ^Literal(value=parseDateIfRequired($cv.second, $table.columns->cast(@Column)->filter(x|$x.name==$cv.first)->toOne()))]))->meta::relational::functions::pureToSqlQuery::andFilters($extensions);
-                           })->meta::relational::functions::pureToSqlQuery::orFilters($extensions)
-                        );,
-                      | let mainAlias = ^TableAlias(name = 'main', relationalElement=^SelectSQLQuery(data=^RootJoinTreeNode(alias=^TableAlias(name='root', relationalElement=^meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder(varName=$parentResPlaceHolder->toOne())))));
-                        let pure2SqlState = meta::relational::functions::pureToSqlQuery::defaultState(^Mapping(), ^Map<String, List<Any>>());
-                        let viewQuery = meta::relational::functions::pureToSqlQuery::processRelationalMappingSpecification($view, [], '', true, -1, true, [], $pure2SqlState, noDebug(), $extensions).select;
-                        let viewQueryWithPKs = $viewQuery->recursiveAddPksWithMilestoning($table, $config, $extensions);
-                        let relatedAlias = ^TableAlias(name = $view.name, relationalElement=$viewQueryWithPKs);
-                        
-                        let driverSelect = ^RelationDataSelectSqlQuery(
-                           relation = $table,
-                           columnSubset = $table.primaryKey,
-                           toRow = ^Literal(value=20),
-                           columns = $viewQueryWithPKs.columns->filter(co | $co->instanceOf(Alias) && $co->cast(@Alias).name->startsWith('root_pk_gen_'))->map(co | let i_col = $co->cast(@Alias).relationalElement->cast(@TableAliasColumn).column; ^Alias(name=$co->cast(@Alias).name->substring(12)->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias = $relatedAlias, column = ^$i_col(name = $co->cast(@Alias).name)));),
-                           data = ^RootJoinTreeNode(
-                              alias = $mainAlias,
-                              childrenData = ^JoinTreeNode(
-                                 alias = $relatedAlias,
-                                 joinName = 'gen_join',
-                                 joinType = JoinType.INNER,
-                                 database = ^Database(name='default'),
-                                 join = ^Join(name='gen_join', operation=$relationTree.join->toOne().operation->meta::relational::functions::pureToSqlQuery::reprocessAliases([^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.join->toOne()->otherTable($relationTree.relation->toOne()).name->toOne(), second=$mainAlias),^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.relation.name->toOne(), second=$relatedAlias)])->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@Operation))
-                              )
-                           )
-                        );
-
-                        let driverAlias = ^TableAlias(name = 'driver', relationalElement = $driverSelect);
-                        let columns = $relationColumnMap->get($table)->toOne().values->sortBy(x | $x.name);
-                        ^RelationDataSelectSqlQuery(
-                           relation = $table,
-                           columnSubset = $columns,
-                           distinct = false,
-                           toRow = ^Literal(value=20),
-                           columns = $columns->map(y | ^Alias(name=$y.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$rootAlias, column=$y))),
-                           data = ^RootJoinTreeNode(
-                              alias = $driverAlias,
-                              childrenData = ^JoinTreeNode(
-                                 alias = $rootAlias,
-                                 joinName = 'gen_join',
-                                 joinType = JoinType.INNER,
-                                 database = ^Database(name='default'),
-                                 join = ^Join(
-                                    name = 'gen_join', 
-                                    operation = $table.primaryKey->map(pk | ^DynaFunction(name = 'equal', parameters=[^TableAliasColumn(alias=$driverAlias, column=$pk), ^TableAliasColumn(alias=$rootAlias, column=$pk)]))->meta::relational::functions::pureToSqlQuery::andFilters($extensions)->toOne()->cast(@Operation)
-                              )
-                           ))
-                        );
-                  );
-
-               let milestoningFilter = meta::relational::testDataGeneration::getMilestoningFilter($table, $rootAlias, $config, $extensions);
-               let rootSelect = if($milestoningFilter->isEmpty(),
-                                   | $rootSelect_PreMilestoning,
-                                   | ^$rootSelect_PreMilestoning(filteringOperation = $rootSelect_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
-                                );
-
-               let runtime = ^Runtime(connections=$dbConnection);
-               let postProcessResult = postProcessSQLQuery($rootSelect, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
-
-               let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
-               
-               let resultType = ^RelationResultType
-                                 (
-                                    relationName = $relationDataQuery.relation.name,
-                                    relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
-                                    schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
-                                    database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                                    columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
-                                    type = RelationData
-                                 );
-               let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
-
-               let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
-               let finalNode = if($nodes->size() > 1,
-                                  | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessResult.templateFunctions),
-                                  | $relationalNode
-                               );
-               let varName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
-               let thisNode = ^meta::pure::executionPlan::AllocationExecutionNode
-                               (
-                                  varName = $varName,
-                                  resultType = $finalNode.resultType,
-                                  resultSizeRange = $finalNode.resultSizeRange,
-                                  executionNodes = $finalNode
-                               );
-               let childNodes =  $relationTree.nestedViewTree.children->at(0)->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
-               $thisNode->concatenate($childNodes);,
-             | $errorNodes
-         );
-      },
-
-      {v : View[1] |
-         let nestedNodes = meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree($relationTree.nestedViewTree.children->toOne(), $runtime, $exeCtx, $dbConnection,  $relationColumnMap, $currentIndices, $root, $parentResPlaceHolder, $config, $extensions);
-         if($nestedNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
-            | $nestedNodes,
-            | let viewResultVarName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
-              let childNodes =  $relationTree.nestedViewTree.children->toOne()->planTestDataGenerationStartingFromNode($viewResultVarName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
-              $nestedNodes->concatenate($childNodes);
-         );
-      }
-   ]);
-
-   if($initialNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
-      |  $initialNodes,
-      |  let tableOldToNew = $initialNodes->filter(x | $x->instanceOf(AllocationExecutionNode) && $x->cast(@AllocationExecutionNode).resultType->instanceOf(RelationResultType))->cast(@AllocationExecutionNode)
-                            ->filter(x | $x.resultType->cast(@RelationResultType).relationType == RelationType.TABLE)->map(x | pair(^RelationPointer(name=$x.resultType->cast(@RelationResultType).relationName, schemaName=$x.resultType->cast(@RelationResultType).schemaName, database=$x.resultType->cast(@RelationResultType).database), ^SelectSQLQuery(data=^RootJoinTreeNode(alias=^TableAlias(name='root', relationalElement=^meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder(varName=$x.varName))))));
-         let pure2SqlState = meta::relational::functions::pureToSqlQuery::defaultState(^Mapping(), ^Map<String, List<Any>>());
-         let viewQuery = meta::relational::functions::pureToSqlQuery::processRelationalMappingSpecification($relationTree.view, [], '', true, -1, true, [], $pure2SqlState, noDebug(), $extensions);
-         let viewQueryReprocessed = $viewQuery.select->fixRelations($tableOldToNew)->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@SelectSQLQuery);
-         let viewRelationDataQuery = ^RelationDataSelectSqlQuery(
-            relation = $relationTree.view,
-            columnSubset = $relationTree.view.columnMappings->map(x | ^Column(name = $x.columnName->addQuotesIfNoQuotes(), type = $x.relationalOperationElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
-            columns = $viewQueryReprocessed.columns->cast(@Alias)->map(x | ^$x(name = $x.name->addQuotesIfNoQuotes())),
-            distinct = $viewQueryReprocessed.distinct,
-            data = $viewQueryReprocessed.data,
-            filteringOperation = $viewQueryReprocessed.filteringOperation,
-            groupBy = $viewQueryReprocessed.groupBy,
-            havingOperation = $viewQueryReprocessed.havingOperation,
-            orderBy = $viewQueryReprocessed.orderBy,
-            fromRow = $viewQueryReprocessed.fromRow,
-            toRow = ^Literal(value=20)
-         );
-
-         let runtime = ^Runtime(connections=$dbConnection);
-         let postProcessResult = postProcessSQLQuery($viewRelationDataQuery, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
-
-         let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
-         let resultType = ^RelationResultType
-                           (
-                              relationName = $relationDataQuery.relation.name,
-                              relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
-                              schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
-                              database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
-                              columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
-                              type = RelationData
+  let pksAndErrorNodes   = if($root,
+                              | planRowIdentifierExtractionForTable($config.rowIdentifiers, $table, $runtime, $exeCtx, $dbConnection, true, $view, $config, $extensions),
+                              | ^Pair<List<RowIdentifier>, List<ExecutionNode>>(first = ^List<RowIdentifier>(), second = ^List<ExecutionNode>())
                            );
-         let sqlExecutionNode = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions)->cast(@SQLExecutionNode);
-         let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = ^$sqlExecutionNode(resultColumns = $relationDataQuery->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->cast(@Alias).name, dataType = $c->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())), a:Any[1] | []])), resultType = $resultType, resultSizeRange = ZeroMany);
 
-         let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
-         let finalNode = if($nodes->size() > 1,
-                            | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessResult.templateFunctions),
-                            | $relationalNode
-                         );
-         let varName = 'res_' + $indices->map(x | $x->toString())->joinStrings('_');
-         let thisNode = ^meta::pure::executionPlan::AllocationExecutionNode
-                         (
-                            varName = $varName,
-                            resultType = $finalNode.resultType,
-                            resultSizeRange = $finalNode.resultSizeRange,
-                            executionNodes = $finalNode
-                         );
-         $initialNodes->concatenate($thisNode);
-   );
+  let pks                = $pksAndErrorNodes.first.values;
+  let errorNodes         = $pksAndErrorNodes.second.values;
+
+  let initialNodes = if($errorNodes->isEmpty(),
+                        | 
+                          let rootAlias = ^TableAlias(name = 'root', relationalElement = $table);
+                          let rootSelect_PreMilestoning = 
+                            if ($root,
+                                | let columns = $relationColumnMap->get($table)->toOne().values->sortBy(x | $x.name);
+                                  ^RelationDataSelectSqlQuery(
+                                      relation = $table,
+                                      columnSubset = $columns,
+                                      distinct = false,
+                                      toRow = ^Literal(value=20),
+                                      columns = $columns->map(y | ^Alias(name=$y.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$rootAlias, column=$y))),
+                                      data = ^RootJoinTreeNode(
+                                        alias = $rootAlias
+                                      ),
+                                      filteringOperation = $pks->map({onePk |
+                                        let columnValues = $onePk.columnValuePairs;
+                                        $columnValues->map(cv | ^DynaFunction(name = 'equal', parameters=[^TableAliasColumn(alias=$rootAlias, column=$table.columns->cast(@Column)->filter(x|$x.name==$cv.first)->toOne()), ^Literal(value=parseDateIfRequired($cv.second, $table.columns->cast(@Column)->filter(x|$x.name==$cv.first)->toOne()))]))->meta::relational::functions::pureToSqlQuery::andFilters($extensions);
+                                      })->meta::relational::functions::pureToSqlQuery::orFilters($extensions)
+                                  );,
+                                | let mainAlias = ^TableAlias(name = 'main', relationalElement=^SelectSQLQuery(data=^RootJoinTreeNode(alias=^TableAlias(name='root', relationalElement=^meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder(varName=$parentResPlaceHolder->toOne())))));
+                                  let pure2SqlState = meta::relational::functions::pureToSqlQuery::defaultState(^Mapping(), ^Map<String, List<Any>>());
+                                  let viewQuery = meta::relational::functions::pureToSqlQuery::processRelationalMappingSpecification($view, [], '', true, -1, true, [], $pure2SqlState, noDebug(), $extensions).select;
+                                  let viewQueryWithPKs = $viewQuery->recursiveAddPksWithMilestoning($table, $config, $extensions);
+                                  let relatedAlias = ^TableAlias(name = $view.name, relationalElement=$viewQueryWithPKs);
+                                  
+                                  let driverSelect = ^RelationDataSelectSqlQuery(
+                                      relation = $table,
+                                      columnSubset = $table.primaryKey,
+                                      toRow = ^Literal(value=20),
+                                      columns = $viewQueryWithPKs.columns->filter(co | $co->instanceOf(Alias) && $co->cast(@Alias).name->startsWith('root_pk_gen_'))->map(co | let i_col = $co->cast(@Alias).relationalElement->cast(@TableAliasColumn).column; ^Alias(name=$co->cast(@Alias).name->substring(12)->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias = $relatedAlias, column = ^$i_col(name = $co->cast(@Alias).name)));),
+                                      data = ^RootJoinTreeNode(
+                                        alias = $mainAlias,
+                                        childrenData = ^JoinTreeNode(
+                                            alias = $relatedAlias,
+                                            joinName = 'gen_join',
+                                            joinType = JoinType.INNER,
+                                            database = ^Database(name='default'),
+                                            join = ^Join(name='gen_join', operation=$relationTree.join->toOne().operation->meta::relational::functions::pureToSqlQuery::reprocessAliases([^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.join->toOne()->otherTable($relationTree.relation->toOne()).name->toOne(), second=$mainAlias),^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.relation.name->toOne(), second=$relatedAlias)])->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@Operation))
+                                        )
+                                      )
+                                  );
+
+                                  let driverAlias = ^TableAlias(name = 'driver', relationalElement = $driverSelect);
+                                  let columns = $relationColumnMap->get($table)->toOne().values->sortBy(x | $x.name);
+                                  ^RelationDataSelectSqlQuery(
+                                      relation = $table,
+                                      columnSubset = $columns,
+                                      distinct = false,
+                                      toRow = ^Literal(value=20),
+                                      columns = $columns->map(y | ^Alias(name=$y.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$rootAlias, column=$y))),
+                                      data = ^RootJoinTreeNode(
+                                        alias = $driverAlias,
+                                        childrenData = ^JoinTreeNode(
+                                            alias = $rootAlias,
+                                            joinName = 'gen_join',
+                                            joinType = JoinType.INNER,
+                                            database = ^Database(name='default'),
+                                            join = ^Join(
+                                              name = 'gen_join', 
+                                              operation = $table.primaryKey->map(pk | ^DynaFunction(name = 'equal', parameters=[^TableAliasColumn(alias=$driverAlias, column=$pk), ^TableAliasColumn(alias=$rootAlias, column=$pk)]))->meta::relational::functions::pureToSqlQuery::andFilters($extensions)->toOne()->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@Operation)
+                                        )
+                                      ))
+                                  );
+                            );
+
+                          let milestoningFilter = meta::relational::testDataGeneration::getMilestoningFilter($table, $rootAlias, $config, $extensions);
+                          let rootSelect = if($milestoningFilter->isEmpty(),
+                                              | $rootSelect_PreMilestoning,
+                                              | ^$rootSelect_PreMilestoning(filteringOperation = $rootSelect_PreMilestoning.filteringOperation->concatenate($milestoningFilter)->meta::relational::functions::pureToSqlQuery::andFilters($extensions))
+                                          );
+
+                          let runtime = ^Runtime(connections=$dbConnection);
+                          let postProcessResult = postProcessSQLQuery($rootSelect, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+
+                          let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
+                          
+                          let resultType = ^RelationResultType
+                                            (
+                                              relationName = $relationDataQuery.relation.name,
+                                              relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
+                                              schemaName = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
+                                              database = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
+                                              columns = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
+                                              type = RelationData
+                                            );
+                          let relationalNode = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions), resultType = $resultType, resultSizeRange = ZeroMany);
+
+                          let nodes = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
+                          let finalNode = if($nodes->size() > 1,
+                                            | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessResult.templateFunctions),
+                                            | $relationalNode
+                                          );
+                          let varName = 'res_' + $currentIndices->map(x | $x->toString())->joinStrings('_');
+                          let thisNode = ^meta::pure::executionPlan::AllocationExecutionNode
+                                          (
+                                            varName = $varName,
+                                            resultType = $finalNode.resultType,
+                                            resultSizeRange = $finalNode.resultSizeRange,
+                                            executionNodes = $finalNode
+                                          );
+                          let childNodes =  $relationTree.nestedViewTree.children->at(0)->planTestDataGenerationStartingFromNode($varName, $runtime, $exeCtx, $dbConnection, $relationColumnMap, $currentIndices, $config, $extensions);
+                          $thisNode->concatenate($childNodes);,
+                        | $errorNodes
+                      );
+
+  if($initialNodes->exists(x | $x->instanceOf(ErrorExecutionNode)),
+    | $initialNodes,
+    | let tableOldToNew = $initialNodes->filter(x | $x->instanceOf(AllocationExecutionNode) 
+                                                    && $x.resultType->instanceOf(RelationResultType)
+                                                    && $x.resultType->cast(@RelationResultType).relationType == RelationType.TABLE)->cast(@AllocationExecutionNode)
+                                       ->map(x | pair(^RelationPointer(name=$x.resultType->cast(@RelationResultType).relationName, schemaName=$x.resultType->cast(@RelationResultType).schemaName, database=$x.resultType->cast(@RelationResultType).database), 
+                                                      ^SelectSQLQuery(data=^RootJoinTreeNode(alias=^TableAlias(name='root', relationalElement=^meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder(varName=$x.varName))))));
+      let pure2SqlState = meta::relational::functions::pureToSqlQuery::defaultState(^Mapping(), ^Map<String, List<Any>>());
+      let viewQuery     = meta::relational::functions::pureToSqlQuery::processRelationalMappingSpecification($relationTree.view, [], '', true, -1, true, [], $pure2SqlState, noDebug(), $extensions);
+      let viewQueryReprocessed  = $viewQuery.select->fixRelations($tableOldToNew)->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@SelectSQLQuery);
+      let viewRelationDataQuery = ^RelationDataSelectSqlQuery(
+                                    relation = $relationTree.view,
+                                    columnSubset = $relationTree.view.columnMappings->map(x | ^Column(name = $x.columnName->addQuotesIfNoQuotes(), type = $x.relationalOperationElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
+                                    columns = $viewQueryReprocessed.columns->cast(@Alias)->map(x | ^$x(name = $x.name->addQuotesIfNoQuotes())),
+                                    distinct = $viewQueryReprocessed.distinct,
+                                    data = $viewQueryReprocessed.data,
+                                    filteringOperation = $viewQueryReprocessed.filteringOperation,
+                                    groupBy = $viewQueryReprocessed.groupBy,
+                                    havingOperation = $viewQueryReprocessed.havingOperation,
+                                    orderBy = $viewQueryReprocessed.orderBy,
+                                    fromRow = $viewQueryReprocessed.fromRow,
+                                    toRow = ^Literal(value=20)
+                                  );
+
+      let runtime           = ^Runtime(connections=$dbConnection);
+      let postProcessResult = postProcessSQLQuery($viewRelationDataQuery, $dbConnection.element->cast(@Database), [], [], $runtime, $exeCtx, $extensions);
+
+      let relationDataQuery = $postProcessResult.query->cast(@RelationDataSelectSqlQuery);
+      let resultType        = ^RelationResultType
+                              (
+                                relationName = $relationDataQuery.relation.name,
+                                relationType = $relationDataQuery.relation->instanceOf(View)->if(|RelationType.VIEW,|RelationType.TABLE),
+                                schemaName   = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).name,
+                                database     = $relationDataQuery.relation->match([t:Table[1]|$t.schema,v:View[1]|$v.schema])->cast(@Schema).database->elementToPath(),
+                                columns      = $relationDataQuery.columns->cast(@Alias)->map(x | ^Column(name = $x.name, type=$x.relationalElement->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())),
+                                type         = RelationData
+                              );
+      let sqlExecutionNode = generateSQLExecutionNode($relationDataQuery, $dbConnection, '', $extensions)->cast(@SQLExecutionNode);
+      let relationalNode   = ^RelationalRelationDataInstantiationExecutionNode(executionNodes = ^$sqlExecutionNode(resultColumns = $relationDataQuery->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->cast(@Alias).name, dataType = $c->meta::relational::functions::typeInference::inferRelationalType($translationContext)->toOne())), a:Any[1] | []])), resultType = $resultType, resultSizeRange = ZeroMany);
+
+      let nodes     = $postProcessResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessResult.postExecutionNodes);
+      let finalNode = if($nodes->size() > 1,
+                        | ^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessResult.templateFunctions),
+                        | $relationalNode
+                      );
+                      
+      let varName   = 'res_' + $indices->map(x | $x->toString())->joinStrings('_');
+      let thisNode  = ^meta::pure::executionPlan::AllocationExecutionNode
+                      (
+                        varName = $varName,
+                        resultType = $finalNode.resultType,
+                        resultSizeRange = $finalNode.resultSizeRange,
+                        executionNodes = $finalNode
+                      );
+      $initialNodes->concatenate($thisNode);
+  );
 }
 
 function <<access.protected>> meta::relational::testDataGeneration::executionPlan::planRowIdentifierExtractionForTable(rowIdentifiers: TableRowIdentifiers[*], table: Table[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], isViewRoot: Boolean[1], view: View[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<RowIdentifier>, List<ExecutionNode>>[1]
@@ -1294,6 +1302,15 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
    ])
 }
 
+function <<access.private>> meta::relational::testDataGeneration::executionPlan::doesAliasPointToTempTable(r:RelationalOperationElement[1]):Boolean[1]
+{
+  $r->match([
+    v:meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder[1] | true,
+    s:SelectSQLQuery[1] | $s.data.alias.relationalElement->isNotEmpty() && $s.data.alias.relationalElement->toOne()->doesAliasPointToTempTable(),
+    r:RelationalOperationElement[1] | false
+  ])
+}
+
 function <<access.private>> meta::relational::testDataGeneration::executionPlan::quoteVarPlaceHolderTableAliasColumnsIfNotQuouted(relationalOperationElement:RelationalOperationElement[1]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
@@ -1312,7 +1329,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
                     t:NamedRelation[1] | $t,
                     u:UnaryOperation[1] | ^$u(nested=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($u.nested)),
                     b:BinaryOperation[1] | ^$b(left=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($b.left), right=quoteVarPlaceHolderTableAliasColumnsIfNotQuouted($b.right)),
-                    c:TableAliasColumn[1] | if($c.alias.relationalElement->toOne()->instanceOf(SelectSQLQuery) && $c.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::VarSetPlaceHolder),|let col = $c.column; ^$c(column = ^$col(name = $col.name->addQuotesIfNoQuotes()));,|$c),
+                    c:TableAliasColumn[1] | if($c.alias.relationalElement->doesAliasPointToTempTable(),|let col = $c.column; ^$c(column = ^$col(name = $col.name->addQuotesIfNoQuotes()));,|$c),
                     va:VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())),
                     d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())),
                     j:JoinStrings[1] | ^$j(strings=$j.strings->map(v | $v->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),

@@ -88,6 +88,24 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithSt
    assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
 }
 
+function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVariancePopulationSqlServer():Boolean[1]
+{
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VariancePopulation, 'variancePopulation'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select varp("root".int1) as "variancePopulation" from dataTable as "root"', $s2);
+}
+
+function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVarianceSampleSqlServer():Boolean[1]
+{
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VarianceSample, 'varianceSample'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select var("root".int1) as "varianceSample" from dataTable as "root"', $s2);
+}
+
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringParseIntegerinSqlServer():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),

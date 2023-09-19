@@ -18,5 +18,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.master
 
 public class DataProviderTypeScope extends RuleScope
 {
-    public DataProviderType dataProviderType;
+    public String dataProviderType;
 }

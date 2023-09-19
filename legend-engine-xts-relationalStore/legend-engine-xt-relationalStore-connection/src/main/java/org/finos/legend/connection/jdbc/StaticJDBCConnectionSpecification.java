@@ -17,20 +17,17 @@ package org.finos.legend.connection.jdbc;
 import org.finos.legend.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
-import java.sql.Connection;
-
-public class StaticJDBCConnectionSpecification extends ConnectionSpecification<Connection>
+public class StaticJDBCConnectionSpecification extends ConnectionSpecification
 {
     public String host;
     public int port;
-    public DatabaseType databaseType;
     public String databaseName;
+    public DatabaseType databaseType;
 
-    public StaticJDBCConnectionSpecification(String host, int port, DatabaseType databaseType, String databaseName)
+    public StaticJDBCConnectionSpecification(String host, int port, String databaseName)
     {
         this.host = host;
         this.port = port;
-        this.databaseType = databaseType;
         this.databaseName = databaseName;
     }
 }

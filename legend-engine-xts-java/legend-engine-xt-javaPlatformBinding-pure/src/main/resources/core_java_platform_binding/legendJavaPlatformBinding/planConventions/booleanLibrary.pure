@@ -27,7 +27,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
       ->addFunctionCoders([
          fc2(is_Any_1__Any_1__Boolean_1_,                                 {ctx,left,right | $left->j_eq($right)}),
          
-         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        equalTo_FuncCoderContext_1__Code_1__Code_1__Code_1_),
+         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        {ctx,left,right | equalTo($ctx, $left, $right, $library)}),
          fc (eq_Any_1__Any_1__Boolean_1_,                                 fcAlias(          equal_Any_MANY__Any_MANY__Boolean_1_)),
          
          fc2(greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,        {ctx,left,right | $library->j_invoke('greaterThan', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
@@ -50,31 +50,17 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], library:meta::external::language::java::metamodel::Class[1]): Code[1]
 {
    let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
       | $left->j_eq($right),
-      |
-   if ($left->instanceOf(MethodCall) && $right->instanceOf(MethodCall),
-      | j_or(j_and($left->j_eq(j_null()), $right->j_eq(j_null())), 
-             j_and(j_and($left->j_ne(j_null()), $right->j_ne(j_null())), 
-                   $left->j_invoke('equals', $right))),
-      |
-   if ($left->instanceOf(MethodCall),
-      | j_and($left->j_ne(j_null()), $left->j_invoke('equals', $right)),
-      |
-   if ($right->instanceOf(MethodCall),
-      | j_and($right->j_ne(j_null()), $right->j_invoke('equals', $left)),
       |
    if (($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
       | $left->j_eq($right),
       |
    if (($left.type == javaDouble() || $left.type == javaDoubleBoxed()) && ($right.type == javaDouble() || $right.type == javaDoubleBoxed()),
       | $left->j_eq($right),
-      |
-   if ($left.type->isPrimitive(),
-      | $right->j_invoke('equals', $left),
-      | $left->j_invoke('equals', $right)
-   )))))));
+      | $library->j_invoke('equals', [$left, $right], javaBoolean())
+   )));
 }
 

@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.value.Value;
 import org.h2.value.ValueBoolean;
@@ -122,5 +123,20 @@ public class LegendH2Extensions_1_4_200
     public static String legend_h2_extension_base64_encode(String string)
     {
         return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String legend_h2_extension_reverse_string(String string)
+    {
+        return string == null ? null : new StringBuilder(string).reverse().toString();
+    }
+
+    public static String legend_h2_extension_hash_md5(String string)
+    {
+        return string == null ? null : DigestUtils.md5Hex(string);
+    }
+
+    public static String legend_h2_extension_hash_sha1(String string)
+    {
+        return string == null ? null : DigestUtils.sha1Hex(string);
     }
 }
