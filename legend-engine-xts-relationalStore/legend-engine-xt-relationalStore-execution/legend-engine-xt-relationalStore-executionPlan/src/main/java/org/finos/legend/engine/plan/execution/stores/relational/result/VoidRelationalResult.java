@@ -37,6 +37,11 @@ public class VoidRelationalResult extends Result
 
     public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles)
     {
+        this(activities, connection, profiles, true);
+    }
+
+    public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles, boolean logSQLWithParamValues)
+    {
         super("VOID");
 
         try
@@ -45,7 +50,8 @@ public class VoidRelationalResult extends Result
             this.connection = connection;
             this.statement = connection.createStatement();
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            String logMessage = logSQLWithParamValues ? sql : "";
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             this.statement.execute(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
         }
