@@ -42,9 +42,9 @@ public class EnvironmentConfiguration
     private final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
     private final Map<String, StoreSupport> storeSupportsIndex;
 
-    private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new HashMap<>();
+    private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex;
 
-    private EnvironmentConfiguration(List<CredentialVault<? extends CredentialVaultSecret>> vaults, Map<String, StoreSupport> storeSupportsIndex, List<AuthenticationMechanism> authenticationMechanisms)
+    private EnvironmentConfiguration(List<CredentialVault<? extends CredentialVaultSecret>> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
     {
         this.vaults = Lists.immutable.withAll(vaults);
         MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<?>> vaultsIndex = Maps.mutable.empty();
@@ -54,7 +54,7 @@ public class EnvironmentConfiguration
         }
         this.vaultsIndex = Maps.immutable.withAll(vaultsIndex);
         this.storeSupportsIndex = storeSupportsIndex;
-        authenticationMechanisms.forEach(mechanism -> this.authenticationMechanismsIndex.put(mechanism.getAuthenticationConfigurationType().getSimpleName(), mechanism));
+        this.authenticationMechanismsIndex = authenticationMechanismsIndex;
     }
 
     public StoreSupport findStoreSupport(String identifier)
@@ -145,7 +145,22 @@ public class EnvironmentConfiguration
         {
             List<AuthenticationMechanism> authenticationMechanisms = this.authenticationMechanismProvider != null ? this.authenticationMechanismProvider.getMechanisms() : Lists.mutable.empty();
             authenticationMechanisms.addAll(this.authenticationMechanisms);
-            return new EnvironmentConfiguration(this.vaults, this.storeSupportsIndex, authenticationMechanisms);
+            Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new HashMap<>();
+            authenticationMechanisms.forEach(mechanism ->
+            {
+                String key = mechanism.getAuthenticationConfigurationType().getSimpleName();
+                if (authenticationMechanismsIndex.containsKey(key))
+                {
+                    throw new IllegalStateException(String.format("Can't build environment configuration: found multiple authentication mechanisms (%s, %s) associated with the same configuration type '%s'",
+                            authenticationMechanismsIndex.get(key).getLabel(),
+                            mechanism.getLabel(),
+                            key
+                    ));
+                }
+                authenticationMechanismsIndex.put(key, mechanism);
+            });
+
+            return new EnvironmentConfiguration(this.vaults, this.storeSupportsIndex, authenticationMechanismsIndex);
         }
     }
 }

@@ -15,6 +15,7 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
@@ -82,18 +83,18 @@ public class ConnectionFactory
         String authenticationMechanismLabel = authenticationMechanism != null ? ("authentication mechanism '" + authenticationMechanism.getLabel() + "'") : ("authentication mechanism with configuration '" + authenticationConfiguration.getClass().getSimpleName() + "'");
         if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
         {
-            throw new RuntimeException(String.format("Can't get authenticator: %s is not supported by store '%s' (supported mechanism(s): %s)",
+            throw new RuntimeException(String.format("Can't get authenticator: %s is not supported by store '%s'. Supported mechanism(s):\n%s",
                     authenticationMechanismLabel,
                     storeInstance.getIdentifier(),
-                    storeInstance.getAuthenticationMechanisms().stream().map(Object::toString).collect(Collectors.joining(", ")))
+                    storeInstance.getAuthenticationMechanisms().stream().map(mechanism -> "- " + mechanism.getLabel() + " (config: " + mechanism.getAuthenticationConfigurationType().getSimpleName() + ")").collect(Collectors.joining("\n")))
             );
         }
         AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
         if (result == null)
         {
-            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow can be resolved for the specified identity using %s for store '%s' (authentication configuration: %s, connection specification: %s)",
-                    authenticationMechanismLabel,
+            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow for store '%s' can be resolved for the specified identity using %s (authentication configuration: %s, connection specification: %s)",
                     storeInstance.getIdentifier(),
+                    authenticationMechanismLabel,
                     authenticationConfiguration.getClass().getSimpleName(),
                     storeInstance.getConnectionSpecification().getClass().getSimpleName())
             );
@@ -108,9 +109,25 @@ public class ConnectionFactory
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance)
     {
-        throw new RuntimeException("Not implemented");
-        // TODO: @akphi - implement this and the generic authentication config form
-//        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationConfiguration);
+        List<AuthenticationConfiguration> authenticationConfigurations = ListIterate.collect(storeInstance.getAuthenticationMechanisms(), AuthenticationMechanism::generateConfiguration).select(Objects::nonNull);
+        Authenticator authenticator = null;
+        for (AuthenticationConfiguration authenticationConfiguration : authenticationConfigurations)
+        {
+            AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
+            if (result != null)
+            {
+                authenticator = new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+                break;
+            }
+        }
+        if (authenticator == null)
+        {
+            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow for store '%s' can be resolved for the specified identity using auto-generated authentication configuration. Try specifying an authentication mechanism by providing a configuration of one of the following types:\n%s",
+                    storeInstance.getIdentifier(),
+                    ListIterate.select(storeInstance.getAuthenticationMechanisms(), mechanism -> mechanism.generateConfiguration() == null).collect(mechanism -> "- " + mechanism.getAuthenticationConfigurationType().getSimpleName() + " (mechanism: " + mechanism.getLabel() + ")").makeString("\n")
+            ));
+        }
+        return authenticator;
     }
 
     private static class AuthenticationFlowResolver

@@ -19,4 +19,9 @@ public interface AuthenticationMechanism
     String getLabel();
 
     Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType();
+
+    default AuthenticationConfiguration generateConfiguration()
+    {
+        return null;
+    }
 }

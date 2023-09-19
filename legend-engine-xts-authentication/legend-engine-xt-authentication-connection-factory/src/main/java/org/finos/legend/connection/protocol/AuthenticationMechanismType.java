@@ -54,6 +54,12 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 {
                     return KerberosAuthenticationConfiguration.class;
                 }
+
+                @Override
+                public AuthenticationConfiguration generateConfiguration()
+                {
+                    return new KerberosAuthenticationConfiguration();
+                }
             };
 
     @Override
