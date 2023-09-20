@@ -15,7 +15,10 @@
 package org.finos.legend.connection;
 
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
+import org.finos.legend.connection.jdbc.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.jdbc.StaticJDBCConnectionSpecification;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
@@ -69,7 +72,7 @@ public class PostgresConnectionFactoryTest
 
         RelationalDatabaseStoreSupport storeSupport = new RelationalDatabaseStoreSupport.Builder()
                 .withIdentifier("Postgres")
-                .withDatabaseType("Postgres")
+                .withDatabase(DatabaseType.POSTGRES)
                 .withAuthenticationMechanisms(
                         AuthenticationMechanismType.USER_PASSWORD
                 )
@@ -78,16 +81,39 @@ public class PostgresConnectionFactoryTest
         EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
                 .withVault(propertiesFileCredentialVault)
                 .withStoreSupport(storeSupport)
-                .withAuthenticationMechanismProvider(new DefaultAuthenticationMechanismProvider())
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD,
+                        AuthenticationMechanismType.API_KEY,
+                        AuthenticationMechanismType.KEY_PAIR
+                )
+                // .withAuthenticationMechanismProvider(new DefaultAuthenticationMechanismProvider()) // can also use service loader
                 .build();
 
         IdentityFactory identityFactory = new IdentityFactory.Builder(environmentConfiguration)
                 .build();
 
         ConnectionFactory connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
-                .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider())
-                .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider())
+                .withCredentialBuilders(
+                        new KerberosCredentialExtractor(),
+                        new UserPasswordCredentialBuilder()
+                )
+                .withConnectionBuilders(
+                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
+                )
+                // .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider()) // can also use service loader
+                // .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider()) // can also use service loader
                 .build();
+
+        ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(postgresContainer.getHost(), postgresContainer.getPort(), postgresContainer.getDatabaseName());
+        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
+                .withIdentifier("test-store")
+                .withStoreSupportIdentifier("Postgres")
+                .withAuthenticationMechanisms(
+                        AuthenticationMechanismType.USER_PASSWORD
+                )
+                .withConnectionSpecification(connectionSpecification)
+                .build();
+        connectionFactory.registerStoreInstance(testStore);
 
         // --------------------------------- USAGE ---------------------------------
 
@@ -97,20 +123,8 @@ public class PostgresConnectionFactoryTest
                         .build()
         );
 
-        final String STORE_NAME = "test-store";
-        ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(postgresContainer.getHost(), postgresContainer.getPort(), postgresContainer.getDatabaseName());
-        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
-                .withIdentifier(STORE_NAME)
-                .withStoreSupportIdentifier("Postgres")
-                .withAuthenticationMechanisms(
-                        AuthenticationMechanismType.USER_PASSWORD
-                )
-                .withConnectionSpecification(connectionSpecification)
-                .build();
-        connectionFactory.registerStoreInstance(testStore);
-
         AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(postgresContainer.getUser(), new PropertiesFileSecret(PASS_REF));
-        Authenticator authenticator = connectionFactory.getAuthenticator(identity, STORE_NAME, authenticationConfiguration);
+        Authenticator authenticator = connectionFactory.getAuthenticator(identity, "test-store", authenticationConfiguration);
         Connection connection = connectionFactory.getConnection(authenticator);
     }
 }

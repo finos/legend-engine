@@ -26,8 +26,6 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - Authentication</name>
 
-
-
     <modules>
         <module>legend-engine-xt-authentication-grammar</module>
         <module>legend-engine-xt-authentication-connection-factory</module>

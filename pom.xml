@@ -84,9 +84,6 @@
         <module>legend-engine-xts-changetoken</module>
         <module>legend-engine-xts-generation</module>
 
-        <!-- App -->
-        <module>legend-engine-xts-mastery</module>
-
         <!-- Translator -->
         <module>legend-engine-xts-openapi</module>
 
@@ -97,14 +94,10 @@
         <!-- Analytics -->
         <module>legend-engine-xts-analytics</module>
 
-
-
+        <!-- Application -->
+        <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
-
-        <!-- Data Push -->
         <module>legend-engine-xts-data-push</module>
-        <!-- Data Push -->
-
     </modules>
 
     <properties>

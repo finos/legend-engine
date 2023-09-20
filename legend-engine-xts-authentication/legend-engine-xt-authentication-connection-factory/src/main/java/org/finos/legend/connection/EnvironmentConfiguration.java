@@ -26,9 +26,6 @@ import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-import javax.ws.rs.core.Link;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,13 +39,13 @@ import java.util.Set;
  */
 public class EnvironmentConfiguration
 {
-    private final ImmutableList<CredentialVault<? extends CredentialVaultSecret>> vaults;
+    private final ImmutableList<CredentialVault> vaults;
     private final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
     private final Map<String, StoreSupport> storeSupportsIndex;
 
     private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex;
 
-    private EnvironmentConfiguration(List<CredentialVault<? extends CredentialVaultSecret>> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
+    private EnvironmentConfiguration(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
     {
         this.vaults = Lists.immutable.withAll(vaults);
         MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<?>> vaultsIndex = Maps.mutable.empty();
@@ -84,7 +81,7 @@ public class EnvironmentConfiguration
 
     public static class Builder
     {
-        private final List<CredentialVault<? extends CredentialVaultSecret>> vaults = Lists.mutable.empty();
+        private final List<CredentialVault> vaults = Lists.mutable.empty();
         private final Map<String, StoreSupport> storeSupportsIndex = new LinkedHashMap<>();
         private AuthenticationMechanismProvider authenticationMechanismProvider;
         private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
@@ -94,13 +91,19 @@ public class EnvironmentConfiguration
 
         }
 
-        public Builder withVaults(List<CredentialVault<? extends CredentialVaultSecret>> vaults)
+        public Builder withVaults(List<CredentialVault> vaults)
         {
             this.vaults.addAll(vaults);
             return this;
         }
 
-        public Builder withVault(CredentialVault<? extends CredentialVaultSecret> vault)
+        public Builder withVaults(CredentialVault... vaults)
+        {
+            this.vaults.addAll(Lists.mutable.with(vaults));
+            return this;
+        }
+
+        public Builder withVault(CredentialVault vault)
         {
             this.vaults.add(vault);
             return this;
@@ -136,6 +139,13 @@ public class EnvironmentConfiguration
         public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
         {
             this.authenticationMechanisms.addAll(authenticationMechanisms);
+            return this;
+        }
+
+
+        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
+        {
+            this.authenticationMechanisms.addAll(Lists.mutable.with(authenticationMechanisms));
             return this;
         }
 

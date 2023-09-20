@@ -415,6 +415,12 @@ public class ConnectionFactory
             return this;
         }
 
+        public Builder withCredentialBuilders(CredentialBuilder<?, ?, ?>... credentialBuilders)
+        {
+            this.credentialBuilders.addAll(Lists.mutable.with(credentialBuilders));
+            return this;
+        }
+
         public Builder withCredentialBuilder(CredentialBuilder<?, ?, ?> credentialBuilder)
         {
             this.credentialBuilders.add(credentialBuilder);
@@ -424,6 +430,12 @@ public class ConnectionFactory
         public Builder withConnectionBuilders(List<ConnectionBuilder<?, ?, ?>> connectionBuilders)
         {
             this.connectionBuilders.addAll(connectionBuilders);
+            return this;
+        }
+
+        public Builder withConnectionBuilders(ConnectionBuilder<?, ?, ?>... connectionBuilders)
+        {
+            this.connectionBuilders.addAll(Lists.mutable.with(connectionBuilders));
             return this;
         }
 
