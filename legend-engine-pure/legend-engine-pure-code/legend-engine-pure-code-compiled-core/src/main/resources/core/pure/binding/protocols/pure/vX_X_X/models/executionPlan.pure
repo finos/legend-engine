@@ -25,6 +25,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::execut
    binding     : String[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeTDSExecutionNode extends ExecutionNode
+{
+   contentType : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
    contentType       : String[1];
