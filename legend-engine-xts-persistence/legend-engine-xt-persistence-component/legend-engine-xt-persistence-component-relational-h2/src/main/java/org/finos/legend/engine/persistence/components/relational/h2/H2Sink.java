@@ -201,6 +201,7 @@ public class H2Sink extends AnsiSqlSink
         }
     }
 
+    @Override
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);

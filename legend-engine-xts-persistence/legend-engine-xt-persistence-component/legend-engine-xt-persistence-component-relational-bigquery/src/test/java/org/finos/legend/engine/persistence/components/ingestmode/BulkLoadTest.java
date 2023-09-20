@@ -19,7 +19,9 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -27,6 +29,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
@@ -211,5 +214,254 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
         Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')", statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadWithDigestNotGeneratedAuditDisabledNoExtraOptions()
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(CsvFileFormat.builder().build())
+                    .addAllFiles(filesList).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database("my_db").name("my_name").alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
+            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` STRING)";
+
+        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
+            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+
+        String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
+            "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`) " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,'xyz123' " +
+            "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+
+        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
+        Assertions.assertNull(statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAuditEnabledNoExtraOptions()
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).digestUdfName(DIGEST_UDF).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(CsvFileFormat.builder().build())
+                    .addAllFiles(filesList).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database("my_db").name("my_name").alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
+            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`digest` STRING,`batch_id` STRING,`append_time` DATETIME)";
+
+        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
+            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+
+        String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
+            "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `digest`, `batch_id`, `append_time`) " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+
+        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')", statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAuditEnabledNoExtraOptionsUpperCase()
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).digestUdfName(DIGEST_UDF).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(CsvFileFormat.builder().build())
+                    .addAllFiles(filesList).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database("my_db").name("my_name").alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .caseConversion(CaseConversion.TO_UPPER)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_NAME`" +
+            "(`COL_INT` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON,`DIGEST` STRING,`BATCH_ID` STRING,`APPEND_TIME` DATETIME)";
+
+        String expectedCopySql = "LOAD DATA OVERWRITE `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` " +
+            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON) " +
+            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+
+        String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
+            "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
+            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "FROM `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` as legend_persistence_temp)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+
+        Assertions.assertEquals("SELECT 0 as `ROWSDELETED`", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as `ROWSTERMINATED`", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as `ROWSUPDATED`", statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`APPEND_TIME` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')", statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadDigestColumnNotProvided()
+    {
+        try
+        {
+            BulkLoad bulkLoad = BulkLoad.builder()
+                .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).build())
+                .batchIdField(BATCH_ID)
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .build();
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertTrue(e.getMessage().contains("Cannot build UDFBasedDigestGenStrategy, some of required attributes are not set [digestField]"));
+        }
+    }
+
+    @Test
+    public void testBulkLoadDigestUDFNotProvided()
+    {
+        try
+        {
+            BulkLoad bulkLoad = BulkLoad.builder()
+                .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).build())
+                .batchIdField(BATCH_ID)
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .build();
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertTrue(e.getMessage().contains("Cannot build UDFBasedDigestGenStrategy, some of required attributes are not set [digestUdfName]"));
+        }
+    }
+
+    @Test
+    public void testBulkLoadStagedFilesDatasetNotProvided()
+    {
+        try
+        {
+            BulkLoad bulkLoad = BulkLoad.builder()
+                .batchIdField(BATCH_ID)
+                .digestGenStrategy(NoDigestGenStrategy.builder().build())
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .build();
+
+            Dataset stagingDataset = DatasetDefinition.builder()
+                .database("my_db").name("my_stage").alias("my_alias")
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
+                .build();
+
+            Dataset mainDataset = DatasetDefinition.builder()
+                .database("my_db").name("my_name").alias("my_alias")
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
+                .build();
+
+            RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(bulkLoad)
+                .relationalSink(BigQuerySink.get())
+                .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+                .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .build();
+
+            GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertTrue(e.getMessage().contains("Only StagedFilesDataset are allowed under Bulk Load"));
+        }
     }
 }

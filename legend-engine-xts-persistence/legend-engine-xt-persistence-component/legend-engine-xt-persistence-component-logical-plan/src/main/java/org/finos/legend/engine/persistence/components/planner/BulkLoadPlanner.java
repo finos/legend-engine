@@ -119,7 +119,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert, fieldsToSelect));
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -152,7 +152,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelectFromTemp, fieldsToInsertIntoMain, fieldsToSelectFromStage));
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), tempDataset, fieldsToSelectFromTemp, fieldsToInsertIntoMain));
 
         // Add batch_id field
         fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -272,17 +272,26 @@ class BulkLoadPlanner extends Planner
     {
         private List<Value> fieldsToSelect;
         private List<Value> fieldsToInsert;
-        private List<Value> fieldsForDigestCalculation;
         private Dataset stagingDataset;
         private Dataset mainDataset;
+        private Optional<Dataset> tempDataset;
 
-        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<Value> fieldsForDigestCalculation)
+        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
         {
             this.mainDataset = mainDataset;
             this.stagingDataset = stagingDataset;
+            this.tempDataset = Optional.empty();
             this.fieldsToSelect = fieldsToSelect;
             this.fieldsToInsert = fieldsToInsert;
-            this.fieldsForDigestCalculation = fieldsForDigestCalculation;
+        }
+
+        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, Dataset tempDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
+        {
+            this.mainDataset = mainDataset;
+            this.stagingDataset = stagingDataset;
+            this.tempDataset = Optional.of(tempDataset);
+            this.fieldsToSelect = fieldsToSelect;
+            this.fieldsToInsert = fieldsToInsert;
         }
 
         @Override
@@ -294,12 +303,13 @@ class BulkLoadPlanner extends Planner
         @Override
         public Void visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
         {
-            Value digestValue = DigestUdf
+            DigestUdf.Builder digestValueBuilder = DigestUdf
                     .builder()
                     .udfName(udfBasedDigestGenStrategy.digestUdfName())
                     .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-                    .addAllValues(fieldsForDigestCalculation)
-                    .build();
+                    .addAllValues(fieldsToSelect);
+            tempDataset.ifPresent(digestValueBuilder::dataset);
+            Value digestValue = digestValueBuilder.build();
             String digestField = udfBasedDigestGenStrategy.digestField();
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());
             fieldsToSelect.add(digestValue);
