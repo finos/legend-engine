@@ -229,9 +229,8 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                                  let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
                                  ^$oldRuntime(connections = $dbConn);
                             );
-
             let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-            let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
+            let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m->toOne(), $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
             $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
                           ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
       );

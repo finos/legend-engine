@@ -2175,8 +2175,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
 }
 
 
- function <<test.Test>> meta::pure::executionPlan::tests::testRelationalProjectionWithExternalFormat():Boolean[1]
- {
+function <<test.Test>> meta::pure::executionPlan::tests::testRelationalProjectionWithExternalFormat():Boolean[1]
+{
 
     let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
     let result = executionPlan({|Product.all()->project(p|$p.name, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::relational::tests::testRuntime(), $extensions);

@@ -41,6 +41,7 @@ Class meta::pure::router::routing::RoutingState
    routingStrategy : RoutingStrategy[1];
    shouldBeRouted  : Boolean[1];
    value           : Any[0..1];
+   executionContext: ExecutionContext[1] = ^ExecutionContext();
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -62,7 +63,7 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
 
    $processedFunctions->map(fxn | $fxn.value->match([
       evs: ExtendedRoutedValueSpecification[1] | $evs,
-      vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, 'strategy_wrapper', $executionContext, $extensions, $debug)
+      vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, 'strategy_wrapper', $fxn.executionContext, $extensions, $debug)
    ]));
 }
 
