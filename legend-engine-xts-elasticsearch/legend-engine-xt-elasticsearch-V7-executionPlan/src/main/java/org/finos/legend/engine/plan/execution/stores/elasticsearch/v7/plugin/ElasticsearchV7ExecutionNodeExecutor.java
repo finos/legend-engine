@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
