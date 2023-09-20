@@ -34,7 +34,7 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
 
-        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.TO_JSON).addValue(ObjectValue.of(current.dataset().datasetReference().alias())).build();
+        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.TO_JSON).addValue(ObjectValue.of(current.dataset().orElseThrow(IllegalStateException::new).datasetReference().alias())).build();
         return new VisitorResult(udf, Arrays.asList(function));
     }
 }

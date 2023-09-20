@@ -260,7 +260,8 @@ public class BigQuerySink extends AnsiSqlSink
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
         Map<StatisticName, Object> stats = new HashMap<>();
-        stats.put(StatisticName.FILES_LOADED, 0); // todo: check this
+        StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
+        stats.put(StatisticName.FILES_LOADED, stagedFilesDataset.stagedFilesDatasetProperties().files().size()); // todo: check this
         stats.put(StatisticName.ROWS_WITH_ERRORS, 0); // todo: check this
 
         SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
