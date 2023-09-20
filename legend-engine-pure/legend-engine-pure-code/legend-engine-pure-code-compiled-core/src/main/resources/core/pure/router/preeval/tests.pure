@@ -15,8 +15,6 @@
 // Press F9 to execute the 'go' function...
 // Press F10 to run the full test suite
 
-import meta::external::format::shared::binding::*;
-import meta::external::format::shared::functions::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
@@ -62,6 +60,10 @@ Class meta::pure::router::preeval::tests::Person
 }
 
 Class meta::pure::router::preeval::tests::FinancialInstrument
+[
+  idIsPositive: $this.id > 0,
+  priceIsPositive: $this.price > 0
+]
 {
   id : Integer[1];
   price : Decimal[1];
@@ -503,7 +505,7 @@ function meta::pure::router::preeval::tests::myCollectionFunc<T|m>(values:T[m]):
   $values;
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting23a():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testBooleanEvaluationShortCircuit1():Boolean[1]
 {
   let input = {| if(false, | []->toOne(), | 'hello ' + 'world') ;};
 
@@ -512,7 +514,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting23a():B
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting23b():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testBooleanEvaluationShortCircuit2():Boolean[1]
 {
   let input = {| if(true, | 'hello ' + 'world', | []->toOne() ) ;};
 
@@ -521,7 +523,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting23b():B
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting24a():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testBooleanEvaluationShortCircuit3():Boolean[1]
 {
   let x = [];
 
@@ -534,7 +536,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting24a():B
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting24b():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testBooleanEvaluationShortCircuit4():Boolean[1]
 {
   let x = [];
 
@@ -726,7 +728,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting28():Bo
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting29a():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testMapExpandWithVariableParameter():Boolean[1]
 {
   let input = {r:String[1]| ['a', 'b', 'c']->map(v| $r + ('_' + $v))};
 
@@ -770,7 +772,7 @@ function <<access.private>> meta::pure::router::preeval::tests::myExpandableFunc
   range($count)->map(index|$val)->joinStrings('|');
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting30():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testMapExpandWithNonPrevalValueInLambda():Boolean[1]
 {
   let input = {| 
     range(3)->map(index|[$index, today()]);
@@ -783,7 +785,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting30():Bo
   assertRoundTrip($input, $expected);
 }
 
-function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting31a():Boolean[1]
+function <<test.ToFix>> meta::pure::router::preeval::tests::testMapExpandForBasicColCreationWithValueInLambda1():Boolean[1]
 {
   let input = {|
             range(2)->map(a|^BasicColumnSpecification<meta::pure::router::preeval::tests::Person>(name = 'age_' + $a->makeString(), func = {p:meta::pure::router::preeval::tests::Person[1]|$p.age->toOne() + ($a * 10)}))
@@ -794,7 +796,7 @@ function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting31a():
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting31b():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testMapExpandForBasicColCreationWithValueInLambda2():Boolean[1]
 {
   let input = {| meta::pure::router::preeval::tests::Person.all()
                 ->project(
@@ -816,7 +818,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting31b():B
   assertRoundTrip($input, $expected);
 }
 
-function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting32a():Boolean[1]
+function <<test.ToFix>> meta::pure::router::preeval::tests::testMapExpandForColCreationWithValueInLambda():Boolean[1]
 {
   let input = {| ['e']->map(x|col({row:TDSRow[1]|$row.getInteger('ag' + $x)->toString()}, 'ageString'));};
 
@@ -825,7 +827,7 @@ function <<test.ToFix>> meta::pure::router::preeval::tests::testPrerouting32a():
   assertRoundTrip($input, $expected);
 }
 
-function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting32b():Boolean[1]
+function <<test.Test>> meta::pure::router::preeval::tests::testMapExpandForColCreationWithValueInLambdaFromVariable():Boolean[1]
 {
   let input = {| let x = 'e'; col({row:TDSRow[1]|$row.getInteger('ag' + $x)->toString()}, 'ageString');};
 
@@ -1060,8 +1062,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting40b():B
   assertRoundTrip($input, $expected);
 }
 
-
-function <<access.private>> meta::pure::router::preeval::tests::myToOne<T>(x : T[1]) : T[1]
+function <<access.private>> meta::pure::router::preeval::tests::myToOne<T_Value>(x : T_Value[1]) : T_Value[1]
 {
   $x->toOne();
 }
@@ -1459,6 +1460,67 @@ function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination3
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination4():Boolean[1]
+{
+  let input = {|
+        let x = currentUserId();
+        [$x]->toOne();
+    };
+
+  let expected = {|
+        let x = currentUserId();
+        $x;
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFirstElimination():Boolean[1]
+{
+  let input = {|
+        let x = currentUserId();
+        [$x]->first();
+    };
+
+  let expected = {|
+        let x = currentUserId();
+        $x;
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testAtElimination():Boolean[1]
+{
+  let input = {|
+        let x = currentUserId();
+        [$x, $x, $x]->at(1);
+    };
+
+  let expected = {|
+        let x = currentUserId();
+        $x;
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.ToFix>> meta::pure::router::preeval::tests::testFold():Boolean[1]
+{
+  let input = {|
+        let x = currentUserId();
+        [$x, $x, $x]->fold({item,res|$res->concatenate($item)}, []);
+    };
+
+  let expected = {|
+        let x = currentUserId();
+        [$x, $x, $x];
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+
 
 function <<test.Test>> meta::pure::router::preeval::tests::testRecursiveSimpleConcreteFunctionDefinition():Boolean[1]
 {
@@ -1504,6 +1566,85 @@ function <<test.Test>> meta::pure::router::preeval::tests::testLambdaParamOverri
   let expected = { | {p:Integer[1]|$p->map(x|$x+1)}};
 
   assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testSize1():Boolean[1]
+{
+  let input    = { | [currentUserId(), currentUserId()]->size()  };
+  let expected = { | 2};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testSize2():Boolean[1]
+{
+  let input    = { | [currentUserId(), (currentUserId() + 'other')]->distinct()->size()  };
+  let expected = $input;
+
+  assertRoundTrip($input, $expected);
+}
+
+
+function <<test.Test>> meta::pure::router::preeval::tests::testConstraint():Boolean[1]
+{
+  let input = {|
+    meta::pure::router::preeval::tests::FinancialInstrument->meta::pure::constraints::functions::allConstraintsInHierarchy()
+      ->filter(constraint|$constraint.name == 'idIsPositive')
+      ->map(constraint|
+        meta::pure::router::preeval::tests::FinancialInstrument.all()
+          ->filter(s|$constraint.functionDefinition->cast(@FunctionDefinition<{meta::pure::router::preeval::tests::FinancialInstrument[1]->Boolean[1]}>)->eval($s))
+        )
+;
+    };
+
+  let expected = {|
+    meta::pure::router::preeval::tests::FinancialInstrument.all()
+        ->filter({s|$s.id > 0})
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testConcat_oneMany():Boolean[1]
+{
+  let input = {|
+        [
+            meta::pure::router::preeval::tests::FinancialInstrument.all()
+              ->project([
+                col(fi:meta::pure::router::preeval::tests::FinancialInstrument[1]|$fi.id + 1, 'id')
+              ])
+            , 
+            meta::pure::router::preeval::tests::FinancialInstrument.all()
+              ->project([
+                col(fi:meta::pure::router::preeval::tests::FinancialInstrument[1]|$fi.id + 2, 'id')
+              ])
+            , 
+            meta::pure::router::preeval::tests::FinancialInstrument.all()
+              ->project([
+                col(fi:meta::pure::router::preeval::tests::FinancialInstrument[1]|$fi.id + 3, 'id')
+              ])
+        ]
+        ->meta::pure::router::preeval::tests::myConcatenate();
+    };
+
+  let expected = {| 
+    meta::pure::router::preeval::tests::FinancialInstrument.all()
+      ->project(^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'id', func = {fi:FinancialInstrument[1]|$fi.id + 1}))
+      ->concatenate([
+        meta::pure::router::preeval::tests::FinancialInstrument.all()
+          ->project(^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'id', func = {fi:FinancialInstrument[1]|$fi.id + 2}))
+        ,
+        meta::pure::router::preeval::tests::FinancialInstrument.all()
+            ->project(^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'id', func = {fi:FinancialInstrument[1]|$fi.id + 3}))
+        ])
+    };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myConcatenate(tdsCollection:TabularDataSet[1..*]) : TabularDataSet[1]
+{
+  $tdsCollection->at(0)->concatenate($tdsCollection->tail())
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::myFunc2():String[1]
