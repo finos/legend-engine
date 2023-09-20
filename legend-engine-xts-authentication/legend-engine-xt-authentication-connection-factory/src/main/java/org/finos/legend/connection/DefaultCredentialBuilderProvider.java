@@ -21,7 +21,6 @@ import java.util.ServiceLoader;
 
 public class DefaultCredentialBuilderProvider implements CredentialBuilderProvider
 {
-
     @Override
     public List<CredentialBuilder> getBuilders()
     {
