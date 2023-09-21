@@ -68,7 +68,6 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
   id: Integer[1];
   name: String[1];
   type: String[1];
-  synonymsMilestoned: meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
   synonymsNonMilestoned : meta::relational::tests::milestoning::ProductSynonymNonMilestoned[*];
 }
 
@@ -78,6 +77,13 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
    synonym : String[1];
    type : String[1];
 }
+
+Association meta::relational::tests::milestoning::ProductMilestoned_ProductSynonymMilestoned
+{
+  product : meta::relational::tests::milestoning::ProductMilestoned[1];
+  synonymsMilestoned : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
+}
+
 
 Class meta::relational::tests::milestoning::ProductSynonymNonMilestoned
 {
