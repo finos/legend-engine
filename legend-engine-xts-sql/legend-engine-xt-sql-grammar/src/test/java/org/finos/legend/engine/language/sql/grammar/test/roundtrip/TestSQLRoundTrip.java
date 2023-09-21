@@ -25,6 +25,7 @@ import org.junit.Test;
 
 public class TestSQLRoundTrip
 {
+
     @Test
     public void testEmptyStatement()
     {
@@ -212,6 +213,18 @@ public class TestSQLRoundTrip
     public void testJoinOnQualifiedAlias()
     {
         check("SELECT myTable1.col, myTable2.col FROM myTable AS myTable1 LEFT OUTER JOIN myTableb AS myTable2 ON (myTable1.col = myTable2.col)");
+    }
+
+    @Test
+    public void testNaturalJoin()
+    {
+        check("SELECT * FROM myTable NATURAL LEFT OUTER JOIN myTable2");
+    }
+
+    @Test
+    public void testCrossJoin()
+    {
+        check("SELECT * FROM myTable CROSS JOIN myTable1");
     }
 
     @Test

@@ -270,6 +270,10 @@ Class meta::external::query::sql::metamodel::JoinCriteria
 {
 }
 
+Class meta::external::query::sql::metamodel::NaturalJoin extends meta::external::query::sql::metamodel::JoinCriteria
+{
+}
+
 Class meta::external::query::sql::metamodel::JoinOn extends meta::external::query::sql::metamodel::JoinCriteria
 {
   expression: meta::external::query::sql::metamodel::Expression[1];

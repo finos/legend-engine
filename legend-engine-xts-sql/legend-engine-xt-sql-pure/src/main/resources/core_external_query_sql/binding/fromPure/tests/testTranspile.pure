@@ -657,7 +657,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
-  let sqlString = 'SELECT Integer, sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp", EXTRACT(YEAR FROM MAX("StrictDate")) AS "complex" FROM service."/service/service1" GROUP BY Integer';
+  let sqlString = 'SELECT Integer, sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp", EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" FROM service."/service/service1" GROUP BY Integer';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -666,7 +666,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('sum', row | 1, y | $y->sum()),
           agg('count', row | $row, y | $y->count()),
           agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum()),
-          agg('complex', row | $row.getStrictDate('StrictDate'), y | $y->max()->year())
+          agg('aggFunctionCall', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->year()),
+          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))
         ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -1014,6 +1015,38 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           pair('String_table2', 'Str')
         ])->restrict(['Int', 'Str'])
       };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCrossJoin():Boolean[1]
+{
+  let sqlString = 'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" table1 CROSS JOIN service."/service/service2" table2';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
+          pair('Boolean', 'Boolean_table1'),
+          pair('Integer', 'Integer_table1'),
+          pair('Float', 'Float_table1'),
+          pair('Decimal', 'Decimal_table1'),
+          pair('StrictDate', 'StrictDate_table1'),
+          pair('DateTime', 'DateTime_table1'),
+          pair('String', 'String_table1')
+        ])->join(
+          FlatInput.all()
+            ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
+            ->renameColumns([
+              pair('ID', 'ID_table2'),
+              pair('Integer', 'Integer_table2'),
+              pair('String', 'String_table2')
+            ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
+        )->renameColumns([
+          pair('Integer_table1', 'Int'),
+          pair('String_table2', 'Str')
+        ])->restrict(['Int', 'Str'])
+      };
+
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
