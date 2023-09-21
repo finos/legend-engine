@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -45,9 +46,13 @@ public class ApiUtils
     public static Datasets enrichAndApplyCase(Datasets datasets, CaseConversion caseConversion)
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
-        MetadataDataset metadataDataset = getMetadataDataset(datasets);
+        MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
+        BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
         LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
-        Datasets enrichedDatasets = datasets.withMetadataDataset(metadataDataset).withLockInfoDataset(lockInfoDataset);
+        Datasets enrichedDatasets = datasets
+                .withMetadataDataset(metadataDataset)
+                .withLockInfoDataset(lockInfoDataset)
+                .withBulkLoadMetadataDataset(bulkLoadMetadataDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);
@@ -70,20 +75,6 @@ public class ApiUtils
             return ingestMode.accept(new IngestModeCaseConverter(String::toLowerCase));
         }
         return ingestMode;
-    }
-
-    private static MetadataDataset getMetadataDataset(Datasets datasets)
-    {
-        MetadataDataset metadataset;
-        if (datasets.metadataDataset().isPresent())
-        {
-            metadataset = datasets.metadataDataset().get();
-        }
-        else
-        {
-            metadataset = MetadataDataset.builder().build();
-        }
-        return metadataset;
     }
 
     private static LockInfoDataset getLockInfoDataset(Datasets datasets)
