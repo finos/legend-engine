@@ -106,7 +106,7 @@ function meta::pure::milestoning::switchToNoArgMilestonedGeneratedQualifiedPrope
 {
   let res=  if($p->hasGeneratedMilestoningPropertyStereotype(),
                                 | $p.owner->match([
-                                      clazz : Class<Any>[1] | $clazz.qualifiedProperties->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name==$p.name);,
+                                      clazz : Class<Any>[1] | $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name==$p.name);,
                                       assoc : Association[1] |  $assoc.qualifiedProperties->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name == $p.name);
                                     ]);,
                                 |[]);
