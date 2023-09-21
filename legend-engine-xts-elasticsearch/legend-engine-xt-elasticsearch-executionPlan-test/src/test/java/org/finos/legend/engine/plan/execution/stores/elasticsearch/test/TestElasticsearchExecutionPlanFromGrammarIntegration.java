@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.jsonunit.JsonAssert;
 import net.javacrumbs.jsonunit.core.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +35,11 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
@@ -97,6 +102,17 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
         return PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(plan);
     }
 
+    private SingleExecutionPlan getPlanFromFunctionGrammar(String funcName)
+    {
+        ConcreteFunctionDefinition<?> concreteFxn = PURE_MODEL.getConcreteFunctionDefinition_safe(funcName);
+
+        Assert.assertNotNull("Test function not found on model: " + funcName, concreteFxn);
+
+        MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(PURE_MODEL.getExecutionSupport()));
+        return PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, LegendPlanTransformers.transformers);
+    }
+
     @Test
     public void testIndexToTdsPlanExecutionFromGrammar() throws IOException
     {
@@ -110,6 +126,35 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
                     "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}, {\"name\":\"_id\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\", \"_id\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
                     resultString,
                     Configuration.empty().whenIgnoringPaths("activities"));
+        }
+    }
+
+    @Test
+    public void testElasticPlanExecution() throws IOException
+    {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        )
+        {
+            SingleExecutionPlan originalPlan = getPlanFromFunctionGrammar("abc::abc::indexToTDSGroupByFunction__TabularDataSet_1_");
+
+            //create a deep copy of the original plan that we pass into the execute call
+            ObjectMapper objectmapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+            String planJson = objectmapper.writeValueAsString(originalPlan);
+            SingleExecutionPlan passedPlan = objectmapper.readValue(planJson, SingleExecutionPlan.class);
+
+            //execute plan
+            TDSResult result = (TDSResult) PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(passedPlan);
+
+            result.stream(outputStream, SerializationFormat.DEFAULT); //this should trigger tryAdvance -- streaming results in batches
+
+            //Since passedPlan is a deep-copy of original, our goal is that the plan passed through execute() should remain unchanged post execution
+            LiteralOrExpression<Long> originalCompositeSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) originalPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
+
+            LiteralOrExpression<Long> postExecutionPlanSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) passedPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
+
+            //these two should be equal now
+            Assert.assertEquals(originalCompositeSize,postExecutionPlanSize);
+            Assert.assertTrue(((SearchRequest) ((Elasticsearch7RequestExecutionNode) passedPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size == null);
         }
     }
 }
