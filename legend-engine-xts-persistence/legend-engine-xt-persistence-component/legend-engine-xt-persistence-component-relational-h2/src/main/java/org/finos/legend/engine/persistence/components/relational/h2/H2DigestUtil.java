@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class H2DigestUtil
 {
     private static final byte[] EMPTY_STRING = new byte[] { 88 };
+
     public static void registerMD5Udf(JdbcHelper sink, String UdfName)
     {
         sink.executeStatement("CREATE ALIAS " + UdfName + " FOR \"org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil.MD5\";");
@@ -72,7 +73,8 @@ public class H2DigestUtil
 
     private static void writeValueWithFieldName(String fieldName, Object value, DataOutputStream dataOutputStream)
     {
-        try {
+        try
+        {
             dataOutputStream.writeInt(fieldName.hashCode());
             String stringValue = value.toString();
             if (stringValue == null || stringValue.length() == 0)
