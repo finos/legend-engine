@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2021 Goldman Sachs
+ Copyright 2020 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -16,53 +16,68 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
         <version>4.29.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>legend-engine-connection-integration-tests</artifactId>
+    <name>Legend Engine - Connection - Integration Tests</name>
 
-    <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Postgres - Connection</name>
 
     <dependencies>
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
+            <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-test-support</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- RUNTIME -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- RUNTIME -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- DRIVER -->
+        <!-- Authentication -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.pac4j</groupId>
+            <artifactId>pac4j-core</artifactId>
         </dependency>
-        <!-- DRIVER -->
+        <!-- Authentication -->
 
         <!-- TEST -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

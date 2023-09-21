@@ -58,7 +58,11 @@ public class ConnectionFactory
         this.storeInstancesIndex = storeInstancesIndex;
     }
 
-    public void registerStoreInstance(StoreInstance storeInstance)
+    /**
+     * This method is meant for testing.
+     * The recommended usage is to include all the store instances during initialization
+     */
+    public void injectStoreInstance(StoreInstance storeInstance)
     {
         if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
         {

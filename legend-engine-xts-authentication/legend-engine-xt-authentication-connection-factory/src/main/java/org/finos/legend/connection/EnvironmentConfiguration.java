@@ -15,9 +15,6 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.map.ImmutableMap;
-import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.vault.CredentialVault;
@@ -39,28 +36,36 @@ import java.util.Set;
  */
 public class EnvironmentConfiguration
 {
-    private final ImmutableList<CredentialVault> vaults;
-    private final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
+    private final List<CredentialVault> vaults;
+    private final Map<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
     private final Map<String, StoreSupport> storeSupportsIndex;
 
     private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex;
 
     private EnvironmentConfiguration(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
     {
-        this.vaults = Lists.immutable.withAll(vaults);
-        MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<?>> vaultsIndex = Maps.mutable.empty();
+        this.vaults = Lists.mutable.withAll(vaults);
+        this.vaultsIndex = Maps.mutable.empty();
         for (CredentialVault<? extends CredentialVaultSecret> vault : vaults)
         {
             vaultsIndex.put(vault.getSecretType(), vault);
         }
-        this.vaultsIndex = Maps.immutable.withAll(vaultsIndex);
         this.storeSupportsIndex = storeSupportsIndex;
         this.authenticationMechanismsIndex = authenticationMechanismsIndex;
     }
 
-    public StoreSupport findStoreSupport(String identifier)
+    /**
+     * This method is meant for testing.
+     * The recommended usage is to include all the vaults during initialization
+     */
+    public void injectVault(CredentialVault vault)
     {
-        return Objects.requireNonNull(this.storeSupportsIndex.get(identifier), String.format("Can't find store support with identifier '%s'", identifier));
+        if (this.vaultsIndex.containsKey(vault.getSecretType()))
+        {
+            throw new RuntimeException(String.format("Can't register credential vault: found multiple vaults with secret type '%s'", vault.getSecretType().getSimpleName()));
+        }
+        this.vaultsIndex.put(vault.getSecretType(), vault);
+        this.vaults.add(vault);
     }
 
     public String lookupVaultSecret(CredentialVaultSecret credentialVaultSecret, Identity identity) throws Exception
@@ -68,10 +73,28 @@ public class EnvironmentConfiguration
         Class<? extends CredentialVaultSecret> secretClass = credentialVaultSecret.getClass();
         if (!this.vaultsIndex.containsKey(secretClass))
         {
-            throw new RuntimeException(String.format("CredentialVault for secret of type '%s' has not been registered in the system", secretClass.getSimpleName()));
+            throw new RuntimeException(String.format("Can't find secret: credential vault for secret of type '%s' has not been registered", secretClass.getSimpleName()));
         }
         CredentialVault vault = this.vaultsIndex.get(secretClass);
         return vault.lookupSecret(credentialVaultSecret, identity);
+    }
+
+    /**
+     * This method is meant for testing.
+     * The recommended usage is to include all the store supports during initialization
+     */
+    public void injectStoreSupport(StoreSupport storeSupport)
+    {
+        if (this.storeSupportsIndex.containsKey(storeSupport.getIdentifier()))
+        {
+            throw new RuntimeException(String.format("Can't register store support: found multiple store supports with identifier '%s'", storeSupport.getIdentifier()));
+        }
+        this.storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
+    }
+
+    public StoreSupport findStoreSupport(String identifier)
+    {
+        return Objects.requireNonNull(this.storeSupportsIndex.get(identifier), String.format("Can't find store support with identifier '%s'", identifier));
     }
 
     public AuthenticationMechanism findAuthenticationMechanismForConfiguration(AuthenticationConfiguration configuration)
@@ -112,6 +135,12 @@ public class EnvironmentConfiguration
         public Builder withStoreSupports(List<StoreSupport> storeSupports)
         {
             storeSupports.forEach(this::registerStoreSupport);
+            return this;
+        }
+
+        public Builder withStoreSupports(StoreSupport... storeSupports)
+        {
+            ListIterate.forEach(Lists.mutable.with(storeSupports), this::registerStoreSupport);
             return this;
         }
 

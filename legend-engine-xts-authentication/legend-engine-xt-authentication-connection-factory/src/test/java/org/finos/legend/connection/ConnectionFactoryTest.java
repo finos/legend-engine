@@ -36,7 +36,7 @@ public class ConnectionFactoryTest
                 .withStoreSupportIdentifier("test")
                 .withConnectionSpecification(new TestConnectionSpecification())
                 .build();
-        env.connectionFactory.registerStoreInstance(storeInstance);
+        env.connectionFactory.injectStoreInstance(storeInstance);
 
         // failure
         Exception exception;
@@ -44,7 +44,7 @@ public class ConnectionFactoryTest
         // error: store already registered
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.registerStoreInstance(storeInstance);
+            env.connectionFactory.injectStoreInstance(storeInstance);
         });
         Assert.assertEquals("Can't register store instance: found multiple store instances with identifier 'test-store'", exception.getMessage());
 
@@ -376,7 +376,7 @@ public class ConnectionFactoryTest
 
         TestEnv newStore(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
         {
-            this.connectionFactory.registerStoreInstance(new StoreInstance.Builder(environmentConfiguration)
+            this.connectionFactory.injectStoreInstance(new StoreInstance.Builder(environmentConfiguration)
                     .withIdentifier(identifier)
                     .withStoreSupportIdentifier("test")
                     .withAuthenticationMechanisms(authenticationMechanisms)

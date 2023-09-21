@@ -14,7 +14,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
 
@@ -126,11 +127,11 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-	<maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-	<maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
-        <surefire.reports.directory />
+        <surefire.reports.directory/>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -143,6 +144,7 @@
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
+        <junit-jupiter.version>5.4.0</junit-jupiter.version>
         <mockito-core.version>4.4.0</mockito-core.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <jackson.version>2.10.5</jackson.version>
@@ -478,10 +480,10 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-				<requireMavenVersion>
-				  <version>${maven.enforcer.requireMavenVersion}</version>
-				</requireMavenVersion>
-                                <dependencyConvergence />
+                                <requireMavenVersion>
+                                    <version>${maven.enforcer.requireMavenVersion}</version>
+                                </requireMavenVersion>
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -575,7 +577,6 @@
                 <artifactId>legend-engine-xt-functionActivator-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
 
 
             <!-- ENGINE -->
@@ -943,8 +944,9 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgres-connection-tests</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-test-support</artifactId>
                 <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -2335,6 +2337,16 @@
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito-core.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit-jupiter.version}</version>
             </dependency>
             <!-- JUNIT -->
 
