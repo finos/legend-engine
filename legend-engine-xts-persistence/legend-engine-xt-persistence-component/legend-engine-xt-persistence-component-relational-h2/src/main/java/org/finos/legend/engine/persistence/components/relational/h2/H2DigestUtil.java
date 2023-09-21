@@ -51,7 +51,7 @@ public class H2DigestUtil
         return map;
     }
 
-    public static String calculateMD5Digest(Map<String, Object> row)
+    private static String calculateMD5Digest(Map<String, Object> row)
     {
         List<String> fieldNames = row.keySet().stream().sorted().collect(Collectors.toList());
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
