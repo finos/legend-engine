@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
@@ -742,6 +743,22 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testXStoreServiceRunnerWithGraphFetchChecked() throws JavaCompileException
+    {
+        XStoreServiceRunnerWithGraphFetchChecked xStoreServiceRunner = new XStoreServiceRunnerWithGraphFetchChecked();
+        String result = xStoreServiceRunner.run(ServiceRunnerInput.newInstance().withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("[{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\"streetId\\\":\\\"A2\\\"}\"},\"value\":{\"address\":null}},\"value\":{\"address\":{\"name\":\"A2\"}}},{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":2,\"record\":\"{\\\"streetId\\\":\\\"A4\\\"}\"},\"value\":{\"address\":null}},\"value\":{\"address\":{\"name\":\"A4\"}}},{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":3,\"record\":\"{\\\"streetId\\\":\\\"A5\\\"}\"},\"value\":{\"address\":null}},\"value\":{\"address\":{\"name\":\"A5\"}}}]", result);
+    }
+
+    @Test
+    public void testXStoreServiceRunnerWithGraphFetch() throws JavaCompileException
+    {
+        XStoreServiceRunnerWithGraphFetch xStoreServiceRunner = new XStoreServiceRunnerWithGraphFetch();
+        String result = xStoreServiceRunner.run(ServiceRunnerInput.newInstance().withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("[{\"address\":{\"name\":\"A2\"}},{\"address\":{\"name\":\"A4\"}},{\"address\":{\"name\":\"A5\"}}]", result);
+    }
+
+    @Test
     public void testServiceRunnerGraphFetchBatchMemoryLimit()
     {
         ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
@@ -860,12 +877,12 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceWithUserId()
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
-        Set<KerberosPrincipal> principals = new HashSet<>();
-        principals.add(new KerberosPrincipal("peter@test.com"));
+
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting("peter");
 
         ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
                 .newInstance()
-                .withIdentity(IdentityFactoryProvider.getInstance().makeIdentity(new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty())))
+                .withIdentity(identity)
                 .withSerializationFormat(SerializationFormat.PURE);
         String result = simpleRelationalServiceWithUserRunner.run(serviceRunnerInput);
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
@@ -1112,6 +1129,26 @@ public class TestServiceRunner
         private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch5__String_1_");
 
         XStoreServiceRunnerWithDeepCrossPropertyAccess() throws JavaCompileException
+        {
+            super("test::Service", plan);
+        }
+    }
+
+    private static class XStoreServiceRunnerWithGraphFetchChecked extends AbstractXStoreServiceRunner
+    {
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch6__String_1_");
+
+        XStoreServiceRunnerWithGraphFetchChecked() throws JavaCompileException
+        {
+            super("test::Service", plan);
+        }
+    }
+
+    private static class XStoreServiceRunnerWithGraphFetch extends AbstractXStoreServiceRunner
+    {
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch7__String_1_");
+
+        XStoreServiceRunnerWithGraphFetch() throws JavaCompileException
         {
             super("test::Service", plan);
         }

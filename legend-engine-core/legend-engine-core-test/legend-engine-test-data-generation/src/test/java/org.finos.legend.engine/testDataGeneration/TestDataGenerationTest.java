@@ -58,7 +58,7 @@ public class TestDataGenerationTest
         String testGenerationInput = getResourceAsString(testGenerationInputPath);
         TestDataGenerationInput input = objectMapper.readValue(testGenerationInput, TestDataGenerationInput.class);
         PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, null, null);
-        List<EmbeddedData> testData = TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getRuntime(input.runtime),pureModel.getMapping(input.mapping), pureModel);
+        List<EmbeddedData> testData = TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel);
         Assert.assertEquals(objectMapper.writeValueAsString(testData), expectedResult);
     }
 
@@ -67,6 +67,6 @@ public class TestDataGenerationTest
     {
         testGenerateEmbeddedData(
                 "models/relationalModelTestDataGenerationInput.json",
-                "[{\"tables\":[{\"schema\":\"default\",\"table\":\"FirmTable\",\"values\":\"id,Legal_name\"},{\"schema\":\"default\",\"table\":\"PersonTable\",\"values\":\"id,firm_id,firstName,lastName\"}]}]");
+                "[{\"tables\":[{\"schema\":\"default\",\"table\":\"FirmTable\",\"values\":\"id\"},{\"schema\":\"default\",\"table\":\"PersonTable\",\"values\":\"id,firm_id,firstName\"}]}]");
     }
 }

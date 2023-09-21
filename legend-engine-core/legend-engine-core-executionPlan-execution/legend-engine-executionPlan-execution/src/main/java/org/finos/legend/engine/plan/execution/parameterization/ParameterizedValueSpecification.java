@@ -94,12 +94,12 @@ public class ParameterizedValueSpecification
 
     {
         Map<String, BiFunction<AppliedFunction, String, List<ValueSpecification>>> parameterHelper = new HashMap<>();
-        parameterHelper.put("in", (fn, parameterName) -> Arrays.asList(fn.parameters.get(0), ManyParam(parameterName, fn.parameters.get(1))));
         parameterHelper.put("filter", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, true, fn.function));
         parameterHelper.put("take", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, true, fn.function));
         parameterHelper.put("getAll", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, true, fn.function));
         parameterHelper.put("limit", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, true, fn.function));
 
+        parameterHelper.put("in", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, false, fn.function));
         parameterHelper.put("col", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, false, fn.function));
         parameterHelper.put("project", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, false, fn.function));
         parameterHelper.put("groupBy", (fn, parameterName) -> valueSpecificationListHelper(fn.parameters, parameterName, false, fn.function));

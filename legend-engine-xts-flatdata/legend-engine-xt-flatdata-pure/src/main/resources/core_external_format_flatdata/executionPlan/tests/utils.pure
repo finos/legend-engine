@@ -30,7 +30,7 @@ function meta::external::format::flatdata::executionPlan::test::executeFlatdataB
 function meta::external::format::flatdata::executionPlan::test::flatDataExtensions(): Extension[*]
 {
   [
-    meta::external::shared::format::externalFormatExtension(),
+    meta::external::format::shared::externalFormatExtension(),
     meta::external::format::flatdata::extension::flatDataFormatExtension()
   ]
 }

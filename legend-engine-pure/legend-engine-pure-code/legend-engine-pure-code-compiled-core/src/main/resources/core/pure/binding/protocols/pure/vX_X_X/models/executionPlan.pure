@@ -25,6 +25,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::execut
    binding     : String[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatExternalizeTDSExecutionNode extends ExecutionNode
+{
+   contentType : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
    contentType       : String[1];
@@ -32,9 +37,4 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::execut
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
    tree              : RootGraphFetchTree[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
-{
-   url : String[1];
 }

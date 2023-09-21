@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::*;
+import meta::external::format::shared::*;
 
 import meta::pure::extension::*;
 

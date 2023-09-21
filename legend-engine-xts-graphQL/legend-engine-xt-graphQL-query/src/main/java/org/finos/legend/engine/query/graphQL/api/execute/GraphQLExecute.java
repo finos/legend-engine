@@ -24,6 +24,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
@@ -32,38 +33,25 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
-import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
-import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
-import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationType;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.Type;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdCacheKey;
+import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.engine.query.graphQL.api.execute.model.PlansResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErrorMain;
@@ -91,6 +79,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -105,8 +94,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.argumentValueToObject;
-import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.extractFieldByName;
 import static org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper.createCachableGraphQLQuery;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -121,6 +108,7 @@ public class GraphQLExecute extends GraphQL
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
     private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final GraphQLPlanCache graphQLPlanCache;
+    private final List<IGraphQLDirectiveExtension> graphQLExecuteExtensions = Lists.mutable.empty();
 
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers, GraphQLPlanCache planCache)
     {
@@ -129,7 +117,10 @@ public class GraphQLExecute extends GraphQL
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
-
+        for (IGraphQLDirectiveExtension graphQLExecuteExtension: ServiceLoader.load(IGraphQLDirectiveExtension.class))
+        {
+            this.graphQLExecuteExtensions.add(graphQLExecuteExtension);
+        }
     }
 
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, Iterable<? extends PlanTransformer> transformers)
@@ -146,7 +137,7 @@ public class GraphQLExecute extends GraphQL
 
         Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
         org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
-        if (isQueryIntrospection(findQuery(document)))
+        if (isQueryIntrospection(GraphQLExecutionHelper.findQuery(document)))
         {
             return Response.ok("").type(MediaType.TEXT_HTML_TYPE).build();
         }
@@ -234,13 +225,13 @@ public class GraphQLExecute extends GraphQL
     private Response executeGraphQLQuery(String queryClassPath, String mappingPath, String runtimePath, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
     {
         List<SerializedNamedPlans> planWithSerialized;
-        OperationDefinition graphQLQuery = findQuery(document);
-
+        OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
+        PureModel pureModel = null;
         try
         {
             if (isQueryIntrospection(graphQLQuery))
             {
-                PureModel pureModel = modelLoader.call();
+                pureModel = modelLoader.call();
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
                 org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
 
@@ -256,7 +247,7 @@ public class GraphQLExecute extends GraphQL
                     if (planWithSerialized == null) //cache miss, generate the plan and add to the cache
                     {
                         LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
-                        PureModel pureModel = modelLoader.call();
+                        pureModel = modelLoader.call();
                         planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
@@ -267,9 +258,8 @@ public class GraphQLExecute extends GraphQL
                 }
                 else   //no cache so we generate the plan
                 {
-                    PureModel pureModel = modelLoader.call();
+                    pureModel = modelLoader.call();
                     planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
-
                 }
             }
         }
@@ -277,6 +267,7 @@ public class GraphQLExecute extends GraphQL
         {
             return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
+        final PureModel pureModel1 = pureModel;
         List<SerializedNamedPlans> finalPlanWithSerialized = planWithSerialized;
         return Response.ok(
                 (StreamingOutput) outputStream ->
@@ -290,13 +281,12 @@ public class GraphQLExecute extends GraphQL
                         generator.writeFieldName("data");
                         generator.writeStartObject();
 
-                        finalPlanWithSerialized.forEach(p ->
+                        finalPlanWithSerialized.stream().filter(serializedNamedPlans -> GraphQLExecutionHelper.isARootField(serializedNamedPlans.propertyName, graphQLQuery)).forEach(p ->
                         {
                             JsonStreamingResult result = null;
                             try
                             {
-                                Map<String, Result> parameterMap = new HashMap<>();
-                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+                                Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(graphQLQuery, p.propertyName);
 
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
@@ -315,9 +305,70 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
+                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, finalPlanWithSerialized, profiles);
+                        if (!extensions.isEmpty())
+                        {
+                            generator.writeFieldName("extensions");
+                            generator.writeObject(extensions);
+                        }
                         generator.writeEndObject();
                     }
                 }).build();
+    }
+
+    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans, MutableList<CommonProfile> profiles)
+    {
+        Map<String, Map<String, Object>> m = new HashMap<>();
+        List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
+        String rootFieldName = ((Field) query.selectionSet.get(0)).name; // assuming there's only one field in the selection set
+        if (!directives.isEmpty())
+        {
+            m.put(rootFieldName, new HashMap<>());
+            directives.forEach(directive ->
+            {
+                SingleExecutionPlan plan = serializedNamedPlans.stream().filter(serializedNamedPlan -> serializedNamedPlan.propertyName.equals(GraphQLExecutionHelper.getPlanNameForDirective(rootFieldName, directive))).findFirst().get().serializedPlan;
+                Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(query, rootFieldName);
+                Object object = getExtensionForDirective(directive).executeDirective(directive, plan, planExecutor, parameterMap, profiles);
+                m.get(rootFieldName).put(directive.name, object);
+            });
+        }
+        return m;
+    }
+
+    IGraphQLDirectiveExtension getExtensionForDirective(Directive directive)
+    {
+        List<IGraphQLDirectiveExtension> modifiedListOfExtensions = graphQLExecuteExtensions.stream().filter(
+                graphQLExecuteExtension -> graphQLExecuteExtension.getSupportedDirectives().contains(directive.name)
+        ).collect(Collectors.toList());
+        if (modifiedListOfExtensions.size() == 0)
+        {
+            throw new RuntimeException("No extensions found for " + directive.name);
+        }
+        else if (modifiedListOfExtensions.size() > 1)
+        {
+            throw new RuntimeException("Too many extensions found for " + directive.name);
+        }
+        return modifiedListOfExtensions.get(0);
+    }
+
+    private List<SerializedNamedPlans> buildExtensionsPlanWithParameter(String rootFieldName, String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
+    {
+        List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
+        List<SerializedNamedPlans> serializedNamedPlans = Lists.mutable.empty();
+        directives.forEach(directive ->
+        {
+            SingleExecutionPlan plan = (SingleExecutionPlan) getExtensionForDirective(directive).planDirective(
+                        document,
+                        pureModel,
+                        queryClassPath,
+                        mappingPath,
+                        runtimePath,
+                        this.extensionsFunc.apply(pureModel),
+                        this.transformers
+                );
+            serializedNamedPlans.add(new SerializedNamedPlans(GraphQLExecutionHelper.getPlanNameForDirective(rootFieldName, directive), plan));
+        });
+        return serializedNamedPlans;
     }
 
     private List<SerializedNamedPlans> buildPlanWithParameter(String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
@@ -335,13 +386,13 @@ public class GraphQLExecute extends GraphQL
             serializedPlans.propertyName = p._name();
             serializedPlans.serializedPlan = PlanGenerator.stringToPlan(PlanGenerator.serializeToJSON(nPlan, PureClientVersions.production, pureModel, extensions, this.transformers));
             return serializedPlans;
-
         }).collect(Collectors.toList());
-
-
+        List<List<SerializedNamedPlans>> extensionPlans = plans.stream().map(plan ->
+            buildExtensionsPlanWithParameter(plan.propertyName, queryClassPath, mappingPath, runtimePath, document, query, pureModel, graphQLCacheKey)
+        ).collect(Collectors.toList());
+        extensionPlans.forEach(plans::addAll);
         return plans;
     }
-
 
     @POST
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime from a SDLC project", notes = "DEPRECATED: use the execute APIs that include a 'workspace' or 'groupWorkspace' path param")
@@ -410,106 +461,6 @@ public class GraphQLExecute extends GraphQL
     {
         List<Selection> selections = operationDefinition.selectionSet;
         return !selections.isEmpty() && selections.get(0) instanceof Field && ((Field) selections.get(0)).name.equals("__schema");
-    }
-
-
-    private OperationDefinition findQuery(Document document)
-    {
-        Collection<Definition> res = Iterate.select(document.definitions, d -> d.accept(new DefinitionVisitor<Boolean>()
-                                                                                        {
-
-                                                                                            @Override
-                                                                                            public Boolean visit(DirectiveDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(EnumTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(ExecutableDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(FragmentDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(InterfaceTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(ObjectTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(InputObjectTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(OperationDefinition val)
-                                                                                            {
-                                                                                                return val.type == OperationType.query;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(ScalarTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(SchemaDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(Type val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(TypeSystemDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-
-                                                                                            @Override
-                                                                                            public Boolean visit(UnionTypeDefinition val)
-                                                                                            {
-                                                                                                return false;
-                                                                                            }
-                                                                                        }
-        ));
-
-        if (res.isEmpty())
-        {
-            throw new RuntimeException("Please provide a query");
-        }
-        else if (res.size() > 1)
-        {
-            throw new RuntimeException("Found more than one query");
-        }
-        else
-        {
-            return (OperationDefinition) res.iterator().next();
-        }
     }
 
 

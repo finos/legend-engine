@@ -31,6 +31,12 @@ public abstract class TestGraphQLEmbedded
     }
 
     @Test
+    public void testDirectiveGraphQL()
+    {
+        test("assertEquals('totalCount', meta::legend::compileVS('#GQL { query { firm @totalCount { id } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::ExecutableDocument).executableDefinitions->cast(@meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition).selectionSet->at(0)->cast(@meta::external::query::graphQL::metamodel::sdl::executable::Field).directives->at(0).name);");
+    }
+
+    @Test
     public void testCompileEnumGraphQL()
     {
         test("assertEquals(meta::external::query::graphQL::metamodel::sdl::executable::OperationType.mutation, meta::legend::compileVS('#GQL{mutation { likeStory(storyID: 12345) { story { likeCount } } }}#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document).definitions->at(0)->cast(@meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition).type)");

@@ -14,17 +14,17 @@
 
 import meta::pure::model::unit::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::transformation::fromPure::*;
-import meta::external::shared::format::transformation::toPure::*;
-import meta::external::shared::format::transformation::tests::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::transformation::fromPure::*;
+import meta::external::format::shared::transformation::toPure::*;
+import meta::external::format::shared::transformation::tests::*;
 
 import meta::pure::extension::*;
 
-function meta::external::shared::format::transformation::tests::exampleFormatContract(): ExternalFormatContract<ExampleSchema>[1]
+function meta::external::format::shared::transformation::tests::exampleFormatContract(): ExternalFormatContract<ExampleSchema>[1]
 {
    ^ExternalFormatContract<ExampleSchema>
    (
@@ -39,20 +39,22 @@ function meta::external::shared::format::transformation::tests::exampleFormatCon
    )
 }
 
+
+
 // Example Schema Metamodel
-Class meta::external::shared::format::transformation::tests::ExampleSchema
+Class meta::external::format::shared::transformation::tests::ExampleSchema
 {
 
 }
 
 // Example Schema To Pure Descriptor
 
-Class meta::external::shared::format::transformation::tests::ExampleSchemaToModelConfiguration extends SchemaToModelConfiguration
+Class meta::external::format::shared::transformation::tests::ExampleSchemaToModelConfiguration extends SchemaToModelConfiguration
 {
 
 }
 
-function meta::external::shared::format::transformation::tests::exampleSchemaToPureDescriptor(): ExternalFormatToPureDescriptor<ExampleSchemaToModelConfiguration>[1]
+function meta::external::format::shared::transformation::tests::exampleSchemaToPureDescriptor(): ExternalFormatToPureDescriptor<ExampleSchemaToModelConfiguration>[1]
 {
   ^ExternalFormatToPureDescriptor<ExampleSchemaToModelConfiguration>
   (
@@ -62,24 +64,24 @@ function meta::external::shared::format::transformation::tests::exampleSchemaToP
   )
 }
 
-function meta::external::shared::format::transformation::tests::exampleSchemaToPure(schemaSet:SchemaSet[1], config:ExampleSchemaToModelConfiguration[1]): PackageableElement[*]
+function meta::external::format::shared::transformation::tests::exampleSchemaToPure(schemaSet:SchemaSet[1], config:ExampleSchemaToModelConfiguration[1]): PackageableElement[*]
 {
-  meta::external::shared::format::transformation::tests::ExampleSchema;
+  meta::external::format::shared::transformation::tests::ExampleSchema;
 }
 
-function meta::external::shared::format::transformation::tests::toPureDefaultConfig(): ExampleSchemaToModelConfiguration[1]
+function meta::external::format::shared::transformation::tests::toPureDefaultConfig(): ExampleSchemaToModelConfiguration[1]
 {
   ^ExampleSchemaToModelConfiguration(format = 'Example', targetPackage = 'test')
 }
 
 // Pure To Example Schema Descriptor
 
-Class meta::external::shared::format::transformation::tests::ModelToExampleSchemaConfiguration extends ModelToSchemaConfiguration
+Class meta::external::format::shared::transformation::tests::ModelToExampleSchemaConfiguration extends ModelToSchemaConfiguration
 {
 
 }
 
-function meta::external::shared::format::transformation::tests::exampleSchemaFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToExampleSchemaConfiguration>[1]
+function meta::external::format::shared::transformation::tests::exampleSchemaFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToExampleSchemaConfiguration>[1]
 {
   ^ExternalFormatFromPureDescriptor<ModelToExampleSchemaConfiguration>
   (
@@ -89,19 +91,29 @@ function meta::external::shared::format::transformation::tests::exampleSchemaFro
   )
 }
 
-function meta::external::shared::format::transformation::tests::pureToExampleSchema(modelUnit:ModelUnit[1], config:ModelToExampleSchemaConfiguration[1]): SchemaSet[1]
+function meta::external::format::shared::transformation::tests::pureToExampleSchema(modelUnit:ModelUnit[1], config:ModelToExampleSchemaConfiguration[1]): SchemaSet[1]
 {
   ^SchemaSet(format = 'Example', package = ^Package(name = 'test'), name = 'ExampleSchemaSet');
 }
 
-function meta::external::shared::format::transformation::tests::defaultConfig(): ModelToExampleSchemaConfiguration[1]
+function meta::external::format::shared::transformation::tests::defaultConfig(): ModelToExampleSchemaConfiguration[1]
 {
   ^ModelToExampleSchemaConfiguration(format = 'Example', targetSchemaSet = 'test::ExampleSchema')
 }
 
 // Example Schema Binding Validator
 
-function meta::external::shared::format::transformation::tests::bindDetails(binding:Binding[1]):BindingDetail[1]
+function meta::external::format::shared::transformation::tests::bindDetails(binding:Binding[1]):BindingDetail[1]
 {
    ^SuccessfulBindingDetail(fetchMappedPropertiesForClass = {class:Class<Any>[1] | []});
+}
+
+//Example Extension with External Format Contract
+function meta::external::format::shared::transformation::tests::exampleExternalFormatExtension(): Extension[1]
+{
+   ^Extension
+   (
+      type                     = 'Example External Format Extension',
+      availableExternalFormats = meta::external::format::shared::transformation::tests::exampleFormatContract()
+   )
 }

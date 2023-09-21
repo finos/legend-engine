@@ -42,13 +42,6 @@ Class meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAut
    passwordVaultReference: String[1];
 }
 
-Class meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
-{
-    privateKeyVaultReference:String[1];
-    passPhraseVaultReference:String[1];
-    publicUserName:String[1];
-}
-
 Class meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
 }

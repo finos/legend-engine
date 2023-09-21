@@ -117,6 +117,63 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testOwnershipGrammarCompilation()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        // test multiple ownership: DID
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  ownership: DID { identifier: 'deploymentIdentifier' };\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
+        // test multiple ownership: userList
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  ownership: UserList { users: ['user1', 'user2'] };\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src:    test::class[1]|$src.prop1;\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [20:1-33:1]: Cannot use both ownership model and explicit owners list.");
+    }
+
+    @Test
     public void testServiceWithSingleExecution()
     {
         String resource = "Class test::class\n" +

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
 
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::*;
@@ -21,7 +21,7 @@ import meta::pure::graphFetch::routing::*;
 
 import meta::pure::extension::*;
 
-function meta::external::shared::format::executionPlan::toString::printPlanNodeToString(space:String[1], extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::format::shared::executionPlan::toString::printPlanNodeToString(space:String[1], extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
 {
    [
       {node:ExternalFormatExternalizeExecutionNode[1] |
@@ -29,6 +29,14 @@ function meta::external::shared::format::executionPlan::toString::printPlanNodeT
          $space + '(' + header($node, $space, $extensions) + '\n' +
          $space + '  checked = ' + $node.checked->toString() + '\n' +
          $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
+         $node->childrenToString($space+'  ', $extensions) + '\n' +
+         $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
+         $space + ')\n'
+      },
+      {node:ExternalFormatExternalizeTDSExecutionNode[1] |
+         'ExternalFormat_ExternalizeTDS\n' + 
+         $space + '(' + header($node, $space, $extensions) + '\n' +
+         $space + '  contentType = ' + $node.contentType + '\n' +
          $node->childrenToString($space+'  ', $extensions) + '\n' +
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'
@@ -42,13 +50,6 @@ function meta::external::shared::format::executionPlan::toString::printPlanNodeT
          if($node.tree->isEmpty(), | '', | $space + '  graphFetchTree = ' + $node.tree->toOne()->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n') +
          if($node.executionNodes->isEmpty(), |'', |$node->childrenToString($space+'  ', $extensions) + '\n') +
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
-         $space + ')\n'
-      },
-      {node:UrlStreamExecutionNode[1] |   // TODO: TO BE REMOVED
-         'UrlStream\n' +
-         $space + '(' + header($node, $space, $extensions) + '\n' +
-         $space + '  url = ' + $node.url + '\n' +
-         $node->childrenToString($space+'  ', $extensions) + '\n' +
          $space + ')\n'
       }
    ]

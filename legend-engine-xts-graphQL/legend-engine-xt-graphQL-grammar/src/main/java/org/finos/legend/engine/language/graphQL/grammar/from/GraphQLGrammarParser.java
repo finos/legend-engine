@@ -72,6 +72,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class GraphQLGrammarParser
 {
@@ -302,6 +303,7 @@ public class GraphQLGrammarParser
         operationDefinition.type = operationDefinitionContext.operationType() == null ? null : OperationType.valueOf(operationDefinitionContext.operationType().getText());
         operationDefinition.variables = operationDefinitionContext.variableDefinitions() == null ? Lists.mutable.empty() : ListIterate.collect(operationDefinitionContext.variableDefinitions().variableDefinition(), this::visitVariableDefinition);
         operationDefinition.selectionSet = ListIterate.collect(operationDefinitionContext.selectionSet().selection(), this::visitSelectionSet);
+        operationDefinition.directives = operationDefinitionContext.directives() == null ? Lists.mutable.empty() : ListIterate.collect(operationDefinitionContext.directives().directive(), this::visitDirectiveContext);
         return operationDefinition;
     }
 
@@ -324,6 +326,7 @@ public class GraphQLGrammarParser
             field.name = fieldContext.name().getText();
             field.arguments = fieldContext.arguments() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.arguments().argument(), this::visitArgument);
             field.selectionSet = fieldContext.selectionSet() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.selectionSet().selection(), this::visitSelectionSet);
+            field.directives = fieldContext.directives() == null ? Collections.emptyList() : ListIterate.collect(fieldContext.directives().directive(), this::visitDirectiveContext);
             return field;
         }
         else if (selectionContext.fragmentSpread() != null)

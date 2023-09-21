@@ -246,6 +246,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testCast()
+    {
+        check("SELECT CAST(1 AS VARCHAR), CAST(1 AS VARCHAR(1)), CAST(1 AS NUMERIC(1, 2)) FROM myTable");
+    }
+
+    @Test
     public void testExtract()
     {
         check("SELECT EXTRACT(DOW FROM Date) FROM myTable");

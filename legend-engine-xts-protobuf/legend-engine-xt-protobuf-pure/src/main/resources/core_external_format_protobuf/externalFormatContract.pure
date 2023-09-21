@@ -16,7 +16,7 @@ import meta::external::format::protobuf::metamodel::*;
 import meta::external::format::protobuf::contract::*;
 import meta::external::format::protobuf::transformation::fromPure::*;
 
-import meta::external::shared::format::*;
+import meta::external::format::shared::*;
 
 function meta::external::format::protobuf::contract::protobufFormatContract(): ExternalFormatContract<ProtobufSchema>[1]
 {

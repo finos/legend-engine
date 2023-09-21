@@ -25,12 +25,12 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::engine::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::metamodel::*;
 
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
@@ -72,7 +72,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
    let readableClasses    = $rootClass->concatenate($dependentClasses);
 
    // TODO [internalize] proper XML binding
-   let bindingDetail      = ^meta::external::shared::format::binding::validation::SuccessfulBindingDetail(fetchMappedPropertiesForClass={cl:meta::pure::metamodel::type::Class<Any>[1]|$context.typeInfos->allProperties($cl)});
+   let bindingDetail      = ^meta::external::format::shared::binding::validation::SuccessfulBindingDetail(fetchMappedPropertiesForClass={cl:meta::pure::metamodel::type::Class<Any>[1]|$context.typeInfos->allProperties($cl)});
 
    let rootClassProject   = $rootClass->createDataClassesProject($bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
    let project            = if($dependentClasses->isEmpty(),

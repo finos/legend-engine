@@ -24,17 +24,17 @@ import org.finos.legend.engine.protocol.graphQL.introspection.model.ProtocolToMe
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration_Impl;
 import org.finos.legend.pure.generated.core_external_query_graphql_contract;
 
 public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, GraphQLSchemaToModelConfiguration>
 {
-    private final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> getExternalFormatContract()
+    public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> getExternalFormatContract()
     {
         return graphQLIntrospectionContract;
     }
@@ -65,9 +65,9 @@ public class GraphQLFormatExtension implements ExternalFormatModelGenerationExte
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(GraphQLSchemaToModelConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(GraphQLSchemaToModelConfiguration configuration, PureModel pureModel)
     {
-        return new Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration"))
+        return new Root_meta_external_format_shared_transformation_toPure_SchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::shared::transformation::toPure::SchemaToModelConfiguration"))
                 ._sourceSchemaId(configuration.sourceSchemaId)
                 ._targetPackage(configuration.targetPackage);
     }

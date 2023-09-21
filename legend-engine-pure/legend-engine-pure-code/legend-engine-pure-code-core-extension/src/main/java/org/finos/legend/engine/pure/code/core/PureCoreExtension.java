@@ -15,14 +15,45 @@
 package org.finos.legend.engine.pure.code.core;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 public interface PureCoreExtension
 {
+    default String functionFile()
+    {
+        return null;
+    }
+
+    default String functionSignature()
+    {
+        return null;
+    }
+
     default RichIterable<? extends Root_meta_pure_extension_Extension> extraPureCoreExtensions(ExecutionSupport es)
     {
-        return Lists.fixedSize.empty();
+        if (functionFile() == null && functionSignature() == null)
+        {
+            throw new RuntimeException("This block can only be used if functionFile and functionSignature are specified!");
+        }
+        try
+        {
+            Class<?> cl = ((CompiledExecutionSupport) es).getClassLoader().loadClass("org.finos.legend.pure.generated." + functionFile().replace("/", "_").replace(".pure", ""));
+            Method m = cl.getMethod("Root_" + functionSignature().replace("::", "_"), ExecutionSupport.class);
+            Object res = m.invoke(null, es);
+            return (res instanceof List) ?
+                    (RichIterable<? extends Root_meta_pure_extension_Extension>) res :
+                    org.eclipse.collections.impl.factory.Lists.mutable.with((Root_meta_pure_extension_Extension) m.invoke(null, es));
+        }
+        catch (Exception e)
+        {
+            // Silent at build time
+            return Lists.mutable.empty();
+        }
     }
 }

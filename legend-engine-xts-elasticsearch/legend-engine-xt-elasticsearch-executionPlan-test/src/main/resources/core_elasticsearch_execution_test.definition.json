@@ -11,7 +11,6 @@
     "core_authentication",
     "core_elasticsearch_seven_metamodel",
     "core_external_execution",
-    "core_java_platform_binding",
     "core_external_compiler"
   ]
 }

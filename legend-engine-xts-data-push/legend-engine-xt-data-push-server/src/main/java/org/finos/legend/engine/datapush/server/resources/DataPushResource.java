@@ -35,7 +35,6 @@ public class DataPushResource extends BaseResource
 {
     public DataPushResource()
     {
-
     }
 
     @Path("/location/{location}/datastore/{datastore}/dataset/{dataset}")

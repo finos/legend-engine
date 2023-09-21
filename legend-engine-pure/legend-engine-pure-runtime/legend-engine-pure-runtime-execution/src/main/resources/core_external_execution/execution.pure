@@ -25,7 +25,7 @@ function meta::legend::execute(f: FunctionDefinition<Any>[1], vars: Pair<String,
     let rawPlan = meta::pure::executionPlan::executionPlan($f, $context, $extensions);
 
     // bind to available local platform
-    let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($extensions);
+    let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava'); // TODO: Remove hardcoded platformId
 
     // transform to vX_X_X
     let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);

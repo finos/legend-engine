@@ -1,4 +1,4 @@
-import meta::external::shared::format::*;
+import meta::external::format::shared::*;
 import meta::external::language::haskell::format::*;
 import meta::external::language::haskell::transformation::fromPure::*;
 

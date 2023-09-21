@@ -14,32 +14,24 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExternalFormatGrammarComposerExtension implements IExternalFormatGrammarComposerExtension
+public class ExternalFormatGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
@@ -59,46 +51,6 @@ public class ExternalFormatGrammarComposerExtension implements IExternalFormatGr
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(ExternalFormatGrammarComposerExtension::renderElement).makeString("###" + ExternalFormatGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
-    }
-
-    @Override
-    public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers()
-    {
-        return Collections.singletonList((connectionValue, context) -> (connectionValue instanceof ExternalFormatConnection)
-                ? renderExternalFormatConnection((ExternalFormatConnection) connectionValue, context)
-                : null);
-    }
-
-    private Pair<String, String> renderExternalFormatConnection(ExternalFormatConnection connection, PureGrammarComposerContext context)
-    {
-        List<IExternalFormatGrammarComposerExtension> extensions = IExternalFormatGrammarComposerExtension.getExtensions(context);
-
-        String specification = IExternalFormatGrammarComposerExtension.process(connection.externalSource,
-                ListIterate.flatCollect(extensions, IExternalFormatGrammarComposerExtension::getExtraExternalSourceSpecificationComposers),
-                context);
-
-        return Tuples.pair(
-                ExternalFormatGrammarParserExtension.EXTERNAL_FORMAT_CONNECTION_TYPE,
-                context.getIndentationString() + "{\n" +
-                        (connection.element == null ? "" : context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "store: " + connection.element + ";\n") +
-                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "source: " + specification + ";\n" +
-                        context.getIndentationString() + "}");
-    }
-
-    @Override
-    public List<Function2<ExternalSource, PureGrammarComposerContext, String>> getExtraExternalSourceSpecificationComposers()
-    {
-        return Collections.singletonList((specification, context) -> (specification instanceof UrlStreamExternalSource)
-                ? composeUrlStreamExternalSource((UrlStreamExternalSource) specification, context)
-                : null);
-    }
-
-    private String composeUrlStreamExternalSource(UrlStreamExternalSource spec, PureGrammarComposerContext context)
-    {
-        return "UrlStream\n" +
-                context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "{\n" +
-                context.getIndentationString() + PureGrammarComposerUtility.getTabString(2) + "url: " + PureGrammarComposerUtility.convertString(spec.url, true) + ";\n" +
-                context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "}";
     }
 
     private static String renderElement(PackageableElement element)

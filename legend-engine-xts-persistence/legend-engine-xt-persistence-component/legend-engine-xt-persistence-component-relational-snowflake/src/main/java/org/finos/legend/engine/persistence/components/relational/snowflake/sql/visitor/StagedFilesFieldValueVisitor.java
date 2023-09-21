@@ -36,7 +36,7 @@ public class StagedFilesFieldValueVisitor implements LogicalPlanVisitor<StagedFi
         current.alias().ifPresent(stageField::setAlias);
         current.datasetRefAlias().ifPresent(stageField::setDatasetReferenceAlias);
 
-        if (current.dataType().equals(DataType.VARIANT) || current.dataType().equals(DataType.JSON))
+        if (current.fieldType().dataType().equals(DataType.VARIANT) || current.fieldType().dataType().equals(DataType.JSON))
         {
            Function parseJson = new Function(FunctionName.fromName("PARSE_JSON"), Arrays.asList(stageField), null, context.quoteIdentifier());
            Function toVariant = new Function(FunctionName.fromName("TO_VARIANT"), Arrays.asList(parseJson), current.alias().orElse(null), context.quoteIdentifier());

@@ -160,6 +160,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
 
   [
     dynaFnToSql('abs',                    $allStates,            ^ToSql(format='abs(%s)')),
+    dynaFnToSql('ascii',                  $allStates,            ^ToSql(format='ascii(%s)')),
     dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
     dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
@@ -169,9 +170,11 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('averageRank',            $allStates,            ^ToSql(format='average_rank()')),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='cbrt(%s)')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
+    dynaFnToSql('char',                   $allStates,            ^ToSql(format='chr(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')),
+    dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cot(%s)')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('denseRank',              $allStates,            ^ToSql(format='dense_rank()')),
     dynaFnToSql('distinct',               $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
@@ -195,8 +198,10 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
     dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
     dynaFnToSql('max',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
     dynaFnToSql('min',                    $allStates,            ^ToSql(format='min(%s)')),
     dynaFnToSql('minus',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | '-' + $p->toOne(), | $p->joinStrings('(', ' - ', ')'))})),
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
@@ -206,9 +211,14 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),
     dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[*] | $p->transformPercentile($literalProcessor)})),
     dynaFnToSql('rank',                   $allStates,            ^ToSql(format='rank()')),
+    dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='repeat(%s, %s)')),
     dynaFnToSql('replace',                $allStates,            ^ToSql(format='replace(%s, %s, %s)')),
+    dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha256(%s)')),
+    dynaFnToSql('sign',                   $allStates,            ^ToSql(format='sign(%s)')),
     dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
     dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
@@ -223,7 +233,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('toLower',                $allStates,            ^ToSql(format='lower(%s)')),
     dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
-    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)'))
+    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)')),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)'))
   ];
 }
 

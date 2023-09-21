@@ -28,7 +28,7 @@ import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecord
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataString;
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
-import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.tests.model.firm.Person;
+import org.finos.legend.engine.external.format.test.fixture.app.meta.external.format.shared.executionPlan.tests.model.firm.Person;
 
 import java.math.BigDecimal;
 import java.time.Instant;

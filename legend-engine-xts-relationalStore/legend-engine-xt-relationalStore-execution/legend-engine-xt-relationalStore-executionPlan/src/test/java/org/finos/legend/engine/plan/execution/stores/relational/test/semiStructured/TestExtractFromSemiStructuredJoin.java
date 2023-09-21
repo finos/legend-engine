@@ -19,9 +19,6 @@ import org.junit.Test;
 
 public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructured
 {
-    private static final String snowflakeMapping = "join::mapping::SnowflakeMapping";
-    private static final String snowflakeRuntime = "join::runtime::SnowflakeRuntime";
-
     private static final String memSQLMapping = "join::mapping::MemSQLMapping";
     private static final String memSQLRuntime = "join::runtime::MemSQLRuntime";
 
@@ -40,18 +37,6 @@ public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructure
                 "Fabrice,Roberts,Firm A\n" +
                 "Oliver,Hill,Firm B\n" +
                 "David,Harris,Firm B\n", h2Result.replace("\r\n", "\n"));
-
-        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Last Name\", VARCHAR(100)), (\"Firm/Legal Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".LASTNAME as \"Last Name\", \"firm_table_0\".FIRM_DETAILS['legalName']::varchar as \"Firm/Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join FIRM_SCHEMA.FIRM_TABLE as \"firm_table_0\" on (to_number(get_path(\"root\".FIRM, 'ID')) = to_number(get_path(\"firm_table_0\".FIRM_DETAILS, 'ID')))\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
         String memSQLExpected =

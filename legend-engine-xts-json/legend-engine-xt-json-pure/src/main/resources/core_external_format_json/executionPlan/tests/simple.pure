@@ -16,7 +16,7 @@ import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 import meta::external::format::json::executionPlan::model::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
@@ -30,6 +30,21 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithOptionalInput(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[0..1]| Person->internalize($binding, $data->orElse('[]'))->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let result_with_input  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result_with_input);
+
+  let result_without_input = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, []);
+
+  assertEquals('[]', $result_without_input);
+
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithStaticInput(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -38,6 +53,20 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, []);
 
   assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithFunctionalInput(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data->decodeUrl())->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result);
+
+  let result1 = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'->encodeUrl()));
+
+  assertEquals('{"firstName":"John","lastName":"Doe"}', $result1);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithChecked(): Boolean[1]
@@ -124,6 +153,16 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let query   = {data:String[1]| TargetPerson.all()->graphFetch(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, #{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
+
+  assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndFunctionalInput(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| TargetPerson.all()->graphFetch(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data->decodeUrl()))->externalize($binding, #{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'->encodeUrl()));
 
   assertEquals('{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[]}', $result);
 }
@@ -246,7 +285,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
 ###Pure
 import meta::legend::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::external::format::json::executionPlan::test::simple::*;
 
 Class meta::external::format::json::executionPlan::test::simple::RefinedPerson

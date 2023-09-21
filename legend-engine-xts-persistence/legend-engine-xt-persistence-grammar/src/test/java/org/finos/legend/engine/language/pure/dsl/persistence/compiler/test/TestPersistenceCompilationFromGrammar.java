@@ -19,7 +19,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_TestData;
@@ -1740,7 +1740,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
         Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink objectStorageSink = (Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink) sink;
 
         // binding
-        Root_meta_external_shared_format_binding_Binding binding = objectStorageSink._binding();
+        Root_meta_external_format_shared_binding_Binding binding = objectStorageSink._binding();
         assertNotNull(binding);
         assertEquals("application/json", binding._contentType());
 

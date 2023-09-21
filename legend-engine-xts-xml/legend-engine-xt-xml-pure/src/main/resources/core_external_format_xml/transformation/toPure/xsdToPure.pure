@@ -16,12 +16,12 @@ import meta::external::format::xml::transformation::toPure::*;
 import meta::external::format::xml::metamodel::xml::*;
 import meta::external::format::xml::metamodel::xsd::*;
 
-import meta::external::shared::*;
-import meta::external::shared::generation::*;
-import meta::external::shared::format::*;
-import meta::external::shared::format::transformation::*;
-import meta::external::shared::format::transformation::toString::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::generation::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::transformation::*;
+import meta::external::format::shared::transformation::toString::*;
+import meta::external::format::shared::metamodel::*;
 
 import meta::pure::functions::collection::*;
 import meta::pure::functions::meta::*;
@@ -54,7 +54,7 @@ function meta::external::format::xml::transformation::toPure::xsdToPureDescripto
 // Configuration
 // ========================================================================================================================================================
 
-Class meta::external::format::xml::transformation::toPure::XsdToModelConfiguration extends meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration
+Class meta::external::format::xml::transformation::toPure::XsdToModelConfiguration extends meta::external::format::shared::transformation::toPure::SchemaToModelConfiguration
 {
    {doc.doc = 'Should classes that represent only a collection be eliminated from the structure? For example, if true, <things><thing/><thing/></things> becomes Thing[*] rather than a class Things with a single property of type Thing[*].'}
    inlineCollectionClasses   : Boolean[1];

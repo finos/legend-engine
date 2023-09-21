@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
 
 import meta::external::format::json::contract::*;
 import meta::external::format::json::executionPlan::*;
@@ -33,12 +33,12 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
 
 function meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaDataExtensionJavaPlatformBinding(): meta::pure::extension::Extension[1]
 {
-     meta::pure::executionPlan::platformBinding::platformBindingExtension([
-            meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
-               // Bindings
-               meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
-                  meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
-               ])
-            ])
+  meta::pure::executionPlan::platformBinding::platformBindingExtension('PlatformBinding - LegendJava - ExternalFormatJSON', [
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      // Bindings
+      meta::external::format::shared::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBindingExtension([
+        meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
       ])
+    ])
+  ])
 }

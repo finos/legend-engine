@@ -21,12 +21,14 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -40,20 +42,24 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 
 class BulkLoadPlanner extends Planner
 {
+
+    private StagedFilesDataset stagedFilesDataset;
+
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
     {
         super(datasets, ingestMode, plannerOptions);
 
         // validation
-        if (!(datasets.stagingDataset() instanceof StagedFilesDatasetAbstract))
+        if (!(datasets.stagingDataset() instanceof StagedFilesDataset))
         {
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
+
+        stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
     }
 
     @Override
@@ -90,8 +96,15 @@ class BulkLoadPlanner extends Planner
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
 
+        if (ingestMode().lineageField().isPresent())
+        {
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().lineageField().get()).build());
+            List<String> files = stagedFilesDataset.stagedFilesDatasetProperties().files();
+            String lineageValue = String.join(",", files);
+            fieldsToSelect.add(StringValue.of(lineageValue));
+        }
 
-        Dataset selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
+        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
         return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
@@ -131,15 +144,7 @@ class BulkLoadPlanner extends Planner
     @Override
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        // Only supported if Audit enabled
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            // Rows inserted = rows in main with audit column equals latest timestamp
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            postRunStatisticsResult.put(INCOMING_RECORD_COUNT, LogicalPlan.builder()
-                    .addOps(getRowsBasedOnAppendTimestamp(mainDataset(), auditField, INCOMING_RECORD_COUNT.get()))
-                    .build());
-        }
+        // Not supported at the moment
     }
 
     private Selection getRowsBasedOnAppendTimestamp(Dataset dataset, String field, String alias)

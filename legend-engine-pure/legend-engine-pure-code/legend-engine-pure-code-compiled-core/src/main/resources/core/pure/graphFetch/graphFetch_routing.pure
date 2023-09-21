@@ -284,7 +284,7 @@ function meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation(rout
   print(if($debug.debug,|$permutations->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));    
 
   print(if($debug.debug,|'\n'+$debug.space+'Filtered Permutations ('+$setsInScope.id->size()->toString()+')\n', |''));
-  let filteredPermutationSet = $permutations->filter(permSet | $permSet.values.sets->forAll(s | ($s.class == $sourceSetImplementation.class && $s == $sourceSetImplementation) || $s.class != $sourceSetImplementation.class));
+  let filteredPermutationSet = $permutations->filter(permSet | $permSet.values.sets->forAll(s | ($s.class == $sourceSetImplementation.class && $s.id == $sourceSetImplementation.id) || $s.class != $sourceSetImplementation.class));
 
   print(if($debug.debug,|$filteredPermutationSet->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));
 
@@ -517,7 +517,7 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
          if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
 
       rp: RoutedPropertyGraphFetchTree[1] |
-         $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne() + ']') +
+         $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne()  + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') + ']') +
          if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
       rp: PropertyGraphFetchTree[1] |

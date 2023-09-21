@@ -20,8 +20,10 @@ import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.DeploymentOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Ownership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -33,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UserListOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
@@ -71,6 +74,10 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
                         .withSubtype(ServiceTest.class, "serviceTest")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(Ownership.class)
+                        .withSubtype(DeploymentOwnership.class, "deploymentOwnership")
+                        .withSubtype(UserListOwnership.class, "userListOwnership")
                         .build()
         ));
     }

@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
 import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
@@ -30,7 +31,18 @@ import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServi
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.MemSQLConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.RedshiftConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.SnowflakeConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.SqlServerConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.TrinoConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.extensions.SpannerConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceStoreExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
@@ -56,6 +68,27 @@ public class TestExtensions
     }
 
     @Test
+    public void testConnectionExtensions()
+    {
+        assertHasExtensions(expectedConnectionExtensions(), ConnectionExtension.class);
+    }
+
+    protected MutableList<Class<? extends ConnectionExtension>> expectedConnectionExtensions()
+    {
+        return Lists.mutable.<Class<? extends ConnectionExtension>>empty()
+                .with(AthenaConnectionExtension.class)
+                .with(BigQueryConnectionExtension.class)
+                .with(DatabricksConnectionExtension.class)
+                .with(MemSQLConnectionExtension.class)
+                .with(PostgresConnectionExtension.class)
+                .with(RedshiftConnectionExtension.class)
+                .with(SnowflakeConnectionExtension.class)
+                .with(SpannerConnectionExtension.class)
+                .with(SqlServerConnectionExtension.class)
+                .with(TrinoConnectionExtension.class);
+    }
+
+    @Test
     public void testExternalFormatRuntimeExtensions()
     {
         assertHasExtensions(expectedExternalFormatRuntimeExtensions(), ExternalFormatRuntimeExtension.class);
@@ -66,7 +99,8 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
                 .with(FlatDataRuntimeExtension.class)
                 .with(JsonSchemaRuntimeExtension.class)
-                .with(XsdRuntimeExtension.class);
+                .with(XsdRuntimeExtension.class)
+                .with(ArrowRuntimeExtension.class);
     }
 
     @Test

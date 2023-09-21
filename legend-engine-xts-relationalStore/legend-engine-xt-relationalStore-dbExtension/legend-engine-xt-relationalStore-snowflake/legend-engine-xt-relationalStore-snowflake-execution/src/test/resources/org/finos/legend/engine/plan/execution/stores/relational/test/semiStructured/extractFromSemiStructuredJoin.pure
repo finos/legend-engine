@@ -1,0 +1,197 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class join::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: join::model::Firm[1];
+}
+
+Class join::model::Firm
+{
+  ID: Integer[1];
+  legalName: String[1];
+  otherNames: String[1];
+}
+
+###Relational
+Database join::store::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM VARCHAR(1000)
+    )
+  )
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      FIRM_DETAILS VARCHAR(1000) PRIMARY KEY
+    )
+  )
+  Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
+)
+
+Database join::store::SnowflakeDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM SEMISTRUCTURED
+    )
+  )
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      FIRM_DETAILS SEMISTRUCTURED PRIMARY KEY
+    )
+  )
+  Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
+)
+
+Database join::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM JSON
+    )
+  )
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      FIRM_DETAILS JSON PRIMARY KEY
+    )
+  )
+  Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
+)
+
+###ExternalFormat
+Binding join::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    join::model::Firm
+  ];
+}
+
+###Mapping
+Mapping join::mapping::SnowflakeMapping
+(
+  *join::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding join::store::FirmBinding : [join::store::SnowflakeDB]@FirmPerson | [join::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+  }
+)
+
+Mapping join::mapping::MemSQLMapping
+(
+  *join::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding join::store::FirmBinding : [join::store::MemSQLDB]@FirmPerson | [join::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+  }
+)
+
+Mapping join::mapping::H2Mapping
+(
+  *join::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [join::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding join::store::FirmBinding : [join::store::H2DB]@FirmPerson | [join::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+
+  }
+)
+
+###Runtime
+Runtime join::runtime::SnowflakeRuntime
+{
+    mappings :
+    [
+        join::mapping::SnowflakeMapping
+    ];
+    connections :
+    [
+        join::store::SnowflakeDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: join::store::SnowflakeDB;
+                    type: Snowflake;
+                    specification: Snowflake
+                    {
+                        name: 'dbName';
+                        account: 'account';
+                        warehouse: 'warehouse';
+                        region: 'region';
+                    };
+                    auth: DefaultH2;
+                }
+            }#
+        ]
+    ];
+}
+
+###Pure
+function join::testJoinOnSemiStructuredProperty():TabularDataSet[1]
+{
+    join::model::Person.all()->project(
+      [
+        x|$x.firstName,
+        x|$x.lastName,
+        x|$x.firm.legalName
+      ],
+      [
+        'First Name',
+        'Last Name',
+        'Firm/Legal Name'
+      ]
+    );
+}

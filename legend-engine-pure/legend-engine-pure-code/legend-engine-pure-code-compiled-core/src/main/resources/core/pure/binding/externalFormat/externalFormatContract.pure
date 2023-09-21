@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::transformation::toPure::*;
-import meta::external::shared::format::transformation::fromPure::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::transformation::toPure::*;
+import meta::external::format::shared::transformation::fromPure::*;
 
 import meta::pure::generation::metamodel::*;
 
@@ -27,7 +27,7 @@ import meta::pure::metamodel::path::*;
 
 import meta::pure::model::unit::*;
 
-Class meta::external::shared::format::ExternalFormatContract<T>
+Class meta::external::format::shared::ExternalFormatContract<T>
 [
   sourceRecordSerializeTreeProvidedForCheckedResult
   (
@@ -59,7 +59,7 @@ Class meta::external::shared::format::ExternalFormatContract<T>
   sourceRecordSerializeTree        : RootGraphFetchTree<Any>[0..1];   // If external Format choses to return checked wrapped response for internalize, it needs to provide serialized representation of its source record metamodel
 }
 
-Class meta::external::shared::format::ExternalFormatToPureDescriptor<U>
+Class meta::external::format::shared::ExternalFormatToPureDescriptor<U>
 [
   configurationType : checkSuperType($this.configuration, SchemaToModelConfiguration)
 ]
@@ -81,7 +81,7 @@ Class meta::external::shared::format::ExternalFormatToPureDescriptor<U>
   }:PackageableElement[*];
 }
 
-Class meta::external::shared::format::ExternalFormatFromPureDescriptor<V>
+Class meta::external::format::shared::ExternalFormatFromPureDescriptor<V>
 [
   configurationType : checkSuperType($this.configuration, ModelToSchemaConfiguration)
 ]
@@ -103,17 +103,17 @@ Class meta::external::shared::format::ExternalFormatFromPureDescriptor<V>
   }:SchemaSet[1];
 }
 
-Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatExternalizeConfig
+Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatExternalizeConfig
 {
 
 }
 
-Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatInternalizeConfig
+Class <<typemodifiers.abstract>> meta::external::format::shared::ExternalFormatInternalizeConfig
 {
 
 }
 
-function <<access.private>> meta::external::shared::format::checkSuperType(actualType: Class<Any>[1], expectedType: Class<Any>[1]):Boolean[1]
+function <<access.private>> meta::external::format::shared::checkSuperType(actualType: Class<Any>[1], expectedType: Class<Any>[1]):Boolean[1]
 {
   $actualType->getAllClassGeneralisations()->contains($expectedType);
 }

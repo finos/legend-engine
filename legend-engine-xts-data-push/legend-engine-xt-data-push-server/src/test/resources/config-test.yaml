@@ -14,7 +14,7 @@
 
 applicationName: Legend Data Push Test Server
 
-sessionCookie: LEGEND_SDLC_JSESSIONID
+sessionCookie: LEGEND_DATA_PUSH_JSESSIONID
 
 server:
   applicationConnectors:

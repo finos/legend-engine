@@ -48,7 +48,7 @@ function meta::pure::graphFetch::switchToMilestoneProperties(tree:GraphFetchTree
       {| 
          let pgft = $tree->cast(@PropertyGraphFetchTree);
          ^$pgft(
-            property   = $pgft.property->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->at(0),
+            property   = $pgft.property->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->filter(x|!$x->isNoArgMilestonedGeneratedQualifiedProperty())->at(0),
             parameters = $parameters,
             subTrees   = $tree.subTrees->map(gft| $gft->switchToMilestoneProperties($parameters))
          );
@@ -174,9 +174,9 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
 
    let nodeText = $node->match([
       rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
-      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
+      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
       r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
-      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '') 
+      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
    ]) +  $requiredQPText + $constraintsExclusionsText;
    
   $nodeText +
@@ -324,7 +324,10 @@ function meta::pure::graphFetch::ensureFunctionRequirementsFromLambda(node:Graph
       {| 
          let updatedProcessed          = $processed->add($class);
          let newSubTrees = $updatedForClass.subTrees->map({st| 
-            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            let returns = if($st->cast(@PropertyGraphFetchTree).subType->isEmpty(),
+                            | $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne(),
+                            | $st->cast(@PropertyGraphFetchTree).subType->toOne()
+                            );
             if($returns->instanceOf(Class) && !$updatedProcessed->contains($returns),
                | $st->ensureFunctionRequirementsFromLambda($returns->cast(@Class<Any>), $f, $updatedProcessed, $ensureConstraintsForSubTrees),
                | $st
@@ -352,7 +355,10 @@ function meta::pure::graphFetch::ensureFunctionRequirements(node:GraphFetchTree[
    if($ensureConstraintsForSubTrees,
       {| 
          let newSubTrees = $updatedForClass.subTrees->map({st| 
-            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            let returns = if($st->cast(@PropertyGraphFetchTree).subType->isEmpty(),
+                            | $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne(),
+                            | $st->cast(@PropertyGraphFetchTree).subType->toOne()
+                            );
             if($returns->instanceOf(Class) && !$updatedProcessed->contains($returns),
                | $st->ensureFunctionRequirements($returns->cast(@Class<Any>), $f, $updatedProcessed, $ensureConstraintsForSubTrees),
                | $st
@@ -486,7 +492,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], true));
+               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false)));
             }
          ]);
 
@@ -798,4 +804,3 @@ function <<access.private>> meta::pure::graphFetch::removeDummyProperties(tree:G
                                );
    ])
 }
-

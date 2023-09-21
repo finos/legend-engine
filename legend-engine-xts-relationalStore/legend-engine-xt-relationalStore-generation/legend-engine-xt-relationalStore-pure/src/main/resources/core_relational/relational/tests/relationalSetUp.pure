@@ -122,6 +122,10 @@ Database meta::relational::tests::db
 
     Table testClassTable(desks INT PRIMARY KEY, students INT)
 
+    Table Dept(id INT PRIMARY KEY, name VARCHAR(10))
+    Table Branch(branchId INT PRIMARY KEY, name VARCHAR(10))
+    Table Org(OrgId INT, name VARCHAR(10))
+
     View interactionViewMaxTime
     (
        ~filter PositiveInteractionTimeFilter
@@ -179,6 +183,18 @@ Database meta::relational::tests::db
         orderPnl : sum(@OrderPnlTable_Order | orderPnlTable.pnl)
     )
 
+    View OrgView
+    (
+        OrgId: Org.OrgId,
+        name: Org.name
+    )
+
+    View OrgViewOnView
+    (
+        OrgId: OrgView.OrgId PRIMARY KEY,
+        name: OrgView.name
+    )
+
     Schema productSchema
     (
        Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
@@ -210,6 +226,9 @@ Database meta::relational::tests::db
     Join OrderPnlTable_Order(orderPnlTable.ORDER_ID = orderTable.ID)
     Join AccountPnlView_Account(accountOrderPnlView.accountId = accountTable.ID)
     Join Person_OtherNames(personTable.ID = otherNamesTable.PERSON_ID)
+    Join Org_DeptCat(OrgViewOnView.name = Dept.name)
+    Join Org_DeptDiv(OrgViewOnView.name = Dept.name)
+    Join Dept_Branch(Dept.id = Branch.branchId)
 )
 
 ###Relational
@@ -1347,6 +1366,16 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('Create Table simple.firmTable(ID INT,LEGALNAME VARCHAR(200),TYPE VARCHAR(200));', $connection);
    executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (1, \'Firm X\', \'LLC\');', $connection);
    executeInDb('insert into simple.firmTable (ID, LEGALNAME, TYPE) values (2, \'Firm Y\', \'CORPORATION\');', $connection);
+
+   executeInDb('Drop table if exists Org;', $connection);
+   executeInDb('Create Table Org(OrgId INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Org (OrgId, name) values (1, \'simthp\');', $connection);
+   executeInDb('Drop table if exists Dept;', $connection);
+   executeInDb('Create Table Dept(id INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Dept (id, name) values (1, \'simthp\');', $connection);
+   executeInDb('Drop table if exists Branch;', $connection);
+   executeInDb('Create Table Branch(branchId INT, name VARCHAR(10));', $connection);
+   executeInDb('insert into Branch (branchId, name) values (1, \'TX\');', $connection);
 
    true;
 }

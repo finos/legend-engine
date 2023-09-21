@@ -16,7 +16,7 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::execution::*;
-import meta::external::shared::format::functions::*;
+import meta::external::format::shared::functions::*;
 import meta::external::format::json::executionPlan::test::withContentType::*;
 import meta::external::format::json::functions::*;
 
@@ -79,7 +79,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 // =========================================================================================================
 ###Pure
 import meta::legend::*;
-import meta::external::shared::format::binding::*;
+import meta::external::format::shared::binding::*;
 import meta::external::format::json::executionPlan::test::withContentType::*;
 
 Class meta::external::format::json::executionPlan::test::withContentType::RefinedPerson

@@ -69,6 +69,30 @@ public class TestParameterizedValueSpecification
 
     }
 
+    @Test
+    public void testStringListIsNotParameterized() throws IOException
+    {
+
+        ValueSpecification input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("parameterization/lambdaWithInFilter.json")), ValueSpecification.class);
+
+        ParameterizedValueSpecification spec = new ParameterizedValueSpecification(input, "GENERATED");
+
+        List<ParameterValue> expectedParameters = new ArrayList<>();
+
+        expectedParameters.add(createParameterValue("GENERATEDL0L1", new CInteger(1000L)));
+
+
+        List<Variable> expectedVariables = new ArrayList<>();
+        expectedVariables.add(new Variable("GENERATEDL0L1", "Integer", Multiplicity.PURE_ONE));
+
+        String actualSpec = objectMapper.writeValueAsString(spec.getValueSpecification());
+        Assert.assertEquals("{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"take\",\"parameters\":[{\"_type\":\"func\",\"function\":\"project\",\"parameters\":[{\"_type\":\"func\",\"function\":\"filter\",\"parameters\":[{\"_type\":\"func\",\"function\":\"getAll\",\"parameters\":[{\"_type\":\"packageableElementPtr\",\"fullPath\":\"domain::Example\"}]},{\"_type\":\"lambda\",\"body\":[{\"_type\":\"func\",\"function\":\"in\",\"parameters\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"property\":\"caseType\"},{\"_type\":\"collection\",\"multiplicity\":{\"lowerBound\":3,\"upperBound\":3},\"values\":[{\"_type\":\"string\",\"value\":\"Case 3\"},{\"_type\":\"string\",\"value\":\"Case 2\"},{\"_type\":\"string\",\"value\":\"Case 1\"}]}]}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}]}]},{\"_type\":\"collection\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"values\":[{\"_type\":\"lambda\",\"body\":[{\"_type\":\"property\",\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}],\"property\":\"cases\"}],\"parameters\":[{\"_type\":\"var\",\"name\":\"x\"}]}]},{\"_type\":\"collection\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"values\":[{\"_type\":\"string\",\"value\":\"Cases\"}]}]},{\"_type\":\"var\",\"class\":\"Integer\",\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"GENERATEDL0L1\"}]}],\"parameters\":[]}", actualSpec);
+
+        assert (IntStream.range(0, spec.getParameterValues().size()).allMatch(index -> parameterValueCompare(spec.getParameterValues().get(index), expectedParameters.get(index))));
+        assert (IntStream.range(0, spec.getVariables().size()).allMatch(index -> variableCompare(spec.getVariables().get(index), expectedVariables.get(index))));
+
+    }
+
     private Boolean parameterValueCompare(ParameterValue a, ParameterValue b)
     {
         PrimitiveValueSpecificationToObjectVisitor visitor = new PrimitiveValueSpecificationToObjectVisitor();

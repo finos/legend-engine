@@ -207,8 +207,11 @@ public class BigQueryHelper implements RelationalExecutionHelper
         validateColumns(userColumns, dbColumns);
     }
 
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, TypeMapping typeMapping)
+    public Dataset constructDatasetFromDatabase(Dataset dataset, TypeMapping typeMapping)
     {
+        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
+        String schemaName = dataset.datasetReference().group().orElse(null);
+        String databaseName = dataset.datasetReference().database().orElse(null);
         if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
         {
             throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
@@ -247,7 +250,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         SchemaDefinition schemaDefinition = SchemaDefinition.builder()
                 .addAllFields(fields)
                 .build();
-        return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
+        return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).datasetAdditionalProperties(dataset.datasetAdditionalProperties()).build();
     }
 
     private List<String> fetchPrimaryKeys(String tableName, String schemaName, String databaseName)

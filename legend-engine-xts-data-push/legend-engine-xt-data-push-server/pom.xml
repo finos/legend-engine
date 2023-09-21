@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-data-push</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.23.1-SNAPSHOT</version>
+        <version>4.28.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,6 +36,17 @@
     </build>
 
     <dependencies>
+        <!-- ENGINE -->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
+        </dependency>
+        <!-- ENGINE -->
+
         <!-- Shared Drop Wizard Bundles -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -47,15 +58,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.shared</groupId>
+            <artifactId>legend-shared-pac4j</artifactId>
+        </dependency>
         <!-- Shared Drop Wizard Bundles -->
 
         <!-- JSON -->
-        <!--
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -82,65 +91,10 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-jersey</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- DropWizard -->
-
-        <!-- Swagger -->
-        <!--
-        <dependency>
-            <groupId>com.smoketurner</groupId>
-            <artifactId>dropwizard-swagger</artifactId>
-        </dependency>
-        -->
-        <!-- Swagger -->
-
-        <!-- OPEN TRACING -->
-        <!--
-        TODO
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-        </dependency>
-        -->
-        <!-- OPEN TRACING -->
-
-        <!-- LOG -->
-        <!--
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        -->
-        <!-- LOG -->
 
         <!-- ANNOTATIONS -->
         <dependency>
@@ -179,6 +133,16 @@
             <artifactId>opentracing-noop</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- RUNTIME -->
 
         <!-- TEST -->
@@ -192,14 +156,11 @@
             <artifactId>legend-engine-test-server-shared</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-testing</artifactId>
             <scope>test</scope>
         </dependency>
-
         <!-- TEST -->
     </dependencies>
-
 </project>

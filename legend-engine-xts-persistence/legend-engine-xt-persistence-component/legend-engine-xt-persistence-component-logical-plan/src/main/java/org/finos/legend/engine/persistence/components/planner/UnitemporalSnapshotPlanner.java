@@ -17,6 +17,10 @@ package org.finos.legend.engine.persistence.components.planner;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetDataAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandlingVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatchAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOpAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -53,10 +57,11 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         if (ingestMode.partitioned())
         {
             List<String> fieldNames = stagingDataset().schema().fields().stream().map(Field::name).collect(Collectors.toList());
-            ingestMode.partitionValuesByField().keySet().forEach(field -> validateExistence(
-                fieldNames,
-                field,
-                "Field [" + field + "] from partitionValuesByField not present in incoming dataset"));
+            // All partitionFields must be present in staging dataset
+            ingestMode.partitionFields().forEach(field -> validateExistence(
+                    fieldNames,
+                    field,
+                    "Field [" + field + "] from partitionFields not present in incoming dataset"));
         }
     }
 
@@ -71,21 +76,20 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
 
-        List<Operation> operations = new ArrayList<>();
         if (resources.stagingDataSetEmpty())
         {
-            // Step 1: Milestone all Records in main table
-            operations.add(sqlToMilestoneAllRows(keyValuePairs));
+            // Empty Dataset handling
+            return ingestMode().emptyDatasetHandling().accept(new EmptyDatasetHandler(keyValuePairs));
         }
         else
         {
+            List<Operation> operations = new ArrayList<>();
             // Step 1: Milestone Records in main table
             operations.add(getSqlToMilestoneRows(keyValuePairs));
             // Step 2: Insert records in main table
             operations.add(sqlToUpsertRows());
+            return LogicalPlan.of(operations);
         }
-
-        return LogicalPlan.of(operations);
     }
 
     @Override
@@ -98,6 +102,10 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             operations.add(Create.of(true, stagingDataset()));
         }
         operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
         return LogicalPlan.of(operations);
     }
 
@@ -226,9 +234,55 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         "batch_id_out" = {TABLE_BATCH_ID} - 1,
          "batch_out_time" = {BATCH_TIME}"
    where "batch_id_out" = {MAX_BATCH_ID_VALUE}
+   // OPTIONAL : when partition values are provided
+   and sink.partition_key in [VALUE1, VALUE2, ...]
    */
     protected Update sqlToMilestoneAllRows(List<Pair<FieldValue, Value>> values)
     {
-        return UpdateAbstract.of(mainDataset(), values, openRecordCondition);
+        List<Condition> conditions = new ArrayList<>();
+        conditions.add(openRecordCondition);
+
+        // Handle Partition Values
+        if (ingestMode().partitioned() && !(ingestMode().partitionValuesByField().isEmpty()))
+        {
+            conditions.add(LogicalPlanUtils.getPartitionColumnValueMatchInCondition(mainDataset(), ingestMode().partitionValuesByField()));
+        }
+        return UpdateAbstract.of(mainDataset(), values, And.of(conditions));
+    }
+
+
+    private class EmptyDatasetHandler implements EmptyDatasetHandlingVisitor<LogicalPlan>
+    {
+        List<Pair<FieldValue, Value>> keyValuePairs;
+
+        public EmptyDatasetHandler(List<Pair<FieldValue, Value>> keyValuePairs)
+        {
+            this.keyValuePairs = keyValuePairs;
+        }
+
+        @Override
+        public LogicalPlan visitNoOp(NoOpAbstract noOpAbstract)
+        {
+            List<Operation> operations = new ArrayList<>();
+            return LogicalPlan.of(operations);
+        }
+
+        @Override
+        public LogicalPlan visitDeleteTargetData(DeleteTargetDataAbstract deleteTargetDataAbstract)
+        {
+            List<Operation> operations = new ArrayList<>();
+            if (ingestMode().partitioned() && ingestMode().partitionValuesByField().isEmpty())
+            {
+                return LogicalPlan.of(operations);
+            }
+            operations.add(sqlToMilestoneAllRows(keyValuePairs));
+            return LogicalPlan.of(operations);
+        }
+
+        @Override
+        public LogicalPlan visitFailEmptyBatch(FailEmptyBatchAbstract failEmptyBatchAbstract)
+        {
+            throw new RuntimeException("Encountered an Empty Batch, FailEmptyBatch is enabled, so failing the batch!");
+        }
     }
 }

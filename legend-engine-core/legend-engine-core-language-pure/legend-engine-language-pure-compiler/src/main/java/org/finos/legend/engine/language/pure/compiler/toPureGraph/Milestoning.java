@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ArrayIterate;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
@@ -47,6 +48,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
@@ -58,6 +60,9 @@ import java.util.function.BiConsumer;
 
 public class Milestoning
 {
+    private static final String ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX = "AllVersionsInRange";
+    private static final String ALL_VERSIONS_PROPERTY_NAME_SUFFIX = "AllVersions";
+
     public enum GeneratedMilestoningStereotype
     {
         generatedmilestoningproperty,
@@ -476,6 +481,36 @@ public class Milestoning
         return p -> p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningproperty.name()));
     }
 
+    public static Boolean isGeneratedMilestoningQualifiedProperty(AbstractProperty<?> p)
+    {
+       return (p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningproperty.name())) &&  (p instanceof QualifiedProperty<?>)) ? true : false;
+    }
+
+    public static Boolean isDateArgGeneratedMilestoningQualifiedProperty(AbstractProperty<?> p)
+    {
+        if (isGeneratedMilestoningQualifiedProperty(p))
+        {
+            FunctionType rawType = (FunctionType) p._classifierGenericType()._typeArguments().getFirst()._rawType();
+            return rawType._parameters().size() == getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty) p);
+        }
+        return false;
+    }
+
+    public static Boolean isNoArgGeneratedMilestoningQualifiedProperty(AbstractProperty<?> p)
+    {
+        if (isGeneratedMilestoningQualifiedProperty(p))
+        {
+            FunctionType rawType = (FunctionType) p._classifierGenericType()._typeArguments().getFirst()._rawType();
+            return rawType._parameters().size() != getCountOfParametersSatisfyingMilestoningDateRequirments((QualifiedProperty) p);
+        }
+        return false;
+    }
+
+    public static boolean isAllVersionsInRangeGeneratedMilestoningQualifiedProperty(AbstractProperty<?> property)
+    {
+        return isGeneratedMilestoningQualifiedProperty(property) && property._name().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX);
+    }
+
     public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
     {
         MilestoningStereotype ms = Milestoning.temporalStereotypes(_class._stereotypes());
@@ -486,6 +521,17 @@ public class Milestoning
             return restrictedMilestoningProperties;
         }
         return Lists.mutable.empty();
+    }
+
+    public static int getCountOfParametersSatisfyingMilestoningDateRequirments(QualifiedProperty milestonedQualifiedProperty)
+    {
+        if (!Milestoning.isGeneratedMilestoningQualifiedProperty(milestonedQualifiedProperty))
+        {
+            throw new EngineException("Unable to get milestoning date parameters for non milestoned QualifiedProperty: " + milestonedQualifiedProperty.getName());
+        }
+        Class returnType = (Class) milestonedQualifiedProperty._genericType()._rawType();
+        MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(returnType._stereotypes());
+        return 1 + milestoningStereotype.getTemporalDatePropertyNames().size();
     }
 
     public static MilestoningStereotype temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)

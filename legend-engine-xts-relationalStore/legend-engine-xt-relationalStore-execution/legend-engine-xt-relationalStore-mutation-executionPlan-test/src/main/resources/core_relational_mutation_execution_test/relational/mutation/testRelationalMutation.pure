@@ -229,9 +229,9 @@ function meta::relational::mutation::executionPlan::test::buildTestDomainElement
 function <<access.private>> meta::relational::mutation::executionPlan::test::requiredMutationExtensions(): Extension[*]
 {
   meta::relational::extension::relationalExtensions()
-                   ->concatenate(meta::external::shared::format::externalFormatExtension())
+                   ->concatenate(meta::external::format::shared::externalFormatExtension())
                    ->concatenate(meta::external::format::json::extension::jsonSchemaFormatExtension())
-                   ->concatenate(meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()]));
+                   ->concatenate(meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()]));
 }
 
 function <<access.private>> meta::relational::mutation::executionPlan::test::baseExecutionPlan(): String[1]

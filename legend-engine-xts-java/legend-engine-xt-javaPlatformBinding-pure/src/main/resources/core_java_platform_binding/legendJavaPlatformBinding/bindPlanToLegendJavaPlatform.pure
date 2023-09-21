@@ -29,9 +29,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::commo
 
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
-   assert($platformBindingConfig->instanceOf(LegendJavaPlatformBindingConfig), | 'Expected Legend Java platform binding config');
-
-   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
+   let legendJavaConfig   = $platformBindingConfig->convertToLegendJavaPlatformBindingConfigIfPossible();
    let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
 
    let baseProject        = $generationContext->generateTypes($debug);
@@ -46,6 +44,20 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
                                         | $generatedProject->projectToImplementation()
                                     )
    );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::convertToLegendJavaPlatformBindingConfigIfPossible(platformBindingConfig: PlatformBindingConfig[1]): LegendJavaPlatformBindingConfig[1]
+{
+   if($platformBindingConfig->instanceOf(LegendJavaPlatformBindingConfig),
+      | $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig),
+
+      | // Can happen in the case when test plans are bound to platform locally using the function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions
+        assert($platformBindingConfig->genericType().rawType == PlatformBindingConfig, | 'Can only convert supertype (PlatformBindingConfig) instance');
+        ^LegendJavaPlatformBindingConfig
+        (
+          planId = $platformBindingConfig.planId
+        );
+   )
 }
 
 // Prepare generation context ---------------------------------------------------------

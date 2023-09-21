@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.MetadataDatasetCaseConverter;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetCaseConverter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +35,7 @@ public class MetadataDatasetCaseConverterTest
     @Test
     public void testMetadataDatasetCaseConverter()
     {
-        MetadataDatasetCaseConverter converter = new MetadataDatasetCaseConverter();
+        DatasetCaseConverter converter = new DatasetCaseConverter();
         MetadataDataset metadataDataset = MetadataDataset.builder()
             .metadataDatasetDatabaseName(databaseName)
             .metadataDatasetGroupName(groupName)

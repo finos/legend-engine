@@ -16,11 +16,11 @@ import meta::xsd::tests::toPure::*;
 import meta::external::format::xml::executionPlan::test::*;
 import meta::external::format::xml::metamodel::xml::*;
 import meta::external::format::xml::metamodel::xsd::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::functions::*;
-import meta::external::shared::functions::*;
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::functions::*;
+import meta::external::format::shared::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
@@ -115,7 +115,7 @@ function meta::external::format::xml::executionPlan::test::getTestBinding(): Bin
 
 function <<meta::pure::profiles::test.Test>> meta::external::format::xml::executionPlan::test::xmlNodes(): Boolean[1]
 {
-  let extensions = meta::external::shared::format::externalFormatExtension()->concatenate(meta::external::format::xml::extension::xsdFormatExtension());
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::external::format::xml::extension::xsdFormatExtension());
 
   let binding = getTestBinding();
   

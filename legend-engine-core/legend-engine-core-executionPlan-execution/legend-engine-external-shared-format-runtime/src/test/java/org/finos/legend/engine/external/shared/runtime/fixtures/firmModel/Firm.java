@@ -39,7 +39,7 @@ public class Firm implements IReferencedObject, IExternalData
 
         public String getPureClassName()
         {
-            return "meta::external::shared::testpack::simple::Firm";
+            return "meta::external::format::shared::testpack::simple::Firm";
         }
     };
 
@@ -122,15 +122,15 @@ public class Firm implements IReferencedObject, IExternalData
         List<IDefect> defects = new ArrayList<IDefect>();
         if (this.nameSize < 1L || this.nameSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for name: expected [1] found [" + this.nameSize + "]", "meta::external::shared::testpack::simple::Firm"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for name: expected [1] found [" + this.nameSize + "]", "meta::external::format::shared::testpack::simple::Firm"));
         }
         if (this.rankingSize > 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for ranking: expected [0..1] found [" + this.rankingSize + "]", "meta::external::shared::testpack::simple::Firm"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for ranking: expected [0..1] found [" + this.rankingSize + "]", "meta::external::format::shared::testpack::simple::Firm"));
         }
         if (this.addresses.size() < 1L)
         {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for addresses: expected [1..*] found [" + this.addresses.size() + "]", "meta::external::shared::testpack::simple::Firm"));
+            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for addresses: expected [1..*] found [" + this.addresses.size() + "]", "meta::external::format::shared::testpack::simple::Firm"));
         }
         return defects;
     }

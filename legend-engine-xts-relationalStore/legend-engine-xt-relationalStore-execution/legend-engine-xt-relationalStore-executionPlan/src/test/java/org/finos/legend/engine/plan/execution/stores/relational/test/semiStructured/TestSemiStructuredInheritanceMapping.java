@@ -19,9 +19,6 @@ import org.junit.Test;
 
 public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStructured
 {
-    private static final String snowflakeMapping = "inheritance::mapping::SnowflakeMapping";
-    private static final String snowflakeRuntime = "inheritance::runtime::SnowflakeRuntime";
-
     private static final String memSQLMapping = "inheritance::mapping::MemSQLMapping";
     private static final String memSQLRuntime = "inheritance::runtime::MemSQLRuntime";
 
@@ -32,17 +29,6 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtBaseClass()
     {
         String queryFunction = "inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_";
-        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
         String memSQLExpected =
@@ -69,17 +55,6 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtSubClass()
     {
         String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_";
-        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
         String memSQLExpected =
@@ -106,17 +81,6 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtSubClassNested()
     {
         String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_";
-        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
         String memSQLExpected =
@@ -143,17 +107,6 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions()
     {
         String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_";
-        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected =
-                "    Relational\n" +
-                "    (\n" +
-                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
-                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                "    )\n";
-        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
-        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
         String memSQLExpected =

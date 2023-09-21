@@ -165,10 +165,10 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $translator.loadTable->toOne()->eval($l, $this);
    }: String[*];
   
-   preAndFinallyExecutionSQLQuery(ds: meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1])
+   preAndFinallyExecutionSQLQuery(dc: meta::relational::runtime::DatabaseConnection[1])
    {
      assert($this.dbExtension.preAndFinallyExecutionSQLQuery->isNotEmpty(), 'Pre & Finally Execution SQL Queries are not set for Database Type: ' + $this.dbType->toString());
-     $this.dbExtension.preAndFinallyExecutionSQLQuery->toOne()->eval($this, $ds);
+     $this.dbExtension.preAndFinallyExecutionSQLQuery->toOne()->eval($this, $dc);
    }: PreAndFinallyExecutionSQLQuery[*];
 }
 
@@ -213,7 +213,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
-   preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
+   preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
    processTempTableName: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
 }
 
@@ -887,6 +887,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   add,
   adjust,
   and,
+  ascii,
   asin,
   atan,
   atan2,
@@ -896,6 +897,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   castBoolean,
   cbrt,
   ceiling,
+  char,
   coalesce,
   concat,
   contains,
@@ -903,6 +905,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   convertDateTime,
   convertVarchar128,
   cos,
+  cot,
   count,
   dateDiff,
   datePart,
@@ -926,6 +929,10 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   firstDayOfThisYear,
   firstDayOfWeek,
   firstDayOfYear,
+  firstHourOfDay,
+  firstMinuteOfHour,
+  firstSecondOfMinute,
+  firstMillisecondOfSecond,
   floor,
   extractFromSemiStructured,
   greaterThan,
@@ -948,9 +955,11 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   lessThan,
   lessThanEqual,
   log,
+  log10,
   ltrim,
   matches,
   max,
+  md5,
   min,
   minus,
   minute,
@@ -978,12 +987,17 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   quarterNumber,
   rank,
   rem,
+  repeatString,
   replace,
+  reverseString,
   right,
   round,
   rowNumber,
   rtrim,
   second,
+  sha1,
+  sha256,
+  sign,
   sin,
   size,
   sqlFalse,
@@ -998,6 +1012,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   sum,
   tan,
   times,
+  toDecimal,
+  toFloat,
   toLower,
   toOne,
   toString,
@@ -1005,6 +1021,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   toUpper,
   today,
   trim,
+  variancePopulation,
+  varianceSample,  
   weekOfYear,
   year
 }

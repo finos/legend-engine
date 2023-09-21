@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::metamodel::*;
+import meta::external::format::shared::metamodel::*;
 
-Class meta::external::shared::format::metamodel::SchemaSet extends PackageableElement
+Class meta::external::format::shared::metamodel::SchemaSet extends PackageableElement
 {
    format     : String[1];
 }
 
-Class meta::external::shared::format::metamodel::Schema
+Class meta::external::format::shared::metamodel::Schema
 {
    id         : String[0..1];
    location   : String[0..1];
    detail     : Any[1];
 }
 
-Association meta::external::shared::format::metamodel::SchemaSetMembers
+Association meta::external::format::shared::metamodel::SchemaSetMembers
 {
    set        : SchemaSet[1];
    schemas    : Schema[*];

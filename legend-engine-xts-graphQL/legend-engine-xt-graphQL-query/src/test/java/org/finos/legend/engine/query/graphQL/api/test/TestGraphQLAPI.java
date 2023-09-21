@@ -116,13 +116,29 @@ public class TestGraphQLAPI
         server.stop();
     }
 
-    @Test
-    public void testGraphQLExecuteDevAPI_Relational() throws Exception
+    private ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> getExecutionCacheInstance()
+    {
+        return ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+    }
+
+    private GraphQLExecute getGraphQLExecute()
+    {
+        return getGraphQLExecuteWithCache(null);
+    }
+
+    private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        return graphQLExecute;
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_Relational() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -152,10 +168,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_BiTemporalMilestoning_Root() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -173,10 +186,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_BusinessTemporalMilestoning_Root() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -194,10 +204,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_ProcessingTemporalMilestoning_Root() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -249,10 +256,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_RelationalWithParameter() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -355,10 +359,7 @@ public class TestGraphQLAPI
     {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Missing external parameter(s): legalName:String[1]");
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -378,10 +379,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_RelationalWithNullParameter() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -407,10 +405,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPIWithLetStatements_Relational() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -436,10 +431,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_InMemory() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -468,10 +460,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteGeneratePlansDevAPI_Relational()
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -529,13 +518,8 @@ public class TestGraphQLAPI
     @Test
     public void testCacheUsed() throws Exception
     {
-        ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> planCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
-        GraphQLPlanCache cache = new GraphQLPlanCache(planCache);
-
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -603,13 +587,8 @@ public class TestGraphQLAPI
     @Test
     public void testCachingUsingNestedSelectionSets() throws Exception
     {
-        ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> planCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
-        GraphQLPlanCache cache = new GraphQLPlanCache(planCache);
-
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -652,6 +631,45 @@ public class TestGraphQLAPI
         Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
 
         Assert.assertEquals("{\"data\":{\"firmByLegalName\":{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\",\"address\":{\"line1\":\"Fabrice address\"}}]}}}", responseAsString(response2));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_EchoDirective() throws Exception
+    {
+        GraphQLPlanCache graphQLPlanCache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(graphQLPlanCache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  firms: allFirms @echo {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        String expected = "{" +
+                "\"data\":{" +
+                    "\"allFirms\":[" +
+                        "{\"legalName\":\"Firm X\"}," +
+                        "{\"legalName\":\"Firm A\"}," +
+                        "{\"legalName\":\"Firm B\"}" +
+                    "]" +
+                "}," +
+                "\"extensions\":{" +
+                    "\"allFirms\":{" +
+                        "\"echo\":true" +
+                    "}" +
+                "}" +
+            "}";
+
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
+
+        response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception

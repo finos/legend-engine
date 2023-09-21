@@ -122,7 +122,6 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
     }
 
@@ -186,6 +185,7 @@ public class BulkLoadTest
                 .generateDigest(true)
                 .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                 .digestUdfName("LAKEHOUSE_MD5")
+                .lineageField("lake_lineage")
                 .build();
 
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
@@ -216,12 +216,16 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"APPEND_TIME\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
+                "\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"APPEND_TIME\" DATETIME,\"LAKE_LINEAGE\" VARCHAR)";
         String expectedIngestSql = "COPY INTO \"MY_DB\".\"MY_NAME\" " +
-                "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"APPEND_TIME\") " +
-                "FROM (SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
+                "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"APPEND_TIME\", \"LAKE_LINEAGE\") " +
+                "FROM " +
+                "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "'2000-01-01 00:00:00' FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
+                "'2000-01-01 00:00:00','/path/xyz/file1.csv,/path/xyz/file2.csv' " +
+                "FROM my_location (FILE_FORMAT => 'my_file_format', " +
+                "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -230,7 +234,6 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"ROWSUPDATED\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"INCOMINGRECORDCOUNT\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
     }
 
@@ -244,7 +247,7 @@ public class BulkLoadTest
                     .digestUdfName("LAKEHOUSE_UDF")
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
@@ -262,7 +265,7 @@ public class BulkLoadTest
                     .digestField("digest")
                     .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
                     .build();
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
@@ -299,11 +302,70 @@ public class BulkLoadTest
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
-            Assertions.fail("Should not happen");
+            Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
             Assertions.assertTrue(e.getMessage().contains("Only StagedFilesDataset are allowed under Bulk Load"));
         }
+    }
+
+    @Test
+    public void testBulkLoadWithDigestAndLineage()
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+                .digestField("digest")
+                .generateDigest(true)
+                .digestUdfName("LAKEHOUSE_UDF")
+                .lineageField("lake_lineage")
+                .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+                .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+                .stagedFilesDatasetProperties(
+                        SnowflakeStagedFilesDatasetProperties.builder()
+                                .location("my_location")
+                                .fileFormat("my_file_format")
+                                .addAllFiles(filesList).build())
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
+                .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+                .database("my_db").name("my_name").alias("my_alias")
+                .schema(SchemaDefinition.builder().build())
+                .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(bulkLoad)
+                .relationalSink(SnowflakeSink.get())
+                .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER,\"digest\" VARCHAR,\"append_time\" DATETIME,\"lake_lineage\" VARCHAR)";
+
+        String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
+                "(\"col_int\", \"col_integer\", \"digest\", \"append_time\", \"lake_lineage\") " +
+                "FROM " +
+                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
+                "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
+                "'2000-01-01 00:00:00','/path/xyz/file1.csv,/path/xyz/file2.csv' " +
+                "FROM my_location (FILE_FORMAT => 'my_file_format', " +
+                "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
+                "on_error = 'ABORT_STATEMENT'";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+
+        Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
+        Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
+        Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
     }
 }

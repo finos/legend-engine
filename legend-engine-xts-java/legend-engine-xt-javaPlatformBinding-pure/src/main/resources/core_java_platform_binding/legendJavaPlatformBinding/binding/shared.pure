@@ -18,13 +18,13 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 
-import meta::external::shared::format::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
-import meta::external::shared::format::metamodel::*;
-import meta::external::shared::format::utils::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::binding::*;
+import meta::external::format::shared::binding::validation::*;
+import meta::external::format::shared::executionPlan::*;
+import meta::external::format::shared::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::shared::metamodel::*;
+import meta::external::format::shared::utils::*;
 
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
@@ -49,24 +49,24 @@ import meta::pure::functions::meta::*;
 import meta::pure::graphFetch::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
-import meta::external::shared::format::*;
-import meta::external::shared::format::binding::validation::*;
+import meta::external::format::shared::*;
+import meta::external::format::shared::binding::validation::*;
 import meta::pure::model::unit::*;
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createDataClassesProject($classes, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClassesProject\n', |''));
    mergeProjects($classes->map(c| $c->createDataClass($bindingDetail, $path, $context, $constraintContext, $debug->indent()))->toOneMany());
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
 {
-   let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);
+   let extensions = meta::external::format::shared::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);
    let conventions = engineConventions($extensions)->setBasePackageName($baseJavaPackage);
 
    let package   = $packageName->pathToElement()->cast(@Package);
@@ -80,7 +80,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    newProject()->addClasses($project->allClasses()->map(cl | $cl->inferImports()));
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
@@ -115,7 +115,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::prepareExternalFormatExternalizeExecutionNode(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::prepareExternalFormatExternalizeExecutionNode(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatExternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
@@ -143,14 +143,14 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
 }
 
-function <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::resolveCheckedWrapping(tree:RootGraphFetchTree<Any>[1]):GraphFetchTree[1]
+function <<access.private>> meta::external::format::shared::executionPlan::platformBinding::legendJava::resolveCheckedWrapping(tree:RootGraphFetchTree<Any>[1]):GraphFetchTree[1]
 {
   if($tree.class->elementToPath() == meta::pure::dataQuality::Checked->elementToPath(),
     |$tree.propertyTrees()->filter(st|$st.property.name == 'value')->toOne()->meta::pure::graphFetch::propertyGraphFetchTreeToRootGraphFetchTree()->resolveCheckedWrapping(),
     |$tree)
 }
 
-Class <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::PropertyDetails
+Class <<access.private>> meta::external::format::shared::executionPlan::platformBinding::legendJava::PropertyDetails
 {
    property          : AbstractProperty<Any>[1];
    fieldName         : String[1];
@@ -167,12 +167,12 @@ Class <<access.private>> meta::external::shared::format::executionPlan::platform
    isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createDataClass($class, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
    
@@ -266,42 +266,43 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
          let adderImpl = if($p.itemType == javaBoolean(),
                             {|
                                let value = j_parameter(javaBoolean(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataBooleanAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             |
                          if($p.itemType == javaLong(),
                             {|
                                let value = j_parameter(javaLong(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataLongAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             |
                          if($p.itemType == javaDouble(),
                             {|
                                let value = j_parameter(javaDouble(), 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataDoubleAdder), $withFieldsAndGetters), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             },
                             {|
                                let value = j_parameter($p.adderParam.type, 'value');
-                               j_return(j_newAnon(
+                               j_newAnon(
                                   javaParameterizedType($conventions->className(_ExternalDataObjectAdder), [$withFieldsAndGetters, $p.adderParam.type]), j_string($p.name),
                                   j_method(['public'], javaVoid(), 'addTo', [$objectParam, $value], $objectParam->j_invoke($p.adderName, $value, javaVoid()))
-                               ));
+                               );
                             }
                          )));
          
-         pair($propertyName->j_invoke('equals', j_string($p.name)), $adderImpl);
+         pair(j_string($p.name), $adderImpl);
       }
    );
 
+   let adderForPropertyField = javaField(['private', 'static', 'final'], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $withFieldsAndGetters)), '_adderForPropertyMap', $withFieldsAndGetters->j_invoke('_populateAdderForProperty', [], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $withFieldsAndGetters))));
    let dataClass = $withFieldsAndGetters
       ->addMethod({c|
           javaMethod('public', javaList($conventions->defectClass()), 'checkMultiplicities', [],
@@ -310,11 +311,18 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
                 ->concatenate(j_return($defects))
           );
         })
+      ->addField($adderForPropertyField)
       ->addMethod({c|
-          let exception = javaIllegalArgumentException()->j_new(j_string('Unknown property ')->j_plus($propertyName))->j_throw();
-         
+          let resultVar = j_variable(javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), 'result');
+          javaMethod(['private', 'static'], javaMap(javaString(), javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), '_populateAdderForProperty', [],
+            $resultVar->j_declare(javaHashMap()->j_new([]))
+            ->concatenate($adderClauses->map(p | $resultVar->j_invoke('put', [$p.first, $p.second], javaVoid())))
+            ->concatenate($resultVar->j_return())
+          );
+        })
+      ->addMethod({c|
           javaMethod(['public', 'static'], javaParameterizedType($conventions->className(_ExternalDataAdder), $c), '_getAdderForProperty', $propertyName,
-             if($adderClauses->isEmpty(), |$exception, |j_if(list($adderClauses), $exception))
+             j_return(javaObjects()->j_invoke('requireNonNull', [$c->j_field($adderForPropertyField)->j_invoke('get', $propertyName, javaParameterizedType($conventions->className(_ExternalDataAdder), $c)), j_string('Unknown property ')->j_plus($propertyName)], javaParameterizedType($conventions->className(_ExternalDataAdder), $c)))
           );
         })
       ->addAlloyStoreObjectReferenceMethodsForClass($context);
@@ -325,7 +333,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing])->toOneMany());
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
 
@@ -343,13 +351,13 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
         );
 }
 
-Class <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::AdderValue
+Class <<access.private>> meta::external::format::shared::executionPlan::platformBinding::legendJava::AdderValue
 {
    create: Code[*];
    access: Code[1];
 }
 
-function <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::adderMethods(jc:meta::external::language::java::metamodel::Class[1], prop: PropertyDetails[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[*]
+function <<access.private>> meta::external::format::shared::executionPlan::platformBinding::legendJava::adderMethods(jc:meta::external::language::java::metamodel::Class[1], prop: PropertyDetails[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[*]
 {
    let pureDate    = $conventions->className(PureDate);
    let field       = j_this($jc)->j_field($prop.fieldName);
@@ -420,7 +428,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::platf
    );
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
+function meta::external::format::shared::executionPlan::platformBinding::legendJava::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
 {
    if($mult == PureOne,
       | pair(j_long(1), j_long(1)),

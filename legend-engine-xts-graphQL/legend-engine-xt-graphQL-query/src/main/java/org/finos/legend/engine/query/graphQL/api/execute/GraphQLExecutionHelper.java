@@ -14,12 +14,32 @@
 
 package org.finos.legend.engine.query.graphQL.api.execute;
 
+import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
+import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentSpread;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.InLineFragment;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationType;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.SelectionVisitor;
 
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.Type;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.BooleanValue;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.EnumValue;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.FloatValue;
@@ -32,16 +52,17 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.ValueVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GraphQLExecutionHelper
 {
-
-
-    public static Object argumentValueToObject(Value value)
+    static Object argumentValueToObject(Value value)
     {
         return value.accept(new ValueVisitor<Object>()
         {
@@ -99,11 +120,9 @@ public class GraphQLExecutionHelper
                 throw new UnsupportedOperationException("Unsupported value specification type");
             }
         });
-
-
     }
 
-    public static Field extractFieldByName(OperationDefinition definition, String propertyName)
+    static Field extractFieldByName(OperationDefinition definition, String propertyName)
     {
         return definition.selectionSet.stream().map(s -> s.accept(new SelectionVisitor<Field>()
         {
@@ -125,7 +144,127 @@ public class GraphQLExecutionHelper
                 return null;
             }
         })).collect(Collectors.toList()).get(0);
-
     }
 
+    static boolean isARootField(String propertyName, OperationDefinition graphQLQuery)
+    {
+        return extractFieldByName(graphQLQuery, propertyName) != null;
+    }
+
+    static List<Directive> findDirectives(OperationDefinition query)
+    {
+        // assuming there's only root field
+        return ((Field)(query.selectionSet.get(0))).directives.stream().distinct().collect(Collectors.toList());
+    }
+
+    static String getPlanNameForDirective(String rootFieldName, Directive directive)
+    {
+        return rootFieldName + '@' + directive.name;
+    }
+
+    static OperationDefinition findQuery(Document document)
+    {
+        Collection<Definition> res = Iterate.select(document.definitions, d -> d.accept(new DefinitionVisitor<Boolean>()
+            {
+
+                @Override
+                public Boolean visit(DirectiveDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(EnumTypeDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(ExecutableDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(FragmentDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(InterfaceTypeDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(ObjectTypeDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(InputObjectTypeDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(OperationDefinition val)
+                {
+                    return val.type == OperationType.query;
+                }
+
+                @Override
+                public Boolean visit(ScalarTypeDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(SchemaDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(Type val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(TypeSystemDefinition val)
+                {
+                    return false;
+                }
+
+                @Override
+                public Boolean visit(UnionTypeDefinition val)
+                {
+                    return false;
+                }
+            }
+        ));
+
+        if (res.isEmpty())
+        {
+            throw new RuntimeException("Please provide a query");
+        }
+        else if (res.size() > 1)
+        {
+            throw new RuntimeException("Found more than one query");
+        }
+        else
+        {
+            return (OperationDefinition) res.iterator().next();
+        }
+    }
+
+    static Map<String, Result> getParameterMap(OperationDefinition graphQLQuery, String fieldName)
+    {
+        Map<String, Result> parameterMap = new HashMap<>();
+        extractFieldByName(graphQLQuery, fieldName).arguments.forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+        return parameterMap;
+    }
 }
