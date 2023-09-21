@@ -69,6 +69,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
   name: String[1];
   type: String[1];
   synonymsNonMilestoned : meta::relational::tests::milestoning::ProductSynonymNonMilestoned[*];
+  synonymsMilestoned : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
 }
 
 
@@ -81,7 +82,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Produc
 Association meta::relational::tests::milestoning::ProductMilestoned_ProductSynonymMilestoned
 {
   product : meta::relational::tests::milestoning::ProductMilestoned[1];
-  synonymsMilestoned : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
+  synonymsMilestonedViaAssociation : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
 }
 
 
@@ -101,6 +102,7 @@ Mapping meta::relational::tests::milestoning::milestoningMapSmall
       name : [db]ProductTable.name,
       type : [db]ProductTable.type,
       synonymsMilestoned : [db]@Product_Synonym,
+      synonymsMilestonedViaAssociation : [db]@Product_Synonym,
       synonymsNonMilestoned : [db]@Product_Synonym
    }  
    
