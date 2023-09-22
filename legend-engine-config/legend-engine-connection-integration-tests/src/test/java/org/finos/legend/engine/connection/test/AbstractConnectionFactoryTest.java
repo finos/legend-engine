@@ -16,7 +16,6 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
-import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.ConnectionFactory;
@@ -27,6 +26,8 @@ import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
+import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.connection.jdbc.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
@@ -35,8 +36,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Properties;
 
 public abstract class AbstractConnectionFactoryTest<T>
 {
@@ -63,6 +62,14 @@ public abstract class AbstractConnectionFactoryTest<T>
                                 .withAuthenticationMechanisms(
                                         AuthenticationMechanismType.USER_PASSWORD
                                 )
+                                .build(),
+                        new RelationalDatabaseStoreSupport.Builder()
+                                .withIdentifier("Snowflake")
+                                .withDatabase(DatabaseType.SNOWFLAKE)
+                                .withAuthenticationMechanisms(
+                                        AuthenticationMechanismType.KEY_PAIR
+//                                        AuthenticationMechanismType.OAUTH
+                                )
                                 .build()
                 )
                 .withAuthenticationMechanisms(
@@ -86,10 +93,12 @@ public abstract class AbstractConnectionFactoryTest<T>
         this.connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
                 .withCredentialBuilders(
                         new KerberosCredentialExtractor(),
-                        new UserPasswordCredentialBuilder()
+                        new UserPasswordCredentialBuilder(),
+                        new KeyPairCredentialBuilder()
                 )
                 .withConnectionBuilders(
-                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
+                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
+                        new SnowflakeConnectionBuilder.WithKeyPair()
                 )
                 .build();
     }
@@ -128,6 +137,7 @@ public abstract class AbstractConnectionFactoryTest<T>
         T connection = this.connectionFactory.getConnection(authenticator);
 
         this.runTestWithConnection(connection);
+        System.out.println("Successfully established and checked connection!");
     }
 
     // ------------------------------ Utilities ---------------------------------
@@ -139,12 +149,5 @@ public abstract class AbstractConnectionFactoryTest<T>
                         .withName("test-user")
                         .build()
         );
-    }
-
-    protected static CredentialVault getPropertiesFileVaultWith(Object key, Object value)
-    {
-        Properties properties = new Properties();
-        properties.put(key, value);
-        return new PropertiesFileCredentialVault(properties);
     }
 }
