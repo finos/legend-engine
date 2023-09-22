@@ -25,7 +25,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
-public class StaticJDBCConnectionFlow
+public class StaticJDBCConnectionBuilder
 {
     public static class WithPlaintextUsernamePassword extends ConnectionBuilder<Connection, PlaintextUserPasswordCredential, StaticJDBCConnectionSpecification>
     {

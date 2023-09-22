@@ -2181,12 +2181,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
     let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
     let result = executionPlan({|Product.all()->project(p|$p.name, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::relational::tests::testRuntime(), $extensions);
     assertEquals (
-    'ExternalFormat_Externalize\n' +
+    'ExternalFormat_ExternalizeTDS\n' +
                '(\n' +
                '  type = String\n' +
                '  resultSizeRange = 1\n' +
-               '  checked = false\n' +
-               '  binding = meta::external::format::shared::executionPlan::generatedBinding\n' +
+               '  contentType = text/example\n' +
                '\n' +
                '  (\n' +
                '    Relational\n' +

@@ -29,15 +29,15 @@ public class MemSQL_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
-    {
-        return String.format("jdbc:mysql://%s:%s/%s?permitMysqlScheme", host, port, databaseName);
-    }
-
-    @Override
     public String getDriver()
     {
         // TODO HSO: Change to SingleStore driver?
         return "org.mariadb.jdbc.Driver";
+    }
+
+    @Override
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    {
+        return String.format("jdbc:mysql://%s:%s/%s?permitMysqlScheme", host, port, databaseName);
     }
 }

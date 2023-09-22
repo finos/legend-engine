@@ -68,7 +68,9 @@ Class meta::relational::functions::pureToSqlQuery::PureFunctionToRelationalFunct
 {
 }
 
-
+Class meta::relational::functions::pureToSqlQuery::PureFunctionTDSToRelationalFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{->RelationalOperationElement[1]}>>
+{
+}
 
 Class meta::relational::functions::pureToSqlQuery::State
 {
@@ -2321,8 +2323,21 @@ function meta::relational::functions::pureToSqlQuery::processParseDate(f:Functio
 
 function meta::relational::functions::pureToSqlQuery::processFirstNotNull(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  fail('firstNotNull not supported outside of TDS context');
-  processNoOp($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+  let caller = $state.functionExpressionStack->first();
+  let error = 'firstNotNull not supported outside of TDS context';
+
+  //we check that the caller function is in the tabular space
+  $caller->match([
+    s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().func.classifierGenericType.typeArguments.rawType->match([
+      f:FunctionType[1] | $f.parameters->first()->evaluateAndDeactivate().genericType.rawType == TabularDataSet,
+      a:Any[*] | fail($error)
+    ]),
+    a:Any[*] | fail($error)
+  ]);
+
+  let oldFunc = $f.func;
+  let newFunc = ^$oldFunc(functionName = 'coalesce');
+  processDynaFunction(^$f(func = $newFunc), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], select:SelectSQLQuery[1]):Alias[1]
@@ -4973,6 +4988,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                         let dispatch = [
                            pair('getNumber', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
                            pair('getInteger', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
+                           pair('getDecimal', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
                            pair('getString', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
                            pair('getFloat', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
                            pair('getDate', | findColumnInTdsFromGetter($f, $a,$returnColumnName, $vars, $state)),
@@ -4990,25 +5006,42 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                  |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
                                  |
                                     let supportedFunction = findSupportedFunction($f, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
-                                  
+                                
+
                                     if($supportedFunction->isNotEmpty(),
-                                       | if($f.func == extractEnumValue_Enumeration_1__String_1__T_1_,
-                                            | ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context)),
-                                            | if($f.func == meta::pure::functions::string::plus_String_MANY__String_1_,
-                                                 | ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context))),
-                                                 | if ($f.func == meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_,
-                                                       | let arg1 = $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
-                                                         let arg2 = $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
-                                                         let dynaParams = $arg1->concatenate($arg2->match([ll:Literal[*] | ^LiteralList(values = $ll), r:RelationalOperationElement[*] | $r]));
-                                                         newDynaFunction($f.func.functionName->toOne(), $dynaParams);,
-                                                       | if ($supportedFunction == processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
-                                                          | $f.parametersValues->at(0)->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
-                                                          | if ($f.func == meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
-                                                            | newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context));,
-                                                            | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context)))))
-                                                   )
-                                              )
-                                            ),
+                                       | 
+                                          let overrides = [
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {| 
+                                              ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = plus_String_MANY__String_1_, second = {| 
+                                              ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context)))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = {| 
+                                              let arg1 = $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
+                                              let arg2 = $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
+                                              let dynaParams = $arg1->concatenate($arg2->match([ll:Literal[*] | ^LiteralList(values = $ll), r:RelationalOperationElement[*] | $r]));
+                                              newDynaFunction($f.func.functionName->toOne(), $dynaParams);                                   
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {| 
+                                              newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = parseDate_String_1__Date_1_, second = {|
+                                              let format = ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=String), values = 'YYYY-MM-DD HH24:MI:SS');
+                                              newDynaFunction('toTimestamp', [
+                                                $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context)->toOne(),
+                                                ^Literal(value = 'YYYY-MM-DD HH24:MI:SS')
+                                              ]);                                        
+                                            })
+                                          ];
+                                       
+                                          let override = $overrides->filter(o | $o.first == $f.func)->first();
+                                          if ($override->isNotEmpty(), 
+                                              | $override->toOne().second->eval(),
+                                              | if ($supportedFunction == processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                      | $f.parametersValues->at(0)->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
+                                                      | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context)))));,
+
                                        | fail('function ' + $f.func.name->makeString() + ' is not yet supported'); ^DynaFunction(name='fail');
                                        );
                          );                        
