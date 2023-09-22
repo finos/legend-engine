@@ -348,7 +348,7 @@ public class MasteryParseTreeWalker
     {
         MasteryParserGrammar.SubPathContext subPathContext = ctx.subPath();
         PropertyPath propertyPath = new PropertyPath();
-        propertyPath.property = subPathContext.VALID_STRING().getText();
+        propertyPath.property = subPathContext.validString().getText();
         if (ctx.filter() != null)
         {
             propertyPath.filter = visitLambdaWithFilter(propertyPath.property, ctx.filter().combinedExpression());
@@ -442,7 +442,7 @@ public class MasteryParseTreeWalker
         DataProviderTypeScope dataProviderTypeScope = new DataProviderTypeScope();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        String dataProviderType = ctx.VALID_STRING().getText();
+        String dataProviderType = ctx.validString().getText();
 
         dataProviderTypeScope.sourceInformation = sourceInformation;
         dataProviderTypeScope.dataProviderType = dataProviderType;
