@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
+import org.finos.legend.engine.external.format.arrow.ArrowRuntimeExtension;
 import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
@@ -98,7 +99,8 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
                 .with(FlatDataRuntimeExtension.class)
                 .with(JsonSchemaRuntimeExtension.class)
-                .with(XsdRuntimeExtension.class);
+                .with(XsdRuntimeExtension.class)
+                .with(ArrowRuntimeExtension.class);
     }
 
     @Test

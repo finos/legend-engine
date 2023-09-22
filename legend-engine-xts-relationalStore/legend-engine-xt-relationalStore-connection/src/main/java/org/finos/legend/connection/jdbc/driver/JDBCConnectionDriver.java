@@ -21,8 +21,8 @@ public interface JDBCConnectionDriver
 {
     List<String> getIds();
 
-    String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties);
-
     // TODO?: @akphi - should we port over the driver wrapper stuffs from DatabaseManager as well?
     String getDriver();
+
+    String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties);
 }

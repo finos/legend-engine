@@ -21,7 +21,6 @@ import java.util.ServiceLoader;
 
 public class DefaultConnectionBuilderProvider implements ConnectionBuilderProvider
 {
-
     @Override
     public List<ConnectionBuilder> getBuilders()
     {

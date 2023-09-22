@@ -768,16 +768,20 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
    let func = $join.criteria->match([
     o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
-    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_
+    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_,
+    n:NaturalJoin[1] | fail('Natural join not yet supported'); join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_;,
+    j:JoinCriteria[0..1] |
+      assert($join.type == JoinType.CROSS, 'only cross join supported without criteria'); 
+      join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_;
   ]);
 
   let parameters = $join.criteria->match([
-    o:JoinOn[1] |
-      let expression = processExpression($o.expression, $expContext, $newContext);
-      let functionType = ^FunctionType(parameters = [$row1, $row2], returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean));
-      let lambda = lambda($functionType, $expression);
-      iv($lambda);,
-    u:JoinUsing[1] | iv($u.columns)
+    o:JoinOn[1] | createJoinOn($o.expression, $row1, $row2, $expContext, $newContext),
+    u:JoinUsing[1] | iv($u.columns),
+    n:NaturalJoin[1] | fail('Natural join not yet supported'); iv(1);,
+    j:JoinCriteria[0..1] | 
+      assert($join.type == JoinType.CROSS, 'only cross join supported without criteria');
+      createJoinOn(^BooleanLiteral(value = true), $row1, $row2, $expContext, $newContext);
   ]);
 
   let joinType = getJoinType($join.type);
@@ -788,12 +792,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ^$newContext(expression = $newExp);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+  let expression = processExpression($e, $expContext, $context);
+  let functionType = ^FunctionType(parameters = [$row1, $row2], returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean));
+  let lambda = lambda($functionType, $expression);
+  iv($lambda);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getJoinType(joinType:JoinType[1]):meta::relational::metamodel::join::JoinType[1]
 {
   [
     pair(JoinType.LEFT, meta::relational::metamodel::join::JoinType.LEFT_OUTER),
     pair(JoinType.RIGHT, meta::relational::metamodel::join::JoinType.RIGHT_OUTER),
-    pair(JoinType.INNER, meta::relational::metamodel::join::JoinType.INNER)
+    pair(JoinType.INNER, meta::relational::metamodel::join::JoinType.INNER),
+    pair(JoinType.CROSS, meta::relational::metamodel::join::JoinType.INNER)
   ]->getValue($joinType);
 }
 
@@ -2165,7 +2178,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 
   assert($simplified.type == ArithmeticType.ADD || $simplified.type == ArithmeticType.SUBTRACT, | 'arithmetic type ' + $simplified.type.name + ' not currently supported for dates');
-  assert($leftTypeNormalized == Date, | 'left side of date arithmetic must be non interval date');
+  //note we are making assumption here that Any is fine. This results from a function call that is generic return type (e.g. max)
+  assert($leftTypeNormalized == Date || $leftTypeNormalized == Any, | 'left side of date arithmetic must be non interval date');
   assert($rightTypeNormalized == Number || $simplified.right->instanceOf(IntervalLiteralWrapper) || $simplified.right->instanceOf(NullLiteral), | 'right side of date arithmetic must be numeric or interval');
 
   let negate = $simplified.type == ArithmeticType.SUBTRACT;
@@ -2472,6 +2486,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $v->evaluateAndDeactivate().multiplicity == PureZero;
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isZeroOne(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroOne;
+}
+
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::sfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
@@ -2490,13 +2509,20 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
+
+  let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
+
+  let parameters = $zipped->map(p | if ($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), 
+    | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate()),
+    | $p.second->evaluateAndDeactivate()));  
+
   ^SimpleFunctionExpression(
     func = $func,
     genericType = $genericType,
     resolvedTypeParameters = $resolvedTypeParameters,
     importGroup = system::imports::coreImport,
     multiplicity = $multiplicity,
-    parametersValues = $pvs
+    parametersValues = $parameters
   );
 }
 
