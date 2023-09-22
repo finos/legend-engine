@@ -9,12 +9,15 @@ options
 
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                                 VALID_STRING | STRING
+validString:                                VALID_STRING | .
+;
+
+identifier:                                 validString | STRING
                                             | TRUE | FALSE
                                             | MASTER_RECORD_DEFINITION | RECORD_SOURCES
 ;
 
-masteryIdentifier:                          (VALID_STRING | '-' | INTEGER) (VALID_STRING | '-' | INTEGER)*;
+masteryIdentifier:                          (validString | '-' | INTEGER) (validString | '-' | INTEGER)*?;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
@@ -343,7 +346,7 @@ masterRecordFilter:                     qualifiedName filter?
 ;
 pathExtension:                           subPath filter?
 ;
-subPath:                                '.' VALID_STRING
+subPath:                                '.' validString
 ;
 filter:                                 BRACE_OPEN '$' '.' combinedExpression BRACE_CLOSE
 ;
@@ -380,7 +383,7 @@ recordSourceScope:                      RECORD_SOURCE_SCOPE
 ;
 dataProviderTypeScope:                  DATA_PROVIDER_TYPE_SCOPE
                                         BRACE_OPEN
-                                        VALID_STRING
+                                        validString
 ;
 dataProviderIdScope:                    DATA_PROVIDER_ID_SCOPE
                                         BRACE_OPEN

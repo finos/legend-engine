@@ -78,7 +78,13 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "Class org::dataeng::Widget\n" +
             "{\n" +
             "  widgetId: String[0..1];\n" +
+            "  trigger: String[0..1];\n" +
+            "  runProfile: org::dataeng::Medium[0..1];\n" +
             "  identifiers: org::dataeng::MilestonedIdentifier[*];\n" +
+            "}\n\n" +
+            "Class org::dataeng::Medium\n" +
+            "{\n" +
+            "  authorization: String[0..1];\n" +
             "}\n\n" +
             "Class org::dataeng::MilestonedIdentifier\n" +
             "{\n" +
@@ -94,7 +100,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "Service org::dataeng::PostCurationWidget\n" + WIDGET_SERVICE_BODY + "\n" +
             "Service org::dataeng::EqualityFunctionMilestonedIdentifier\n" + WIDGET_SERVICE_BODY + "\n" +
             "Service org::dataeng::ElasticSearchTransformService\n" + WIDGET_SERVICE_BODY + "\n" +
-            "Service org::dataeng::ExceptionWorkflowTransformService\n" + WIDGET_SERVICE_BODY +
+            "Service org::dataeng::exceptionWorkflowTransformService\n" + WIDGET_SERVICE_BODY +
             "\n\n###Mastery\n" +
             "MasterRecordDefinition alloy::mastery::WidgetMasterRecord\n" +
             "{\n" +
@@ -114,6 +120,12 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "                   ];\n" +
             "          keyType: AlternateKey;\n" +
             "          precedence: 2;\n" +
+            "        },\n" +
+            "        {\n" +
+            "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.trigger == $input.trigger)}\n" +
+            "                   ];\n" +
+            "          keyType: Optional;\n" +
+            "          precedence: 3;\n" +
             "        }\n" +
             "      ]\n" +
             "  }\n" +
@@ -127,13 +139,30 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "    CreateRule: {\n" +
             "      path: org::dataeng::Widget{$.widgetId == 1234}.identifiers.identifierType;\n" +
             "      ruleScope: [\n" +
-            "        RecordSourceScope {widget-file-source-ftp},\n" +
+            "        RecordSourceScope {widget-file-source-ftp-trigger},\n" +
             "        DataProviderTypeScope {Aggregator}\n" +
             "      ];\n" +
             "    },\n" +
             "    ConditionalRule: {\n" +
             "      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.widgetId == $current.widgetId};\n" +
             "      path: org::dataeng::Widget.identifiers.identifierType;\n" +
+            "    },\n" +
+            "    DeleteRule: {\n" +
+            "      path: org::dataeng::Widget.trigger;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope {widget-rest-source}\n" +
+            "      ];\n" +
+            "    },\n" +
+            "    CreateRule: {\n" +
+            "      path: org::dataeng::Widget{$.trigger == 'test'}.identifiers.identifierType;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope {widget-file-source-ftp-trigger},\n" +
+            "        DataProviderTypeScope {Aggregator}\n" +
+            "      ];\n" +
+            "    },\n" +
+            "    ConditionalRule: {\n" +
+            "      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.runProfile.authorization == $current.runProfile.authorization};\n" +
+            "      path: org::dataeng::Widget.runProfile.authorization;\n" +
             "    },\n" +
             "    SourcePrecedenceRule: {\n" +
             "      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON'};\n" +
@@ -154,16 +183,20 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  postCurationEnrichmentService: org::dataeng::PostCurationWidget;\n" +
             "  publishToElasticSearch: true;\n" +
             "  elasticSearchTransformService: org::dataeng::ElasticSearchTransformService;\n" +
-            "  exceptionWorkflowTransformService: org::dataeng::ExceptionWorkflowTransformService;\n" +
+            "  exceptionWorkflowTransformService: org::dataeng::exceptionWorkflowTransformService;\n" +
             "  collectionEqualities: [\n" +
             "    {\n" +
             "      modelClass: org::dataeng::MilestonedIdentifier;\n" +
+            "      equalityFunction: org::dataeng::EqualityFunctionMilestonedIdentifier;\n" +
+            "    },\n" +
+            "    {\n" +
+            "      modelClass: org::dataeng::Medium;\n" +
             "      equalityFunction: org::dataeng::EqualityFunctionMilestonedIdentifier;\n" +
             "    }\n" +
             "  ]\n" +
             "  recordSources:\n" +
             "  [\n" +
-            "    widget-file-source-ftp: {\n" +
+            "    widget-file-source-ftp-trigger: {\n" +
             "      description: 'Widget FTP File source';\n" +
             "      status: Development;\n" +
             "      recordService: {\n" +
@@ -237,6 +270,9 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      stagedLoad: true;\n" +
             "      createPermitted: false;\n" +
             "      createBlockedException: true;\n" +
+            "      dependencies: [\n" +
+            "        RecordSourceDependency {widget-file-source-ftp-trigger}\n" +
+            "      ];\n" +
             "    },\n" +
             "    widget-rest-source: {\n" +
             "      description: 'Widget Rest Source.';\n" +
@@ -489,14 +525,25 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
 
         // Collection equality
         RichIterable<? extends Root_meta_pure_mastery_metamodel_identity_CollectionEquality> collectionEqualities = masterRecordDefinition._collectionEqualities();
-        assertEquals(1, collectionEqualities.size());
-        assertEquals("MilestonedIdentifier", collectionEqualities.getOnly()._modelClass()._name());
-        assertEquals("EqualityFunctionMilestonedIdentifier", collectionEqualities.getOnly()._equalityFunction()._name());
+        assertEquals(2, collectionEqualities.size());
+        ListIterate.forEachWithIndex(collectionEqualities.toList(), (collectionEquality, i) ->
+        {
+            if (i == 0)
+            {
+                assertEquals("MilestonedIdentifier", collectionEquality._modelClass()._name());
+                assertEquals("EqualityFunctionMilestonedIdentifier", collectionEquality._equalityFunction()._name());
+            }
+            if (i == 1)
+            {
+                assertEquals("Medium", collectionEquality._modelClass()._name());
+                assertEquals("EqualityFunctionMilestonedIdentifier", collectionEquality._equalityFunction()._name());
+            }
+        });
 
         //elastic search and exception workflow
         assertTrue(masterRecordDefinition._publishToElasticSearch());
         assertEquals("ElasticSearchTransformService", masterRecordDefinition._elasticSearchTransformService()._name());
-        assertEquals("ExceptionWorkflowTransformService", masterRecordDefinition._exceptionWorkflowTransformService()._name());
+        assertEquals("exceptionWorkflowTransformService", masterRecordDefinition._exceptionWorkflowTransformService()._name());
 
 
         // Resolution Queries
@@ -511,7 +558,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
 
         //PrecedenceRule
         RichIterable<? extends Root_meta_pure_mastery_metamodel_precedence_PrecedenceRule> precedenceRules = masterRecordDefinition._precedenceRules();
-        assertEquals(6, precedenceRules.size());
+        assertEquals(9, precedenceRules.size());
         ListIterate.forEachWithIndex(precedenceRules.toList(), (source, i) ->
         {
             if (i == 0)
@@ -569,7 +616,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 //scope
                 List<? extends Root_meta_pure_mastery_metamodel_precedence_RuleScope> scopes = source._scope().toList();
                 assertEquals(2, scopes.size());
-                assertEquals("widget-file-source-ftp", getRecordSourceIdAtIndex(scopes, 0));
+                assertEquals("widget-file-source-ftp-trigger", getRecordSourceIdAtIndex(scopes, 0));
                 assertEquals("Aggregator", getDataProviderTypeAtIndex(scopes, 1));
             }
             else if (i == 2)
@@ -598,7 +645,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 LambdaFunction<?> lambda = ((Root_meta_pure_mastery_metamodel_precedence_ConditionalRule) source)._predicate();
                 assertTrue(lambda instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl);
             }
-            else if (i == 3)
+            else if (i == 6)
             {
                 assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
 
@@ -631,7 +678,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 assertEquals(1, scopes.size());
                 assertEquals("widget-file-source-sftp", getRecordSourceIdAtIndex(scopes, 0));
             }
-            else if (i == 4)
+            else if (i == 7)
             {
                 assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
                 //precedence
@@ -664,7 +711,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 assertEquals("Exchange", getDataProviderTypeAtIndex(scopes, 0));
 
             }
-            else if (i == 5)
+            else if (i == 8)
             {
                 assertTrue(source instanceof Root_meta_pure_mastery_metamodel_precedence_SourcePrecedenceRule);
 
@@ -700,7 +747,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         {
             if (i == 0)
             {
-                assertEquals("widget-file-source-ftp", source._id());
+                assertEquals("widget-file-source-ftp-trigger", source._id());
                 assertEquals("Development", source._status().getName());
                 assertEquals(true, source._sequentialData());
                 assertEquals(false, source._stagedLoad());
