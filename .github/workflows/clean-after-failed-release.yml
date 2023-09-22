@@ -39,5 +39,6 @@ jobs:
         run: |
           LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
           git push --delete origin $LATEST_TAG
-          git reset --hard HEAD~2
+          NUMBER_OF_COMMITS_TO_DELETE=$(git log -n 2 --pretty=format:%s | grep -c "[maven-release-plugin]")
+          git reset --hard HEAD~$NUMBER_OF_COMMITS_TO_DELETE
           git push --force
