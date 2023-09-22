@@ -36,7 +36,6 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -137,7 +136,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
         {
             SingleExecutionPlan originalPlan = getPlanFromFunctionGrammar("abc::abc::indexToTDSGroupByFunction__TabularDataSet_1_");
 
-            //create a deep copy of the original plan that we pass into the execute call
+            //create a deep copy of the original plan that we pass into the exeucte call
             ObjectMapper objectmapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
             String planJson = objectmapper.writeValueAsString(originalPlan);
             SingleExecutionPlan passedPlan = objectmapper.readValue(planJson, SingleExecutionPlan.class);
@@ -147,14 +146,16 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
 
             result.stream(outputStream, SerializationFormat.DEFAULT); //this should trigger tryAdvance -- streaming results in batches
 
+
             //Since passedPlan is a deep-copy of original, our goal is that the plan passed through execute() should remain unchanged post execution
-            LiteralOrExpression<Long> originalCompositeSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) originalPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
+            Object  originalCompositeSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) originalPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
 
-            LiteralOrExpression<Long> postExecutionPlanSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) passedPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
+            Object postExecutionPlanSize = ((SearchRequest) ((Elasticsearch7RequestExecutionNode) passedPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size;
 
-            //these two should be equal now
+            //two of these should be equal now
             Assert.assertEquals(originalCompositeSize,postExecutionPlanSize);
-            Assert.assertTrue(((SearchRequest) ((Elasticsearch7RequestExecutionNode) passedPlan.rootExecutionNode).request).body.aggregations.get("groupByComposite").composite.size == null);
+            Assert.assertTrue(originalCompositeSize == null);
+            Assert.assertTrue(postExecutionPlanSize == null);
         }
     }
 }
