@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Dro
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
@@ -130,6 +131,11 @@ public abstract class Planner
     protected Optional<MetadataDataset> metadataDataset()
     {
         return datasets.metadataDataset();
+    }
+
+    protected Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset()
+    {
+        return datasets.bulkLoadMetadataDataset();
     }
 
     protected Optional<LockInfoDataset> lockInfoDataset()

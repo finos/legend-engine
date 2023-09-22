@@ -19,6 +19,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.A
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 
 import java.util.Collections;
@@ -80,7 +83,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return bulkLoad.generateDigest();
+            return bulkLoad.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
         }
     };
 
@@ -131,7 +134,7 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return bulkLoad.digestField();
+            return bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
         }
     };
 
@@ -198,7 +201,8 @@ public class IngestModeVisitors
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             Set<String> metaFields = new HashSet<>();
-            bulkLoad.digestField().ifPresent(metaFields::add);
+            Optional<String> digestField = bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+            digestField.ifPresent(metaFields::add);
             return metaFields;
         }
     };
@@ -376,4 +380,35 @@ public class IngestModeVisitors
             return false;
         }
     };
+
+    private static final DigestGenStrategyVisitor<Boolean> DIGEST_GEN_STRATEGY_DIGEST_REQUIRED = new DigestGenStrategyVisitor<Boolean>()
+    {
+        @Override
+        public Boolean visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
+        {
+            return true;
+        }
+    };
+
+    public static final DigestGenStrategyVisitor<Optional<String>> EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY = new DigestGenStrategyVisitor<Optional<String>>()
+    {
+        @Override
+        public Optional<String> visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
+        {
+            return Optional.of(udfBasedDigestGenStrategy.digestField());
+        }
+    };
+
 }

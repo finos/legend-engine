@@ -254,6 +254,34 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFirstNotNull
       $result->sqlRemoveFormatting());   
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsExtend::testParseDate():Boolean[1]
+{
+   let sql = meta::relational::functions::sqlstring::toSQLStringPretty(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->extend([
+          col({row:TDSRow[1]| parseDate('2023-01-01')}, 'date')
+          ]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assert($sql->contains('parsedatetime'));
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDecimal():Boolean[1]
+{
+   let result = meta::relational::functions::sqlstring::toSQLStringPretty(
+      |Person.all()
+         ->project(p|1d,'decimal')
+         ->extend([
+          col({row:TDSRow[1]| $row.getDecimal('decimal') + 1}, 'plus')
+          ]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+  
+  assertEquals('select 1 as "decimal", (1 + 1) as "plus" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
 
 // Alloy exclusion reason: 10. Tricky usage of variables
 function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::tds::tdsExtend::testExtendWithVariables1():Boolean[1]

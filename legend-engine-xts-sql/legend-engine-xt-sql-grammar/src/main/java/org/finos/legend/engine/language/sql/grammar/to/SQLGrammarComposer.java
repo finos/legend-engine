@@ -53,7 +53,8 @@ public class SQLGrammarComposer
     private final MutableMap<JoinType, String> joins = UnifiedMap.newMapWith(
             Tuples.pair(JoinType.LEFT, "LEFT OUTER"),
             Tuples.pair(JoinType.RIGHT, "RIGHT OUTER"),
-            Tuples.pair(JoinType.INNER, "INNER")
+            Tuples.pair(JoinType.INNER, "INNER"),
+            Tuples.pair(JoinType.CROSS, "CROSS")
     );
 
     private final MutableMap<CurrentTimeType, String> currentTime = UnifiedMap.newMapWith(
@@ -298,7 +299,9 @@ public class SQLGrammarComposer
                 String type = joins.get(val.type);
                 String left = val.left.accept(this);
                 String right = val.right.accept(this);
-                String criteria = val.criteria.accept(new JoinCriteriaVisitor<String>()
+                String natural = val.criteria instanceof NaturalJoin ? "NATURAL " : "";
+
+                String criteria = val.criteria != null ? val.criteria.accept(new JoinCriteriaVisitor<String>()
                 {
                     @Override
                     public String visit(JoinOn val)
@@ -311,9 +314,15 @@ public class SQLGrammarComposer
                     {
                         return "USING (" + String.join(", ", val.columns) + ")";
                     }
-                });
 
-                return left + " " + type + " JOIN " + right + " " + criteria;
+                    @Override
+                    public String visit(NaturalJoin val)
+                    {
+                        return "";
+                    }
+                }) : "";
+
+                return left + " " + natural + type + " JOIN " + right + " " + criteria;
             }
 
             @Override

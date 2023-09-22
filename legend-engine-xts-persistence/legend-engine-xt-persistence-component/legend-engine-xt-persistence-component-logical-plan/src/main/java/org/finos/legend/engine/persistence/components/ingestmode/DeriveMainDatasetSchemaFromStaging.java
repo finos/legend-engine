@@ -142,20 +142,18 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        if (bulkLoad.generateDigest())
+        Optional<String> digestField = bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+        if (digestField.isPresent())
         {
-            addDigestField(mainSchemaFields, bulkLoad.digestField().get());
+            addDigestField(mainSchemaFields, digestField.get());
         }
+        Field batchIdField = Field.builder()
+                .name(bulkLoad.batchIdField())
+                .type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty()))
+                .primaryKey(false)
+                .build();
+        mainSchemaFields.add(batchIdField);
         bulkLoad.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
-        if (bulkLoad.lineageField().isPresent())
-        {
-            Field lineageField = Field.builder()
-                    .name(bulkLoad.lineageField().get())
-                    .type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty()))
-                    .primaryKey(false)
-                    .build();
-            mainSchemaFields.add(lineageField);
-        }
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -213,7 +211,6 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
             return false;
         }
     }
-
 
     public static class EnrichSchemaWithMergeStrategy implements MergeStrategyVisitor<Void>
     {
