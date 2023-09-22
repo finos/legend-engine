@@ -883,44 +883,53 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setRetainConnection(true);
 
-            if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
+            try
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-                node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-            }
-            else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
-            {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone, threadExecutionState, profiles);
-            }
-            else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
-            {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-
-                String requestId = new RequestIdGenerator().generateId();
-                String fileName = tempTableName + requestId;
-                try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
+                if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
                 {
-                    CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);
-                    tempFile.writeFile(csvSerializer);
-                    prepareExecutionStateForTempTableExecution("csv_file_location", threadExecutionState, tempFile.getTemporaryPathForFile());
+                    node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
                     node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
                 }
-                catch (Exception e)
+                else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
                 {
-                    throw new RuntimeException("Could not create Temp table", e);
+                    node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+                    loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone, threadExecutionState, profiles);
+                }
+                else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
+                {
+                    node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+    
+                    String requestId = new RequestIdGenerator().generateId();
+                    String fileName = tempTableName + requestId;
+                    try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
+                    {
+                        CsvSerializer csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, databaseTimeZone, true, false);
+                        tempFile.writeFile(csvSerializer);
+                        prepareExecutionStateForTempTableExecution("csv_file_location", threadExecutionState, tempFile.getTemporaryPathForFile());
+                        node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+                    }
+                    catch (Exception e)
+                    {
+                        throw new RuntimeException("Could not create Temp table", e);
+                    }
+                }
+                else
+                {
+                    throw new RuntimeException("Unsupported temp table strategy");
                 }
             }
-            else
+            catch (Exception e)
             {
-                throw new RuntimeException("Unsupported temp table strategy");
+                throw new RuntimeException(e)
             }
-
-            String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
-            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
-            blockConnection.addCommitQuery(dropTempTableSqlQuery);
-            blockConnection.addRollbackQuery(dropTempTableSqlQuery);
-            blockConnection.close();
+            finally
+            {
+                String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
+                BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
+                blockConnection.addCommitQuery(dropTempTableSqlQuery);
+                blockConnection.addRollbackQuery(dropTempTableSqlQuery);
+                blockConnection.close();
+            }
         }
     }
 
