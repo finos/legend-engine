@@ -19,6 +19,9 @@ import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -35,7 +38,13 @@ public class VoidRelationalResult extends Result
     private Connection connection;
     private Statement statement;
 
+    @Deprecated
     public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles)
+    {
+        this(activities, null, connection, profiles, true);
+    }
+
+    public VoidRelationalResult(MutableList<ExecutionActivity> activities, ExecutionNode node, Connection connection, MutableList<CommonProfile> profiles, boolean logSQLWithParamValues)
     {
         super("VOID");
 
@@ -45,7 +54,17 @@ public class VoidRelationalResult extends Result
             this.connection = connection;
             this.statement = connection.createStatement();
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            String nodeSql = "";
+            if (node instanceof RelationalExecutionNode)
+            {
+                nodeSql = ((RelationalExecutionNode) node).sqlQuery;
+            }
+            else if (node instanceof SQLExecutionNode)
+            {
+                nodeSql = ((SQLExecutionNode) node).sqlQuery;
+            }
+            String logMessage = logSQLWithParamValues ? sql : nodeSql;
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             this.statement.execute(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
         }
