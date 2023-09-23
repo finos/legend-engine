@@ -19,7 +19,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.acquisition.AcquisitionProtocolParseTreeWalker;
 import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.authentication.AuthenticationParseTreeWalker;
@@ -48,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.CredentialSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -88,12 +88,13 @@ public class MasteryParserExtension implements IMasteryParserExtension
 
         List<IMasteryParserExtension> extensions = IMasteryParserExtension.getExtensions();
         List<Function<SpecificationSourceCode, Connection>> connectionProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraMasteryConnectionParsers);
+        List<Function<SpecificationSourceCode, MasteryRuntime>> masteryRuntimeProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraMasteryRuntimeParsers);
         List<Function<SpecificationSourceCode, Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraTriggerParsers);
         List<Function<SpecificationSourceCode, Authorization>> authorizationProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraAuthorizationParsers);
         List<Function<SpecificationSourceCode, AcquisitionProtocol>> acquisitionProcessors = ListIterate.flatCollect(extensions, IMasteryParserExtension::getExtraAcquisitionProtocolParsers);
 
 
-        MasteryParseTreeWalker walker = new MasteryParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, domainParser, connectionProcessors, triggerProcessors, authorizationProcessors, acquisitionProcessors);
+        MasteryParseTreeWalker walker = new MasteryParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, domainParser, connectionProcessors, masteryRuntimeProcessors, triggerProcessors, authorizationProcessors, acquisitionProcessors);
         walker.visit((MasteryParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
