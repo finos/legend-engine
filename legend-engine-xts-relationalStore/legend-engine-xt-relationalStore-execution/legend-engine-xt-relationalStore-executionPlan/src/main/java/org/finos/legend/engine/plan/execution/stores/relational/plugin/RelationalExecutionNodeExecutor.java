@@ -920,7 +920,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             catch (Exception e)
             {
-                throw new RuntimeException(e)
+                throw new RuntimeException(e);
             }
             finally
             {
