@@ -936,7 +936,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
-            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone).replace("'", "''") + "'"; // replacing single quotes with two single quotes to escape it in sql
         };
 
         Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
