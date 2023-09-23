@@ -53,7 +53,7 @@ public class LegendTDSResultParserTest
         }
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected = RuntimeException.class)
     public void testParseDataInvalidateResults() throws IOException
     {
         try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("legendTdsInvalidResult.json");)
