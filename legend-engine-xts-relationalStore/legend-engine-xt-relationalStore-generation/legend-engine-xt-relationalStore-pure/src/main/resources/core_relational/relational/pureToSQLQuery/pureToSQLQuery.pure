@@ -4855,8 +4855,14 @@ function meta::relational::functions::pureToSqlQuery::processColumnProjectionsFr
 
    let relationParameter = $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@NamedRelation)->toOne();
    let columnNames = $f->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@String);
-   let distinct = $f->instanceValuesAtParameter(3, $vars, $state.inScopeVars)->cast(@Boolean);
-   let limit = $f->instanceValuesAtParameter(4, $vars, $state.inScopeVars)->cast(@Integer)->map(i|^Literal(value=$i));
+   let distinct = $f->instanceValuesAtParameter(3, $vars, $state.inScopeVars)->cast(@Boolean)->first();
+   let limit = $f->instanceValuesAtParameter(4, $vars, $state.inScopeVars)->cast(@Integer)->first();
+
+   // We are explicitly applying limits to sub query instead of global limit to ensure we get results from both branches as opposed to single branches. 
+   // This might lead to less records than limit value (when 1 branch has less results) but that is fine as function is used for test data generation only.
+   // If needed we can replicate union branches with global limits to respect limit value completely
+   let limit1 = if($limit->isEmpty(), | [], | ^Literal(value=floor(toOne($limit)/2)));
+   let limit2 = if($limit->isEmpty(), | [], | ^Literal(value=(toOne($limit) - toOne($limit1.value->cast(@Integer)))));
 
    assert($relationParameter.columns->cast(@Column).name->containsAll($columnNames), 'Column names should be from the relation');
    assert($columnNames->size() == $columnNames->distinct()->size(), 'Duplicate column names are not allowed');
@@ -4867,26 +4873,54 @@ function meta::relational::functions::pureToSqlQuery::processColumnProjectionsFr
 
    let queryWithAddedColumns = $query1->recursiveAddColumnsToRoot($toProjectColumns, $colNameGenerationFunction);
 
+   // Construct query to get seeds which are part of results
    let innerAlias = ^TableAlias(name = 'root', relationalElement = $queryWithAddedColumns);
+   let select1    = ^SelectSQLQuery
+                    (
+                      distinct = $distinct,
+                      toRow    = $limit1,
+                      columns  = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$innerAlias, column=^Column(name=$colNameGenerationFunction->eval($x), type=$x.type)))),
+                      data     = ^RootJoinTreeNode(alias = $innerAlias)
+                    );
 
-   let select = ^RelationDataSelectSqlQuery
-                 (
-                    relation = $relationParameter,
-                    distinct = $distinct->isEmpty()->if(|[],|$distinct->toOne()),
-                    toRow = $limit->isEmpty()->if(|[],|$limit->toOne()),
-                    columns = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$innerAlias, column=^Column(name=$colNameGenerationFunction->eval($x), type=$x.type)))),
-                    data = ^RootJoinTreeNode
-                            (
-                               alias = $innerAlias
-                            ),
-                    columnSubset = $toProjectColumns
-                 );
+   // Construct query to get seeds which are not part of results
+   let rootNodeAlias        = ^TableAlias(name = 'columnProjectionRoot', relationalElement = $relationParameter);
+   let rootSelectColumns    = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$rootNodeAlias, column=$x)));
 
-   ^$operation(
-      select = $select,
+   let existsSubSelectAlias = ^TableAlias(name = 'root', relationalElement = $queryWithAddedColumns);
+   let existsSubSelect      = ^SelectSQLQuery(columns = ^Literal(value=1),
+                                              data    = ^RootJoinTreeNode(alias = $existsSubSelectAlias),
+                                              filteringOperation = $rootSelectColumns.relationalElement->cast(@TableAliasColumn)->map(tac | let col = $tac.column;
+                                                                                                                                            ^DynaFunction(name = 'equal', parameters=[$tac, ^$tac(alias = $existsSubSelectAlias, column = ^$col(name = $colNameGenerationFunction->eval($col)))]);)->andFilters($extensions));
+   let existsDynaFunc       = ^DynaFunction(name = 'exists', parameters = $existsSubSelect);
+   let notDynaFunc          = ^DynaFunction(name='not', parameters = $existsDynaFunc);
+   let select2              = ^SelectSQLQuery
+                              (
+                                distinct = $distinct,
+                                toRow = $limit2,
+                                columns = $rootSelectColumns,
+                                data = ^RootJoinTreeNode(alias = $rootNodeAlias),
+                                filteringOperation = $notDynaFunc
+                              );
+
+   // Construct Union query
+   let unionAlias           = ^TableAlias(name = 'union', relationalElement = ^Union(queries = [$select1, $select2]));
+   let unionSelect          = ^RelationDataSelectSqlQuery
+                              (
+                                relation = $relationParameter,
+                                distinct = $distinct,
+                                columns  = $toProjectColumns->map(x | ^Alias(name=$x.name->addQuotesIfNoQuotes(), relationalElement=^TableAliasColumn(alias=$unionAlias, column=^$x(name=$x.name->addQuotesIfNoQuotes())))),
+                                data     = ^RootJoinTreeNode(alias = $unionAlias),
+                                orderBy  = $toProjectColumns->map(x | ^OrderBy(column=^TableAliasColumn(alias=$unionAlias, column=^$x(name=$x.name->addQuotesIfNoQuotes())), direction=meta::relational::metamodel::SortDirection.ASC)),
+                                columnSubset = $toProjectColumns
+                              );
+
+   ^$operation
+    (
+      select = $unionSelect,
       currentTreeNode = [],
       positionBeforeLastApplyJoinTreeNode = []
-   );
+    );
 }
 
 function <<access.protected>> meta::relational::functions::pureToSqlQuery::recursiveAddColumnsToRoot(query: SelectSQLQuery[1], columns: Column[*], columnNameGenerationFunction: meta::pure::metamodel::function::Function<{Column[1]->String[1]}>[1]):SelectSQLQuery[1]

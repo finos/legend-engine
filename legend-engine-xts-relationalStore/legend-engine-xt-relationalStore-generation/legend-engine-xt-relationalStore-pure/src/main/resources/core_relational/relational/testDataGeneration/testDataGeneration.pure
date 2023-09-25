@@ -280,7 +280,7 @@ function <<access.protected>> meta::relational::testDataGeneration::generateSeed
                             ^InstanceValue(genericType=^GenericType(rawType=Table), multiplicity=PureOne, values=$updatedMainTable),
                             ^InstanceValue(genericType=^GenericType(rawType=String), multiplicity=ZeroMany, values=$updatedMainTable.primaryKey.name),
                             ^InstanceValue(genericType=^GenericType(rawType=Boolean), multiplicity=PureOne, values=true),
-                            ^InstanceValue(genericType=^GenericType(rawType=Integer), multiplicity=PureOne, values=10)
+                            ^InstanceValue(genericType=^GenericType(rawType=Integer), multiplicity=PureOne, values=20)
                          ],
                          importGroup = system::imports::coreImport
                          

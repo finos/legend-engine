@@ -2409,6 +2409,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                       'ORDER_ID,pnl\n'+
                       '1,100.0\n'+
                       '2,200.0\n'+
+                      '3,0.0\n'+
                       '4,150.0\n'+
                       '-----\n'+
                       'default\n'+
@@ -2416,6 +2417,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                       'ID,accountID,settlementDateTime\n'+
                       '1,1,2014-12-02 21:00:00\n'+
                       '2,2,2014-12-02 21:00:00\n'+
+                      '3,1,2014-12-02 21:00:00\n'+
                       '4,2,2014-12-03 21:00:00\n'+
                       '-----\n'+
                       'default\n'+
@@ -2758,8 +2760,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       assertTestData( 'default\n' +
                       'personTable\n' +
                       'FIRSTNAME,ID,LASTNAME\n' +
+                      'Peter,1,Smith\n' +
                       'John,2,Johnson\n' +
                       'John,3,Hill\n' +
+                      'Anthony,4,Allen\n' +
+                      'Fabrice,5,Roberts\n' +
+                      'Oliver,6,Hill\n' +
+                      'David,7,Harris\n' +
                       '-----\n', $result->cast(@String)->toOne(), $db);
    },{| true});
 }
@@ -2982,6 +2989,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                   'ORDER_ID,pnl\n' +
                   '1,100.0\n' +
                   '2,200.0\n' +
+                  '3,0.0\n' +
                   '4,150.0\n' +
                   '-----\n' +
                   'default\n' +
@@ -2989,6 +2997,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                   'ID,accountID,settlementDateTime\n' +
                   '1,1,2014-12-02 21:00:00\n' +
                   '2,2,2014-12-02 21:00:00\n' +
+                  '3,1,2014-12-02 21:00:00\n' +
                   '4,2,2014-12-03 21:00:00\n' +
                   '-----\n' +
                   'default\n' +
