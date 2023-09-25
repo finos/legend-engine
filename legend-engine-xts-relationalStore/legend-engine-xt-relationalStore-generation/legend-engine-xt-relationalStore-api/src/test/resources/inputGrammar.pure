@@ -13,6 +13,10 @@ Database meta::relational::transform::autogen::tests::testDB
    (
      Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
    )
+   Schema SCHEMA3
+   (
+     Table Company(name VARCHAR(200) PRIMARY KEY, location VARCHAR(200) NOT NULL)
+   )
    Join CompanyEmployee(testSchema1.Company.location != 'Toronto' and testSchema1.Employee.fullname = 'John Doe' and testSchema1.Company.name = testSchema1.Employee.firmname)
    Join EmployeeCity(testSchema1.Employee.location = testSchema1.City.name)
    Join EmployeePassport(testSchema1.Employee.passportId = testSchema1.Passport.passportId)
