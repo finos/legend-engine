@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.4.3-SNAPSHOT</version>
+        <version>4.26.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -89,64 +89,19 @@
                         <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-pure-m2-functions-pure</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
                 </dependencies>
             </plugin>
         </plugins>
     </build>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m4</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m3-platform</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-code-compiled-core</artifactId>-->
-<!--        </dependency>-->
 
 
         <!-- TEST -->
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-external-json</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
@@ -162,11 +117,6 @@
             <artifactId>jackson-core</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-code-compiled-tests</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <!-- TEST -->
     </dependencies>
 </project>
