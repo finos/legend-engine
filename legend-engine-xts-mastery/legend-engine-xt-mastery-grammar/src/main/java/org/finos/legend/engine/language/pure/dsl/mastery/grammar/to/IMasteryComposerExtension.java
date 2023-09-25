@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.CredentialSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -55,6 +56,11 @@ public interface IMasteryComposerExtension extends PureGrammarComposerExtension
         return process(connection, processors, indentLevel, context, "connection", connection.sourceInformation);
     }
 
+    static String process(MasteryRuntime masteryRuntime, List<Function3<MasteryRuntime, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context)
+    {
+        return process(masteryRuntime, processors, indentLevel, context, "mastery runtime", masteryRuntime.sourceInformation);
+    }
+
     static String process(AuthenticationStrategy authenticationStrategy, List<Function3<AuthenticationStrategy, Integer, PureGrammarComposerContext, String>> processors, int indentLevel, PureGrammarComposerContext context)
     {
         return process(authenticationStrategy, processors, indentLevel, context, "authentication strategy", authenticationStrategy.sourceInformation);
@@ -80,6 +86,11 @@ public interface IMasteryComposerExtension extends PureGrammarComposerExtension
     }
 
     default List<Function3<Connection, Integer, PureGrammarComposerContext, String>> getExtraMasteryConnectionComposers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function3<MasteryRuntime, Integer, PureGrammarComposerContext, String>> getExtraMasteryRuntimeComposers()
     {
         return Collections.emptyList();
     }
