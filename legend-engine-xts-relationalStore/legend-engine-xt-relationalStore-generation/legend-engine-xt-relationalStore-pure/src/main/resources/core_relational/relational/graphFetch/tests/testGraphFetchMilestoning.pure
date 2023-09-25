@@ -577,6 +577,35 @@ function  <<test.ToFix>> meta::relational::graphFetch::tests::milestoning::testM
    );
 }
 
+
+function meta::pure::graphFetch::tests::milestoning::getAlloyTestH2Connection():meta::pure::alloy::connections::RelationalDatabaseConnection[1]
+{
+  let setupSqls='drop table if exists ProductTable;\n'+
+                'create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);\n'+
+                'insert into ProductTable values(1,\'ProductName\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');\n'+
+                'insert into ProductTable values(2,\'ProductName1\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-26 00:00:00\', \'2015-10-16 00:00:00\');\n'+
+                'insert into ProductTable values(2,\'ProductName2\',\'STOCK\',\'LNSE\', \'SYS1\', \'SYS1\',1, \'2015-10-16 00:00:00\', \'9999-12-31 00:00:00\');\n'+
+                'insert into ProductTable values(3,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\', \'SYS1\',1, \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');\n'+
+                'drop table if exists ProductSynonymTable;\n'+
+                'create table ProductSynonymTable (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);\n'+
+                'insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S1\',\'STOCK\',\'Scottd\',\'2015-8-26 00:00:00\',\'2015-9-26 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(1, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\',\'2015-9-26 00:00:00\',\'2015-8-16 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\',\'2015-1-1 00:00:00\',\'2015-10-15 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'9999-12-31 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S2\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'2015-10-17 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName2\',\'GS-Mod-S3\',\'CUSIP\',\'smith\',\'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName3\',\'GS-Mod-S2\',\'CUSIP\',\'smith\',\'2015-8-15 00:00:00\',\'2015-10-17 00:00:00\');\n'+
+                'insert into ProductSynonymTable values(2, \'ProductName3\',\'GS-Mod-S3\',\'CUSIP\',\'smith\',\'2015-10-17 00:00:00\',\'9999-12-31 00:00:00\');\n'
+                ;
+
+    ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+              element = meta::relational::tests::milestoning::db,
+              type = meta::relational::runtime::DatabaseType.H2,
+              authenticationStrategy = ^ meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
+              datasourceSpecification = ^ meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$setupSqls])
+            );
+}
+
 // Milestoning date Propagation 
 //> following are only supported in engine compiler, Pure ide compiler raises compilation error that property needs date-arg
 

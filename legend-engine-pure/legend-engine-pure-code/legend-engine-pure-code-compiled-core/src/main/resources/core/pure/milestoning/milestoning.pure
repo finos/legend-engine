@@ -86,3 +86,28 @@ function meta::pure::milestoning::isBiTemporal(type:Type[1]):Boolean[1]
 {
    ['bitemporal']->exists(s| $type->hasStereotype($s, temporal))
 }
+
+
+function meta::pure::milestoning::isMilestonedGeneratedQualifiedProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
+   $p->instanceOf(QualifiedProperty) && hasGeneratedMilestoningPropertyStereotype($p)
+}
+
+function meta::pure::milestoning::isNoArgMilestonedGeneratedQualifiedProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
+   $p->instanceOf(QualifiedProperty) && hasGeneratedMilestoningPropertyStereotype($p) && !$p.name->toOne()->endsWith('AllVersionsInRange')
+       && $p->cast(@QualifiedProperty<Any>)->functionType().parameters->size()==1
+}
+
+function meta::pure::milestoning::isDateArgMilestonedGeneratedQualifiedProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
+   $p->instanceOf(QualifiedProperty) && hasGeneratedMilestoningPropertyStereotype($p) && !$p.name->toOne()->endsWith('AllVersionsInRange')
+       && ($p->cast(@QualifiedProperty<Any>)->functionType().parameters->size() >1)  
+}
+
+function meta::pure::milestoning::switchToNoArgMilestonedGeneratedQualifiedProperty(p:QualifiedProperty<Any>[1]):QualifiedProperty<Any>[*]
+{
+    if($p->hasGeneratedMilestoningPropertyStereotype(),
+        | $p.owner->match([
+              clazz : Class<Any>[1] | $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name==$p.name);,
+              assoc : Association[1] | $assoc.qualifiedProperties->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name == $p.name);
+            ]);,
+        |[]);
+}
