@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.external.shared.runtime.write;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
