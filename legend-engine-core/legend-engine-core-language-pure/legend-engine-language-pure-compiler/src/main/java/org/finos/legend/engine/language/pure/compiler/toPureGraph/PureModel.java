@@ -404,11 +404,6 @@ public class PureModel implements IPureModel
         registerElementForPathToElement("meta::pure::tds", Lists.mutable.with(
                 "TDSRow"
         ));
-
-        registerElementForPathToElement("meta::pure::functions::date", Lists.mutable.with(
-                "DayOfWeek", "DurationUnit", "Month", "Quarter"
-        ));
-        
         this.extensions.getExtraElementForPathToElementRegisters().forEach(register -> register.value(this::registerElementForPathToElement));
     }
 
