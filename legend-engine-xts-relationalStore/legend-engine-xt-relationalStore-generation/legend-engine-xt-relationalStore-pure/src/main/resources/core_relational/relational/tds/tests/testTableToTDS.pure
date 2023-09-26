@@ -234,6 +234,23 @@ meta::relational::tests::tds::tabletds::testExtractingDbFromTableReference():Boo
   let actual = $result.code->replace('\r\n', '\n');
   assertEquals($expected, $actual);
 }
+
+function <<test.Test>> meta::relational::tests::tds::tabletds::testProjectAllColumns():Boolean[1]
+{
+   let result = execute(
+      | tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
+      ,
+      meta::relational::tests::tds::tabletds::EmptyMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertSize($result.values.columns, 7);  
+   
+   assertEquals('1|Peter|Smith|23|1|1|2,2|John|Johnson|22|2|1|4,3|John|Hill|12|3|1|2,4|Anthony|Allen|22|4|1|TDSNull,5|Fabrice|Roberts|34|5|2|TDSNull,6|Oliver|Hill|32|6|3|TDSNull,7|David|Harris|35|7|4|TDSNull',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
+   
+   assertEquals('select "root".ID as "ID", "root".FIRSTNAME as "FIRSTNAME", "root".LASTNAME as "LASTNAME", "root".AGE as "AGE", "root".ADDRESSID as "ADDRESSID", "root".FIRMID as "FIRMID", "root".MANAGERID as "MANAGERID" from personTable as "root"',
+      $result->sqlRemoveFormatting());  
+}
  
 ###Mapping
 Mapping meta::relational::tests::tds::tabletds::EmptyMapping()
