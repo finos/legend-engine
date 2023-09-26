@@ -16,8 +16,11 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets;
 
 import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 
 @Value.Immutable
@@ -31,4 +34,6 @@ import org.immutables.value.Value;
 public interface BigQueryStagedFilesDatasetPropertiesAbstract extends StagedFilesDatasetProperties
 {
     FileFormat fileFormat();
+
+    Optional<LoadOptions> loadOptions();
 }

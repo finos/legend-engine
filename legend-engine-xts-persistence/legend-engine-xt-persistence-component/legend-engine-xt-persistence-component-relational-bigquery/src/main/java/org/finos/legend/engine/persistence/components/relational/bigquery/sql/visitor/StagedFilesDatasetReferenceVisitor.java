@@ -14,12 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.common.AvroFileFormatAbstract;
-import org.finos.legend.engine.persistence.components.common.CsvFileFormatAbstract;
 import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.FileFormatVisitor;
-import org.finos.legend.engine.persistence.components.common.JsonFileFormatAbstract;
-import org.finos.legend.engine.persistence.components.common.ParquetFileFormatAbstract;
+import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets.BigQueryStagedFilesDatasetProperties;
@@ -43,55 +39,36 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
 
         Map<String, Object> loadOptionsMap = new HashMap<>();
         FileFormat fileFormat = datasetProperties.fileFormat();
-        loadOptionsMap.put("format", fileFormat.getFormatName());
-        fileFormat.accept(new RetrieveLoadOptions(loadOptionsMap));
+        loadOptionsMap.put("format", fileFormat.getName());
+        datasetProperties.loadOptions().ifPresent(options -> retrieveLoadOptions(fileFormat, options, loadOptionsMap));
         prev.push(loadOptionsMap);
-
         prev.push(datasetProperties.files());
 
         return new VisitorResult(null);
     }
 
-    private static class RetrieveLoadOptions implements FileFormatVisitor<Void>
+    private void retrieveLoadOptions(FileFormat fileFormat, LoadOptions loadOptions, Map<String, Object> loadOptionsMap)
     {
-        private Map<String, Object> loadOptionsMap;
-
-        RetrieveLoadOptions(Map<String, Object> loadOptionsMap)
+        switch (fileFormat)
         {
-            this.loadOptionsMap = loadOptionsMap;
-        }
-
-        @Override
-        public Void visitCsvFileFormat(CsvFileFormatAbstract csvFileFormat)
-        {
-            csvFileFormat.fieldDelimiter().ifPresent(property -> loadOptionsMap.put("field_delimiter", property));
-            csvFileFormat.encoding().ifPresent(property -> loadOptionsMap.put("encoding", property));
-            csvFileFormat.nullMarker().ifPresent(property -> loadOptionsMap.put("null_marker", property));
-            csvFileFormat.quote().ifPresent(property -> loadOptionsMap.put("quote", property));
-            csvFileFormat.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property));
-            csvFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
-            csvFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
-            return null;
-        }
-
-        @Override
-        public Void visitJsonFileFormat(JsonFileFormatAbstract jsonFileFormat)
-        {
-            jsonFileFormat.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
-            jsonFileFormat.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
-            return null;
-        }
-
-        @Override
-        public Void visitAvroFileFormat(AvroFileFormatAbstract avroFileFormat)
-        {
-            return null;
-        }
-
-        @Override
-        public Void visitParquetFileFormat(ParquetFileFormatAbstract parquetFileFormat)
-        {
-            return null;
+            case CSV:
+                loadOptions.fieldDelimiter().ifPresent(property -> loadOptionsMap.put("field_delimiter", property));
+                loadOptions.encoding().ifPresent(property -> loadOptionsMap.put("encoding", property));
+                loadOptions.nullMarker().ifPresent(property -> loadOptionsMap.put("null_marker", property));
+                loadOptions.quote().ifPresent(property -> loadOptionsMap.put("quote", property));
+                loadOptions.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property));
+                loadOptions.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
+                loadOptions.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
+                break;
+            case JSON:
+                loadOptions.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
+                loadOptions.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
+                break;
+            case AVRO:
+            case PARQUET:
+                return;
+            default:
+                throw new IllegalStateException("Unrecognized file format: " + fileFormat);
         }
     }
 }
