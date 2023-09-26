@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets.BigQueryStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.expressions.table.StagedFilesTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -41,8 +42,9 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         FileFormat fileFormat = datasetProperties.fileFormat();
         loadOptionsMap.put("format", fileFormat.getName());
         datasetProperties.loadOptions().ifPresent(options -> retrieveLoadOptions(fileFormat, options, loadOptionsMap));
-        prev.push(loadOptionsMap);
-        prev.push(datasetProperties.files());
+
+        StagedFilesTable stagedFilesTable = new StagedFilesTable(datasetProperties.files(), loadOptionsMap);
+        prev.push(stagedFilesTable);
 
         return new VisitorResult(null);
     }

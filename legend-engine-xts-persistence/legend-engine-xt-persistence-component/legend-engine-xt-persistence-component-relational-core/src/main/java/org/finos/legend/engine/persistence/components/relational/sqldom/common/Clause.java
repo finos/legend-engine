@@ -61,7 +61,7 @@ public enum Clause
     ARRAY("ARRAY"),
     LOAD_DATA("LOAD DATA"),
     OVERWRITE("OVERWRITE"),
-    FROM_FILES("FROM FILES");
+    FILES("FILES");
 
     private final String clause;
 

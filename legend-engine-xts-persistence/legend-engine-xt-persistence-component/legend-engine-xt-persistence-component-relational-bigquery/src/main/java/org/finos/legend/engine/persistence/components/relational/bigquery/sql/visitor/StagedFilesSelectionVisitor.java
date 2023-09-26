@@ -14,15 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.statements.SelectFromFileStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StagedFilesSelectionVisitor implements LogicalPlanVisitor<StagedFilesSelection>
 {
@@ -30,13 +27,7 @@ public class StagedFilesSelectionVisitor implements LogicalPlanVisitor<StagedFil
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StagedFilesSelection current, VisitorContext context)
     {
-        SelectFromFileStatement selectFromFileStatement = new SelectFromFileStatement();
-        prev.push(selectFromFileStatement);
-
-        List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
-        logicalPlanNodeList.add(current.source().datasetReference());
-        logicalPlanNodeList.addAll(current.fields());
-
-        return new VisitorResult(selectFromFileStatement, logicalPlanNodeList);
+        StagedFilesDataset stagedFilesDataset = current.source();
+        return new StagedFilesDatasetReferenceVisitor().visit(prev, (StagedFilesDatasetReference) stagedFilesDataset.datasetReference(), context);
     }
 }

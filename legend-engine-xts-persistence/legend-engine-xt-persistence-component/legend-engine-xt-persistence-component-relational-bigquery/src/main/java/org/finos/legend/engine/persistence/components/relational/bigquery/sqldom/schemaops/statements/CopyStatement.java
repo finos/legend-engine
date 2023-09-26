@@ -14,21 +14,34 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.statements;
 
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.expressions.table.StagedFilesTable;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DMLStatement;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.LOAD_DATA;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.OVERWRITE;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class CopyStatement implements DMLStatement
 {
     private Table table;
-    private SelectFromFileStatement selectFromFileStatement;
+    private StagedFilesTable stagedFilesTable;
+    private List<Value> columns;
 
     public CopyStatement()
     {
+        columns = new ArrayList<>();
     }
 
     /*
@@ -48,7 +61,12 @@ public class CopyStatement implements DMLStatement
         table.genSqlWithoutAlias(builder);
         builder.append(WHITE_SPACE);
 
-        selectFromFileStatement.genSql(builder);
+        builder.append(OPEN_PARENTHESIS);
+        SqlGen.genSqlList(builder, columns, EMPTY, COMMA);
+        builder.append(CLOSING_PARENTHESIS);
+
+        builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE);
+        stagedFilesTable.genSql(builder);
     }
 
     @Override
@@ -58,17 +76,21 @@ public class CopyStatement implements DMLStatement
         {
             table = (Table) node;
         }
-        else if (node instanceof SelectFromFileStatement)
+        else if (node instanceof StagedFilesTable)
         {
-            selectFromFileStatement = (SelectFromFileStatement) node;
+            stagedFilesTable = (StagedFilesTable) node;
+        }
+        else if (node instanceof Value)
+        {
+            columns.add((Value) node);
         }
     }
 
     void validate() throws SqlDomException
     {
-        if (selectFromFileStatement == null)
+        if (stagedFilesTable == null)
         {
-            throw new SqlDomException("selectFromFileStatement is mandatory for Copy Table Command");
+            throw new SqlDomException("stagedFilesTable is mandatory for Copy Table Command");
         }
 
         if (table == null)

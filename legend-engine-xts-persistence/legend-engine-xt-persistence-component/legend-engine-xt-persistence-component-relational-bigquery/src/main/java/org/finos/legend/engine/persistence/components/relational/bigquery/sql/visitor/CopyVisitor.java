@@ -36,6 +36,7 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.sourceDataset());
         logicalPlanNodes.add(current.targetDataset());
+        logicalPlanNodes.addAll(current.fields());
         return new VisitorResult(copyStatement, logicalPlanNodes);
     }
 }
