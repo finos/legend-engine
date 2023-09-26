@@ -201,6 +201,20 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                                     )
                                                 )
                                              )->concatenate(
+                                              [
+                                                 meta::pure::tds::extensions::extendWithDigestForColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_, 
+                                                 meta::pure::tds::extensions::extendWithDigest_TabularDataSet_1__String_1__TabularDataSet_1_
+                                              ]->map(f|
+                                                    pair($f->cast(@Function<Any>), {|
+                                                       let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
+                                                       let digestCol = $fe.parametersValues->last()->toOne()->reactivate($openVars)->cast(@String)->toOne();
+
+                                                       $tdsSchema.extend(^TDSColumn(name = $digestCol, offset= 0, type = String));
+                                                      }
+                                                    )
+                                                )
+                                             )                                             
+                                             ->concatenate(
                                                 pair(tableToTDS_Table_1__TableTDS_1_->cast(@Function<Any>), {|
                                                     createSchemaState($fe->reactivate()->cast(@TabularDataSet).columns);
                                                 })                                              

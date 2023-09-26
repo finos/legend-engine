@@ -40,10 +40,32 @@ function meta::pure::tds::viewToTDS(view:meta::relational::metamodel::relation::
 }
 
 function
-   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
+   {doc.doc = 'Project the specified columns from the provided TableTDS'}
    meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
 {
    $tds->project($columnFunctions);
+}
+
+function <<functionType.NormalizeRequiredFunction>> 
+  {doc.doc = 'Project all the columns from the provided TableTDS'}
+  meta::pure::tds::extensions::project(input : meta::relational::mapping::TableTDS[1]) : TabularDataSet[1]
+{
+  $input->project(
+    $input.columns->map(col|     
+        [
+          pair(Integer, {r:TDSRow[1]|$r.getInteger($col.name)}), 
+          pair(Float, {r:TDSRow[1]|$r.getFloat($col.name)}), 
+          pair(String, {r:TDSRow[1]|$r.getString($col.name)}), 
+          pair(Date, {r:TDSRow[1]|$r.getDate($col.name)}), 
+          pair(DateTime, {r:TDSRow[1]|$r.getDateTime($col.name)}), 
+          pair(StrictDate, {r:TDSRow[1]|$r.getStrictDate($col.name)}), 
+          pair(Boolean, {r:TDSRow[1]|$r.getBoolean($col.name)})
+        ]
+        ->filter(p|$p.first == $col.type).second->first()
+        ->toOne('Unsupported column type: ' + $col.type->makeString() + '(' + $col.name + ')')
+        ->map(f|col($f, $col.name))
+    )
+  )
 }
 
 function <<access.private>> meta::pure::tds::tableColumnToTdsColumn(column:meta::relational::metamodel::Column[1], index:Integer[1]):TDSColumn[1]

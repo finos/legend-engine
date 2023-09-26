@@ -518,8 +518,15 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                         handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestForColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)),
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigest_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"),  ps -> ps.size() == 2)))
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
                                         handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::pure::tds::extensions::project_TableTDS_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 1))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(Lists.mutable.with(3),
                                 handlers.m(handlers.h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && !handlers.typeOne(ps.get(2), "String")))

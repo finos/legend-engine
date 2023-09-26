@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::mapping::*;
+import meta::pure::functions::hash::*;
 import meta::pure::tds::extensions::*;
 import meta::relational::metamodel::join::*;
 
@@ -203,3 +205,43 @@ function <<access.private>> meta::pure::tds::extensions::joinWithOptionalColumns
        | $q1->join($q2, $joinType, $cols->toOneMany())
        );
 }
+
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::extendWithDigest(input : TabularDataSet[1], digestColumnName : String[1]) : TabularDataSet[1]
+{
+  $input->extendWithDigestForColumns($digestColumnName, HashType.MD5, $input.columns.name->toOneMany());
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::extendWithDigestForColumns(input : TabularDataSet[1], digestValueColumnName : String[1], digestHashType : HashType[1], digestColumns : String[1..*]) : TabularDataSet[1]
+{
+  $input->extend(
+    col({row:TDSRow[1]|$input.columns->filter(c|$c.name->in($digestColumns))->map(col|toStringForCol($col)->eval($row))->joinStrings('|')->hash($digestHashType)},$digestValueColumnName)
+  )
+}
+
+function <<access.private>> 
+   meta::pure::tds::extensions::toStringForCol(col: TDSColumn[1]) : Function<{TDSRow[1]->String[1]}>[1]
+{ 
+  if($col.type == Integer, 
+    | {r:TDSRow[1]|$r.getInteger($col.name)->toString()},
+    | if($col.type == Float, 
+        | {r:TDSRow[1]|$r.getFloat($col.name)->toString()},
+        | if($col.type == String, 
+          | {r:TDSRow[1]|$r.getString($col.name)},
+          | if($col.type == Date, 
+              | {r:TDSRow[1]|$r.getDate($col.name)->toString()},
+              | if($col.type == DateTime, 
+                  | {r:TDSRow[1]|$r.getDateTime($col.name)->toString()},
+                  | if($col.type == StrictDate, 
+                        | {r:TDSRow[1]|$r.getStrictDate($col.name)->toString()},
+                        | if($col.type == Boolean, 
+                              | {r:TDSRow[1]|$r.getBoolean($col.name)->toString()},
+                              | {r:TDSRow[1]|$r.get($col.name)->toString()}
+                              )
+                        )
+                  )
+              )
+          )
+        )
+    )
+}   
+
