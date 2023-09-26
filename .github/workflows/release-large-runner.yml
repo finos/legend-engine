@@ -26,7 +26,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "New release version"
+        description: "New release version number"
         required: true
 
 jobs:
