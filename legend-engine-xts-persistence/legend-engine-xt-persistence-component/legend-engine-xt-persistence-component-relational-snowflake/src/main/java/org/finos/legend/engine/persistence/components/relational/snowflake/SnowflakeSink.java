@@ -109,7 +109,7 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
-        capabilities.add(Capability.ALLOW_EXTRA_FIELDS_WHILE_COPYING);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();

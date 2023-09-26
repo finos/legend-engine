@@ -42,7 +42,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
@@ -63,7 +62,7 @@ import static org.finos.legend.engine.persistence.components.util.LogicalPlanUti
 class BulkLoadPlanner extends Planner
 {
 
-    private boolean allowExtraFieldsWhileCopying;
+    private boolean transformWhileCopy;
     private Dataset tempDataset;
     private StagedFilesDataset stagedFilesDataset;
     private BulkLoadMetadataDataset bulkLoadMetadataDataset;
@@ -81,16 +80,16 @@ class BulkLoadPlanner extends Planner
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
         bulkLoadMetadataDataset = bulkLoadMetadataDataset().orElseThrow(IllegalStateException::new);
 
-        allowExtraFieldsWhileCopying = capabilities.contains(Capability.ALLOW_EXTRA_FIELDS_WHILE_COPYING);
-        if (!allowExtraFieldsWhileCopying)
+        transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
+        if (!transformWhileCopy)
         {
-            tempDataset = datasets.tempDataset().orElse(DatasetDefinition.builder()
+            tempDataset = DatasetDefinition.builder()
                 .schema(datasets.stagingDataset().schema())
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
                 .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
                 .alias(TEMP_DATASET_BASE_NAME)
-                .build());
+                .build();
         }
     }
 
@@ -103,17 +102,17 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
-        if (allowExtraFieldsWhileCopying)
+        if (transformWhileCopy)
         {
-            return buildLogicalPlanForIngestUsingCopy(resources);
+            return buildLogicalPlanForTransformWhileCopy(resources);
         }
         else
         {
-            return buildLogicalPlanForIngestUsingCopyAndInsert(resources);
+            return buildLogicalPlanForCopyAndTransform(resources);
         }
     }
 
-    private LogicalPlan buildLogicalPlanForIngestUsingCopy(Resources resources)
+    private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
     {
         List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
@@ -135,7 +134,7 @@ class BulkLoadPlanner extends Planner
         return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
-    private LogicalPlan buildLogicalPlanForIngestUsingCopyAndInsert(Resources resources)
+    private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
 
@@ -151,7 +150,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), tempDataset, fieldsToSelectFromTemp, fieldsToInsertIntoMain));
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), tempDataset, fieldsToSelectFromTemp, fieldsToInsertIntoMain));
 
         // Add batch_id field
         fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -183,7 +182,7 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         operations.add(Create.of(true, mainDataset()));
         operations.add(Create.of(true, bulkLoadMetadataDataset.get()));
-        if (!allowExtraFieldsWhileCopying)
+        if (!transformWhileCopy)
         {
             operations.add(Create.of(true, tempDataset));
         }
@@ -194,7 +193,7 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        if (!allowExtraFieldsWhileCopying)
+        if (!transformWhileCopy)
         {
             operations.add(Delete.builder().dataset(tempDataset).build());
         }
@@ -205,7 +204,7 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        if (!allowExtraFieldsWhileCopying)
+        if (!transformWhileCopy)
         {
             operations.add(Drop.of(true, tempDataset, true));
         }
@@ -273,22 +272,11 @@ class BulkLoadPlanner extends Planner
         private List<Value> fieldsToInsert;
         private Dataset stagingDataset;
         private Dataset mainDataset;
-        private Optional<Dataset> tempDataset;
 
         public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
         {
             this.mainDataset = mainDataset;
             this.stagingDataset = stagingDataset;
-            this.tempDataset = Optional.empty();
-            this.fieldsToSelect = fieldsToSelect;
-            this.fieldsToInsert = fieldsToInsert;
-        }
-
-        public DigestGeneration(Dataset mainDataset, Dataset stagingDataset, Dataset tempDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
-        {
-            this.mainDataset = mainDataset;
-            this.stagingDataset = stagingDataset;
-            this.tempDataset = Optional.of(tempDataset);
             this.fieldsToSelect = fieldsToSelect;
             this.fieldsToInsert = fieldsToInsert;
         }
@@ -302,13 +290,13 @@ class BulkLoadPlanner extends Planner
         @Override
         public Void visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
         {
-            DigestUdf.Builder digestValueBuilder = DigestUdf
+            Value digestValue = DigestUdf
                     .builder()
                     .udfName(udfBasedDigestGenStrategy.digestUdfName())
                     .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-                    .addAllValues(fieldsToSelect);
-            tempDataset.ifPresent(digestValueBuilder::dataset);
-            Value digestValue = digestValueBuilder.build();
+                    .addAllValues(fieldsToSelect)
+                    .dataset(stagingDataset)
+                    .build();
             String digestField = udfBasedDigestGenStrategy.digestField();
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());
             fieldsToSelect.add(digestValue);
