@@ -64,7 +64,7 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyze
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
     name = $context.name,
     compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
-    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, false, false, true)
+    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, true, false, true)
   ));
 }
 

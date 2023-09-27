@@ -50,13 +50,13 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
 Class meta::analytics::mapping::modelCoverage::MappedEntityInfo 
 {
    isRootEntity : Boolean[0..1];
+   classPath: String[1];
    subClasses : String[*];
 }
 
 Class meta::analytics::mapping::modelCoverage::MappedEntity
 {
    path : String[1];
-   classPath: String[1];
    properties : MappedProperty[*];
    info: MappedEntityInfo[0..1];
 }
@@ -154,7 +154,7 @@ function meta::analytics::mapping::modelCoverage::analyze(
       )->removeDuplicatesBy(x | $x.path);
   let mappedEntities = $entities->concatenate($inheritanceEntities);
   if ($returnLightGraph == true,
-        | let mappedEntityPaths = $mappedEntities->map(m | $m.classPath)->removeDuplicates();
+        | let mappedEntityPaths = $mappedEntities->map(m | $m.info->toOne().classPath)->removeDuplicates();
           let mappedClasses = $allClasses->keyValues()->map(c | $c.first)->filter(c | $mappedEntityPaths->contains($c->elementToPath()));
           let classCoverageAnalysis = getClassModelCoverage($mappedClasses);
           ^MappingModelCoverageAnalysisResult(

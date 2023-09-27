@@ -19,5 +19,6 @@ import java.util.List;
 public class MappedEntityInfo
 {
     public boolean isRootEntity;
+    public String classPath;
     public List<String> subClasses;
 }
