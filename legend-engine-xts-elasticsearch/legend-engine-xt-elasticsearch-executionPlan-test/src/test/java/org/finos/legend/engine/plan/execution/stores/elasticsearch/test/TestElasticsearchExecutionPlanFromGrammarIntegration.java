@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.jsonunit.JsonAssert;
 import net.javacrumbs.jsonunit.core.Configuration;
 import org.apache.commons.io.IOUtils;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
@@ -87,14 +89,19 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
 
     private Result getResultFromFunctionGrammar(String funcName)
     {
+        SingleExecutionPlan plan = getPlanFromFunctionGrammar(funcName);
+        return PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(plan);
+    }
+
+    private SingleExecutionPlan getPlanFromFunctionGrammar(String funcName)
+    {
         ConcreteFunctionDefinition<?> concreteFxn = PURE_MODEL.getConcreteFunctionDefinition_safe(funcName);
 
         Assert.assertNotNull("Test function not found on model: " + funcName, concreteFxn);
 
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(PURE_MODEL.getExecutionSupport()));
-        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, LegendPlanTransformers.transformers);
-        return PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(plan);
+        return PlanGenerator.generateExecutionPlan(concreteFxn, null, null, null, PURE_MODEL, "vX_X_X", null, "id", routerExtensions, LegendPlanTransformers.transformers);
     }
 
     @Test
@@ -110,6 +117,32 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
                     "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}, {\"name\":\"_id\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\", \"_id\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
                     resultString,
                     Configuration.empty().whenIgnoringPaths("activities"));
+        }
+    }
+
+    @Test
+    public void testElasticPlanExecution() throws IOException
+    {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        )
+        {
+            SingleExecutionPlan originalPlan = getPlanFromFunctionGrammar("abc::abc::indexToTDSGroupByFunction__TabularDataSet_1_");
+
+            //create a deep copy of the original plan that we pass into the exeucte call
+            ObjectMapper objectmapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+            String initialPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+
+            //execute plan
+            TDSResult result = (TDSResult) PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build().execute(originalPlan);
+
+            result.stream(outputStream, SerializationFormat.DEFAULT); //this should trigger tryAdvance -- streaming results in batches
+
+            String resultPlanJson = objectmapper.writeValueAsString(originalPlan);
+
+            //assert that streaming results does not modify the plan 
+            Assert.assertEquals(initialPlanJson, resultPlanJson);
+
         }
     }
 }

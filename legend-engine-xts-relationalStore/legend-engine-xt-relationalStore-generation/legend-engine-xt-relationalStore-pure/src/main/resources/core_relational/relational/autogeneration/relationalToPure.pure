@@ -24,7 +24,7 @@ function meta::relational::transform::autogen::tableToClass(table:Table[1], pack
    (
       _type = 'class',
       name = createValidClassName($table.name),
-      package = $packageStr + '::' + $table.schema.name->makeCamelCase(),
+      package = $packageStr + '::' + $table.schema.name,
       properties = $table.columns->cast(@Column)
            ->filter(c | $columnFilterFunction->eval($c))
            ->map(c | $c->columnToProperty()),

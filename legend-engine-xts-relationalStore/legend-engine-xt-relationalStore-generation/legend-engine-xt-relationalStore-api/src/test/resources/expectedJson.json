@@ -688,6 +688,76 @@
               }
             }
           ]
+        },
+        {
+          "mainTable": {
+            "schema": "SCHEMA3",
+            "database": "meta::relational::transform::autogen::tests::testDB",
+            "_type": "table",
+            "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+            "table": "Company"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "SCHEMA3",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "SCHEMA3",
+                  "database": "meta::relational::transform::autogen::tests::testDB",
+                  "_type": "table",
+                  "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "meta_relational_transform_autogen_tests_SCHEMA3_Company",
+          "class": "meta::relational::transform::autogen::tests::SCHEMA3::Company",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Company",
+              "table": {
+                "schema": "SCHEMA3",
+                "database": "meta::relational::transform::autogen::tests::testDB",
+                "_type": "table",
+                "mainTableDb": "meta::relational::transform::autogen::tests::testDB",
+                "table": "Company"
+              }
+            }
+          ]
         }
       ]
     },
@@ -870,6 +940,38 @@
         }
       ],
       "package": "meta::relational::transform::autogen::tests::testSchema2",
+      "_type": "class",
+      "name": "Company",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "meta::relational::transform::autogen::tests::SCHEMA3",
       "_type": "class",
       "name": "Company",
       "properties": [

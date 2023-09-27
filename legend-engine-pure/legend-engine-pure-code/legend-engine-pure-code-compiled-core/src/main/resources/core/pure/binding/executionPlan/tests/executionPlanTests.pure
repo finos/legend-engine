@@ -547,6 +547,18 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
    assertEquals($expected, $planString);
 }
 
+function <<meta::pure::profiles::test.Test>> meta::external::format::shared::executionPlan::tests::testExtractRuntimeOnChainingQuery(): Boolean[1]
+{
+  let binding = testBinding();
+  let tree    = #{TargetPerson{fullName}}#;
+
+  let query   = {data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);};
+  assertEmpty($query->extractRuntimesFromFunctionDefinition(true));
+
+  let query1 = {data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(_Person, $binding, $data))->externalize($binding, $tree);};
+  assertEmpty($query1->extractRuntimesFromFunctionDefinition(true));
+}
+
 function <<access.private>> meta::external::format::shared::executionPlan::tests::testBinding(): Binding[1]
 {
   ^Binding(
