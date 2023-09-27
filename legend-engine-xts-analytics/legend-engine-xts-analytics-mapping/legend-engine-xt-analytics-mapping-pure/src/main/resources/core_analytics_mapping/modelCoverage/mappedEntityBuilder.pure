@@ -291,10 +291,10 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 
    // handle auto mapped properties 
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
-                                                     ->filter(pm| $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
+                                                     ->filter(pm| $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
    let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
-    let id = if($pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
+    let id = if($pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
                 | let pureInstanceSetImplementation = $pm.owner->toOne()->cast(@PureInstanceSetImplementation);
                   let targetClassPath = if($pureInstanceSetImplementation.class->isNotEmpty(),|$pureInstanceSetImplementation.class->toOne()->cast(@Class<Any>)->elementToPath(),|'');
                   let srcClassPath = if($pureInstanceSetImplementation.srcClass->isNotEmpty(),|$pureInstanceSetImplementation.srcClass->toOne()->cast(@Class<Any>)->elementToPath(),|'');
