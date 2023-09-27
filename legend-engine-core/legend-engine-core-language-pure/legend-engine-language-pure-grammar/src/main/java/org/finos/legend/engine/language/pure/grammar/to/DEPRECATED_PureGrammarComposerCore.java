@@ -135,6 +135,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     private final boolean isPropertyBracketExpressionModeEnabled;
 
     private int baseTabLevel = 1;
+    private int currentTabLevel = 1;
+    private final boolean isIfStatementNested;
 
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
     {
@@ -143,6 +145,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isVariableInFunctionSignature = builder.isVariableInFunctionSignature;
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
+        this.isIfStatementNested = builder.isIfStatementNested;
+        this.currentTabLevel = builder.currentTabLevel;
     }
 
     public int getBaseTabLevel()
@@ -187,6 +191,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isValueSpecificationExternalParameter = false;
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
+        private boolean isIfStatementNested = false;
+        private int currentTabLevel = 1;
 
         private Builder()
         {
@@ -201,6 +207,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isVariableInFunctionSignature = grammarTransformer.isVariableInFunctionSignature;
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
+            builder.isIfStatementNested = grammarTransformer.isIfStatementNested;
+            builder.currentTabLevel = grammarTransformer.currentTabLevel;
             return builder;
         }
 
@@ -212,6 +220,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isVariableInFunctionSignature = context.isVariableInFunctionSignature();
             builder.isValueSpecificationExternalParameter = context.isValueSpecificationExternalParameter();
             builder.isPropertyBracketExpressionModeEnabled = context.isPropertyBracketExpressionModeEnabled();
+            builder.isIfStatementNested = false;
+            builder.currentTabLevel =  1;
             return builder;
         }
 
@@ -223,6 +233,18 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         public Builder withRenderStyle(RenderStyle renderStyle)
         {
             this.renderStyle = renderStyle;
+            return this;
+        }
+
+        private Builder withCurrentTabLevel(int level)
+        {
+            this.currentTabLevel = level;
+            return this;
+        }
+
+        public Builder withNestedIfStatement()
+        {
+            this.isIfStatementNested = true;
             return this;
         }
 
@@ -494,14 +516,15 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String pureFilter = "";
         if (pureInstanceClassMapping.filter != null)
         {
+            this.currentTabLevel += 1;
             pureInstanceClassMapping.filter.parameters = Collections.emptyList();
-            String filterString = pureInstanceClassMapping.filter.accept(this).replaceFirst("\\|", "");
-            pureFilter = getTabString(2) + "~filter " + filterString + "\n";
+            String filterString = pureInstanceClassMapping.filter.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel + 1).build()).replaceFirst("\\|", "");
+            pureFilter = getTabString(2) + "~filter \n " + getTabString(this.currentTabLevel + 1) + filterString + "\n";
         }
         return ": " + "Pure\n" +
                 getTabString(getBaseTabLevel()) + "{\n" +
                 (pureInstanceClassMapping.srcClass == null ? "" : getTabString(getBaseTabLevel() + 1) + "~src " + pureInstanceClassMapping.srcClass + "\n") + pureFilter +
-                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(this)).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(pureInstanceClassMapping.propertyMappings, propertyMapping -> getTabString(getBaseTabLevel() + 1) + propertyMapping.accept(Builder.newInstance().withCurrentTabLevel(this.currentTabLevel + 1).build())).makeString(",\n") + (pureInstanceClassMapping.propertyMappings.isEmpty() ? "" : "\n") +
                 getTabString(getBaseTabLevel()) + "}";
     }
 
@@ -509,7 +532,17 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(PurePropertyMapping purePropertyMapping)
     {
         purePropertyMapping.transform.parameters = Collections.emptyList();
+        this.currentTabLevel += 1;
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
+        if (lambdaString.contains("if"))
+        {
+            return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
+                    (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
+                    (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
+                    (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target) + "]") +
+                    (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
+                    ":\n" + getTabString(this.currentTabLevel) + lambdaString;
+        }
         return (purePropertyMapping.localMappingProperty != null ? "+" : "") + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.property.property) +
                 (purePropertyMapping.localMappingProperty != null ? ": " + purePropertyMapping.localMappingProperty.type + "[" + HelperDomainGrammarComposer.renderMultiplicity(purePropertyMapping.localMappingProperty.multiplicity) + "]" : "") +
                 (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
@@ -677,6 +710,19 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return "";
         }
+        if (lambda.body.get(0) instanceof AppliedFunction)
+        {
+            if (((AppliedFunction) lambda.body.get(0)).function.equals("if") && this.isIfStatementNested)
+            {
+                boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
+                boolean addCR = lambda.body.size() > 1;
+                return (addWrapper ? "{" : "")
+                        + (lambda.parameters.isEmpty() ? "" : LazyIterate.collect(lambda.parameters, variable -> variable.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(","))
+                        + "|\n" + getTabString(this.currentTabLevel + 1) + (addCR ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "")
+                        + LazyIterate.collect(lambda.body, valueSpecification -> valueSpecification.accept(addCR ? DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build() : this)).makeString(";" + this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)))
+                        + (addCR ? ";" + this.returnChar() : "") + (addWrapper ? this.indentationString + "}" : "");
+            }
+        }
         boolean addWrapper = lambda.body.size() > 1 || lambda.parameters.size() > 1;
         boolean addCR = lambda.body.size() > 1;
         return (addWrapper ? "{" : "")
@@ -793,7 +839,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             return HelperValueSpecificationGrammarComposer.renderFunctionName(function, this) + "(" +
                     (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : "") +
-                    ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build()))
+                    ListIterate.collect(parameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withNestedIfStatement().withIndentation(getTabSize(1)).build()))
                             .makeString("," + (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) : " ")) +
                     (this.isRenderingPretty() ? this.returnChar() + DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(0)) : "") + ")";
         }

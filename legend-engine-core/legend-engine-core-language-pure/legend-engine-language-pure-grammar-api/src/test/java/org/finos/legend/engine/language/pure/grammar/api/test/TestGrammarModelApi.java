@@ -36,7 +36,15 @@ public class TestGrammarModelApi extends TestGrammar<PureModelContextData>
     public void testSimple()
     {
         test("Class A\n{\n}\n", true);
-        test("###Mapping\n" + "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" + "(\n" + "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" + "  {\n" + "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" + "    firstName: $src.fullName->substring(\n" + "  0,\n" + "  $src.fullName->indexOf(' ')\n" + ")\n" + "  }\n" + ")\n",
+        test("###Mapping\n" +
+                        "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                        "(\n" +
+                        "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
+                        "  {\n" +
+                        "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
+                        "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' '))\n" +
+                        "  }\n" +
+                        ")\n",
                 true);
     }
 

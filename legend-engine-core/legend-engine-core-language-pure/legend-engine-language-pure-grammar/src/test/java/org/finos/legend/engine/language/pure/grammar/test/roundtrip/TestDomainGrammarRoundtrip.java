@@ -170,6 +170,41 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testNestedIfStatements()
+    {
+        test("function testNestedIfStatements(): Any[*]\n" +
+                "{\n" +
+                "  if(5 > 1, |'5 is greater than one!', |\n" +
+                "    if(2 > 1, |'2 is greater than one!', |\n" +
+                "    if(3 > 1, |'3 is greater than one!', |\n" +
+                "    if(4 > 1, |'4 is greater than one!', |'Bad Math!'))));\n" +
+                "  if(5 > 1, |'5 is greater than one!', |\n" +
+                "    if(2 > 1, |let b = 5, |\n" +
+                "    if(3 > 1, |'3 is greater than one!', |\n" +
+                "    if(4 > 1, |testNestedIfStatements(), |'Bad Math!'))));\n" +
+                "  let a = 5;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFilterIfCall()
+    {
+        test("###Mapping\n" +
+                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
+                "(\n" +
+                "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
+                "  {\n" +
+                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
+                "    ~filter \n" +
+                "       if($src.fullName == 'johndoe', |\n" +
+                "        if($src.lastName == 'good', |true, |true), |false)\n" +
+                "    name: $src.name,\n" +
+                "    region: $src.region\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testDerivedPropertyWithMultipleStatements()
     {
         test("Class Firm\n" +
@@ -967,13 +1002,13 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     public void testGraphFetchTreeWithSubtypeTreeAtRootLevel()
     {
         String tree  =  "#{\n" +
-                        "    test::Firm{\n" +
-                        "      legalName,\n" +
-                        "      ->subType(@test::FirmSubType){\n" +
-                        "        SubTypeName\n"  +
-                        "       }\n" +
-                        "    }\n" +
-                        "  }#\n";
+                "    test::Firm{\n" +
+                "      legalName,\n" +
+                "      ->subType(@test::FirmSubType){\n" +
+                "        SubTypeName\n"  +
+                "       }\n" +
+                "    }\n" +
+                "  }#\n";
 
         String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
@@ -983,16 +1018,16 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     public void testGraphFetchTreeWithMultipleSubtypeTreesAtRootLevel()
     {
         String tree =   "#{\n" +
-                        "    test::Firm{\n" +
-                        "      legalName,\n" +
-                        "      ->subType(@test::FirmSubType1){\n" +
-                        "        SubTypeName1\n"  +
-                        "       },\n" +
-                        "      ->subType(@test::FirmSubType2){\n" +
-                        "        SubTypeName2\n"  +
-                        "       }\n" +
-                        "    }\n" +
-                        "  }#\n";
+                "    test::Firm{\n" +
+                "      legalName,\n" +
+                "      ->subType(@test::FirmSubType1){\n" +
+                "        SubTypeName1\n"  +
+                "       },\n" +
+                "      ->subType(@test::FirmSubType2){\n" +
+                "        SubTypeName2\n"  +
+                "       }\n" +
+                "    }\n" +
+                "  }#\n";
 
         String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
@@ -1002,12 +1037,12 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     public void testGraphFetchTreeWithOnlySubtypeTreesAtRootLevel()
     {
         String tree  =  "#{\n" +
-                        "    test::Firm{\n" +
-                        "      ->subType(@test::FirmSubType){\n" +
-                        "        SubTypeName\n"  +
-                        "       }\n" +
-                        "    }\n" +
-                        "  }#\n";
+                "    test::Firm{\n" +
+                "      ->subType(@test::FirmSubType){\n" +
+                "        SubTypeName\n"  +
+                "       }\n" +
+                "    }\n" +
+                "  }#\n";
 
         String code = "function my::test(): Any[*]\n{\n  " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
         test(code);
