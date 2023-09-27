@@ -3094,5 +3094,15 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>generate-protocol-version</id>
+            <properties>
+                <protocol.SourceVersion>vX_X_X</protocol.SourceVersion>
+                <protocol.TargetVersion>v1_33_0</protocol.TargetVersion>
+            </properties>
+
+        </profile>
+
     </profiles>
+
 </project>
