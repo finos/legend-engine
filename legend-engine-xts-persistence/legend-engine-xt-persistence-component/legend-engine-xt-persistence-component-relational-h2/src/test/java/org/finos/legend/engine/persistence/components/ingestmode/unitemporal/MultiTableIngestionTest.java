@@ -301,7 +301,7 @@ public class MultiTableIngestionTest extends BaseTest
     public static void verifyResults(int batchId, String[] schema, String expectedDataPath, String tableName, IngestorResult result, Map<String, Object> expectedStats) throws IOException
     {
         Assertions.assertEquals(batchId, result.batchId().get());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
         List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", tableName));
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
         Map<StatisticName, Object> actualStats = result.statisticByName();

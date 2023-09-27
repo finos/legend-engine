@@ -90,7 +90,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00' " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00.000000' " +
             "FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
@@ -108,7 +108,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00' " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00.000000' " +
                 "FROM \"mydb\".\"staging\" as stage WHERE NOT (EXISTS " +
                 "(SELECT * FROM \"mydb\".\"staging\" as stage_right " +
                 "WHERE (stage.\"data_split\" < stage_right.\"data_split\") AND ((stage.\"id\" = stage_right.\"id\") AND " +

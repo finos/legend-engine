@@ -64,7 +64,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
                 "FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableCreateQueryWithAuditAndNoPKs, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
@@ -78,7 +78,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
@@ -125,7 +125,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,'2000-01-01 00:00:00' " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,'2000-01-01 00:00:00.000000' " +
                 "FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableWithAuditNotPKCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
@@ -164,7 +164,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         List<String> milestoningSqlList = queries.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' FROM `mydb`.`staging` as stage " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
                 "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
@@ -189,7 +189,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +

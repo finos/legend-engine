@@ -34,7 +34,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -43,7 +43,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') " +
@@ -58,9 +58,9 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         // Stats
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00'";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000'";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00') as `rowsInserted`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000') as `rowsInserted`";
         String rowsTerminated = "SELECT 0 as `rowsTerminated`";
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -70,7 +70,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
     {
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -79,7 +79,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
@@ -99,9 +99,9 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         // Stats
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00'";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000'";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00') as `rowsInserted`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000') as `rowsInserted`";
         String rowsTerminated = "SELECT 0 as `rowsTerminated`";
         verifyStats(operations.get(0), enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -114,7 +114,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
@@ -125,7 +125,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, " +
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND (sink.`digest` = stage.`digest`) " +
                 "AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) AND " +
@@ -140,10 +140,10 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         // Stats
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))) as `rowsInserted`";
-        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))) as `rowsTerminated`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))) as `rowsInserted`";
+        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))) as `rowsTerminated`";
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
 
@@ -151,7 +151,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
     public void verifyUnitemporalDeltaWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
@@ -162,7 +162,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, " +
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND (sink.`digest` = stage.`digest`) " +
@@ -182,10 +182,10 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         // Stats
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))) as `rowsInserted`";
-        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00')))) as `rowsTerminated`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))) as `rowsInserted`";
+        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))) as `rowsTerminated`";
         verifyStats(operations.get(0), enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
 
@@ -196,9 +196,9 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET sink.`BATCH_TIME_OUT` = '2000-01-01 00:00:00' WHERE (sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59') AND (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`)))";
+        String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET sink.`BATCH_TIME_OUT` = '2000-01-01 00:00:00.000000' WHERE (sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59') AND (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`)))";
 
-        String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_TIME_IN`, `BATCH_TIME_OUT`) (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59') AND (sink.`DIGEST` = stage.`DIGEST`) AND ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)))))";
+        String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_TIME_IN`, `BATCH_TIME_OUT`) (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_TIME_OUT` = '9999-12-31 23:59:59') AND (sink.`DIGEST` = stage.`DIGEST`) AND ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableTimeBasedCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));

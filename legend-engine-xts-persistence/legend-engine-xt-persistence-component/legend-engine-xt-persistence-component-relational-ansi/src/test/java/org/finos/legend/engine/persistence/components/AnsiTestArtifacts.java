@@ -149,17 +149,17 @@ public class AnsiTestArtifacts
 
     public static String lockInitializedQuery = "INSERT INTO \"mydb\".\"main_legend_persistence_lock\" " +
             "(\"insert_ts_utc\", \"table_name\") " +
-            "(SELECT '2000-01-01 00:00:00','main' " +
+            "(SELECT '2000-01-01 00:00:00.000000','main' " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock)))";
 
     public static String lockInitializedUpperCaseQuery = "INSERT INTO \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" (\"INSERT_TS_UTC\", \"TABLE_NAME\")" +
-            " (SELECT '2000-01-01 00:00:00','MAIN' WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK)))";
+            " (SELECT '2000-01-01 00:00:00.000000','MAIN' WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK)))";
 
     public static String lockAcquiredQuery = "UPDATE \"mydb\".\"main_legend_persistence_lock\" as main_legend_persistence_lock " +
-            "SET main_legend_persistence_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00'";
+            "SET main_legend_persistence_lock.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
 
     public static String lockAcquiredUpperCaseQuery = "UPDATE \"MYDB\".\"MAIN_LEGEND_PERSISTENCE_LOCK\" as MAIN_LEGEND_PERSISTENCE_LOCK " +
-            "SET MAIN_LEGEND_PERSISTENCE_LOCK.\"LAST_USED_TS_UTC\" = '2000-01-01 00:00:00'";
+            "SET MAIN_LEGEND_PERSISTENCE_LOCK.\"LAST_USED_TS_UTC\" = '2000-01-01 00:00:00.000000'";
 
     public static String getDropTempTableQuery(String tableName)
     {
@@ -393,12 +393,12 @@ public class AnsiTestArtifacts
     public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata " +
             "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
             " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
-            "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+            "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
 
     public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA " +
             "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
             " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
-            "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+            "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE')";
 
     public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata " +
             "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") " +

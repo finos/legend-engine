@@ -505,7 +505,7 @@ class UnitemporalDeltaTest extends BaseTest
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         IngestorResult result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(1), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
 
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -522,7 +522,7 @@ class UnitemporalDeltaTest extends BaseTest
         expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
         result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(2), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass3.csv";
@@ -533,7 +533,7 @@ class UnitemporalDeltaTest extends BaseTest
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(3), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
     }
 
     @Test
