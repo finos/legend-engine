@@ -19,7 +19,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
+        <artifactId>legend-engine-config</artifactId>
         <version>4.29.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -27,6 +27,58 @@
     <name>Legend Engine - Connection - Integration Tests</name>
 
     <packaging>jar</packaging>
+
+    <!-- FIXME: @akphi -->
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnWarning>false</failOnWarning>
+                    <ignoreNonCompile>true</ignoreNonCompile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${maven.plugin.puppycrawl.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <configuration>
+                            <configLocation>checkstyle.xml</configLocation>
+                            <logViolationsToConsole>true</logViolationsToConsole>
+                            <failOnViolation>false</failOnViolation>
+                            <violationSeverity>warning</violationSeverity>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+                            </sourceDirectories>
+                        </configuration>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- ENGINE -->
