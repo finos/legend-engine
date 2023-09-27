@@ -23,7 +23,7 @@ public class RelLanguageCodeRepositoryProvider implements CodeRepositoryProvider
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_relationalai.definition.json");
+        return GenericCodeRepository.build("core_external_query_relationalai.definition.json");
     }
 }
 

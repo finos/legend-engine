@@ -42,7 +42,7 @@
                         <repository>core_relational</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_relationalai.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_external_query_relationalai.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
