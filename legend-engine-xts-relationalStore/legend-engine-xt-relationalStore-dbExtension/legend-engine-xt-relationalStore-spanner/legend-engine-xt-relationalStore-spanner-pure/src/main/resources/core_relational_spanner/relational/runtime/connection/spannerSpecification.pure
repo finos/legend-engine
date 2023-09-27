@@ -14,9 +14,9 @@
 
 Class meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-    projectId:String[1];
-    instanceId:String[1];
-    databaseId:String[1];
-    proxyHost: String[0..1];
-    proxyPort: Integer[0..1];
+   <<equality.Key>>  projectId:String[1];
+   <<equality.Key>>  instanceId:String[1];
+   <<equality.Key>>  databaseId:String[1];
+   <<equality.Key>>  proxyHost: String[0..1];
+   <<equality.Key>>  proxyPort: Integer[0..1];
 }

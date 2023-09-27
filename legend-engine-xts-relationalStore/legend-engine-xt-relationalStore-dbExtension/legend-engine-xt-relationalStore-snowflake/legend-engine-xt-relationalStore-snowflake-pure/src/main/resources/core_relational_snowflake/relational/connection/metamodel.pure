@@ -19,28 +19,28 @@ Enum meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType
 
 Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-    accountName:String[1];
-    region:String[1];
-    warehouseName:String[1];
-    databaseName:String[1];
-    role:String[0..1];
+    <<equality.Key>> accountName:String[1];
+    <<equality.Key>> region:String[1];
+    <<equality.Key>> warehouseName:String[1];
+    <<equality.Key>> databaseName:String[1];
+    <<equality.Key>> role:String[0..1];
 
     proxyHost:String[0..1];
     proxyPort:String[0..1];
     nonProxyHosts:String[0..1];
 
-    accountType: meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType[0..1];
-    organization:String[0..1];
-    cloudType:String[0..1];
+    <<equality.Key>> accountType: meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType[0..1];
+    <<equality.Key>> organization:String[0..1];
+    <<equality.Key>> cloudType:String[0..1];
 
-    quotedIdentifiersIgnoreCase:Boolean[0..1];
-    enableQueryTags: Boolean[0..1];
+    <<equality.Key>> quotedIdentifiersIgnoreCase:Boolean[0..1];
+    <<equality.Key>> enableQueryTags: Boolean[0..1];
 }
 
 Class meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-    privateKeyVaultReference:String[1];
-    passPhraseVaultReference:String[1];
-    publicUserName:String[1];
+    <<equality.Key>> privateKeyVaultReference:String[1];
+    <<equality.Key>> passPhraseVaultReference:String[1];
+    <<equality.Key>> publicUserName:String[1];
 }
 
