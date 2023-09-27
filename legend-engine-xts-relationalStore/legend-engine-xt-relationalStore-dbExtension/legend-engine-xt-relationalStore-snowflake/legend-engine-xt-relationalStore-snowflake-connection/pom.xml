@@ -19,17 +19,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xt-relationalStore-postgres</artifactId>
+        <artifactId>legend-engine-xt-relationalStore-snowflake</artifactId>
         <version>4.29.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-snowflake-connection</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Postgres - Connection</name>
+    <name>Legend Engine - XT - Relational Store - Snowflake - Connection</name>
 
     <dependencies>
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
@@ -49,18 +57,10 @@
 
         <!-- DRIVER -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- DRIVER -->
-
-        <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
     </dependencies>
 </project>

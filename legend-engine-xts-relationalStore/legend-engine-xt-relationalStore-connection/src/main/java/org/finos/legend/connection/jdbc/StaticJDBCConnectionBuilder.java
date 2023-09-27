@@ -34,9 +34,9 @@ public class StaticJDBCConnectionBuilder
             StoreSupport storeSupport = storeInstance.getStoreSupport();
             if (!(storeSupport instanceof RelationalDatabaseStoreSupport))
             {
-                throw new RuntimeException("Can't get connection: only support relational database stores");
+                throw new RuntimeException("Can't get connection: only support relational databases");
             }
-            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabaseType(((RelationalDatabaseStoreSupport) storeSupport).getDatabaseType());
+            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabase(((RelationalDatabaseStoreSupport) storeSupport).getDatabase());
             return DriverManager.getConnection(
                     driver.buildURL(connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, new Properties()),
                     credential.getUser(), credential.getPassword()

@@ -24,43 +24,18 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-postgres-test-support</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Postgres - Connection</name>
+    <name>Legend Engine - XT - Relational Store - Postgres - Test Support</name>
 
     <dependencies>
-        <!-- ENGINE -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
-        </dependency>
-        <!-- ENGINE -->
-
-        <!-- ECLIPSE COLLECTIONS -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
-        <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- DRIVER -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
+            <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
         </dependency>
-        <!-- DRIVER -->
-
-        <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
     </dependencies>
 </project>

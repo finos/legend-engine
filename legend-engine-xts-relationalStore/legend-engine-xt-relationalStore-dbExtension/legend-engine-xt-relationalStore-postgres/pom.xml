@@ -28,9 +28,9 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-postgres-connection</module>
-        <module>legend-engine-xt-relationalStore-postgres-connection-tests</module>
         <module>legend-engine-xt-relationalStore-postgres-execution</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-postgres-pure</module>
+        <module>legend-engine-xt-relationalStore-postgres-test-support</module>
     </modules>
 </project>
