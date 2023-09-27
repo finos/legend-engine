@@ -38,7 +38,7 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
-                        <repository>core_relationalai</repository>
+                        <repository>core_external_query_relationalai</repository>
                         <repository>core_relational</repository>
                     </repositories>
                     <extraRepositories>
