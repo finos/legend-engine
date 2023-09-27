@@ -10,6 +10,7 @@
     "platform_functions_json",
     "platform_store_relational",
     "core",
-    "core_relational"
+    "core_relational",
+    "core_functions"
   ]
 }
