@@ -98,7 +98,10 @@ function meta::rel::mapping::withPropertyMapping(
     $propertyMapping
   );
 
-  if(!$propertyMapping.store->in($setImpl.stores), | $setImpl->mutateAdd('stores', $propertyMapping.store), | $setImpl);
+//
+// FIXME: Commented out to fix the build.
+//  if(!$propertyMapping.store->in($setImpl.stores), | $setImpl->mutateAdd('stores', $propertyMapping.store), | $setImpl);
+//
 }
 
 function meta::rel::mapping::withPropertyMapping(

@@ -956,12 +956,15 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
         }),
         case($other == meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_, {|
           meta::rel::compile::ir::tds::intoPExpr($func);
-        }),
-        case($other == meta::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {| 
-          // TODO not implemented yet
-          let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
-
-          meta::rel::compile::ir::const(1)->ok();
+//
+// FIXME: Commented out to fix the build.
+//        }),
+//        case($other == meta::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {| 
+//          // TODO not implemented yet
+//          let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
+//
+//          meta::rel::compile::ir::const(1)->ok();
+//
         })
       ], {|
         let error = error(| 
