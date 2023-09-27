@@ -291,7 +291,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 
    // handle auto mapped properties 
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
-                                                     ->filter(pm| meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
+                                                     ->filter(pm| $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
    let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
     let id = if($pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
