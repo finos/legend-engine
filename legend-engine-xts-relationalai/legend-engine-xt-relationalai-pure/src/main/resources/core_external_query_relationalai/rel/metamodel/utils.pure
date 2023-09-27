@@ -1,14 +1,11 @@
 import meta::rel::metamodel::*;
+import meta::pure::functions::collection::*;
 
 function meta::rel::metamodel::with(program: Program[1], elements: ProgramElement[*]): Program[1] {
   //TODO: In general, room for improvement by adding some indexed structure to programs.
   let concat = 
     $elements->fold({e, acc |
-//
-// FIXME: Commented out to fix the build.
-//
-//      if (!$e->in($acc), | $acc->concatenate($e), | $acc);
-$acc
+      if (!$e->in($acc), | $acc->concatenate($e), | $acc);
     }, $program.elements);
 
   ^Program(identifier=$program.identifier, elements=$concat);
