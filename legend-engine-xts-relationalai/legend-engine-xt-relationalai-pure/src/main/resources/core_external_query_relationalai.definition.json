@@ -1,5 +1,5 @@
 {
-  "name" : "core_relationalai",
+  "name" : "core_external_query_relationalai",
   "pattern" : "(meta::rel|meta::pure::mapping)(::.*)?",
   "dependencies": [
     "platform",
