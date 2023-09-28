@@ -1301,11 +1301,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
    $result;
 }
 
-/*
-  Takes in input a column and the relationalElement $column should exist in, and returns which sources can be used to extract the information from the given set of nodes.
-  It does not take into account if the selectSQL could be modified to fetch the required info.  
-*/
-function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*] // 
+function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
 {   
    let aliasesToUse = $nodes->filter(n| let relElements = $n.alias.relationalElement->match([
          v:ViewSelectSQLQuery[1]| $v.view,
