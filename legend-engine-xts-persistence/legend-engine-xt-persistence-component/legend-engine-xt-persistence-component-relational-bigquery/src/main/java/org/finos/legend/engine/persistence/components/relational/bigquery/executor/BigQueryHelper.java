@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.execu
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.TableId;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.TypeMapping;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -419,6 +420,34 @@ public class BigQueryHelper implements RelationalExecutionHelper
                     {
                         LOGGER.error("Error closing transaction manager.", e);
                     }
+                }
+            }
+        }
+    }
+
+    public Map<StatisticName, Object> executeLoadStatement(String sql)
+    {
+        BigQueryTransactionManager txManager = null;
+        try
+        {
+            txManager = new BigQueryTransactionManager(bigQuery);
+            return txManager.executeLoadStatement(sql);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error executing SQL query: " + sql, e);
+        }
+        finally
+        {
+            if (txManager != null)
+            {
+                try
+                {
+                    txManager.close();
+                }
+                catch (InterruptedException e)
+                {
+                    LOGGER.error("Error closing transaction manager.", e);
                 }
             }
         }

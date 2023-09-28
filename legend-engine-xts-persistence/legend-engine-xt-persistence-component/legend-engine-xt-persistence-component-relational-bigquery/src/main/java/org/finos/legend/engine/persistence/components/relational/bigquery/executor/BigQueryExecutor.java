@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -68,6 +69,22 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
                 bigQueryHelper.executeStatement(enrichedSql);
             }
         }
+    }
+
+    public Map<StatisticName, Object> executeLoadPhysicalPlanAndGetStats(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    {
+        List<String> sqlList = physicalPlan.getSqlList();
+
+        // The first SQL is a load statement
+        // Executed in a new transaction
+        Map<StatisticName, Object> loadStats = bigQueryHelper.executeLoadStatement(getEnrichedSql(placeholderKeyValues, sqlList.get(0)));
+
+        // The second SQL is an insert statement
+        // We need to first close the current transaction (if it exists) and open a new transaction
+        // Such that the result of the Load will be available to the Insert
+        bigQueryHelper.close();
+        bigQueryHelper.executeStatement(getEnrichedSql(placeholderKeyValues, sqlList.get(1)));
+        return loadStats;
     }
 
     @Override

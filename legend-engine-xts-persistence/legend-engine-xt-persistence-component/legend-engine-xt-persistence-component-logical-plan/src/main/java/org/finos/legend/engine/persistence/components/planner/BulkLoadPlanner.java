@@ -206,7 +206,7 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         if (!transformWhileCopy)
         {
-            operations.add(Drop.of(true, tempDataset, true));
+            operations.add(Drop.of(true, tempDataset, false));
         }
         return LogicalPlan.of(operations);
     }

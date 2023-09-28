@@ -257,25 +257,8 @@ public class BigQuerySink extends AnsiSqlSink
     @Override
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
-        executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
-
-        Map<StatisticName, Object> stats = new HashMap<>();
-        StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
-        stats.put(StatisticName.FILES_LOADED, stagedFilesDataset.stagedFilesDatasetProperties().files().size()); // todo: check this
-        stats.put(StatisticName.ROWS_WITH_ERRORS, 0); // todo: check this
-
-        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
-        if (rowsInsertedSqlPlan != null)
-        {
-            stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
-                .stream()
-                .findFirst()
-                .map(TabularData::getData)
-                .flatMap(t -> t.stream().findFirst())
-                .map(Map::values)
-                .flatMap(t -> t.stream().findFirst())
-                .orElseThrow(IllegalStateException::new));
-        }
+        BigQueryExecutor bigQueryExecutor = (BigQueryExecutor) executor;
+        Map<StatisticName, Object> stats = bigQueryExecutor.executeLoadPhysicalPlanAndGetStats(ingestSqlPlan, placeHolderKeyValues);
 
         IngestorResult result;
         result = IngestorResult.builder()

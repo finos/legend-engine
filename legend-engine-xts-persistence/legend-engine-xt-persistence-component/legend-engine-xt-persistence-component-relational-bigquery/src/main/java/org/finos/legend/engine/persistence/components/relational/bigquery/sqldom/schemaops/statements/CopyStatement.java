@@ -19,7 +19,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DMLStatement;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import static org.finos.legend.engine.persistence.components.relational.sqldom.u
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
-public class CopyStatement implements DMLStatement
+public class CopyStatement implements DDLStatement
 {
     private Table table;
     private StagedFilesTable stagedFilesTable;
