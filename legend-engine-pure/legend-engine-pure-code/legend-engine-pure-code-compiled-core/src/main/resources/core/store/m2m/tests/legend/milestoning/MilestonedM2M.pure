@@ -34,7 +34,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                     ' *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner: Pure\n' +
                     '  {\n' +
                     '    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner\n' +
-                    '    vehicleName: $src.vehicle.name,\n' +
+                    '    vehicleName: $src.vehicle(%2020-10-15).name,\n' +
                     '    personName : $src.name\n' +
                     '  }\n' +
                     ')\n';
