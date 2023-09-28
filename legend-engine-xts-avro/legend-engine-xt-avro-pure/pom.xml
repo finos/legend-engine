@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-avro</artifactId>
-        <version>4.29.1-SNAPSHOT</version>
+        <version>4.29.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -220,7 +220,7 @@
                                 <configuration>
                                     <target name="protocol">
                                         <copy file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.SourceVersion}.pure" tofile="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure" />
-                                        <replace file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure" token= "${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+                                        <replace file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
                                     </target>
                                 </configuration>
                             </execution>
