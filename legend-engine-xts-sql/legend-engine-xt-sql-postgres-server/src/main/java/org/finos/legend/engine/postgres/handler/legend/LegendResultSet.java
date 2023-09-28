@@ -18,13 +18,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
-import java.util.Iterator;
 import java.util.List;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 public class LegendResultSet implements PostgresResultSet
@@ -41,26 +40,24 @@ public class LegendResultSet implements PostgresResultSet
                     .toFormatter();
 
 
-    private Iterator<TDSRow> tdsRowIterator;
-    private List<LegendColumn> columns;
-    private TDSRow currentRow;
+    private LegendExecutionResult legendExecutionResult;
+    private List<Object> currentRow;
 
-    public LegendResultSet(Iterable<TDSRow> tdsRowIterable, List<LegendColumn> columns)
+    public LegendResultSet(LegendExecutionResult legendExecutionResult)
     {
-        this.tdsRowIterator = tdsRowIterable.iterator();
-        this.columns = columns;
+        this.legendExecutionResult = legendExecutionResult;
     }
 
     @Override
     public PostgresResultSetMetaData getMetaData() throws Exception
     {
-        return new LegendResultSetMetaData(columns);
+        return new LegendResultSetMetaData(legendExecutionResult.getLegendColumns());
     }
 
     @Override
     public Object getObject(int i) throws Exception
     {
-        LegendColumn legendColumn = columns.get(i - 1);
+        LegendColumn legendColumn = legendExecutionResult.getLegendColumns().get(i - 1);
         Object value = currentRow.get(i - 1);
         if (value == null)
         {
@@ -100,11 +97,20 @@ public class LegendResultSet implements PostgresResultSet
     @Override
     public boolean next() throws Exception
     {
-        if (tdsRowIterator.hasNext())
+        if (legendExecutionResult.hasNext())
         {
-            currentRow = tdsRowIterator.next();
+            currentRow = legendExecutionResult.next();
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void close()
+    {
+        if (legendExecutionResult != null)
+        {
+            legendExecutionResult.close();
+        }
     }
 }

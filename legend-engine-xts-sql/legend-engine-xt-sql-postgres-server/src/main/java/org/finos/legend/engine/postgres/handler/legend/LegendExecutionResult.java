@@ -15,15 +15,15 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-public class LegendTdsClientException extends RuntimeException
-{
-    public LegendTdsClientException(String message)
-    {
-        super(message);
-    }
+import java.util.List;
 
-    public LegendTdsClientException(String message, Throwable cause)
-    {
-        super(message, cause);
-    }
+public interface LegendExecutionResult
+{
+    List<LegendColumn> getLegendColumns();
+
+    boolean hasNext();
+
+    List<Object> next();
+
+    void close();
 }
