@@ -6819,15 +6819,12 @@ function meta::relational::functions::pureToSqlQuery::extractExplodeSemiStructur
     ]);
 }
 
-function meta::relational::functions::pureToSqlQuery::explodeReturnType(returnType:String[1]):Type[0..1]
+function meta::relational::functions::pureToSqlQuery::explodeReturnType(typeName:String[1]):Type[0..1]
 {
-  if ($returnType->in(['CHAR', 'VARCHAR']), | String, |
-  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | DateTime, |
-  if ($returnType == 'DATE', | StrictDate, |   
-  if ($returnType == 'BOOLEAN', | Boolean, |
-  if ($returnType == 'FLOAT', | Float, |
-  if ($returnType == 'INTEGER', | Integer, |   
-  []))))));
+    let map = meta::relational::functions::database::sqlTextToRelationalDataTypeMap();
+    let func = $map->get($typeName);
+    let columnType = if ($func->isEmpty(), | ^meta::relational::metamodel::datatype::SemiStructured(), | $func->toOne()->eval(1000, 1));
+    let pureType = if($columnType->instanceOf(meta::relational::metamodel::datatype::SemiStructured), | [], | meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($columnType));
 }
 
 /*
