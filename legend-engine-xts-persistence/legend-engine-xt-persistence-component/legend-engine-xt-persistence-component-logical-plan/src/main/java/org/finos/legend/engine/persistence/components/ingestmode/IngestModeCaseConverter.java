@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.V
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
@@ -345,6 +346,12 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
                     .performDeduplication(maxVersionStrategy.performDeduplication())
                     .build();
+        }
+
+        @Override
+        public VersioningStrategy visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return null;
         }
     }
 

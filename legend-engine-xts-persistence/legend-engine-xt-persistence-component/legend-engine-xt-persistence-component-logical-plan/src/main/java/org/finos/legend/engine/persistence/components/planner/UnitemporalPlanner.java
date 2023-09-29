@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.M
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTimeAbstract;
@@ -168,6 +169,12 @@ abstract class UnitemporalPlanner extends Planner
             public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
                 return Optional.of(maxVersionStrategy.versioningField());
+            }
+
+            @Override
+            public Optional<String> visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                return Optional.empty();
             }
         });
 

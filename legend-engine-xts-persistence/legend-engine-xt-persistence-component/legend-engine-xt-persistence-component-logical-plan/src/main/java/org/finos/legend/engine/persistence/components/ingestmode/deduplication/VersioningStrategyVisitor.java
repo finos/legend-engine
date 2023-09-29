@@ -19,4 +19,6 @@ public interface VersioningStrategyVisitor<T>
     T visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy);
 
     T visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy);
+
+    T visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract);
 }

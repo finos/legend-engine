@@ -83,4 +83,10 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
                 throw new IllegalStateException("Unsupported versioning comparator type");
         }
     }
+
+    @Override
+    public Condition visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+    {
+        return null;
+    }
 }

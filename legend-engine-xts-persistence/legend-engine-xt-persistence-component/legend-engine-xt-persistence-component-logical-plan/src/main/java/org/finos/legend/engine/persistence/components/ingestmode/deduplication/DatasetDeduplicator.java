@@ -90,4 +90,10 @@ public class DatasetDeduplicator implements VersioningStrategyVisitor<Dataset>
         }
         return enrichedStagingDataset;
     }
+
+    @Override
+    public Dataset visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+    {
+        return null;
+    }
 }

@@ -27,6 +27,7 @@ public enum FunctionName
     CURRENT_TIMESTAMP,
     UPPER,
     ROW_NUMBER,
+    DENSE_RANK,
     SUBSTRING,
     PARSE_JSON,
     DATE,
