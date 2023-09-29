@@ -26,10 +26,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// phase 0 - Add comment/javadoc 
+/*
+    A StoreSupport describes the capabilities supported by a Store.
+    For now, it describes the authentication mechanisms.
+*/
 public class StoreSupport
 {
     private final String identifier;
     private final List<AuthenticationMechanism> authenticationMechanisms;
+    // phase 2 - should configtypes be linked (at compile time) to authmechanisms
     private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
 
     protected StoreSupport(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
@@ -44,6 +50,7 @@ public class StoreSupport
         return identifier;
     }
 
+    // phase 1 - StoreSupport should be immutable once constructed
     public List<AuthenticationMechanism> getAuthenticationMechanisms()
     {
         return authenticationMechanisms;
@@ -65,6 +72,7 @@ public class StoreSupport
             return this;
         }
 
+        // nitpick - keep just one builder method. We can always add more
         public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
         {
             this.authenticationMechanisms.addAll(authenticationMechanisms);
@@ -83,6 +91,7 @@ public class StoreSupport
             return this;
         }
 
+        // phase 3 - can a store not have any auth mechanism ?
         public StoreSupport build()
         {
             return new StoreSupport(
