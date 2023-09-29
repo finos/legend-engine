@@ -21,15 +21,19 @@ import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFacto
 
 import java.util.List;
 
+// phase 1 - Same as IdentitySpecification. We should not have two factory concepts
 public class IdentityFactory
 {
     private final EnvironmentConfiguration environmentConfiguration;
 
+    // phase 1 - why does the factory need to hold a reference to the env ? 
     private IdentityFactory(EnvironmentConfiguration environmentConfiguration)
     {
         this.environmentConfiguration = environmentConfiguration;
     }
 
+    // phase 2 - In retrospect DefaultIdentityFactory doesnt make sense. We should remove.
+    
     // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should
     // think of when we can unify them
     private static final DefaultIdentityFactory DEFAULT = new DefaultIdentityFactory();
