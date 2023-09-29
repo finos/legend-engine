@@ -48,7 +48,7 @@ function meta::pure::graphFetch::switchToMilestoneProperties(tree:GraphFetchTree
       {| 
          let pgft = $tree->cast(@PropertyGraphFetchTree);
          ^$pgft(
-            property   = $pgft.property->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->at(0),
+            property   = $pgft.property->getMilestonedGeneratedQualifiedPropertiesForEdgePointProperty()->filter(x|!$x->isNoArgMilestonedGeneratedQualifiedProperty())->at(0),
             parameters = $parameters,
             subTrees   = $tree.subTrees->map(gft| $gft->switchToMilestoneProperties($parameters))
          );
@@ -174,9 +174,9 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
 
    let nodeText = $node->match([
       rr: RoutedRootGraphFetchTree<Any>[1] | $indent + $rr.class.name->toOne() + $rr.sets.id->map(id|$id->toString())->joinStrings('[',',',']'),
-      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
+      rp: RoutedPropertyGraphFetchTree[1]  | $indent + $rp.property.name->toOne()+if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'') + $rp.sets.id->map(id|$id->toString())->joinStrings(' sets: [',',',']') + $rp.propertyMapping->map(pm|$pm.targetSetImplementationId)->joinStrings(' targetSets: [',',',']'),
       r: RootGraphFetchTree<Any>[1]        | $indent + $r.class.name->toOne(),
-      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '') 
+      p: PropertyGraphFetchTree[1]         | $indent + $p.property.name->toOne()+if($p.property->instanceOf(QualifiedProperty), |'('+$p.parameters->evaluateAndDeactivate()->map(p|$p->printValueSpecification(''))->joinStrings(', ')+')', |'')+if($p.subType->isNotEmpty(),| '->subType(' + $p.subType->toOne().name->toOne() + ')', | '')
    ]) +  $requiredQPText + $constraintsExclusionsText;
    
   $nodeText +
@@ -492,7 +492,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], true));
+               $pms->map(pm| $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false)));
             }
          ]);
 
@@ -694,7 +694,9 @@ function meta::pure::functions::meta::isStrictSubType(subType:Type[1], superType
 
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], node: PropertyPathNode[1]): GraphFetchTree[1]
 {
-   let pgft = ^SystemGeneratedPropertyGraphFetchTree(property = $node.property);
+   let pgft = ^SystemGeneratedPropertyGraphFetchTree(property = $node.property,
+                                                     parameters = if($node.property->hasGeneratedMilestoningPropertyStereotype(),|$node.parameters,|[])
+                                                   );
 
    if($pTree.children->size() == 0,
       | $onto->addSubTree($pgft),
