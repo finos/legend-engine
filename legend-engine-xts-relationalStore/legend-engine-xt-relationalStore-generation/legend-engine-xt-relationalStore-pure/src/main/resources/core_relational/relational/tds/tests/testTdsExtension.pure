@@ -507,7 +507,7 @@ function <<test.Test>>
    assertEquals(['0da8968758f3a315890e2f9ac3eb2fb3', 'eab9489b8f6517e84642ed09d819fee6', '387c444764879ef47844199bc693effc', '72d92b984f7ba90fe9b1ac4962c74012', 'e9f5f78a0597a8804196a8f9ced00000'], $result->columnValues('_digest'));
 }
 
-function <<test.Test>>
+function <<test.Test, test.AlloyOnly>>
    meta::pure::tds::tests::extensions::testExtendDigest_Relational() : Boolean[1]
 {
    let mapping = meta::relational::tests::simpleRelationalMapping;
