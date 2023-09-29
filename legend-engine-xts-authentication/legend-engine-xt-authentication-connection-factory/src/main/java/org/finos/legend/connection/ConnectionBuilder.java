@@ -23,6 +23,7 @@ import java.util.Objects;
 
 public abstract class ConnectionBuilder<T, CRED extends Credential, SPEC extends ConnectionSpecification>
 {
+    // phase 2 - check the generics. Should T be a class or method type param ?
     public abstract T getConnection(CRED credential, SPEC connectionSpecification, StoreInstance storeInstance) throws Exception;
 
     public Class<? extends Credential> getCredentialType()
