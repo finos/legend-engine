@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::execute::tests::*;
+import meta::pure::alloy::connections::*;
 import meta::pure::runtime::*;
 import meta::relational::translation::*;
 import meta::pure::extension::*;
@@ -22,6 +24,119 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
 
+function  meta::relational::metamodel::execute::tests::runRelationalRouterExtensionConnectionEquality(c1: RelationalDatabaseConnection[1],
+    c2: RelationalDatabaseConnection[1]) : Boolean[1]
+{
+  let extensions = meta::relational::extension::relationalExtensions().routerExtensions();
+  $c1->match(
+              $extensions.connectionEquality->map(e | $e->eval($c2))->concatenate([
+                  a:Connection[1]  | true
+              ])->toOneMany());
+}
+
+function <<test.Test>> meta::relational::metamodel::execute::tests::testConnectionEqualityAllSameStatic() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+    element = 'Store1',
+    type = DatabaseType.SybaseIQ,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='host', port=8080, databaseName='db'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );   
+
+  let c2 = ^RelationalDatabaseConnection(
+    element = '',
+    type = DatabaseType.SybaseIQ,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='host', port=8080, databaseName='db'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );     
+
+  assert(runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
+
+function <<test.Test>> meta::relational::metamodel::execute::tests::testConnectionEqualityAllButOnePropertySame() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+    element = 'Store1',
+    type = DatabaseType.Snowflake,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='host', port=8090, databaseName='db'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );   
+
+  let c2 = ^RelationalDatabaseConnection(
+    element = '',
+    type = DatabaseType.Snowflake,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='host', port=8080, databaseName='db'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(apiToken='token')
+  );      
+
+  assert(!runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
+
+function <<test.Test>> meta::relational::metamodel::execute::tests::testConnectionEqualityTypeDiff() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+    element = 'Store1',
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );   
+
+  let c2 = ^RelationalDatabaseConnection(
+    element = '',
+    type = DatabaseType.Snowflake,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='host', port=8080, databaseName='db'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(apiToken='token')
+  );      
+
+
+  assert(!runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
+
+
+function <<test.Test>> meta::relational::metamodel::execute::tests::testConnectionEqualityTypeSameSpecDiff() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+    element = 'Store1',
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );   
+
+  let c2 = ^RelationalDatabaseConnection(
+    element = '',
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv='something'),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );      
+
+
+  assert(!runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
+
+function <<test.Test>> meta::relational::metamodel::execute::tests::testConnectionEqualityTypeSpecSameAuthDiff() : Boolean[1]
+{
+  let c1 = ^RelationalDatabaseConnection(
+    element = 'Store1',
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy()
+  );   
+
+  let c2 = ^RelationalDatabaseConnection(
+    element = '',
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(apiToken='token')
+  );      
+
+
+  assert(!runRelationalRouterExtensionConnectionEquality($c1, $c2));
+
+}
 
 function <<test.Test>> meta::relational::metamodel::execute::tests::testExecuteInDbToTDS() : Boolean[1]
 {

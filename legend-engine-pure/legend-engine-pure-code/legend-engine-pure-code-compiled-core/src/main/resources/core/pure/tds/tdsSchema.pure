@@ -168,7 +168,7 @@ function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], 
       iv:InstanceValue[1]|$iv.values->match([
             t:TabularDataSet[1]|createSchemaState($t.columns);
             ]),
-      v:VariableExpression[1]|$openVars->get($v.name).values->evaluateAndDeactivate()->match([
+      v:VariableExpression[1]| $openVars->get($v.name).values->evaluateAndDeactivate()->match([
             t:TabularDataSet[1]|createSchemaState($t.columns),
             vs2:ValueSpecification[1]|resolveSchemaImpl($vs2, $openVars, $extensions)
             ]),
@@ -176,12 +176,17 @@ function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], 
       ]);
 }
 
-function meta::pure::tds::schema::resolveSchemaImpl(f : FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
+function meta::pure::tds::schema::resolveSchemaImpl(f : FunctionDefinition<Any>[1], vars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
 {
    let es = $f->evaluateAndDeactivate().expressionSequence->last();
    assertEquals(1, $es->size());
 
-   resolveSchemaImpl($es->toOne(), $f->openVariableValues(), $extensions);
+   resolveSchemaImpl($es->toOne(), $f->openVariableValues()->putAll($vars), $extensions);
+}
+
+function meta::pure::tds::schema::resolveSchemaImpl(f : FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
+{
+  resolveSchemaImpl($f, ^Map<String, List<Any>>(), $extensions);
 }
 
 function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : FunctionExpression[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : SchemaState[1]
@@ -224,7 +229,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne()->cast(@DataType))
                );
             createSchemaState($cols);
-         }),     
+         }),
          pair(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
             let colNamesToRestrict = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOneMany();
@@ -310,18 +315,23 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
       ]->map(f|
             pair($f->cast(@Function<Any>), {|
             $fe.parametersValues->at(0)->reactivate()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->last()->toOne()->resolveSchemaImpl($openVars, $extensions);
-         }) 
+         })
       ));
 
     let handlerMatches = $handlers->filter(p|$p.first == $fe.func).second;
 
     if ($handlerMatches->isEmpty() && $fe.func->functionReturnType().rawType == TabularDataSet,
       | //this allows us to handle calls to custom functions that return TDS.
-        $fe.func->cast(@FunctionDefinition<Any>)->resolveSchemaImpl($extensions),
+        let zip = $fe.func.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->zip($fe.parametersValues);
+        let vars = $zip->map(p |
+          pair($p.first.name, list($p.second));
+        )->newMap();
+
+        $fe.func->cast(@FunctionDefinition<Any>)->resolveSchemaImpl($vars, $extensions);,
       | assertNotEmpty($handlerMatches, 'Failed to find handler for function ' + $fe.func->elementToPath());
         assertEquals(1, $handlerMatches->size());
         $handlerMatches->toOne()->eval();
-    );    
+    );
 }
 
 function meta::pure::tds::schema::resolveProject(colSpecs : ColumnSpecification<Any>[*], openVars : Map<String, List<Any>>[1]) : SchemaState[1]

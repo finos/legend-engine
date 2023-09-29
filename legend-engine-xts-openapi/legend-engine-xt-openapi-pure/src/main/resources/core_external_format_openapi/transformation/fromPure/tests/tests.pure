@@ -153,7 +153,7 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
 {
    ^Service(
       pattern = '/test/service/with/extend',
-      owners = ['ibramo', 'yamaja'],
+      owners = ['dummy', 'dummy2'],
       documentation = '',
       autoActivateUpdates = true,
       execution = ^PureSingleExecution(

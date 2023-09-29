@@ -8,7 +8,10 @@ function <<access.private>> meta::external::language::java::generation::featureB
     pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/Address.java',expectedSourceForAddress()),
     pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/AddressExtension.java',expectedSourceForAddressExtension()),
     pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/Firm.java',expectedSourceForFirm()),
-    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/ASimpleChoice.java',expectedSourceForSimpleChoice())
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/model/ASimpleChoice.java',expectedSourceForSimpleChoice()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/ASimpleChoice.java',expectedSourceForSimpleChoiceWithConstructorInjection()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/Person.java',expectedSourceForPersonWithConstructorInjection()),
+    pair('src/main/java/meta/external/language/java/generation/featureBased/tests/constructorInjection/Firm.java',expectedSourceForFirmWithConstructorInjection())
     ]);
 }
 
@@ -1024,4 +1027,281 @@ function <<access.private>> meta::external::language::java::generation::featureB
 function <<access.private>> meta::external::language::java::generation::featureBased::tests::optionals::expectedSourceForOptionalsSampleWithPrimitives():String[1]
 {
   '';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForPersonWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Person")\n'+
+  '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
+  'public class Person\n'+
+  '{\n'+
+  '    private String firstName;\n'+
+  '    private String lastName;\n'+
+  '    private List<String> addresses;\n'+
+  '    private Firm firm;\n'+
+  '    private boolean drives;\n'+
+  '    private ASimpleChoice choice;\n'+
+  '    private String preferredName;\n'+
+  '\n'+
+  '    public Person(String firstName,\n' +
+  '                  String lastName,\n' +
+  '                  List<String> addresses,\n' +
+  '                  Firm firm,\n' +
+  '                  boolean drives,\n' +
+  '                  ASimpleChoice choice,\n' +
+  '                  String preferredName)\n'+
+  '    {\n'+
+  '        this.firstName = firstName;\n' +
+  '        this.lastName = lastName;\n' +
+  '        this.addresses = addresses;\n' +
+  '        this.firm = firm;\n' +
+  '        this.drives = drives;\n' +
+  '        this.choice = choice;\n' +
+  '        this.preferredName = preferredName;\n' +
+  '    }\n'+
+  '\n'+
+  '    public String getFirstName()\n'+
+  '    {\n'+
+  '        return this.firstName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getLastName()\n'+
+  '    {\n'+
+  '        return this.lastName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<String> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public Firm getFirm()\n'+
+  '    {\n'+
+  '        return this.firm;\n'+
+  '    }\n'+
+  '\n'+
+  '    public boolean getDrives()\n'+
+  '    {\n'+
+  '        return this.drives;\n'+
+  '    }\n'+
+  '\n'+
+  '    public ASimpleChoice getChoice()\n'+
+  '    {\n'+
+  '        return this.choice;\n'+
+  '    }\n'+
+  '\n'+
+  '    public String getPreferredName()\n'+
+  '    {\n'+
+  '        return this.preferredName;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Person that = (Person) o;\n'+
+  '        if (this.getFirstName() != null\n'+
+  '                ? !this.getFirstName().equals(that.getFirstName())\n'+
+  '                : that.getFirstName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getLastName() != null\n'+
+  '                ? !this.getLastName().equals(that.getLastName())\n'+
+  '                : that.getLastName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getFirm() != null\n'+
+  '                ? !this.getFirm().equals(that.getFirm())\n'+
+  '                : that.getFirm() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getDrives() != that.getDrives())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getChoice() != null\n'+
+  '                ? !this.getChoice().equals(that.getChoice())\n'+
+  '                : that.getChoice() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getPreferredName() != null\n'+
+  '                ? !this.getPreferredName().equals(that.getPreferredName())\n'+
+  '                : that.getPreferredName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getFirstName() != null ? this.getFirstName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getLastName() != null ? this.getLastName().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getFirm() != null ? this.getFirm().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getDrives() ? 1 : 0);\n'+
+  '        result = 31 * result + (this.getChoice() != null ? this.getChoice().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getPreferredName() != null\n'+
+  '                                    ? this.getPreferredName().hashCode()\n'+
+  '                                    : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Person" + "{" + "firstName=" + this.getFirstName() + ", " + "lastName=" + this\n'+
+  '                                                   .getLastName() + ", " + "addresses=" + this\n'+
+  '                                                   .getAddresses() + ", " + "firm=" + this\n'+
+  '                                                   .getFirm() + ", " + "drives=" + this\n'+
+  '                                                   .getDrives() + ", " + "choice=" + this\n'+
+  '                                                   .getChoice() + ", " + "preferredName=" + this\n'+
+  '                                                   .getPreferredName() + "}";\n'+
+  '    }\n'+
+  '}';
+
+}
+
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForFirmWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import com.fasterxml.jackson.annotation.JsonIgnoreProperties;\n' +
+  'import java.util.List;\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm")\n'+
+  '@JsonIgnoreProperties(ignoreUnknown=true)\n' +
+  'public class Firm\n'+
+  '{\n'+
+  '    private String legalName;\n'+
+  '    private List<Person> employees;\n'+
+  '    private List<String> addresses;\n'+
+  '    private int count;\n'+
+  '\n'+
+  '    public Firm(String legalName, List<Person> employees, List<String> addresses, int count)\n'+
+  '    {\n'+
+  '        this.legalName = legalName;\n' +
+  '        this.employees = employees;\n' +
+  '        this.addresses = addresses;\n' +
+  '        this.count = count;\n' +
+  '    }\n'+
+  '\n'+
+  '    public String getLegalName()\n'+
+  '    {\n'+
+  '        return this.legalName;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<Person> getEmployees()\n'+
+  '    {\n'+
+  '        return this.employees;\n'+
+  '    }\n'+
+  '\n'+
+  '    public List<String> getAddresses()\n'+
+  '    {\n'+
+  '        return this.addresses;\n'+
+  '    }\n'+
+  '\n'+
+  '    public int getCount()\n'+
+  '    {\n'+
+  '        return this.count;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public boolean equals(Object o)\n'+
+  '    {\n'+
+  '        if (this == o)\n'+
+  '        {\n'+
+  '            return true;\n'+
+  '        }\n'+
+  '        if (o == null || this.getClass() != o.getClass())\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        Firm that = (Firm) o;\n'+
+  '        if (this.getLegalName() != null\n'+
+  '                ? !this.getLegalName().equals(that.getLegalName())\n'+
+  '                : that.getLegalName() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getEmployees() != null\n'+
+  '                ? !this.getEmployees().equals(that.getEmployees())\n'+
+  '                : that.getEmployees() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getAddresses() != null\n'+
+  '                ? !this.getAddresses().equals(that.getAddresses())\n'+
+  '                : that.getAddresses() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        if (this.getCount() != null\n'+
+  '                ? !this.getCount().equals(that.getCount())\n'+
+  '                : that.getCount() != null)\n'+
+  '        {\n'+
+  '            return false;\n'+
+  '        }\n'+
+  '        return true;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public int hashCode()\n'+
+  '    {\n'+
+  '        int result = this.getLegalName() != null ? this.getLegalName().hashCode() : 0;\n'+
+  '        result = 31 * result + (this.getEmployees() != null ? this.getEmployees().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getAddresses() != null ? this.getAddresses().hashCode() : 0);\n'+
+  '        result = 31 * result + (this.getCount() != null ? this.getCount().hashCode() : 0);\n'+
+  '        return result;\n'+
+  '    }\n'+
+  '\n'+
+  '    @Override\n'+
+  '    public String toString()\n'+
+  '    {\n'+
+  '        return "Firm" + "{" + "legalName=" + this.getLegalName() + ", " + "employees=" + this\n'+
+  '                                                 .getEmployees() + ", " + "addresses=" + this\n'+
+  '                                                 .getAddresses() + ", " + "count=" + this\n'+
+  '                                                 .getCount() + "}";\n'+
+  '    }\n'+
+  '}';
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::tests::expectedSourceForSimpleChoiceWithConstructorInjection():String[1]
+{
+  'package meta.external.language.java.generation.featureBased.tests.constructorInjection;\n'+
+  '\n'+
+  'import javax.annotation.Generated;\n'+
+  '\n'+
+  '@Generated("meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice")\n'+
+  'public enum ASimpleChoice\n'+
+  '{\n'+
+  '    A,\n'+
+  '    B\n'+
+ '}';
 }

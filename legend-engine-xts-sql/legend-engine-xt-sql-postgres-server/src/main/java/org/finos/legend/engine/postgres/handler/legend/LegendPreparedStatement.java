@@ -16,9 +16,7 @@ package org.finos.legend.engine.postgres.handler.legend;
 
 import java.security.PrivilegedAction;
 import java.sql.ParameterMetaData;
-import java.util.List;
 import javax.security.auth.Subject;
-import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
@@ -29,9 +27,10 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
 {
     private final String query;
     private final LegendExecutionClient client;
-    private Iterable<TDSRow> tdsRows;
-    private List<LegendColumn> columns;
+
     private final Identity identity;
+
+    private LegendResultSet legendResultSet;
 
     public LegendPreparedStatement(String query, LegendExecutionClient client, Identity identity)
     {
@@ -71,7 +70,10 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     @Override
     public void close() throws Exception
     {
-
+        if (legendResultSet != null)
+        {
+            legendResultSet.close();
+        }
     }
 
     @Override
@@ -97,15 +99,13 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
 
     private boolean executePrivate()
     {
-        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-        columns = schemaAndResult.getOne();
-        tdsRows = schemaAndResult.getTwo();
+        legendResultSet = new LegendResultSet(client.executeQuery(query));
         return true;
     }
 
     @Override
     public PostgresResultSet getResultSet()
     {
-        return new LegendResultSet(tdsRows, columns);
+        return legendResultSet;
     }
 }

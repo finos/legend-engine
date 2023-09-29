@@ -24,7 +24,7 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      id = 'modelStore',
      executeStoreQuery = meta::pure::mapping::modelToModel::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
      supports = meta::pure::mapping::modelToModel::contract::supports_FunctionExpression_1__Boolean_1_,
-     isPropertyAutoMapped = {property:Property<Nil, Any|*>[1], set:InstanceSetImplementation[1] | meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped($property, $set)},
+     isPropertyAutoMapped = {property:AbstractProperty<Any>[1], set:InstanceSetImplementation[1] | meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped($property, $set)},
 
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,

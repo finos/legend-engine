@@ -35,20 +35,20 @@ public class LegendTdsTestClient extends LegendTdsClient
 
 
     @Override
-    protected JsonNode executeQueryApi(String query)
+    protected InputStream executeQueryApi(String query)
     {
         String path = "sql/v1/execution/executeQueryString";
         return executeApi(query, path);
     }
 
     @Override
-    protected JsonNode executeSchemaApi(String query)
+    protected InputStream executeSchemaApi(String query)
     {
         String path = "sql/v1/execution/getSchemaFromQueryString";
         return executeApi(query, path);
     }
 
-    private JsonNode executeApi(String query, String path)
+    private InputStream executeApi(String query, String path)
     {
         Invocation.Builder builder = resourceTestRule.target(path).request();
         Response response = builder.post(Entity.text(query));

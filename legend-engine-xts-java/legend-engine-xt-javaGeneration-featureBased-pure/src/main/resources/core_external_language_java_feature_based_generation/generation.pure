@@ -193,6 +193,16 @@ function  meta::external::language::java::generation::featureBased::definition::
   );
 }
 
+function  meta::external::language::java::generation::featureBased::definition::gettersOnly():Feature[1]
+{
+  ^Feature(
+        key='gettersOnly',
+        name = 'gettersOnly',
+        applyFunction = applyOnlyGetters_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields']
+  );
+}
+
 function  meta::external::language::java::generation::featureBased::definition::equalsHashMethods():Feature[1]
 {
   ^Feature(
@@ -213,6 +223,37 @@ function  meta::external::language::java::generation::featureBased::definition::
   );
 }
 
+function  meta::external::language::java::generation::featureBased::definition::allPropertyConstructor():Feature[1]
+{
+  ^Feature(
+        key='allPropertyConstructor',
+        name = 'allPropertyConstructor',
+        applyFunction = applyAllPropertyConstructor_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::constructorInjectedEqualsHashMethods():Feature[1]
+{
+  ^Feature(
+        key='equalshashcode',
+        name = 'equalshashcode',
+        applyFunction = applyEqualsHashCode_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','gettersOnly']
+  );
+}
+
+function  meta::external::language::java::generation::featureBased::definition::constructorInjectedToStringMethod():Feature[1]
+{
+  ^Feature(
+        key='toString',
+        name = 'toString',
+        applyFunction = applyToStringMethod_AnnotatedElement_1__Class_1__JavaCodeGenerationContext_1__Class_1_,
+        dependsOn = ['privateFields','gettersOnly']
+  );
+}
+
+
+
 function  meta::external::language::java::generation::featureBased::pojo::pojoGenerationFeatures():Feature[*]
 {
   [
@@ -223,6 +264,18 @@ function  meta::external::language::java::generation::featureBased::pojo::pojoGe
     meta::external::language::java::generation::featureBased::definition::toStringMethod()
     ];
 }  
+
+
+function  meta::external::language::java::generation::featureBased::pojo::constructorInjectedPojoGenerationFeatures():Feature[*]
+{
+  [
+    meta::external::language::java::generation::featureBased::definition::privateFields(),
+    meta::external::language::java::generation::featureBased::definition::allPropertyConstructor(),
+    meta::external::language::java::generation::featureBased::definition::gettersOnly(),
+    meta::external::language::java::generation::featureBased::definition::constructorInjectedEqualsHashMethods(),
+    meta::external::language::java::generation::featureBased::definition::constructorInjectedToStringMethod()
+    ];
+}
 
 
 function <<access.private>> meta::external::language::java::generation::featureBased::generateEnumeration(enum:meta::pure::metamodel::type::Enumeration<Any>[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
@@ -577,6 +630,76 @@ function meta::external::language::java::generation::featureBased::pojo::applyDe
   ,|$javaElement);
 }
 
+function meta::external::language::java::generation::featureBased::pojo::applyAllPropertyConstructor(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|
+        let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+        let properties = $pureClass->findPropertiesEligibleForJavaGeneration();
+
+        let selfParamsForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           j_parameter($fieldType, $fieldName);
+        );
+
+        let bodyForConstructor = $properties->map(property|
+           let fieldType = $context.conventions->pureTypeToJavaType($property);
+           let fieldName = $context.conventions->sanitizeFieldName($property);
+           let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+           let jfield = j_this($javaClass)->j_field($field);
+           let param = j_parameter($fieldType, $field.name);
+           $jfield->j_assign($param);
+        );
+
+    let superParamsForConstructor = $pureClass->getAllSuperTypePropertiesAsParams($context);
+
+    let superConstructorCallBody = if($superParamsForConstructor->size() > 0
+    ,|
+       let superPureType = $pureClass->getSuperPureType();
+       j_superInvoke($context.conventions->className($superPureType), $superParamsForConstructor);
+    ,|[]);
+
+// super params go to the end
+    let paramsForConstructor = $selfParamsForConstructor->concatenate( $superParamsForConstructor);
+    $javaClass->annotate(^meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties(ignoreUnknown=true))
+        ->addConstructor(javaConstructor(['public'], $paramsForConstructor,
+        if($superParamsForConstructor->size() > 0
+        ,|$superConstructorCallBody ->concatenate($bodyForConstructor)
+        ,|$bodyForConstructor)));
+    ,|$javaClass);
+}
+
+function meta::external::language::java::generation::featureBased::pojo::getSuperPureType(pureClass:meta::pure::metamodel::type::Class<Any>[1]):
+  meta::pure::metamodel::type::Class<Any>[1]
+{
+  let superPureType = $pureClass->getGeneralizations()->toOne(format('Class %s extends multiple classes, and not supported on java generation',
+    [$pureClass.name->toOne()]));
+  let superPureClass = $superPureType->cast(@meta::pure::metamodel::type::Class<Any>);
+  $superPureClass;
+}
+
+function <<access.private>> meta::external::language::java::generation::featureBased::pojo::getAllSuperTypePropertiesAsParams(pureClass:meta::pure::metamodel::type::Class<Any>[1],context:JavaCodeGenerationContext[1]): meta::external::language::java::metamodel::Code[*]
+{
+  let generalizations = $pureClass->getGeneralizations();
+  let hasSuperClass = ! $generalizations->isEmpty();
+  if( $hasSuperClass
+  ,|
+    let superPureClass = $pureClass->getSuperPureType();
+    let properties = $superPureClass->findPropertiesEligibleForJavaGeneration();
+
+    let propertiesForConstructor = $properties->map(property|
+        let fieldType = $context.conventions->pureTypeToJavaType($property);
+        let fieldName = $context.conventions->sanitizeFieldName($property);
+        j_parameter($fieldType, $fieldName);
+    );
+    let superTypeParamsForConstructor = $superPureClass->getAllSuperTypePropertiesAsParams($context);
+    $propertiesForConstructor -> concatenate ( $superTypeParamsForConstructor);
+  ,|[]);
+
+}
+
 function meta::external::language::java::generation::featureBased::versions::getPropertyTypes(class: meta::pure::metamodel::type::Class<Any>[1]):meta::pure::metamodel::type::Type[*]
 {
    meta::external::language::java::generation::featureBased::versions::getPropertyTypes($class, []);
@@ -869,3 +992,49 @@ function <<access.private>> {doc.doc = 'Get ASCII decimal representation'}
    0 )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) // lol, sue me
 }
 
+function meta::external::language::java::generation::featureBased::applyOnlyGetters(element:meta::pure::metamodel::extension::AnnotatedElement[1],javaClass:meta::external::language::java::metamodel::Class[1],context:JavaCodeGenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+  if ($element->instanceOf(meta::pure::metamodel::type::Class)
+  ,|  let pureClass = $element->cast(@meta::pure::metamodel::type::Class<Any>);
+      $pureClass->findPropertiesEligibleForJavaGeneration()->fold({property, temporaryClass |
+
+        let getter = $temporaryClass->generateOnlyGetters($property,$context.conventions);
+        $temporaryClass->addMethods($getter);
+
+      }, $javaClass);
+
+  ,| $javaClass
+  );
+}
+
+function {doc.doc = 'Creates getter and setter methods for a given field . Sanitizes its name'}
+meta::external::language::java::generation::featureBased::generateOnlyGetters(javaClass: meta::external::language::java::metamodel::Class[1],property: AbstractProperty<Any>[1], conventions: Conventions[1]) : meta::external::language::java::metamodel::Method[1]
+{
+   let fieldType = $conventions->pureTypeToJavaType($property);
+
+   let fieldName = $conventions->sanitizeFieldName($property);
+
+   let field = $javaClass.fields->filter(f | $f.name == $fieldName)->toOne();
+
+   let jfield = j_this($javaClass)->j_field($field);
+
+// global code gen at this point does not support correct boolean getter naming
+// and the strategy does not take in the type as input. So if we use this way it breaks the equals and to string generation
+// hence commented
+// TODO this should eventually go into the core code gen
+/*
+    let getterName = if( $fieldType->isPrimitive()
+            && $fieldType->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName == 'boolean'
+            ,|
+                if($field.name->startsWith('is')
+                    ,| $field.name
+                    ,| 'is' + $field.name->toUpperFirstCharacter()->toOne()
+                )
+            ,| $conventions->getterName($field.name)
+            );
+*/
+   let getterName = $conventions->getterName($field.name);
+   let getter = javaMethod(['public'], $fieldType, $getterName, [],j_return($jfield));
+
+   [$getter];
+}

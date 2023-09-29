@@ -14,13 +14,16 @@
 
 package org.finos.legend.engine.language.pure.relational.api.relationalElement.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.input.DatabaseToModelGenerationInput;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +36,10 @@ import java.util.Objects;
 
 public class TestRelationalElementApi
 {
-    private static PureModelContextData compilePmcd(String model)
+    private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private final ModelManager testManager = new ModelManager(DeploymentMode.TEST);
+
+    private static PureModelContextData buildPMCDFromString(String model)
     {
         return PureModelContextData.newBuilder()
                 .withPureModelContextData(PureGrammarParser.newInstance().parseModel(model))
@@ -58,7 +64,7 @@ public class TestRelationalElementApi
         String inputGrammar = loadFromFile("inputGrammar.pure");
         Assert.assertNotNull(expectedJson);
         Assert.assertNotNull(inputGrammar);
-        PureModelContextData inputPmcd = compilePmcd(inputGrammar);
+        PureModelContextData inputPmcd = buildPMCDFromString(inputGrammar);
         String databasePath = "meta::relational::transform::autogen::tests::testDB";
         DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd, null);
         RelationalElementAPI relationalElementAPI = new RelationalElementAPI(DeploymentMode.PROD, null);
@@ -66,5 +72,8 @@ public class TestRelationalElementApi
         Assert.assertNotNull(response);
         String actualJson = response.getEntity().toString();
         JsonAssert.assertJsonEquals(expectedJson, actualJson);
+        // compile generated model and input database
+        PureModelContextData pureModelContextData = objectMapper.readValue(actualJson, PureModelContextData.class).combine(inputPmcd);
+        testManager.loadModelAndData(pureModelContextData, pureModelContextData.serializer.version, null, null);
     }
 }

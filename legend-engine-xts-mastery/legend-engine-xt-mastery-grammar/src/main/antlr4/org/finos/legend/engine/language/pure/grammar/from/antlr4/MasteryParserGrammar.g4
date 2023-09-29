@@ -14,7 +14,7 @@ validString:                                VALID_STRING | .
 
 identifier:                                 validString | STRING
                                             | TRUE | FALSE
-                                            | MASTER_RECORD_DEFINITION | RECORD_SOURCES
+                                            | MASTER_RECORD_DEFINITION | RECORD_SOURCES | RUNTIME
 ;
 
 masteryIdentifier:                          (validString | '-' | INTEGER) (validString | '-' | INTEGER)*?;
@@ -33,6 +33,7 @@ elementDefinition:                          (
                                              masterRecordDefinition
                                                 | dataProviderDef
                                                 | connection
+                                                | masteryRuntime
                                             )
 ;
 
@@ -237,6 +238,17 @@ connection:                                 MASTERY_CONNECTION qualifiedName
                                                 BRACE_CLOSE
 ;
 specification:                              SPECIFICATION COLON islandSpecification SEMI_COLON
+;
+
+// -------------------------------------- MASTERY RUNTIME --------------------------------------
+masteryRuntime:                              MASTERY_RUNTIME qualifiedName
+                                                BRACE_OPEN
+                                                (
+                                                    runtime
+                                                )*
+                                                BRACE_CLOSE
+;
+runtime:                                    RUNTIME COLON islandSpecification SEMI_COLON
 ;
 
 // -------------------------------------- RESOLUTION --------------------------------------

@@ -26,6 +26,8 @@ import java.util.List;
 
 public abstract class StreamingResult extends Result
 {
+    public String resultFormat = "FormatNotSet";
+
     public abstract Builder getResultBuilder();
 
     public abstract Serializer getSerializer(SerializationFormat format);

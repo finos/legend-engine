@@ -25,7 +25,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
-
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -75,6 +74,17 @@ public class JDBCSessionFactory implements SessionsFactory
         {
             return new JDBCPostgresResultSet(postgresStatement.getResultSet());
         }
+
+        @Override
+        public void close() throws Exception
+        {
+            if (postgresStatement != null)
+            {
+                postgresStatement.close();
+                ;
+            }
+        }
+
     }
 
     private static class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
@@ -166,7 +176,17 @@ public class JDBCSessionFactory implements SessionsFactory
         {
             return resultSet.next();
         }
+
+        @Override
+        public void close() throws Exception
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
     }
+
 
     private static class JDBCPostgresResultSetMetaData implements PostgresResultSetMetaData
     {

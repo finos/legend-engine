@@ -43,6 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionKeyType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -56,6 +57,7 @@ import java.util.function.Function;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 public class MasteryParseTreeWalker
 {
@@ -64,6 +66,7 @@ public class MasteryParseTreeWalker
     private final ImportAwareCodeSection section;
     private final DomainParser domainParser;
     private final List<Function<SpecificationSourceCode, Connection>> connectionProcessors;
+    private final List<Function<SpecificationSourceCode, MasteryRuntime>> masteryRuntimeProcessors;
     private final List<Function<SpecificationSourceCode, Trigger>> triggerProcessors;
     private final List<Function<SpecificationSourceCode, Authorization>> authorizationProcessors;
     private final List<Function<SpecificationSourceCode, AcquisitionProtocol>> acquisitionProtocolProcessors;
@@ -78,6 +81,7 @@ public class MasteryParseTreeWalker
                                   ImportAwareCodeSection section,
                                   DomainParser domainParser,
                                   List<Function<SpecificationSourceCode, Connection>> connectionProcessors,
+                                  List<Function<SpecificationSourceCode, MasteryRuntime>> masteryRuntimeProcessors,
                                   List<Function<SpecificationSourceCode, Trigger>> triggerProcessors,
                                   List<Function<SpecificationSourceCode, Authorization>> authorizationProcessors,
                                   List<Function<SpecificationSourceCode, AcquisitionProtocol>> acquisitionProtocolProcessors)
@@ -87,6 +91,7 @@ public class MasteryParseTreeWalker
         this.section = section;
         this.domainParser = domainParser;
         this.connectionProcessors = connectionProcessors;
+        this.masteryRuntimeProcessors = masteryRuntimeProcessors;
         this.triggerProcessors = triggerProcessors;
         this.authorizationProcessors = authorizationProcessors;
         this.acquisitionProtocolProcessors = acquisitionProtocolProcessors;
@@ -94,7 +99,9 @@ public class MasteryParseTreeWalker
 
     public void visit(MasteryParserGrammar.DefinitionContext ctx)
     {
-        ctx.elementDefinition().stream().map(this::visitElement).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        List<PackageableElement> packageableElements = ctx.elementDefinition().stream().map(this::visitElement).collect(toList());
+        packageableElements.stream().peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        validateMasteryRuntime(packageableElements);
     }
 
     private PackageableElement visitElement(MasteryParserGrammar.ElementDefinitionContext ctx)
@@ -112,6 +119,10 @@ public class MasteryParseTreeWalker
         else if (ctx.connection() != null)
         {
             return visitConnection(ctx.connection());
+        }
+        else if (ctx.masteryRuntime() != null)
+        {
+            return visitMasteryRuntime(ctx.masteryRuntime());
         }
 
         throw new EngineException("Unrecognized element", sourceInformation, EngineErrorType.PARSER);
@@ -766,7 +777,24 @@ public class MasteryParseTreeWalker
 
         connection.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         connection._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        connection.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return connection;
+    }
+
+    /**********
+     * mastery runtime
+     **********/
+    private MasteryRuntime visitMasteryRuntime(MasteryParserGrammar.MasteryRuntimeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        MasteryParserGrammar.RuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.runtime(), "runtime", sourceInformation);
+
+        MasteryRuntime masteryRuntime = IMasteryParserExtension.process(extraSpecificationCode(runtimeContext.islandSpecification(), walkerSourceInformation), masteryRuntimeProcessors, "mastery runtime");
+
+        masteryRuntime.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        masteryRuntime._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        masteryRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return masteryRuntime;
     }
 
     private String extractDataProviderTypeValue(String dataProviderTypeText)
@@ -841,4 +869,18 @@ public class MasteryParseTreeWalker
     {
         return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
     }
+
+    private void validateMasteryRuntime(List<PackageableElement> packageableElements)
+    {
+        List<MasteryRuntime> masteryRuntimes = ListIterate.selectInstancesOf(packageableElements, MasteryRuntime.class);
+        //validate master record definitions is unique across all mastery runtimes
+        Set<String> uniqueMasterRecordDefinitions = new HashSet<>();
+        List<String> masterRecordDefinitions = ListIterate.flatCollect(masteryRuntimes, m -> m.masterRecordDefinitions);
+        List<String> duplicateMasterRecords = ListIterate.select(masterRecordDefinitions, m -> !uniqueMasterRecordDefinitions.add(m));
+        if (!duplicateMasterRecords.isEmpty())
+        {
+            throw new EngineException(format("The following master record definitions %s appear multiple times. There cannot be duplicate masterRecordDefinitions across one or multiple mastery runtimes.", duplicateMasterRecords), EngineErrorType.PARSER);
+        }
+    }
+
 }

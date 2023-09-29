@@ -21,10 +21,8 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -34,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_DataProvider_Impl;
@@ -42,13 +41,13 @@ import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRe
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_AcquisitionProtocol;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_authentication_AuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_connection_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_trigger_Trigger;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.List;
 
 public class MasteryCompilerExtension implements IMasteryCompilerExtension
 {
@@ -102,6 +101,16 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
                        ),
 
                 Processor.newProcessor(
+                        MasteryRuntime.class,
+                        Lists.fixedSize.with(MasterRecordDefinition.class),
+                        (masteryRuntime, context) ->
+                        {
+                            List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
+                            List<Function2<MasteryRuntime, CompileContext, Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraMasteryRuntimeProcessors);
+                            return IMasteryCompilerExtension.process(masteryRuntime, processors, context);
+                        }),
+
+                Processor.newProcessor(
                         Connection.class,
                         Lists.fixedSize.with(Service.class, Mapping.class, Binding.class, PackageableConnection.class),
                         (connection, context) ->
@@ -109,8 +118,7 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
                             List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
                             List<Function2<Connection, CompileContext, Root_meta_pure_mastery_metamodel_connection_Connection>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraMasteryConnectionProcessors);
                             return IMasteryCompilerExtension.process(connection, processors, context);
-                        })
-                );
+                        }));
     }
 
     @Override
