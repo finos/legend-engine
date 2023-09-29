@@ -142,7 +142,7 @@
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
-        <antlr.version>4.8-1</antlr.version>
+        <antlr.version>4.13.1</antlr.version>
         <arrow.version>13.0.0</arrow.version>
         <bouncycastle.version>1.67</bouncycastle.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
