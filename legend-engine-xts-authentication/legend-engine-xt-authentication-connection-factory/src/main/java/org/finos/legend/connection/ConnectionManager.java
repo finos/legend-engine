@@ -14,6 +14,7 @@
 
 package org.finos.legend.connection;
 
+// epsstan - review
 public interface ConnectionManager
 {
     void initialize();
