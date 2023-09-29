@@ -30,7 +30,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestPostgresConnection
 {
@@ -48,7 +48,7 @@ public class TestPostgresConnection
             }
             catch (Exception e)
             {
-                assumeTrue("Can't start PostgreSQLContainer", false);
+                assumeTrue(false, "Can't start PostgreSQLContainer");
             }
         }
 
@@ -77,7 +77,7 @@ public class TestPostgresConnection
                     this.postgresContainer.getPort(),
                     this.postgresContainer.getDatabaseName()
             );
-            return new StoreInstance.Builder(this.environmentConfiguration)
+            return new StoreInstance.Builder(this.environment)
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
                     .withStoreSupportIdentifier("Postgres")
                     .withAuthenticationMechanisms(

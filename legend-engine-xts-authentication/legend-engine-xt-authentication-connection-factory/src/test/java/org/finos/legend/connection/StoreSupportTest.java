@@ -43,7 +43,7 @@ public class StoreSupportTest
     @Test
     public void testValidateStoreInstanceBuilder()
     {
-        EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
+        LegendEnvironment environment = new LegendEnvironment.Builder()
                 .withStoreSupport(new StoreSupport.Builder()
                         .withIdentifier("test")
                         .withAuthenticationMechanisms(
@@ -54,7 +54,7 @@ public class StoreSupportTest
                 .build();
 
         // success
-        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
+        StoreInstance testStore = new StoreInstance.Builder(environment)
                 .withIdentifier("test-store")
                 .withStoreSupportIdentifier("test")
                 .withAuthenticationMechanisms(AuthenticationMechanismType.USER_PASSWORD)
@@ -63,7 +63,7 @@ public class StoreSupportTest
         Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD}, testStore.getAuthenticationMechanisms().toArray());
 
         // make sure if no auth mechanisms is specified, all mechanisms will be supported
-        StoreInstance testStore2 = new StoreInstance.Builder(environmentConfiguration)
+        StoreInstance testStore2 = new StoreInstance.Builder(environment)
                 .withIdentifier("test-store")
                 .withStoreSupportIdentifier("test")
                 .withConnectionSpecification(new TestConnectionSpecification())
@@ -75,7 +75,7 @@ public class StoreSupportTest
 
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new StoreInstance.Builder(environmentConfiguration)
+            new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
                     .withStoreSupportIdentifier("test")
                     .build();
@@ -84,7 +84,7 @@ public class StoreSupportTest
 
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new StoreInstance.Builder(environmentConfiguration)
+            new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
                     .withStoreSupportIdentifier("test")
                     .withAuthenticationMechanisms(AuthenticationMechanismType.API_KEY)

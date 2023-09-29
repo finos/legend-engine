@@ -74,26 +74,7 @@
         </dependency>
         <!-- RUNTIME -->
 
-        <!-- ECLIPSE COLLECTIONS -->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections-api</artifactId>-->
-<!--        </dependency>-->
-        <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- Authentication -->
-<!--        <dependency>-->
-<!--            <groupId>org.pac4j</groupId>-->
-<!--            <artifactId>pac4j-core</artifactId>-->
-<!--        </dependency>-->
-        <!-- Authentication -->
-
         <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

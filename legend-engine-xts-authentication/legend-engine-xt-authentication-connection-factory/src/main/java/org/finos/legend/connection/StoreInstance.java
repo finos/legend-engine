@@ -71,15 +71,15 @@ public class StoreInstance
 
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
+        private final LegendEnvironment environment;
         private String identifier;
         private String storeSupportIdentifier;
         private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
         private ConnectionSpecification connectionSpecification;
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
         public Builder withIdentifier(String identifier)
@@ -120,7 +120,7 @@ public class StoreInstance
 
         public StoreInstance build()
         {
-            StoreSupport storeSupport = this.environmentConfiguration.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store instance store support identifier is required"));
+            StoreSupport storeSupport = this.environment.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store instance store support identifier is required"));
             MutableList<AuthenticationMechanism> unsupportedAuthenticationMechanisms = ListIterate.select(new ArrayList<>(this.authenticationMechanisms), mechanism -> !storeSupport.getAuthenticationMechanisms().contains(mechanism));
             if (!unsupportedAuthenticationMechanisms.isEmpty())
             {

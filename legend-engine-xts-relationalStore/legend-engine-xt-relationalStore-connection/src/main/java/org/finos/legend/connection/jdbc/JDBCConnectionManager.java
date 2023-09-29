@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * We probably need to have a mechanism to control the connection pool
  * We cloned DatabaseManager from relational executor, we should consider if we can eventually unify these 2
  */
-public class JDBCConnectionManager implements ConnectionManager
+public final class JDBCConnectionManager implements ConnectionManager
 {
     private static final ConcurrentHashMap<String, JDBCConnectionDriver> driversByName = ConcurrentHashMap.newMap();
     private static final AtomicBoolean isInitialized = new AtomicBoolean();

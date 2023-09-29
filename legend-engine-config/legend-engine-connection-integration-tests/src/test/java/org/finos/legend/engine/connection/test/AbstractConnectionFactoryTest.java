@@ -20,7 +20,7 @@ import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVaul
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.EnvironmentConfiguration;
+import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
@@ -41,7 +41,7 @@ public abstract class AbstractConnectionFactoryTest<T>
 {
     protected static final String TEST_STORE_INSTANCE_NAME = "test-store";
 
-    protected EnvironmentConfiguration environmentConfiguration;
+    protected LegendEnvironment environment;
     protected IdentityFactory identityFactory;
     protected ConnectionFactory connectionFactory;
 
@@ -50,7 +50,7 @@ public abstract class AbstractConnectionFactoryTest<T>
     {
         this.setup();
 
-        EnvironmentConfiguration.Builder environmentConfigurationBuilder = new EnvironmentConfiguration.Builder()
+        LegendEnvironment.Builder environmentBuilder = new LegendEnvironment.Builder()
                 .withVaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault()
@@ -82,15 +82,15 @@ public abstract class AbstractConnectionFactoryTest<T>
         CredentialVault credentialVault = this.getCredentialVault();
         if (credentialVault != null)
         {
-            environmentConfigurationBuilder.withVault(credentialVault);
+            environmentBuilder.withVault(credentialVault);
         }
 
-        this.environmentConfiguration = environmentConfigurationBuilder.build();
+        this.environment = environmentBuilder.build();
 
-        this.identityFactory = new IdentityFactory.Builder(environmentConfiguration)
+        this.identityFactory = new IdentityFactory.Builder(environment)
                 .build();
 
-        this.connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
+        this.connectionFactory = new ConnectionFactory.Builder(environment)
                 .withCredentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
@@ -134,7 +134,7 @@ public abstract class AbstractConnectionFactoryTest<T>
         AuthenticationConfiguration authenticationConfiguration = this.getAuthenticationConfiguration();
 
         Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_STORE_INSTANCE_NAME, authenticationConfiguration);
-        T connection = this.connectionFactory.getConnection(authenticator);
+        T connection = this.connectionFactory.getConnection(identity, authenticator);
 
         this.runTestWithConnection(connection);
         System.out.println("Successfully established and checked connection!");

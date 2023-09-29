@@ -39,14 +39,14 @@ import java.util.stream.Collectors;
 
 public class ConnectionFactory
 {
-    private final EnvironmentConfiguration environmentConfiguration;
+    private final LegendEnvironment environment;
     private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
     private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
     private final Map<String, StoreInstance> storeInstancesIndex;
 
-    private ConnectionFactory(EnvironmentConfiguration environmentConfiguration, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, Map<String, StoreInstance> storeInstancesIndex)
+    private ConnectionFactory(LegendEnvironment environment, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, Map<String, StoreInstance> storeInstancesIndex)
     {
-        this.environmentConfiguration = environmentConfiguration;
+        this.environment = environment;
         for (ConnectionBuilder<?, ?, ?> builder : connectionBuilders)
         {
             this.connectionBuildersIndex.put(new ConnectionBuilder.Key(builder.getConnectionSpecificationType(), builder.getCredentialType()), builder);
@@ -83,7 +83,7 @@ public class ConnectionFactory
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
     {
-        AuthenticationMechanism authenticationMechanism = environmentConfiguration.findAuthenticationMechanismForConfiguration(authenticationConfiguration);
+        AuthenticationMechanism authenticationMechanism = environment.findAuthenticationMechanismForConfiguration(authenticationConfiguration);
         String authenticationMechanismLabel = authenticationMechanism != null ? ("authentication mechanism '" + authenticationMechanism.getLabel() + "'") : ("authentication mechanism with configuration '" + authenticationConfiguration.getClass().getSimpleName() + "'");
         if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
         {
@@ -103,7 +103,7 @@ public class ConnectionFactory
                     storeInstance.getConnectionSpecification().getClass().getSimpleName())
             );
         }
-        return new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+        return new Authenticator(storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
     }
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier)
@@ -120,7 +120,7 @@ public class ConnectionFactory
             AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
             if (result != null)
             {
-                authenticator = new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+                authenticator = new Authenticator(storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
                 break;
             }
         }
@@ -177,7 +177,7 @@ public class ConnectionFactory
                     .filter(builder -> builder.getAuthenticationConfigurationType().equals(authenticationConfiguration.getClass()))
                     .forEach(builder ->
                     {
-                        if (!(builder instanceof CredentialExtractor))
+                        if (!(builder.getInputCredentialType().equals(builder.getOutputCredentialType())))
                         {
                             this.processEdge(new FlowNode(builder.getInputCredentialType()), new FlowNode(builder.getOutputCredentialType()));
                         }
@@ -362,88 +362,74 @@ public class ConnectionFactory
 
     public <T> T getConnection(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstance, authenticationConfiguration));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstance, authenticationConfiguration));
     }
 
     public <T> T getConnection(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier, authenticationConfiguration));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstanceIdentifier, authenticationConfiguration));
     }
 
     public <T> T getConnection(Identity identity, StoreInstance storeInstance) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstance));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstance));
     }
 
     public <T> T getConnection(Identity identity, String storeInstanceIdentifier) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstanceIdentifier));
     }
 
-    public <T> T getConnection(Authenticator authenticator) throws Exception
+    public <T> T getConnection(Identity identity, Authenticator authenticator) throws Exception
     {
-        Credential credential = authenticator.makeCredential(this.environmentConfiguration);
+        Credential credential = authenticator.makeCredential(identity, this.environment);
         ConnectionBuilder<T, Credential, ConnectionSpecification> flow = (ConnectionBuilder<T, Credential, ConnectionSpecification>) authenticator.getConnectionBuilder();
         return flow.getConnection(credential, authenticator.getStoreInstance().getConnectionSpecification(), authenticator.getStoreInstance());
     }
 
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
-        private CredentialBuilderProvider credentialBuilderProvider;
-        private ConnectionBuilderProvider connectionBuilderProvider;
-        private final List<CredentialBuilder<?, ?, ?>> credentialBuilders = Lists.mutable.empty();
-        private final List<ConnectionBuilder<?, ?, ?>> connectionBuilders = Lists.mutable.empty();
+        private final LegendEnvironment environment;
+        private final List<CredentialBuilder> credentialBuilders = Lists.mutable.empty();
+        private final List<ConnectionBuilder> connectionBuilders = Lists.mutable.empty();
         private final Map<String, StoreInstance> storeInstancesIndex = new HashMap<>();
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
-        public Builder withCredentialBuilderProvider(CredentialBuilderProvider provider)
-        {
-            this.credentialBuilderProvider = provider;
-            return this;
-        }
-
-        public Builder withConnectionBuilderProvider(ConnectionBuilderProvider provider)
-        {
-            this.connectionBuilderProvider = provider;
-            return this;
-        }
-
-        public Builder withCredentialBuilders(List<CredentialBuilder<?, ?, ?>> credentialBuilders)
+        public Builder withCredentialBuilders(List<CredentialBuilder> credentialBuilders)
         {
             this.credentialBuilders.addAll(credentialBuilders);
             return this;
         }
 
-        public Builder withCredentialBuilders(CredentialBuilder<?, ?, ?>... credentialBuilders)
+        public Builder withCredentialBuilders(CredentialBuilder... credentialBuilders)
         {
             this.credentialBuilders.addAll(Lists.mutable.with(credentialBuilders));
             return this;
         }
 
-        public Builder withCredentialBuilder(CredentialBuilder<?, ?, ?> credentialBuilder)
+        public Builder withCredentialBuilder(CredentialBuilder credentialBuilder)
         {
             this.credentialBuilders.add(credentialBuilder);
             return this;
         }
 
-        public Builder withConnectionBuilders(List<ConnectionBuilder<?, ?, ?>> connectionBuilders)
+        public Builder withConnectionBuilders(List<ConnectionBuilder> connectionBuilders)
         {
             this.connectionBuilders.addAll(connectionBuilders);
             return this;
         }
 
-        public Builder withConnectionBuilders(ConnectionBuilder<?, ?, ?>... connectionBuilders)
+        public Builder withConnectionBuilders(ConnectionBuilder... connectionBuilders)
         {
             this.connectionBuilders.addAll(Lists.mutable.with(connectionBuilders));
             return this;
         }
 
-        public Builder withConnectionBuilder(ConnectionBuilder<?, ?, ?> connectionBuilder)
+        public Builder withConnectionBuilder(ConnectionBuilder connectionBuilder)
         {
             this.connectionBuilders.add(connectionBuilder);
             return this;
@@ -472,20 +458,15 @@ public class ConnectionFactory
 
         public ConnectionFactory build()
         {
-            List<CredentialBuilder> credentialBuilders = this.credentialBuilderProvider != null ? this.credentialBuilderProvider.getBuilders() : Lists.mutable.empty();
-            credentialBuilders.addAll(this.credentialBuilders);
-            List<ConnectionBuilder> connectionBuilders = this.connectionBuilderProvider != null ? this.connectionBuilderProvider.getBuilders() : Lists.mutable.empty();
-            connectionBuilders.addAll(this.connectionBuilders);
-
             for (ConnectionManager connectionManager : ServiceLoader.load(ConnectionManager.class))
             {
                 connectionManager.initialize();
             }
 
             return new ConnectionFactory(
-                    this.environmentConfiguration,
-                    credentialBuilders,
-                    connectionBuilders,
+                    this.environment,
+                    this.credentialBuilders,
+                    this.connectionBuilders,
                     this.storeInstancesIndex
             );
         }
