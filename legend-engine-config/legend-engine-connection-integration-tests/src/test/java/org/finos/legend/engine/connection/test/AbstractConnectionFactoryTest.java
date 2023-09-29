@@ -37,6 +37,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+// phase 2 - we should move all the connector stuff into legend-xts-connection ?
 public abstract class AbstractConnectionFactoryTest<T>
 {
     protected static final String TEST_STORE_INSTANCE_NAME = "test-store";
