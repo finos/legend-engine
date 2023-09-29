@@ -18,7 +18,7 @@ import meta::pure::functions::collection::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
-mvn antrun:run@create-protocol-file -P generate-protocol-version
+
 function meta::protocols::pure::vX_X_X::extension::store::service::getServiceStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
 {
    let res = [
