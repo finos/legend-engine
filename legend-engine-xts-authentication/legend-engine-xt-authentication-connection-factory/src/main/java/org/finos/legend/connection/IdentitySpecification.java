@@ -22,6 +22,8 @@ import javax.security.auth.Subject;
 import java.util.List;
 import java.util.Objects;
 
+// phase 1 - Identity and IdentitySpecification are duplicate concepts. We should delete IdentitySpecification in favor of Identity
+// phase 1 - Identity should be immutable once constructed
 public class IdentitySpecification
 {
     private final String name;
