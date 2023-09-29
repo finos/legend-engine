@@ -18,10 +18,12 @@ import java.util.List;
 
 public interface AuthenticationMechanism
 {
+    // phase 1 - this should not be a string. Maybe have an enum type 
     String getLabel();
 
     Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType();
 
+    // phase 0 - what is this ? delete if not used. We can always add later 
     default AuthenticationConfiguration generateConfiguration()
     {
         return null;
