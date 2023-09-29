@@ -20,6 +20,8 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Optional;
 
+// phase 0 - rename SPEC to CONFIG ?
+// phase 1 - Can CredentialBuilder and CredentialExtractor be unified ? Why do we need two concepts ?
 public abstract class CredentialExtractor<SPEC extends AuthenticationConfiguration, CRED extends Credential> extends CredentialBuilder<SPEC, CRED, CRED>
 {
 
