@@ -27,6 +27,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+// phase 0 - add javadoc/comments
+/*
+    A StoreInstance represents a named instance of a Store. 
+    For e.g "myProdSybaseServer"
+*/
+
+// phase 1 - StoreInstance should be immutable once constructed
 public class StoreInstance
 {
     private final String identifier;
