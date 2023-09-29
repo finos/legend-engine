@@ -21,6 +21,7 @@ import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.JDBCConnectionManager;
 import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
@@ -36,9 +37,10 @@ public class SnowflakeConnectionBuilder
     public static class WithKeyPair extends ConnectionBuilder<Connection, PrivateKeyCredential, SnowflakeConnectionSpecification>
     {
         @Override
-        public Connection getConnection(PrivateKeyCredential credential, SnowflakeConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential) throws Exception
         {
             StoreSupport storeSupport = storeInstance.getStoreSupport();
+            SnowflakeConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
             if (!(storeSupport instanceof RelationalDatabaseStoreSupport) || !DatabaseType.SNOWFLAKE.equals(((RelationalDatabaseStoreSupport) storeSupport).getDatabase()))
             {
                 throw new RuntimeException("Can't get connection: only support Snowflake databases");

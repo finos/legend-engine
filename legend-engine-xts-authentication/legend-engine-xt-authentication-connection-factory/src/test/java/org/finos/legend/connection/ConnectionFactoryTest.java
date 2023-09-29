@@ -20,7 +20,6 @@ import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -553,7 +552,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_A extends ConnectionBuilder<Object, Credential_A, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_A credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_A credential) throws Exception
         {
             return null;
         }
@@ -562,7 +561,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_B extends ConnectionBuilder<Object, Credential_B, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_B credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_B credential) throws Exception
         {
             return null;
         }
@@ -571,7 +570,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_C extends ConnectionBuilder<Object, Credential_C, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_C credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_C credential) throws Exception
         {
             return null;
         }

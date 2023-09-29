@@ -69,6 +69,15 @@ public class StoreInstance
         return connectionSpecification;
     }
 
+    public <T extends ConnectionSpecification> T getConnectionSpecification(Class<T> clazz)
+    {
+        if (!this.connectionSpecification.getClass().equals(clazz))
+        {
+            throw new RuntimeException(String.format("Can't get connection specification of type '%s' for store '%s'", clazz.getSimpleName(), this.identifier));
+        }
+        return (T) this.connectionSpecification;
+    }
+
     public static class Builder
     {
         private final LegendEnvironment environment;
