@@ -56,6 +56,21 @@ public class ExternalFormatSerializeResult extends StreamingResult
     }
 
     @Override
+    public String flush(Serializer serializer)
+    {
+        try
+        {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            externalFormatWriter.writeDataAsString(bos);
+            return bos.toString(StandardCharsets.UTF_8.name());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void close()
     {
         if (this.childResult != null)
