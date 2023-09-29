@@ -23,9 +23,11 @@ import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
+import org.finos.legend.connection.StoreInstanceProvider;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 
 import java.util.List;
@@ -35,6 +37,7 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
 {
     private static LegendEnvironment environment;
     private static IdentityFactory identityFactory;
+    private static StoreInstanceProvider storeInstanceProvider;
     private static ConnectionFactory connectionFactory;
     private final List<CredentialVault> credentialVaults;
     private final Function<C, ConnectionFactoryConfiguration> configSupplier;
@@ -70,7 +73,9 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
         identityFactory = new IdentityFactory.Builder(ConnectionFactoryBundle.environment)
                 .build();
 
-        connectionFactory = new ConnectionFactory.Builder(ConnectionFactoryBundle.environment)
+        storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
+
+        connectionFactory = new ConnectionFactory.Builder(ConnectionFactoryBundle.environment, storeInstanceProvider)
 //                .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider()) // can also use service loader
 //                .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider()) // can also use service loader
                 .build();
