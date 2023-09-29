@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import java.util.List;
 
+// phase 0 - delete till we have a need for this interface
 public interface ConnectionBuilderProvider
 {
     List<ConnectionBuilder> getBuilders();
