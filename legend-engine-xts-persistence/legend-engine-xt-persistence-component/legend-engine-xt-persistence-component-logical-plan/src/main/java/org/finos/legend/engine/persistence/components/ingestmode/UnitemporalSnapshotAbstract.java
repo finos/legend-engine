@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
@@ -50,18 +46,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     List<String> partitionFields();
 
     Map<String, Set<String>> partitionValuesByField();
-
-    @Value.Default
-    default DeduplicationStrategy deduplicationStrategy()
-    {
-        return AllowDuplicates.builder().build();
-    }
-
-    @Value.Default
-    default VersioningStrategy versioningStrategy()
-    {
-        return NoVersioningStrategy.builder().build();
-    }
 
     @Derived
     default boolean partitioned()

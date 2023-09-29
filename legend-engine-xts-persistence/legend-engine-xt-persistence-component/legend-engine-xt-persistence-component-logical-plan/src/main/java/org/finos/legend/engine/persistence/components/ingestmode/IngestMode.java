@@ -14,7 +14,26 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
+import org.immutables.value.Value;
+
 public interface IngestMode
 {
+
+    @Value.Default
+    default DeduplicationStrategy deduplicationStrategy()
+    {
+        return AllowDuplicates.builder().build();
+    }
+
+    @Value.Default
+    default VersioningStrategy versioningStrategy()
+    {
+        return NoVersioningStrategy.builder().build();
+    }
+
     <T> T accept(IngestModeVisitor<T> visitor);
 }

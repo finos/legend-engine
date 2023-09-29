@@ -44,6 +44,8 @@ public interface DatasetsAbstract
 
     Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset();
 
+    Optional<Dataset> dedupedAndVersionedStagingDataset();
+
     Optional<Dataset> tempDataset();
 
     Optional<Dataset> tempDatasetWithDeleteIndicator();

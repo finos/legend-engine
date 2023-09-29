@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
@@ -53,18 +49,6 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
     default MergeStrategy mergeStrategy()
     {
         return NoDeletesMergeStrategy.builder().build();
-    }
-
-    @Default
-    default DeduplicationStrategy deduplicationStrategy()
-    {
-        return AllowDuplicates.builder().build();
-    }
-
-    @Default
-    default VersioningStrategy versioningStrategy()
-    {
-        return NoVersioningStrategy.builder().build();
     }
 
     @Override
