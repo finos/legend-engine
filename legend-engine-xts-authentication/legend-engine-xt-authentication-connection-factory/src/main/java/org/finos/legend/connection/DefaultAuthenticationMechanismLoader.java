@@ -20,6 +20,7 @@ import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 
 import java.util.List;
 
+// phase 0 - delete
 public class DefaultAuthenticationMechanismLoader implements AuthenticationMechanismLoader
 {
     @Override
