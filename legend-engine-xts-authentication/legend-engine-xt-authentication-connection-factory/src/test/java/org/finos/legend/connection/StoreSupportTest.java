@@ -97,4 +97,43 @@ public class StoreSupportTest
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
     }
+
+    @Test
+    public void testStoreInstanceManagement()
+    {
+        LegendEnvironment environment = new LegendEnvironment.Builder()
+                .withStoreSupport(new StoreSupport.Builder()
+                        .withIdentifier("test")
+                        .withAuthenticationMechanisms(
+                                AuthenticationMechanismType.USER_PASSWORD,
+                                AuthenticationMechanismType.KERBEROS
+                        )
+                        .build())
+                .build();
+
+        StoreInstance storeInstance = new StoreInstance.Builder(environment)
+                .withIdentifier("test-store")
+                .withStoreSupportIdentifier("test")
+                .withConnectionSpecification(new TestConnectionSpecification())
+                .build();
+
+        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().withStoreInstance(storeInstance).build();
+
+        // failure
+        Exception exception;
+
+        // error: store already registered
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            new DefaultStoreInstanceProvider.Builder().withStoreInstances(storeInstance, storeInstance).build();
+        });
+        Assert.assertEquals("Can't register store instance: found multiple store instances with identifier 'test-store'", exception.getMessage());
+
+        // error: store not found
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            storeInstanceProvider.lookup("unknown");
+        });
+        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
+    }
 }

@@ -29,35 +29,6 @@ import java.util.Optional;
 public class ConnectionFactoryTest
 {
     @Test
-    public void testStoreInstanceManagement()
-    {
-        TestEnv env = TestEnv.create();
-        StoreInstance storeInstance = new StoreInstance.Builder(env.environment)
-                .withIdentifier("test-store")
-                .withStoreSupportIdentifier("test")
-                .withConnectionSpecification(new TestConnectionSpecification())
-                .build();
-        env.connectionFactory.injectStoreInstance(storeInstance);
-
-        // failure
-        Exception exception;
-
-        // error: store already registered
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env.connectionFactory.injectStoreInstance(storeInstance);
-        });
-        Assert.assertEquals("Can't register store instance: found multiple store instances with identifier 'test-store'", exception.getMessage());
-
-        // error: store not found
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env.connectionFactory.getAuthenticator(new Identity("test"), "unknown");
-        });
-        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
-    }
-
-    @Test
     public void testGetConnection_WithFailures() throws Exception
     {
         TestEnv env = TestEnv.create(
@@ -357,6 +328,7 @@ public class ConnectionFactoryTest
     private static class TestEnv
     {
         final LegendEnvironment environment;
+        final InstrumentedStoreInstanceProvider storeInstanceProvider;
         final ConnectionFactory connectionFactory;
 
         private TestEnv(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
@@ -368,8 +340,8 @@ public class ConnectionFactoryTest
                             .build())
                     .withAuthenticationMechanisms(authenticationMechanisms)
                     .build();
-
-            this.connectionFactory = new ConnectionFactory.Builder(environment)
+            this.storeInstanceProvider = new InstrumentedStoreInstanceProvider();
+            this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
                     .withCredentialBuilders(credentialBuilders)
                     .withConnectionBuilders(connectionBuilders)
                     .build();
@@ -377,7 +349,7 @@ public class ConnectionFactoryTest
 
         TestEnv newStore(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
         {
-            this.connectionFactory.injectStoreInstance(new StoreInstance.Builder(environment)
+            this.storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment)
                     .withIdentifier(identifier)
                     .withStoreSupportIdentifier("test")
                     .withAuthenticationMechanisms(authenticationMechanisms)

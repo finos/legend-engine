@@ -15,7 +15,6 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
@@ -40,13 +39,14 @@ import java.util.stream.Collectors;
 public class ConnectionFactory
 {
     private final LegendEnvironment environment;
+    private final StoreInstanceProvider storeInstanceProvider;
     private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
     private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
-    private final Map<String, StoreInstance> storeInstancesIndex;
 
-    private ConnectionFactory(LegendEnvironment environment, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, Map<String, StoreInstance> storeInstancesIndex)
+    private ConnectionFactory(LegendEnvironment environment, StoreInstanceProvider storeInstanceProvider, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders)
     {
         this.environment = environment;
+        this.storeInstanceProvider = storeInstanceProvider;
         for (ConnectionBuilder<?, ?, ?> builder : connectionBuilders)
         {
             this.connectionBuildersIndex.put(new ConnectionBuilder.Key(builder.getConnectionSpecificationType(), builder.getCredentialType()), builder);
@@ -55,30 +55,11 @@ public class ConnectionFactory
         {
             this.credentialBuildersIndex.put(new CredentialBuilder.Key(builder.getAuthenticationConfigurationType(), builder.getInputCredentialType(), builder.getOutputCredentialType()), builder);
         }
-        this.storeInstancesIndex = storeInstancesIndex;
-    }
-
-    /**
-     * This method is meant for testing.
-     * The recommended usage is to include all the store instances during initialization
-     */
-    public void injectStoreInstance(StoreInstance storeInstance)
-    {
-        if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
-        {
-            throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
-        }
-        this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
-    }
-
-    private StoreInstance findStoreInstance(String identifier)
-    {
-        return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
     }
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration)
     {
-        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationConfiguration);
+        return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier), authenticationConfiguration);
     }
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
@@ -108,7 +89,7 @@ public class ConnectionFactory
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier)
     {
-        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier));
+        return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier));
     }
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance)
@@ -390,13 +371,14 @@ public class ConnectionFactory
     public static class Builder
     {
         private final LegendEnvironment environment;
+        private final StoreInstanceProvider storeInstanceProvider;
         private final List<CredentialBuilder> credentialBuilders = Lists.mutable.empty();
         private final List<ConnectionBuilder> connectionBuilders = Lists.mutable.empty();
-        private final Map<String, StoreInstance> storeInstancesIndex = new HashMap<>();
 
-        public Builder(LegendEnvironment environment)
+        public Builder(LegendEnvironment environment, StoreInstanceProvider storeInstanceProvider)
         {
             this.environment = environment;
+            this.storeInstanceProvider = storeInstanceProvider;
         }
 
         public Builder withCredentialBuilders(List<CredentialBuilder> credentialBuilders)
@@ -435,27 +417,6 @@ public class ConnectionFactory
             return this;
         }
 
-        public Builder withStoreInstances(List<StoreInstance> storeInstances)
-        {
-            storeInstances.forEach(this::registerStoreInstance);
-            return this;
-        }
-
-        public Builder withStoreInstance(StoreInstance storeInstance)
-        {
-            this.registerStoreInstance(storeInstance);
-            return this;
-        }
-
-        private void registerStoreInstance(StoreInstance storeInstance)
-        {
-            if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
-            {
-                throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
-            }
-            this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
-        }
-
         public ConnectionFactory build()
         {
             for (ConnectionManager connectionManager : ServiceLoader.load(ConnectionManager.class))
@@ -465,9 +426,9 @@ public class ConnectionFactory
 
             return new ConnectionFactory(
                     this.environment,
+                    this.storeInstanceProvider,
                     this.credentialBuilders,
-                    this.connectionBuilders,
-                    this.storeInstancesIndex
+                    this.connectionBuilders
             );
         }
     }
