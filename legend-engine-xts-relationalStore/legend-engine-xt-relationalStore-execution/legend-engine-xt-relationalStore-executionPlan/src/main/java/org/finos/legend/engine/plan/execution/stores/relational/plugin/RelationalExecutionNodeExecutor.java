@@ -879,25 +879,25 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     private static void createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
     {
         RelationalStoreExecutionState relationalStoreExecutionState = null;
+        boolean tempTableCreated = false;
         try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseType).startActive(true))
         {
             relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setRetainConnection(true);
 
+            node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+            tempTableCreated = true;
+
             if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
                 node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
             }
             else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
                 loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone, threadExecutionState, profiles);
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-
                 String requestId = new RequestIdGenerator().generateId();
                 String fileName = tempTableName + requestId;
                 try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
@@ -919,7 +919,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
         finally
         {
-            if (relationalStoreExecutionState != null)
+            if (relationalStoreExecutionState != null && tempTableCreated)
             {
                 String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
                 BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
