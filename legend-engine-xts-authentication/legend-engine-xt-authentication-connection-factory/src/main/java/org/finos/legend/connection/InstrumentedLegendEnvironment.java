@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is the mutable version of {@link LegendEnvironment} which is used for testing.
+ * This is the instrumented version of {@link LegendEnvironment} which is used for testing.
  */
-public class TestLegendEnvironment extends LegendEnvironment
+public class InstrumentedLegendEnvironment extends LegendEnvironment
 {
     protected final MutableList<CredentialVault> vaults;
     protected final MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
@@ -34,7 +34,7 @@ public class TestLegendEnvironment extends LegendEnvironment
 
     protected final MutableMap<String, AuthenticationMechanism> authenticationMechanismsIndex;
 
-    protected TestLegendEnvironment(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
+    protected InstrumentedLegendEnvironment(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
     {
         super(vaults, storeSupportsIndex, authenticationMechanismsIndex);
         this.vaults = super.vaults.toList();

@@ -39,8 +39,8 @@ public class SnowflakeConnectionBuilder
         @Override
         public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential) throws Exception
         {
-            StoreSupport storeSupport = storeInstance.getStoreSupport();
             SnowflakeConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
+            StoreSupport storeSupport = storeInstance.getStoreSupport();
             if (!(storeSupport instanceof RelationalDatabaseStoreSupport) || !DatabaseType.SNOWFLAKE.equals(((RelationalDatabaseStoreSupport) storeSupport).getDatabase()))
             {
                 throw new RuntimeException("Can't get connection: only support Snowflake databases");

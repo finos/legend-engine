@@ -113,7 +113,7 @@ public class ConnectionFactory
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance)
     {
-        List<AuthenticationConfiguration> authenticationConfigurations = ListIterate.collect(storeInstance.getAuthenticationMechanisms(), AuthenticationMechanism::generateConfiguration).select(Objects::nonNull);
+        List<AuthenticationConfiguration> authenticationConfigurations = storeInstance.getAuthenticationMechanisms().toList().collect(AuthenticationMechanism::generateConfiguration).select(Objects::nonNull);
         Authenticator authenticator = null;
         for (AuthenticationConfiguration authenticationConfiguration : authenticationConfigurations)
         {
@@ -128,7 +128,7 @@ public class ConnectionFactory
         {
             throw new RuntimeException(String.format("Can't get authenticator: no authentication flow for store '%s' can be resolved for the specified identity using auto-generated authentication configuration. Try specifying an authentication mechanism by providing a configuration of one of the following types:\n%s",
                     storeInstance.getIdentifier(),
-                    ListIterate.select(storeInstance.getAuthenticationMechanisms(), mechanism -> mechanism.generateConfiguration() == null).collect(mechanism -> "- " + mechanism.getAuthenticationConfigurationType().getSimpleName() + " (mechanism: " + mechanism.getLabel() + ")").makeString("\n")
+                    storeInstance.getAuthenticationMechanisms().select(mechanism -> mechanism.generateConfiguration() == null).collect(mechanism -> "- " + mechanism.getAuthenticationConfigurationType().getSimpleName() + " (mechanism: " + mechanism.getLabel() + ")").makeString("\n")
             ));
         }
         return authenticator;
