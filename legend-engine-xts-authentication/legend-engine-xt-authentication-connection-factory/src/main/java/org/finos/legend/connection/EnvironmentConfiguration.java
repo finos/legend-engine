@@ -30,10 +30,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+// phase 0 - Maybe just call in LegendEnvironment ?
 /**
  * This is meant to the place we package common configs, such as vaults,
  * that can be passed to various parts of engine, authentication, connection factory, etc.
  */
+// phase 1 - Should this object be immutable once constructed ??
 public class EnvironmentConfiguration
 {
     private final List<CredentialVault> vaults;
@@ -54,6 +56,7 @@ public class EnvironmentConfiguration
         this.authenticationMechanismsIndex = authenticationMechanismsIndex;
     }
 
+    // phase 1 - Remove this method. Create a subtype EnvironmentConfigurationForTest and move the test method there
     /**
      * This method is meant for testing.
      * The recommended usage is to include all the vaults during initialization
@@ -79,6 +82,7 @@ public class EnvironmentConfiguration
         return vault.lookupSecret(credentialVaultSecret, identity);
     }
 
+    // phase 1 - Move test method to subtype
     /**
      * This method is meant for testing.
      * The recommended usage is to include all the store supports during initialization
@@ -171,7 +175,7 @@ public class EnvironmentConfiguration
             return this;
         }
 
-
+        // phase 1 - minimize the # of builder variants till we have a stable api
         public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
         {
             this.authenticationMechanisms.addAll(Lists.mutable.with(authenticationMechanisms));
@@ -191,6 +195,7 @@ public class EnvironmentConfiguration
             Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new LinkedHashMap<>();
             authenticationMechanisms.forEach(mechanism ->
             {
+                // phase 2 - We should be consistent on exception type. In some cases we throw Runtime and in some cases IllegalState
                 String key = mechanism.getAuthenticationConfigurationType().getSimpleName();
                 if (authenticationMechanismsIndex.containsKey(key))
                 {
