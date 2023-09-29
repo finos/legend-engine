@@ -21,8 +21,10 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import java.util.List;
 import java.util.Optional;
 
+// phase 1 - Should this be immutable ?
 public class Authenticator
 {
+    // phase 1 - Why does the authenticator refer to identity. What is the lifetime of this identity ?
     private final Identity identity;
     private final StoreInstance storeInstance;
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -57,6 +59,7 @@ public class Authenticator
                 credential = credentialOptional.get();
             }
         }
+        // phase 2 -- hmm. order of credetialBuilders ?
         for (CredentialBuilder credentialBuilder : this.credentialBuilders)
         {
             credential = credentialBuilder.makeCredential(this.identity, this.authenticationConfiguration, credential, configuration);
