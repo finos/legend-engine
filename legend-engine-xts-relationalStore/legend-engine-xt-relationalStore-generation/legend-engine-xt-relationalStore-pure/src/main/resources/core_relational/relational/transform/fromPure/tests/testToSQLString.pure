@@ -618,7 +618,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
       +'concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name3", concat(\'myValue\', "root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name4" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testHashFunctions():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlstring::testHashFunctions():Boolean[1]
 {
     let result = toSQLString(
      |Person.all()
