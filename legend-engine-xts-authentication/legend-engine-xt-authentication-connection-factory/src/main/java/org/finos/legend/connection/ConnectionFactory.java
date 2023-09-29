@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 public class ConnectionFactory
 {
+    // phase 1 - why does this need to hold a reference to the environment ?
     private final EnvironmentConfiguration environmentConfiguration;
     private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
     private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
@@ -58,6 +59,7 @@ public class ConnectionFactory
         this.storeInstancesIndex = storeInstancesIndex;
     }
 
+    // phase 1 - move test methods to a test subtype class
     /**
      * This method is meant for testing.
      * The recommended usage is to include all the store instances during initialization
@@ -134,6 +136,7 @@ public class ConnectionFactory
         return authenticator;
     }
 
+    // phase 2 - Hmmm ... Can we simplify this algorithm ? Can we remove the graph traversal ?
     private static class AuthenticationFlowResolver
     {
         private final Map<String, CredentialBuilder> credentialBuildersIndex = new HashMap<>();
@@ -345,6 +348,7 @@ public class ConnectionFactory
             }
         }
 
+        // phase 1 - "flow" as a concept suddenly shows up here. So a "flow" is a credentialbuilder ?
         private static class ResolutionResult
         {
             public final List<CredentialBuilder> flow;
