@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LegendTdsResultParser
 {
@@ -34,12 +36,15 @@ public class LegendTdsResultParser
     public static final String TYPE = "type";
     public static final String COLUMNS = "columns";
     public static final String NAME = "name";
-    public static final String RELATIONAL_TYPE = "relationalType";
+    //public static final String RELATIONAL_TYPE = "relationalType";
     public static final String RESULT = "result";
     public static final String ROWS = "rows";
     public static final String VALUES = "values";
     private static final List<JsonToken> SKIP_CHILDREN_TOKEN
             = Collections.unmodifiableList(Arrays.asList(JsonToken.START_ARRAY, JsonToken.START_OBJECT));
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LegendTdsResultParser.class);
+
     public static final String _TYPE = "_type";
     private final JsonParser parser;
     private List<LegendColumn> legendColumns;
@@ -96,14 +101,13 @@ public class LegendTdsResultParser
         acceptNextToken(JsonToken.START_ARRAY);
         while (parser.nextToken() != JsonToken.END_ARRAY)
         {
-
-
             //parse column
             acceptCurrent(JsonToken.START_OBJECT);
             String columnName = parseNextTextField(NAME);
             String type = parseNextTextField(TYPE);
-            String relationType = parseNextTextField(RELATIONAL_TYPE);
-            acceptNextToken(JsonToken.END_OBJECT);
+            //relationalType is missing for derived properties
+            //String relationType = parseNextTextField(RELATIONAL_TYPE);
+            skipUntilToken(JsonToken.END_OBJECT);
             legendColumns.add(new LegendColumn(columnName, type));
         }
         acceptNextToken(JsonToken.END_OBJECT);
@@ -188,6 +192,19 @@ public class LegendTdsResultParser
         JsonToken jsonToken = parser.nextToken();
         validate(SKIP_CHILDREN_TOKEN, jsonToken);
         parser.skipChildren();
+    }
+
+    private void skipUntilToken(JsonToken expectedToken) throws IOException
+    {
+        parser.nextToken();
+        while (!expectedToken.equals(parser.currentToken()))
+        {
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Skipping token :" + parser.currentToken());
+            }
+            parser.nextToken();
+        }
     }
 
     private void acceptNextToken(JsonToken expectedToken) throws IOException

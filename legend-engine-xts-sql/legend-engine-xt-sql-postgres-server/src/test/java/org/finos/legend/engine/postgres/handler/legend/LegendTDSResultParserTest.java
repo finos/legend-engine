@@ -47,7 +47,33 @@ public class LegendTDSResultParserTest
                     LOGGER.info("Row: {}, Column: {}: Value: {}", row, column, value);
                     column++;
                 }
-                Assert.assertEquals("Verify number of column", 8, column);
+                Assert.assertEquals("Verify number of columns", 8, column);
+            }
+            Assert.assertEquals("Verify number of rows", 2, row);
+        }
+    }
+
+    @Test
+    public void testParseDataNoRelationalTypeValidateResults() throws IOException
+    {
+        try (InputStream pureProjectInputStream = ClassLoader.getSystemClassLoader().getResourceAsStream("legendTdsResultNoRelationalType.json");)
+        {
+            LegendTdsResultParser parser = new LegendTdsResultParser(pureProjectInputStream);
+            List<LegendColumn> legendColumns = parser.getLegendColumns();
+            int row = 0;
+            int column = 0;
+            while (parser.hasNext())
+            {
+                row++;
+                column = 0;
+                List<Object> nextRow = parser.next();
+                for (int i = 0; i < legendColumns.size(); i++)
+                {
+                    Object value = nextRow.get(i);
+                    LOGGER.info("Row: {}, Column: {}: Value: {}", row, column, value);
+                    column++;
+                }
+                Assert.assertEquals("Verify number of columns", 2, column);
             }
             Assert.assertEquals("Verify number of rows", 2, row);
         }
