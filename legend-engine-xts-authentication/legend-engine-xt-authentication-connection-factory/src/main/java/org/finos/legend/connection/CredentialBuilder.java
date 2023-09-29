@@ -22,6 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
+// phase 0 - Maybe change SPEC to CONFIG ?
 public abstract class CredentialBuilder<SPEC extends AuthenticationConfiguration, INPUT_CRED extends Credential, OUTPUT_CRED extends Credential>
 {
     public abstract OUTPUT_CRED makeCredential(Identity identity, SPEC spec, INPUT_CRED cred, EnvironmentConfiguration configuration) throws Exception;
