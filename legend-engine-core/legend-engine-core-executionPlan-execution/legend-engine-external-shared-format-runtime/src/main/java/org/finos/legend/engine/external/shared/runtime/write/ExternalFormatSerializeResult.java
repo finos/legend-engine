@@ -29,9 +29,15 @@ public class ExternalFormatSerializeResult extends StreamingResult
 
     public ExternalFormatSerializeResult(ExternalFormatWriter externalFormatWriter, Result childResult)
     {
+        this(externalFormatWriter, childResult, "");
+    }
+
+    public ExternalFormatSerializeResult(ExternalFormatWriter externalFormatWriter, Result childResult, String resultFormat)
+    {
         super(Lists.mutable.empty());
         this.externalFormatWriter = externalFormatWriter;
         this.childResult = childResult;
+        this.resultFormat = resultFormat;
     }
 
     @Override
