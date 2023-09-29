@@ -18,6 +18,7 @@ import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
 import java.util.List;
 
+// phase 0 - delete till we have a need for this interface
 public interface AuthenticationMechanismProvider
 {
     List<AuthenticationMechanismLoader> getLoaders();
