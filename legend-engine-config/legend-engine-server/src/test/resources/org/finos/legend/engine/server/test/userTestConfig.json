@@ -3,7 +3,7 @@
     "mode": "TEST_IGNORE_FUNCTION_MATCH"
   },
   "logging": {
-    "level": "info",
+    "level": "error",
     "appenders": [
       {
         "type": "console",
@@ -47,7 +47,7 @@
     "connector": {
       "maxRequestHeaderSize": "32KiB",
       "type": "http",
-      "port": 9090
+      "port": 6300
     },
     "requestLog": {
       "appenders": [
