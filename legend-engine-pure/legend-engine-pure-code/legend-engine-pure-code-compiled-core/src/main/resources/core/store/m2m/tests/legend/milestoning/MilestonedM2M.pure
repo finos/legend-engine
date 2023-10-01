@@ -28,27 +28,17 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                  }
                }#;
   let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
-  let mappingStr =  '###Mapping\n' +
-                    'Mapping  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping\n' +
-                    '(\n' +
-                    ' *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner: Pure\n' +
-                    '  {\n' +
-                    '    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner\n' +
-                    '    vehicleName: $src.vehicle(%2020-10-15).name,\n' +
-                    '    personName : $src.name\n' +
-                    '  }\n' +
-                    ')\n';
 
-  let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping;
   let runtime = ^Runtime(connections = ^JsonModelConnection(
                                         element=^ModelStore(), 
                                         class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner, 
-                                        url='data:application/json,{"businessDate": "2020-10-15","name" : "Ram", "vehicleAllVersions": [{"name": "Bike", "businessDate" : "2020-10-15", "id" : "1"}]}'
+                                        url='data:application/json,{"businessDate": "2020-10-15","name" : "Ram", "vehicleAllVersions": [{"name": "B", "businessDate" : "2020-10-15", "id" : "1"}]}'
                                         )
                         );
   let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
 
   let json = $result.values->toOne();
-  let expected = '{"personName":"Ram","vehicleName":"Bike"}';
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON())); 
 }
