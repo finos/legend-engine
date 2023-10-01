@@ -33,3 +33,14 @@ Class <<temporal.businesstemporal>>  meta::pure::mapping::modelToModel::test::al
    vehicleName : String[1];
    personName : String[1];
 }
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner
+    vehicleName: $src.vehicle(%2020-10-15).name,
+    personName : $src.name
+  }
+)
