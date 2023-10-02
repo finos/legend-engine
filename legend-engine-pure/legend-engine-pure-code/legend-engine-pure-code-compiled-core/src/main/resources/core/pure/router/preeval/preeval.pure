@@ -194,6 +194,7 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                                                             a : meta::pure::tds::BasicColumnSpecification<Any>[*]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate(),
                                                             r : meta::pure::graphFetch::RootGraphFetchTree<Any>[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
                                                             b : meta::external::format::shared::binding::Binding[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
+                                                            sc : meta::pure::tds::schema::SchemaState[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $sc)->evaluateAndDeactivate(),
                                                             s : meta::pure::store::Store[1]| ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();,
                                                             a : Any[*]| assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
                                                                         ^InstanceValue(multiplicity = $ve.multiplicity, genericType = $ve.genericType, values = $varValue)->evaluateAndDeactivate();
@@ -264,7 +265,8 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                                   | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
                                   | ^PrevalWrapper<Any>(value = ^$av(mapFn = $newFuncWrapper_map.value->cast($mapFn), aggregateFn = $newFuncWrapper_agg.value->cast($aggFn)), canPreval = true, modified = true);
                                   );
-                        },                             
+                        }, 
+                        {s: meta::pure::tds::schema::SchemaState[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},                            
                         {r: meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | ^PrevalWrapper<Any>(value = $r, canPreval = true, modified = false);},
                         {b: meta::external::format::shared::binding::Binding[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
                         {s: meta::pure::store::Store[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
