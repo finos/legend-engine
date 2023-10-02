@@ -86,12 +86,14 @@ Service demo::H2PersonService
       [
         x|$x.id,
         x|$x.name,
-        x|$x.type
+        x|$x.type,
+        x|$x.name + ' Smith'
       ],
       [
         'Id',
         'Name',
-        'Employee Type'
+        'Employee Type',
+        'Full Name'
       ]
     );
     mapping: demo::DemoRelationalMapping;
