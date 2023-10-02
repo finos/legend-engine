@@ -509,6 +509,7 @@ public class TestExtensions
                 .with("core_relational_presto")
                 .with("core_relational_sybase")
                 .with("core_relational_sybaseiq")
+                .with("core_relational_sparksql")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")
