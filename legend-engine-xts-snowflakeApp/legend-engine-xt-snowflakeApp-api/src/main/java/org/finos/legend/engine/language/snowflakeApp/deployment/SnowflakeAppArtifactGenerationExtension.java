@@ -56,6 +56,8 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
         {
             LOGGER.warn("Error generating openapi specification", ex);
         }
+
+        return Collections.emptyList();
         
     }
 
