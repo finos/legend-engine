@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -24,7 +25,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import java.io.IOException;
 
 public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
@@ -49,7 +53,19 @@ public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisito
 
             HttpClientContext httpClientContext = ElasticsearchHttpContextUtil.authToHttpContext(this.identity, this.executionState.getCredentialProviderProvider(), connection.authSpec, this.state.getProviders());
 
-            return esNode.request.accept(new ExecutionRequestVisitor(this.state.getClient(), httpClientContext, connection.sourceSpec.url, esNode, this.executionState));
+            RequestBase request = null;
+            try
+            {
+                ObjectMapper pm = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+                String readInput = pm.writeValueAsString(esNode.request);
+                request = pm.readValue(readInput, RequestBase.class);
+            }
+            catch (IOException e)
+            {
+                throw new IllegalStateException("RequestBase failed to initialize due to issues in deep-copy");
+            }
+
+            return request.accept(new ExecutionRequestVisitor(this.state.getClient(), httpClientContext, connection.sourceSpec.url, esNode, this.executionState));
         }
 
         throw new IllegalStateException("should not get here");

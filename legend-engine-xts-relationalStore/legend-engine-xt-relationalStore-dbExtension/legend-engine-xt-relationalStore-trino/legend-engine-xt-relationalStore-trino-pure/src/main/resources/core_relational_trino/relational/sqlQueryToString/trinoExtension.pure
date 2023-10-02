@@ -56,7 +56,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeTrino()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForTrino(),$p->at(0),$p->at(1)]})),
-    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(Date(%s) as timestamp)')),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='mod(day_of_week(%s),7)+1')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),

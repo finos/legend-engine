@@ -1211,7 +1211,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                                           // 1. find the right alias within the nested SQL ...
                                                           // the alias we are trying to find might be from a view
                                                           let allNodes = $s.data->toOne()->getAllNodes()->cast(@RelationalTreeNode);
-                                                          let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);  
+                                                          let aliasesToUse = $t.column->extractColumnAliasesInRelationalTreeNodes($t.alias.relationalElement, $allNodes, $context, $extensions);
                                                           assert($aliasesToUse->size() == 1, | 'Found too many (or not enough) tables that could support the column '+$t.column.name+' in the nested SQL '+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions));
                                                           let newSQL = ^$s(columns+=^Alias(name=$t.column.name, relationalElement=$aliasesToUse->toOne()));
                                                           let newTreeNode = ^$currentTreeNode(alias = ^$alias(relationalElement = $newSQL));
@@ -1257,7 +1257,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
                                      ,
                   l:Literal[1]| let select = $srcOperation.select;
                                 ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $l),|^$select(columns = $l)));,
-                  r:RelationalOperationElementWithJoin[1]|
+                  r:RelationalOperationElementWithJoin[1]| // join chain with 0 or more elements, and then ending in a column.                              
                               let col = $r->extractElement();
                               let currentData = $srcOperation.select.data->toOne();
                               let isDynaFunction = $col->instanceOf(DynaFunction);
@@ -1302,7 +1302,7 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
 }
 
 function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
-{
+{   
    let aliasesToUse = $nodes->filter(n| let relElements = $n.alias.relationalElement->match([
          v:ViewSelectSQLQuery[1]| $v.view,
          s:SelectSQLQuery[1]|
@@ -6737,7 +6737,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::applyJo
    let sourceSelect=$inputState.select;
    let position=$inputState.position;
    let jt=if($joinTreeNode.joinType == [] || $joinTreeNode.joinType->isEmpty(),|$joinType, |$joinTreeNode.joinType->toOne());
-   let appliedJoinTreeNode = applyOneJoin($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions);
+   
+   let explodeInCurrentNode = explodeInCurrentJoinOperation($joinTreeNode.join.operation);   
+   let appliedJoinTreeNode = if($explodeInCurrentNode, | applyJoinWithExplodeInCondition($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions), | applyOneJoin($position, $joinTreeNode, $nodeId, $jt, $reprocess, $state, $milestoningContext, $context, $extensions));
+  
    let positionAliasWithExtraJoinCols = $position.alias->addExtraJoinColumns($appliedJoinTreeNode.join); //subselect may not have all cols required for join (prev isolation if applied may take care of this)
    let uniqueAppliedJoinTreeNode =  if($position.childrenData->filter(c|$c->cast(@JoinTreeNode).joinName==$appliedJoinTreeNode.joinName)->isEmpty()
                                       ,|^$appliedJoinTreeNode(join = reprocessJoin($appliedJoinTreeNode.join, [^OldAliasToNewAlias(first = $position.alias.name, second = $positionAliasWithExtraJoinCols)], []))
@@ -6800,6 +6803,144 @@ function meta::relational::functions::pureToSqlQuery::applyJoinInTree(root:RootJ
   );
 }
 
+function meta::relational::functions::pureToSqlQuery::explodeInCurrentJoinOperation(op: RelationalOperationElement[1]):Boolean[1]
+{  
+  $op->match([ 
+    d:DynaFunction[1] | $d.name == meta::relational::functions::sqlQueryToString::DynaFunctionRegistry.explodeSemiStructured.name || $d.parameters->map(p|$p->explodeInCurrentJoinOperation())->contains(true),
+    a:Any[1]| false
+  ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::extractExplodeSemiStructured(op: RelationalOperationElement[1]):RelationalOperationElement[*]
+{
+  $op->match([ 
+      d:DynaFunction[1] | if($d.name == meta::relational::functions::sqlQueryToString::DynaFunctionRegistry.explodeSemiStructured.name, | $d, | [])->concatenate($d.parameters->map(p|$p->extractExplodeSemiStructured())),
+      a:Any[1]| []
+    ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::explodeReturnType(typeName:String[1]):Type[0..1]
+{
+    let map = meta::relational::functions::database::sqlTextToRelationalDataTypeMap();
+    let func = $map->get($typeName);
+    let columnType = if ($func->isEmpty(), | ^meta::relational::metamodel::datatype::SemiStructured(), | $func->toOne()->eval(1000, 1));
+    let pureType = if($columnType->instanceOf(meta::relational::metamodel::datatype::SemiStructured), | [], | meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($columnType));
+}
+
+/*
+* if the operation of a JoinTreeNode contains reference to explode function, use a special handler:
+* 1. get flattened relation
+* 2. inner join flattened relation with the other alias in the operation
+* 3. in the original join tree node, apply left join between the original source and the above result on primary keys 
+*/
+function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCondition(currentNode:RelationalTreeNode[1], joinTree:JoinTreeNode[1], nodeId:String[1], joinType:JoinType[1], reprocess:Boolean[1], state:State[1], milestoningContext: TemporalMilestoningContext[0..1], context:DebugContext[1], extensions:Extension[*]):JoinTreeNode[1]
+{  
+  let join = $joinTree.join;  
+  
+  let targetAliasInJoin = findTarget($join, $currentNode, $extensions);
+  let sourceAliasInJoin = $join->otherTableFromAlias($targetAliasInJoin)->toOne();
+  
+  let allExplodeCalls = $join.operation->extractExplodeSemiStructured()->removeDuplicates();
+  assert($allExplodeCalls->size() == 1, 'only one unique explode allowed in operation in join: ' + $join.name); // This condition needs to be relaxed to support many-to-many
+  let explodeOp = $allExplodeCalls->at(0)->cast(@DynaFunction);
+  assert($explodeOp.parameters->size() == 3, 'explodeSemiStructured takes exactly 3 arguments, passed: ', $explodeOp.parameters->size());
+  assert($explodeOp.parameters->at(0)->instanceOf(TableAliasColumn), 'Input to explodeSemiStructured must be defined as a column in table in join: ' + $join.name); // This condition needs to be relaxed to support nested explosion
+  let columnToExplode = $explodeOp.parameters->at(0)->cast(@TableAliasColumn);
+  let pathToExplode   = $explodeOp.parameters->at(1);    
+  let pureReturnType  = $explodeOp.parameters->at(2)->cast(@Literal).value->cast(@String)->explodeReturnType();
+
+  let tableToExplodeAlias = $columnToExplode.alias;  
+  assert($tableToExplodeAlias.relationalElement->instanceOf(Table), 'element to explode: ' + $tableToExplodeAlias.name + 'in join ' + $join.name + ' is not a table'); // this can later be relaxed to handle views as well.
+  assert($sourceAliasInJoin.relationalElement->instanceOf(Table), 'source ' + $sourceAliasInJoin.name + 'in join ' + $join.name + ' is not a table');
+  
+  let srcPrimaryKeys = $sourceAliasInJoin.relationalElement->cast(@Table).primaryKey;  
+  assert($srcPrimaryKeys->size() >= 1, 'atleast one primary key should be defined on the relation: ' + $sourceAliasInJoin.name);
+    
+  let toExplodeRootTreeNode = ^RootJoinTreeNode(alias=^TableAlias(name='root',relationalElement=$tableToExplodeAlias.relationalElement));   
+  
+  // create a subquery for the flattened relation by doing a lateral join between tableToFlatten and the flattened array.
+  let leftAlias = $toExplodeRootTreeNode.alias;
+  let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = ^SemiStructuredPropertyAccess(property = $pathToExplode, operand = ^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
+  let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_0');
+  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
+  let lateralJoin = ^Join(
+    name      = $joinName,
+    target    = $rightAlias,
+    aliases   = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
+    operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])
+  );  
+  let lateralJoinNode = ^JoinTreeNode(
+    database = $joinTree.database,
+    joinName = $joinName,
+    alias    = $rightAlias, 
+    join     = $lateralJoin,
+    joinType = JoinType.INNER,
+    lateral  = true
+  ); 
+  let explodedRootTreeNode = ^$toExplodeRootTreeNode(childrenData = $lateralJoinNode); 
+  
+  let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralJoinNode.alias->toOne(), column = ^Column(name = 'value', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
+  let columnsForInnerJoinWithTarget = $join.operation->extractTableAliasColumns()->filter(tac|$tac.alias == $tableToExplodeAlias && $tac != $columnToExplode)->map(c|^TableAliasColumn(column = $c.column, alias = $toExplodeRootTreeNode.alias));
+  let additionalColumnsToFetch      = if($tableToExplodeAlias == $sourceAliasInJoin, 
+                                        | $srcPrimaryKeys->map(c|^Alias(name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString(), relationalElement = ^TableAliasColumn(column=$c, alias=$leftAlias))),  // fetch pks from source
+                                        | $tableToExplodeAlias.relationalElement->cast(@Table).columns->map(c|^TableAliasColumn(alias = $toExplodeRootTreeNode.alias, column = $c->cast(@Column))) // fetch all columns from target
+                                        );
+  let columnsToFetchInExploded      = [$flattenOutputAlias]->concatenate($columnsForInnerJoinWithTarget)->concatenate($additionalColumnsToFetch)->removeDuplicates();  
+
+  let explodedSubQuery = ^TableAlias(name='exploded', relationalElement=^SelectSQLQuery(columns=$columnsToFetchInExploded, data=$explodedRootTreeNode, preIsolationCurrentTreeNode=$explodedRootTreeNode)); // mainTable should point to the root table, not flatten
+  
+  // create inner join b/w exploded subquery and the target.
+  let toReplace = ^Alias(name = 'first', relationalElement = $explodeOp);
+  let flattendOutputDataType = if($pureReturnType->isEmpty() || meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->isEmpty(), 
+                                  | ^meta::relational::metamodel::datatype::SemiStructured(), 
+                                  | meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->toOne());
+  let replaceWith = ^Alias(name = 'second', relationalElement = ^TableAliasColumn(column = ^Column(name = $flattenOutputAlias.name, type = $flattendOutputDataType), alias = $explodedSubQuery));
+  let updatedOperation = replaceDynaFunctionWithTableAliasColumn($join.operation, ^Pair<Alias, Alias>(first = $toReplace, second = $replaceWith))->cast(@Operation);
+  let reprocessedJoin = reprocessJoin(^$join(operation=$updatedOperation), [^OldAliasToNewAlias(first = $tableToExplodeAlias.name->toOne(), second = $explodedSubQuery)], []);
+
+  let innerJoinTreeNode = ^JoinTreeNode(
+    database = $joinTree.database,
+    joinName = 'inner_join_flattened_' + $targetAliasInJoin->buildUniqueName(true, true, $extensions) + '__' + $joinName,
+    alias    = if($targetAliasInJoin == $tableToExplodeAlias, | $explodedSubQuery, | $targetAliasInJoin),
+    join     = $reprocessedJoin,
+    joinType = JoinType.INNER
+  );
+  
+  let rootForSubSelect = if($sourceAliasInJoin == $tableToExplodeAlias, | $explodedSubQuery, | $sourceAliasInJoin);
+
+  let columnsToFetchFromUnexploded = if($tableToExplodeAlias == $sourceAliasInJoin, 
+                                        | $targetAliasInJoin.relationalElement->cast(@Table).columns->map(c|^TableAliasColumn(alias = $targetAliasInJoin, column = $c->cast(@Column))), // target is unexploded, fetch all columns from target 
+                                        | $srcPrimaryKeys->map(c|^Alias(name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString(),relationalElement = ^TableAliasColumn(column = $c, alias = $sourceAliasInJoin))) // source is unexploded, fetch pks from source
+                                      );
+  let columnsToFetchFromExplodedProcessed = $additionalColumnsToFetch->map(c|$c->match([
+    tac:TableAliasColumn[1] | ^$tac(alias = $explodedSubQuery);,
+    a:Alias[1] | ^Alias(name = $a.name, relationalElement = ^TableAliasColumn(alias = $explodedSubQuery, column = ^Column(type = $a.relationalElement->cast(@TableAliasColumn).column.type, name = $a.name)));
+  ]));                                       
+  let subSelectColumnsToFetch = $columnsToFetchFromUnexploded->concatenate($columnsToFetchFromExplodedProcessed);
+  let subSelect = ^SelectSQLQuery(data=^RootJoinTreeNode(alias=$rootForSubSelect, childrenData=$innerJoinTreeNode), columns=$subSelectColumnsToFetch); 
+  let subSelectAlias = ^TableAlias(name=$join.name, relationalElement=$subSelect);   
+
+  // left outer join between the original current Node(same as sourceAliasInJoin) and the the generated subSelect query on pk of current node and joinKey of subSelect.
+  let targetJoinKeys = $srcPrimaryKeys->map(c|^TableAliasColumn(alias = $subSelectAlias, column = ^Column(type = $c.type, name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString())));
+  let leftJoinOperation = zip($srcPrimaryKeys, $targetJoinKeys)->map(pair|^DynaFunction(name = 'equal', parameters = [^TableAliasColumn(alias=$currentNode.alias->toOne(), column=$pair.first), $pair.second]))->andFilters($extensions)->cast(@Operation)->toOne();
+  let leftJoin = ^Join(
+    name = 'exploded_' + $join.name,
+    target = $subSelectAlias->toOne(),
+    aliases = [pair($subSelectAlias->toOne(), $currentNode.alias->toOne()), pair($currentNode.alias->toOne(), $subSelectAlias->toOne())],
+    operation = $leftJoinOperation
+  );
+  let leftJoinNode = ^JoinTreeNode(
+    database = $joinTree.database,
+    joinName = 'exploded_' + $join.name,
+    alias = $subSelectAlias,
+    join = $leftJoin,
+    joinType = JoinType.LEFT_OUTER
+  );      
+
+  let finalExplodedJoinTreeNode = applyOneJoin($currentNode, $leftJoinNode, $nodeId, $joinType, $reprocess, $state, $milestoningContext, $context, $extensions);
+  $finalExplodedJoinTreeNode;  
+}
+
 function meta::relational::functions::pureToSqlQuery::findLastJoinTreeNode(node:RelationalTreeNode[1]):RelationalTreeNode[1]
 {
    // Should use a flag in the structure for trees
@@ -6833,6 +6974,9 @@ function meta::relational::functions::pureToSqlQuery::findMainNamedRelation(rela
                      r:RelationalOperationElement[1]|$r->findMainTable()]);
 }
 
+/*
+* finds the target relational element to do the join with from the source
+*/
 function meta::relational::functions::pureToSqlQuery::findTarget(join:Join[1], sourceNode:RelationalTreeNode[1], extensions:Extension[*]):TableAlias[1]
 {
    if (!$join.target->isEmpty(), |$join.target->toOne(), | let sourceTableAlias = $sourceNode.alias;

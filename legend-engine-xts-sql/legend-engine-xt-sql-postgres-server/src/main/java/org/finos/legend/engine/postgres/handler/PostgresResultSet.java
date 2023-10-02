@@ -22,4 +22,6 @@ public interface PostgresResultSet
     Object getObject(int i) throws Exception;
 
     boolean next() throws Exception;
+
+    public void close() throws Exception;
 }

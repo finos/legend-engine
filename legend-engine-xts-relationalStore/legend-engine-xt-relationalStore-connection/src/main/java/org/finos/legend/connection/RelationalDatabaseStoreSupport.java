@@ -25,24 +25,24 @@ import java.util.Set;
 
 public class RelationalDatabaseStoreSupport extends StoreSupport
 {
-    private final String databaseType;
+    private final Database database;
     private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
-    private RelationalDatabaseStoreSupport(String identifier, String databaseType, List<AuthenticationMechanism> authenticationMechanisms)
+    private RelationalDatabaseStoreSupport(String identifier, Database database, List<AuthenticationMechanism> authenticationMechanisms)
     {
         super(identifier, authenticationMechanisms);
-        this.databaseType = databaseType;
+        this.database = database;
     }
 
-    public String getDatabaseType()
+    public Database getDatabase()
     {
-        return databaseType;
+        return database;
     }
 
     public static class Builder
     {
         private String identifier;
-        private String databaseType;
+        private Database database;
         private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
         public Builder withIdentifier(String identifier)
@@ -51,9 +51,9 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
             return this;
         }
 
-        public Builder withDatabaseType(String databaseType)
+        public Builder withDatabase(Database database)
         {
-            this.databaseType = databaseType;
+            this.database = database;
             return this;
         }
 
@@ -79,7 +79,7 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
         {
             return new RelationalDatabaseStoreSupport(
                     Objects.requireNonNull(this.identifier, "Store support identifier is required"),
-                    Objects.requireNonNull(this.databaseType, "Store support database type is required"),
+                    Objects.requireNonNull(this.database, "Store support database type is required"),
                     new ArrayList<>(this.authenticationMechanisms)
             );
         }

@@ -481,16 +481,22 @@ function <<access.private>> meta::pure::lineage::scanProperties::processQualifie
    let qualifierVars = $q->functionType().parameters->tail().name->zip($paramPaths.current)->newMap();
     
   let property = if($q->isMilestonedGeneratedQualifiedProperty() && $config.explodeMilestonedProperties==false,
-       | ^PropertyPathNode(
+       | if(hasSufficientValuesForPropertyParameters( $q,$parameters),
+            | ^PropertyPathNode(
                           class                 = $srcClass,
-                          property              = if(hasSufficientValuesForPropertyParameters( $q,$parameters),
-                                                       | $q,
-                                                       | $q->switchToNoArgMilestonedGeneratedQualifiedProperty()->toOne()
-                                                      ),
+                          property              = $q,
+                          nestedQualifier       = [],
+                          parameters            = $parameters,
+                          nestedQualifierReturn = []
+                       ),
+            | ^PropertyPathNode(
+                          class                 = $srcClass,
+                          property              = $q->switchToNoArgMilestonedGeneratedQualifiedProperty()->toOne(),
                           nestedQualifier       = [],
                           parameters            = [],
                           nestedQualifierReturn = []
-                       );,
+                       )
+         ),
       | let qualifierBody = $q.expressionSequence->processExpressionSequence($qualifierVars, $processed->concatenate($q), $config, $debug);
           ^PropertyPathNode(
                                 class                 = $srcClass,
@@ -503,10 +509,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::processQualifie
    if($append,|^$list(values = $list.values->concatenate($property)),|^$list(values = $property->concatenate($list.values)));
 }
 
-
 function <<access.private>> meta::pure::lineage::scanProperties::hasSufficientValuesForPropertyParameters(q:QualifiedProperty<Any>[1], parameters:ValueSpecification[*]):Boolean[1]
 {
-   $q->functionType().parameters->evaluateAndDeactivate()->size()->tail()  ==  $parameters->size();
+   $q->functionType().parameters->evaluateAndDeactivate()->tail()->size()  ==  $parameters->size();
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::scanPath(p:Path<Nil,Any|*>[1], list:List<PropertyPathNode>[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], debug:DebugContext[1]):List<PropertyPathNode>[*]

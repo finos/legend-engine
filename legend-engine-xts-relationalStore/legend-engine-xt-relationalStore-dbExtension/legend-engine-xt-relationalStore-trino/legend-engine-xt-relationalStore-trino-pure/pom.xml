@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-trino</artifactId>
-        <version>4.28.3-SNAPSHOT</version>
+        <version>4.30.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -238,4 +238,38 @@
 
         <!-- TEST -->
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>generate-protocol-version</id>
+            <properties>
+                <folderPath>core_relational_trino/relational/protocols/pure</folderPath>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-protocol-file</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target name="protocol">
+                                        <copy todir="${basedir}/src/main/resources/${folderPath}/${protocol.TargetVersion}">
+                                            <fileset dir="${basedir}/src/main/resources/${folderPath}/${protocol.SourceVersion}" />
+                                        </copy>
+                                        <replace dir="${basedir}/src/main/resources/${folderPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

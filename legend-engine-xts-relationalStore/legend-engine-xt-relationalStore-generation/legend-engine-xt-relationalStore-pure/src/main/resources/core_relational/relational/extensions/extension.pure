@@ -15,6 +15,8 @@
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::pure::alloy::connections::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::toString::*;
@@ -208,10 +210,9 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
       validTestPackages = 'meta::relational::tests'
-   )
+
+  )
 }
-
-
 
 
 //Helper Functions

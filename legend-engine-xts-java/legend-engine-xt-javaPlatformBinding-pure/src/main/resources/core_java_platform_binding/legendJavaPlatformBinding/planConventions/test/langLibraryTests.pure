@@ -33,6 +33,14 @@ meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::te
 Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A 
 {
    <<equality.Key>> id: Integer[1];
+   bool: Boolean[0..1];
+   name: String[0..1];
+
+}
+
+Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A2
+{
+   <<equality.Key>> id: Integer[1];
 }
 Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::B extends A {}
 Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::C extends A {}
@@ -86,17 +94,46 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testIf() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
-      ->addTest('if then', {|if(true, |1, |2)}, 'true ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+      ->addTest('if then', {|if(true, |1, |2)}, 'true ? 1L : 2L', javaLong())
+               ->assert('(%s) == 1L')
+       ->addTest('nested if multi expression', {|
+                                if(true, |  1 ,|if(true,| 2, | let a= 1; $a+2;);)}, 'true ? 1L : true ? 2L : ((java.util.function.Supplier<Long>) () -> { long a = 1L; return java.util.Arrays.asList(a, 2L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue(); } ).get()', javaLong())
          ->assert('(%s) == 1L')
-      ->addTest('if else', {|if(false, |1, |2)}, 'false ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
+      ->addTest('if else', {|if(false, |1, |2)}, 'false ? 1L : 2L', javaLong())
          ->assert('(%s) == 2L')
-      ->addTest('if gives empty vs 1', {|if(false, |'A', |[])}, 'false ? ((java.util.function.Supplier<String>) () -> "A").get() : ((java.util.function.Supplier<String>) () -> null).get()', javaString())
+      ->addTest('if gives empty vs 1', {|if(false, |'A', |[])}, 'false ? "A" : null', javaString())
          ->assert('(%s) == null')
-      ->addTest('if gives empty vs Many', {|if(false, |['A', 'B'], |[])}, 'false ? ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Arrays.asList("A", "B")).get() : ((java.util.function.Supplier<java.util.List<String>>) () -> java.util.Collections.emptyList()).get()', javaList(javaString()))
+      ->addTest('if gives empty vs Many', {|if(false, |['A', 'B'], |[])}, 'false ? java.util.Arrays.asList("A", "B") : java.util.Collections.<String>emptyList()', javaList(javaString()))
          ->assert('(%s).isEmpty()')
+      ->addTest('if many else one', {|if(false, |['A', 'B'], |'C')}, 'false ? java.util.Arrays.asList("A", "B") : (java.util.List<String>) java.util.Arrays.asList("C")', javaList(javaString()))
+         ->assert('(%s).equals( java.util.Arrays.asList("C"))')
+
+      ->addTest('if return Bool', {|if(false, |true, |false)}, 'false ? true : false', javaBoolean())
+         ->assert('(%s) ==  false')
+      ->addTest('instance or subtype', {|if(false, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1), |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::B(id=3))}, 'false ? ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L)).get() : ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.B_Impl().setId(3L)).get()', javaClass('_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A'))
+          ->assert('((_pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.B_Impl)(%s)).getId() == 3L')
+       ->addTest('instance or empty', {|if(false, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1), |[])}, 'false ? ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L)).get() : ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> null).get()', javaClass('_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A'))
+         ->assert('(%s) == null')
+
+       ->addTest('empty or instance', {|if(true, |[],|^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1))}, 'true ? ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> null).get() : ((java.util.function.Supplier<_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L)).get()',javaClass('_pure.app.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A'))
+         ->assert('(%s) == null')
+      ->addTest('instance or instance', {|if(false, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1), |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A2(id=3))}, 'false ? ((java.util.function.Supplier<Object>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L)).get() : ((java.util.function.Supplier<Object>) () -> new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A2_Impl().setId(3L)).get()', javaObject())
+         ->assert('((_pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A2_Impl)(%s)).getId() == 3L')
+      ->addTest('bool instance or primitive', {|if(true, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,bool=true).bool, |false)}, 'true ? new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setBool(true).getBool() : new Boolean(false)', javaBooleanBoxed())
+         ->assert('(%s) == true')
+      ->addTest('instance  or bool primitive', {|if(false, |false, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,bool=true).bool)}, 'false ? new Boolean(false) : new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setBool(true).getBool()', javaBooleanBoxed())
+         ->assert('(%s) == true')
+      ->addTest('instance  or string primitive', {|if(false, |'bye', |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,name='Hi').name)}, 'false ? "bye" : new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setName("Hi").getName()', javaString())
+         ->assert('(%s) == "Hi"')
+           ->addTest('instance  or number', {|if(false, |4, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,name='Hi').id)}, 'false ? 4L : new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setName("Hi").getId()', javaLong())
+         ->assert('(%s) == 1L')    
+          ->addTest('nested if with functions', {|if('b'->startsWith('a'),| false ,|if('a'->startsWith('a'),|true,|false   ))}, '"b".startsWith("a") ? false : "a".startsWith("a") ? true : false', javaBoolean())
+         ->assert('(%s) == true')    
+      ->addTest('instance  or or instance string', {|if(false, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,name='Hi').name, |^meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A(id=1,name='Hi').name)}, 'false ? new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setName("Hi").getName() : new _pure.internal.meta.pure.executionPlan.platformBinding.legendJava.library.lang.tests.A_Impl().setId(1L).setName("Hi").getName()', javaString())
+         ->assert('(%s) == "Hi"')
+
       ->runTests();
 }
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testOr() : Boolean[1]

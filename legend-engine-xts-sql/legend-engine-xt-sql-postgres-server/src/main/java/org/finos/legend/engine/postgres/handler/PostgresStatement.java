@@ -20,4 +20,6 @@ public interface PostgresStatement
     boolean execute(String query) throws Exception;
 
     PostgresResultSet getResultSet() throws Exception;
+
+    public void close() throws Exception;
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-data-space</artifactId>
-        <version>4.28.3-SNAPSHOT</version>
+        <version>4.30.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,6 +41,7 @@
                         <repository>core_diagram_metamodel</repository>
                         <repository>core_diagram</repository>
                         <repository>core_analytics_mapping</repository>
+                        <repository>core_external_compiler</repository>
                         <repository>core_data_space_metamodel</repository>
                         <repository>core_data_space</repository>
                     </repositories>
@@ -85,6 +86,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -148,6 +154,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>

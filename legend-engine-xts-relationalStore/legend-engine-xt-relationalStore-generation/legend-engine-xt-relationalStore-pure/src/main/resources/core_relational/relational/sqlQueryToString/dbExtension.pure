@@ -935,6 +935,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   firstMillisecondOfSecond,
   floor,
   extractFromSemiStructured,
+  explodeSemiStructured,
   greaterThan,
   greaterThanEqual,
   group,

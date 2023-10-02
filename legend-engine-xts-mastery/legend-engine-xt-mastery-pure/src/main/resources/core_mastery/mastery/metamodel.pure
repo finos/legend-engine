@@ -578,3 +578,17 @@ meta::pure::mastery::metamodel::connection::Proxy
 
   authentication: meta::pure::mastery::metamodel::authentication::AuthenticationStrategy[0..1];
 }
+
+
+/**************
+ * 
+ * MasteryRuntime
+ *
+ **************/
+
+Class <<typemodifiers.abstract>>
+{doc.doc = 'Provides additional configuration that belong to a group of masterRecords'}
+meta::pure::mastery::metamodel::runtime::MasteryRuntime extends PackageableElement
+{
+  masterRecordDefinitions: meta::pure::mastery::metamodel::MasterRecordDefinition[1..*];
+}

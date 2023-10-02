@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-data-push</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.28.3-SNAPSHOT</version>
+        <version>4.30.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,13 +37,22 @@
 
     <dependencies>
         <!-- ENGINE -->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-postgres-connection</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- ENGINE -->
 
@@ -63,6 +72,14 @@
             <artifactId>legend-shared-pac4j</artifactId>
         </dependency>
         <!-- Shared Drop Wizard Bundles -->
+
+
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
 
         <!-- JSON -->
         <dependency>
