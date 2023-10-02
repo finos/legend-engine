@@ -27,7 +27,7 @@ import java.util.List;
 
 public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerationExtension
 {
-    private static final String ROOT_PATH = "Snowflake App ";
+    private static final String ROOT_PATH = "snowflakeApp";
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnowflakeAppArtifactGenerationExtension.class);
 
     @Override
