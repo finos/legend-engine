@@ -20,13 +20,13 @@ import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EnvironmentConfigurationTest
+public class LegendEnvironmentTest
 {
     @Test
     public void testValidateBuilder()
     {
         // success
-        new EnvironmentConfiguration.Builder()
+        new LegendEnvironment.Builder()
                 .withAuthenticationMechanisms(Lists.mutable.of(
                         TestAuthenticationMechanismType.X,
                         TestAuthenticationMechanismType.Y
@@ -37,7 +37,7 @@ public class EnvironmentConfigurationTest
         // failure: found invalid mechanism
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new EnvironmentConfiguration.Builder()
+            new LegendEnvironment.Builder()
                     .withAuthenticationMechanisms(Lists.mutable.of(
                             TestAuthenticationMechanismType.X,
                             TestAuthenticationMechanismType.Y,
@@ -49,7 +49,7 @@ public class EnvironmentConfigurationTest
         // failure: found conflicting mechanisms
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new EnvironmentConfiguration.Builder()
+            new LegendEnvironment.Builder()
                     .withAuthenticationMechanisms(Lists.mutable.of(
                             TestAuthenticationMechanismType.X,
                             TestAuthenticationMechanismType.Y,

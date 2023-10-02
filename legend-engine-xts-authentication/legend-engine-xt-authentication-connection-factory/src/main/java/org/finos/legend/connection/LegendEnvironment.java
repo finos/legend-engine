@@ -15,6 +15,9 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.vault.CredentialVault;
@@ -31,41 +34,28 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * This is meant to the place we package common configs, such as vaults,
- * that can be passed to various parts of engine, authentication, connection factory, etc.
+ * This is the runtime instance of configuration for Legend Engine, the place we package common configs,
+ * such as vaults, that can be passed to various parts of engine, authentication, connection factory, etc.
  */
-public class EnvironmentConfiguration
+public class LegendEnvironment
 {
-    private final List<CredentialVault> vaults;
-    private final Map<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
-    private final Map<String, StoreSupport> storeSupportsIndex;
+    protected final ImmutableList<CredentialVault> vaults;
+    protected final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
+    protected final ImmutableMap<String, StoreSupport> storeSupportsIndex;
 
-    private final Map<String, AuthenticationMechanism> authenticationMechanismsIndex;
+    protected final ImmutableMap<String, AuthenticationMechanism> authenticationMechanismsIndex;
 
-    private EnvironmentConfiguration(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
+    protected LegendEnvironment(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
     {
-        this.vaults = Lists.mutable.withAll(vaults);
-        this.vaultsIndex = Maps.mutable.empty();
+        this.vaults = Lists.immutable.withAll(vaults);
+        MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex = Maps.mutable.empty();
         for (CredentialVault<? extends CredentialVaultSecret> vault : vaults)
         {
             vaultsIndex.put(vault.getSecretType(), vault);
         }
-        this.storeSupportsIndex = storeSupportsIndex;
-        this.authenticationMechanismsIndex = authenticationMechanismsIndex;
-    }
-
-    /**
-     * This method is meant for testing.
-     * The recommended usage is to include all the vaults during initialization
-     */
-    public void injectVault(CredentialVault vault)
-    {
-        if (this.vaultsIndex.containsKey(vault.getSecretType()))
-        {
-            throw new RuntimeException(String.format("Can't register credential vault: found multiple vaults with secret type '%s'", vault.getSecretType().getSimpleName()));
-        }
-        this.vaultsIndex.put(vault.getSecretType(), vault);
-        this.vaults.add(vault);
+        this.vaultsIndex = vaultsIndex.toImmutable();
+        this.storeSupportsIndex = Maps.immutable.withAll(storeSupportsIndex);
+        this.authenticationMechanismsIndex = Maps.immutable.withAll(authenticationMechanismsIndex);
     }
 
     public String lookupVaultSecret(CredentialVaultSecret credentialVaultSecret, Identity identity) throws Exception
@@ -77,19 +67,6 @@ public class EnvironmentConfiguration
         }
         CredentialVault vault = this.vaultsIndex.get(secretClass);
         return vault.lookupSecret(credentialVaultSecret, identity);
-    }
-
-    /**
-     * This method is meant for testing.
-     * The recommended usage is to include all the store supports during initialization
-     */
-    public void injectStoreSupport(StoreSupport storeSupport)
-    {
-        if (this.storeSupportsIndex.containsKey(storeSupport.getIdentifier()))
-        {
-            throw new RuntimeException(String.format("Can't register store support: found multiple store supports with identifier '%s'", storeSupport.getIdentifier()));
-        }
-        this.storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
     }
 
     public StoreSupport findStoreSupport(String identifier)
@@ -106,7 +83,6 @@ public class EnvironmentConfiguration
     {
         private final List<CredentialVault> vaults = Lists.mutable.empty();
         private final Map<String, StoreSupport> storeSupportsIndex = new LinkedHashMap<>();
-        private AuthenticationMechanismProvider authenticationMechanismProvider;
         private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
         public Builder()
@@ -159,12 +135,6 @@ public class EnvironmentConfiguration
             this.storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
         }
 
-        public Builder withAuthenticationMechanismProvider(AuthenticationMechanismProvider authenticationMechanismProvider)
-        {
-            this.authenticationMechanismProvider = authenticationMechanismProvider;
-            return this;
-        }
-
         public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
         {
             this.authenticationMechanisms.addAll(authenticationMechanisms);
@@ -184,12 +154,10 @@ public class EnvironmentConfiguration
             return this;
         }
 
-        public EnvironmentConfiguration build()
+        public LegendEnvironment build()
         {
-            List<AuthenticationMechanism> authenticationMechanisms = this.authenticationMechanismProvider != null ? ListIterate.flatCollect(this.authenticationMechanismProvider.getLoaders(), AuthenticationMechanismLoader::getMechanisms) : Lists.mutable.empty();
-            authenticationMechanisms.addAll(this.authenticationMechanisms);
             Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new LinkedHashMap<>();
-            authenticationMechanisms.forEach(mechanism ->
+            this.authenticationMechanisms.forEach(mechanism ->
             {
                 String key = mechanism.getAuthenticationConfigurationType().getSimpleName();
                 if (authenticationMechanismsIndex.containsKey(key))
@@ -212,7 +180,7 @@ public class EnvironmentConfiguration
                 authenticationMechanismsIndex.put(key, mechanism);
             });
 
-            return new EnvironmentConfiguration(this.vaults, this.storeSupportsIndex, authenticationMechanismsIndex);
+            return new LegendEnvironment(this.vaults, this.storeSupportsIndex, authenticationMechanismsIndex);
         }
     }
 }

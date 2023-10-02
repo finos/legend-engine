@@ -26,17 +26,21 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A StoreSupport describes the capabilities supported by a Store.
+ * For now, it describes the authentication mechanisms.
+ */
 public class StoreSupport
 {
     private final String identifier;
-    private final List<AuthenticationMechanism> authenticationMechanisms;
-    private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
+    private final ImmutableList<AuthenticationMechanism> authenticationMechanisms;
+    private final ImmutableList<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
 
     protected StoreSupport(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
     {
         this.identifier = identifier;
-        this.authenticationMechanisms = authenticationMechanisms;
-        this.authenticationConfigurationTypes = ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType);
+        this.authenticationMechanisms = Lists.immutable.withAll(authenticationMechanisms);
+        this.authenticationConfigurationTypes = Lists.immutable.withAll(ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType));
     }
 
     public String getIdentifier()
@@ -44,7 +48,7 @@ public class StoreSupport
         return identifier;
     }
 
-    public List<AuthenticationMechanism> getAuthenticationMechanisms()
+    public ImmutableList<AuthenticationMechanism> getAuthenticationMechanisms()
     {
         return authenticationMechanisms;
     }

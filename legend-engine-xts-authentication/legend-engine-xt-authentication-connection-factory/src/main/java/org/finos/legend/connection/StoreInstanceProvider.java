@@ -14,16 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.eclipse.collections.api.factory.Lists;
-
-import java.util.List;
-import java.util.ServiceLoader;
-
-public class DefaultCredentialBuilderProvider implements CredentialBuilderProvider
+public interface StoreInstanceProvider
 {
-    @Override
-    public List<CredentialBuilder> getBuilders()
-    {
-        return Lists.mutable.withAll(ServiceLoader.load(CredentialBuilder.class));
-    }
+    StoreInstance lookup(String identifier);
 }

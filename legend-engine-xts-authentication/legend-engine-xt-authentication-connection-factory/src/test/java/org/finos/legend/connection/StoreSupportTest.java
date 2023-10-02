@@ -43,7 +43,7 @@ public class StoreSupportTest
     @Test
     public void testValidateStoreInstanceBuilder()
     {
-        EnvironmentConfiguration environmentConfiguration = new EnvironmentConfiguration.Builder()
+        LegendEnvironment environment = new LegendEnvironment.Builder()
                 .withStoreSupport(new StoreSupport.Builder()
                         .withIdentifier("test")
                         .withAuthenticationMechanisms(
@@ -54,7 +54,7 @@ public class StoreSupportTest
                 .build();
 
         // success
-        StoreInstance testStore = new StoreInstance.Builder(environmentConfiguration)
+        StoreInstance testStore = new StoreInstance.Builder(environment)
                 .withIdentifier("test-store")
                 .withStoreSupportIdentifier("test")
                 .withAuthenticationMechanisms(AuthenticationMechanismType.USER_PASSWORD)
@@ -63,7 +63,7 @@ public class StoreSupportTest
         Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD}, testStore.getAuthenticationMechanisms().toArray());
 
         // make sure if no auth mechanisms is specified, all mechanisms will be supported
-        StoreInstance testStore2 = new StoreInstance.Builder(environmentConfiguration)
+        StoreInstance testStore2 = new StoreInstance.Builder(environment)
                 .withIdentifier("test-store")
                 .withStoreSupportIdentifier("test")
                 .withConnectionSpecification(new TestConnectionSpecification())
@@ -75,7 +75,7 @@ public class StoreSupportTest
 
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new StoreInstance.Builder(environmentConfiguration)
+            new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
                     .withStoreSupportIdentifier("test")
                     .build();
@@ -84,7 +84,7 @@ public class StoreSupportTest
 
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            new StoreInstance.Builder(environmentConfiguration)
+            new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
                     .withStoreSupportIdentifier("test")
                     .withAuthenticationMechanisms(AuthenticationMechanismType.API_KEY)
@@ -96,5 +96,44 @@ public class StoreSupportTest
 
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
+    }
+
+    @Test
+    public void testStoreInstanceManagement()
+    {
+        LegendEnvironment environment = new LegendEnvironment.Builder()
+                .withStoreSupport(new StoreSupport.Builder()
+                        .withIdentifier("test")
+                        .withAuthenticationMechanisms(
+                                AuthenticationMechanismType.USER_PASSWORD,
+                                AuthenticationMechanismType.KERBEROS
+                        )
+                        .build())
+                .build();
+
+        StoreInstance storeInstance = new StoreInstance.Builder(environment)
+                .withIdentifier("test-store")
+                .withStoreSupportIdentifier("test")
+                .withConnectionSpecification(new TestConnectionSpecification())
+                .build();
+
+        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().withStoreInstance(storeInstance).build();
+
+        // failure
+        Exception exception;
+
+        // error: store already registered
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            new DefaultStoreInstanceProvider.Builder().withStoreInstances(storeInstance, storeInstance).build();
+        });
+        Assert.assertEquals("Can't register store instance: found multiple store instances with identifier 'test-store'", exception.getMessage());
+
+        // error: store not found
+        exception = Assert.assertThrows(RuntimeException.class, () ->
+        {
+            storeInstanceProvider.lookup("unknown");
+        });
+        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
     }
 }
