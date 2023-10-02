@@ -51,11 +51,12 @@ public class TestSnowflakeAppArtifactGenerationExtension
         PureModel model = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
         SnowflakeAppArtifactGenerationExtension extension = new SnowflakeAppArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("a::myApp");
+        
+        //this will fail test right now since we are returning false here 
         assertTrue(extension.canGenerate(packageableElement));
 
         List<Artifact> outputs = extension.generate(packageableElement, model, pureModelContextData, PureClientVersions.production);
         assertEquals(1, outputs.size());
         Artifact snowflakeAppResult = outputs.get(0);
-        Assert.assertTrue(false); //test should be failing right now. 
     }
 }
