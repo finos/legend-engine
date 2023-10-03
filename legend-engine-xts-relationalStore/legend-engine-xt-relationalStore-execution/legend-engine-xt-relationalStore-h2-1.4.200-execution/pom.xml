@@ -60,5 +60,13 @@
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <!-- DRIVERS -->
+
+        <!-- COMMONS-LANG-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- COMMONS-LANG -->
+
     </dependencies>
 </project>
