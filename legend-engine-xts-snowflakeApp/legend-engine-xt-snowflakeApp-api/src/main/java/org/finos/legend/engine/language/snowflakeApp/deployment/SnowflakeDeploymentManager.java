@@ -30,7 +30,7 @@ import org.pac4j.core.profile.CommonProfile;
 import java.util.List;
 
 
-public class SnowflakeDeploymentManager implements DeploymentManager<Root_meta_external_function_activator_snowflakeApp_SnowflakeApp, SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeDeploymentConfiguration>
+public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeDeploymentConfiguration>
 {
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
 
@@ -40,19 +40,19 @@ public class SnowflakeDeploymentManager implements DeploymentManager<Root_meta_e
     }
 
     @Override
-    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator)
+    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact)
     {
         return new SnowflakeDeploymentResult(true);
     }
 
     @Override
-    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, List<SnowflakeDeploymentConfiguration> availableRuntimeConfigurations)
+    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, List<SnowflakeDeploymentConfiguration> availableRuntimeConfigurations)
     {
         return null;
     }
 
     @Override
-    public boolean canDeploy(Root_meta_external_function_activator_snowflakeApp_SnowflakeApp artifact)
+    public boolean canDeploy(SnowflakeAppArtifact artifact)
     {
         return true;
     }

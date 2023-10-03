@@ -22,13 +22,13 @@ import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
-public interface DeploymentManager<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends DeploymentConfiguration>
+public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends DeploymentConfiguration>
 {
 
-    public V deploy(MutableList<CommonProfile> profiles, U artifact, T activator);
+    public V deploy(MutableList<CommonProfile> profiles, U artifact);
 
-    public V deploy(MutableList<CommonProfile> profiles, U artifact, T activator, List<W> availableRuntimeConfigurations);
+    public V deploy(MutableList<CommonProfile> profiles, U artifact, List<W> availableRuntimeConfigurations);
 
 
-    public boolean canDeploy(T activator);
+    public boolean canDeploy(U activator);
 }

@@ -106,7 +106,7 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     {
         GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
         HostedServiceArtifact artifact = new HostedServiceArtifact(generation, fetchHostedService(activator, (PureModelContextData)inputModel, pureModel));
-        return this.hostedServiceDeploymentManager.deploy(profiles, artifact, activator, runtimeConfigs);
+        return this.hostedServiceDeploymentManager.deploy(profiles, artifact, runtimeConfigs);
 //        return new HostedServiceDeploymentResult();
     }
 
