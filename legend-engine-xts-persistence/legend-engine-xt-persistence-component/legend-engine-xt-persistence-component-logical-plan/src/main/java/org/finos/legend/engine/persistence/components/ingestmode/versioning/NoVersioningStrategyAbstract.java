@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
-
-import org.immutables.value.Value;
+package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -27,26 +25,11 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface MaxVersionStrategyAbstract extends VersioningStrategy
+public interface NoVersioningStrategyAbstract extends VersioningStrategy
 {
-    @Value.Parameter(order = 0)
-    String versioningField();
-
-    @Value.Default
-    default VersioningComparator versioningComparator()
-    {
-        return VersioningComparator.GREATER_THAN;
-    }
-
-    @Value.Default
-    default boolean performDeduplication()
-    {
-        return true;
-    }
-
     @Override
     default <T> T accept(VersioningStrategyVisitor<T> visitor)
     {
-        return visitor.visitMaxVersionStrategy(this);
+        return visitor.visitNoVersioningStrategy(this);
     }
 }

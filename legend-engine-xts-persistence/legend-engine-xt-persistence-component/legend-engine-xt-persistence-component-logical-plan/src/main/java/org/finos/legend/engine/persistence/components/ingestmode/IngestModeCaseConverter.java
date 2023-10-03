@@ -20,12 +20,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;

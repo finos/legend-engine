@@ -12,8 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
+package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
@@ -24,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler.COUNT;
-import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetVersioningHandler.DATA_SPLIT;
+import static org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler.DATA_SPLIT;
 
 public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisitor<SchemaDefinition>
 {

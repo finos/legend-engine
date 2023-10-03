@@ -16,8 +16,8 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategy;
 import org.immutables.value.Value;
 
 public interface IngestMode

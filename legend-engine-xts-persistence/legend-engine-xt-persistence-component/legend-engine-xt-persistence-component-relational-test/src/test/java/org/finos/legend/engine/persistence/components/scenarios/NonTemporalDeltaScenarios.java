@@ -22,8 +22,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 
 import java.util.Optional;
 
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 
 public class NonTemporalDeltaScenarios extends BaseTest

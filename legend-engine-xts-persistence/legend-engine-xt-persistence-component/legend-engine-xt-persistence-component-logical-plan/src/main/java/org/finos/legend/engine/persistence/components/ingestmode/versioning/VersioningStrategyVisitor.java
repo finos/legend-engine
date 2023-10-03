@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
+package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-public interface VersioningStrategy
+public interface VersioningStrategyVisitor<T>
 {
-    <T> T accept(VersioningStrategyVisitor<T> visitor);
+    T visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy);
+
+    T visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy);
+
+    T visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract);
 }

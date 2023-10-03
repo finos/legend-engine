@@ -107,7 +107,8 @@ public abstract class Planner
     private final PlannerOptions plannerOptions;
     protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
-    private final Dataset tempStagingDataset;
+    private final Optional<Dataset> tempStagingDataset;
+    private final Dataset effectiveStagingDataset;
     protected final boolean isTempTableNeededForStaging;
 
     Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -117,14 +118,19 @@ public abstract class Planner
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
         isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
         this.tempStagingDataset = getTempStagingDataset();
+        this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset.get() : datasets.stagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
     }
 
-    private Dataset getTempStagingDataset()
+    private Optional<Dataset> getTempStagingDataset()
     {
-        Dataset stagingDataset = datasets.stagingDataset();
-        return isTempTableNeededForStaging ? LogicalPlanUtils.getTempStagingDatasetDefinition(stagingDataset, ingestMode) : stagingDataset;
+        Optional<Dataset> tempStagingDataset = Optional.empty();
+        if (isTempTableNeededForStaging)
+        {
+            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(datasets.stagingDataset(), ingestMode));
+        }
+        return tempStagingDataset;
     }
 
     private List<String> findCommonPrimaryKeysBetweenMainAndStaging()
@@ -140,7 +146,7 @@ public abstract class Planner
 
     protected Dataset stagingDataset()
     {
-        return tempStagingDataset;
+        return effectiveStagingDataset;
     }
 
     protected List<Value> getDataFields()
@@ -227,7 +233,7 @@ public abstract class Planner
         }
         if (isTempTableNeededForStaging)
         {
-            operations.add(Drop.of(true, tempStagingDataset, true));
+            operations.add(Drop.of(true, tempStagingDataset.orElseThrow(IllegalStateException::new), true));
         }
         return LogicalPlan.of(operations);
     }
