@@ -36,7 +36,6 @@ public class LegendTdsResultParser
     public static final String TYPE = "type";
     public static final String COLUMNS = "columns";
     public static final String NAME = "name";
-    //public static final String RELATIONAL_TYPE = "relationalType";
     public static final String RESULT = "result";
     public static final String ROWS = "rows";
     public static final String VALUES = "values";
