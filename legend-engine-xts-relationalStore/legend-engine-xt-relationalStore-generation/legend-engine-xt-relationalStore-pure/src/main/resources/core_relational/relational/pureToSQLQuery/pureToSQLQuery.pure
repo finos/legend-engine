@@ -2228,20 +2228,25 @@ function meta::relational::functions::pureToSqlQuery::processNoOp(f:FunctionExpr
 
 function meta::relational::functions::pureToSqlQuery::processHash(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   
   let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
-
-  let name = newMap([
-    pair(meta::pure::functions::hash::HashType.MD5, 'md5'),
-    pair(meta::pure::functions::hash::HashType.SHA1, 'sha1'),
-    pair(meta::pure::functions::hash::HashType.SHA256, 'sha256')
-  ])->get($type);
-
-  assert($name->isNotEmpty(), | 'hash type ' + $type.name + ' is not yet supported');
+  let name = meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName($type);
 
   let oldFunc = $f.func;
   let functionExpression = ^$f(func = ^$oldFunc(functionName = $name->toOne()), parametersValues = $f.parametersValues->at(0));
   $functionExpression->processDynaFunction($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName(hashType : meta::pure::functions::hash::HashType[1]): String[1]
+{
+  let name = newMap([
+    pair(meta::pure::functions::hash::HashType.MD5, 'md5'),
+    pair(meta::pure::functions::hash::HashType.SHA1, 'sha1'),
+    pair(meta::pure::functions::hash::HashType.SHA256, 'sha256')
+  ])->get($hashType);
+
+  assert($name->isNotEmpty(), | 'hash type ' + $hashType.name + ' is not yet supported');
+
+  $name->toOne();
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessAt(f:FunctionExpression[1]):Boolean[1]
@@ -5032,8 +5037,29 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                 $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context)->toOne(),
                                                 ^Literal(value = 'YYYY-MM-DD HH24:MI:SS')
                                               ]);                                        
-                                            })
-                                          ];
+                                            }), 
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, second = {|
+                                              let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
+                                              let name = meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName($type);
+
+                                              let value = $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
+
+                                              newDynaFunction($name, $value);                                        
+                                            })                                            
+                                          ]->concatenate(
+                                                    [
+                                                      meta::pure::functions::string::joinStrings_String_MANY__String_1_, 
+                                                      meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_, 
+                                                      meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_
+                                                    ]->map(func| 
+                                                      ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {| 
+                                                        ^DynaFunction(
+                                                          name = 'concat',
+                                                          parameters =$f.parametersValues->map(p|$p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context))
+                                                          )
+                                                      })
+                                                    )
+                                          );
                                        
                                           let override = $overrides->filter(o | $o.first == $f.func)->first();
                                           if ($override->isNotEmpty(), 

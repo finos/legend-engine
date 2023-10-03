@@ -693,7 +693,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                                                    ->concatenate([
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_),
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_),
-                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_)
+                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_),
+                                                      pair(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_.name->toOne(), meta::pure::functions::hash::hash_String_1__HashType_1__String_1_)
                                                    ])
                                                    ->removeDuplicatesBy(p | $p.second)
                                                    ->newMultiValueMap();

@@ -20,7 +20,6 @@ import meta::legend::service::metamodel::*;
 import meta::external::function::description::openapi::transformation::fromPure::*;
 import meta::pure::functions::meta::*;
 import meta::pure::metamodel::path::*;
-import meta::pure::service::*;
 import meta::external::function::description::openapi::profiles::*;
 import meta::pure::generation::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::tests::*;
@@ -74,6 +73,11 @@ function meta::external::function::description::openapi::transformation::fromPur
 
 function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], server: Server[1]):String[1]
 {
+  $service->serviceToOpenApi([], $server);
+}
+
+function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::serviceToOpenApi(service: Service[1], elements: PackageableElement[*], server: Server[1]):String[1]
+{
   ^FunctionInfo(
     func = $service.execution->cast(@PureExecution).func,
     tags = 'definition',
@@ -81,13 +85,12 @@ function <<ServiceSpecGeneration.OpenAPI>> meta::external::function::description
     version = '1.0.0',
     title = 'Legend API',
     paramsExample = ^Map<String,String>()
-  )->meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi($server)
+  )->meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi($elements, $server)
   ->asString()->makeString()->replace('\\/','/');
 }
 
-function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi(funcInfos:FunctionInfo[*], server:Server[1]):OpenApi[1]
+function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::funcInfoToOpenApi(funcInfos:FunctionInfo[*], elements: PackageableElement[*], server:Server[1]):OpenApi[1]
 {
-  let allClasses = $funcInfos->returnTypesFromFunctions();
   ^OpenApi(
     openapi='3.0.0',
     info=^Info(title='Legend API', version='1.0.0'),
@@ -118,28 +121,61 @@ function <<access.private>> meta::external::function::description::openapi::tran
                                           );
                                   )
                   ),  
-    components= ^Components(schemas=newMap(
-                    $allClasses->map(
-                          c|pair(
-                            $c.rawType.name->toOne(),
-                            ^Schema
-                            (
-                              type='object',
-                              properties=newMap(
-                                $c.rawType->cast(@Class<Any>).properties
-                                  ->filter(p|$p.name!='elementOverride' && $p.name!='classifierGenericType')
-                                  ->map(p|
-                                          pair
-                                          (
-                                            $p.name->toOne(),
-                                            $p->functionReturnType()->buildComponent($p.multiplicity)
-                                          )
+    components= generateComponent($funcInfos, $elements)
+   
+  );
+}
+
+function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::generateComponent(funcInfos: FunctionInfo[*], elements: PackageableElement[*]):Components[1]
+{
+  let schema = $funcInfos->map(f| if($f->getReturnType()->instanceOf(RootGraphFetchTree),
+                        |let allClasses =  $elements->filter(e|$e->instanceOf(Class));
+                         $allClasses->map(
+                                          c|pair(
+                                            $c.name->toOne(),
+                                            ^Schema
+                                            (
+                                              type='object',
+                                              properties=newMap(
+                                                $c->cast(@Class<Any>).properties
+                                                  ->filter(p|$p.name!='elementOverride' && $p.name!='classifierGenericType')
+                                                  ->map(p|
+                                                          pair
+                                                          (
+                                                            $p.name->toOne(),
+                                                            $p->functionReturnType()->buildComponent($p.multiplicity)
+                                                          )
+                                                      )
+                                              )
+                                            )
+                                          );
+                                    );,
+                        |let allClasses = $funcInfos->returnTypesFromFunctions();
+                         $allClasses->map(
+                                  c|pair(
+                                    $c.rawType.name->toOne(),
+                                    ^Schema
+                                    (
+                                      type='object',
+                                      properties=newMap(
+                                        $c.rawType->cast(@Class<Any>).properties
+                                          ->filter(p|$p.name!='elementOverride' && $p.name!='classifierGenericType')
+                                          ->map(p|
+                                                  pair
+                                                  (
+                                                    $p.name->toOne(),
+                                                    $p->functionReturnType()->buildComponent($p.multiplicity)
+                                                  )
+                                              )
                                       )
-                              )
-                            )
-                          )
-                    )
-    )));
+                                    )
+                                  )
+                                );
+                      );
+                 );
+
+
+  ^Components(schemas = newMap($schema));
 }
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::getEvaluatedExecutionFunction(funcInfo:FunctionInfo[1]):FunctionDefinition<Any>[1]
@@ -169,7 +205,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
   $funcInfos->map(f|$f->getReturnType())
   ->map(r| if($r->instanceOf(RootGraphFetchTree), | $r.classifierGenericType->toOne(), | $r))
   ->map(r|$r->cast(@GenericType)->toOne())
-  ->map(r|if($r.rawType==JSONResult||$r.rawType==RootGraphFetchTree,|$r.typeArguments,|$r))
+  ->map(r|if($r.rawType== meta::external::function::description::openapi::tostring::JSONResult||$r.rawType==RootGraphFetchTree,|$r.typeArguments,|$r))
   ->filter(c|!$c.rawType->isEmpty() && $c.rawType->toOne()->instanceOf(Class))
   ->map(t|if($t.rawType.specializations->isEmpty(),|$t,|$t.rawType->toOne().classifierGenericType.typeArguments))
   ->removeDuplicates(cmpGenericType_GenericType_1__GenericType_1__Boolean_1_)

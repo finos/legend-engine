@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.pure.code.core;
 
-import org.finos.legend.connection.protocol.AuthenticationMechanism;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-import java.util.List;
-
-public interface AuthenticationMechanismLoader
+public class CoreRelationalSparkSQLCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    List<AuthenticationMechanism> getMechanisms();
+    @Override
+    public CodeRepository repository()
+    {
+        return GenericCodeRepository.build("core_relational_sparksql.definition.json");
+    }
 }
+
