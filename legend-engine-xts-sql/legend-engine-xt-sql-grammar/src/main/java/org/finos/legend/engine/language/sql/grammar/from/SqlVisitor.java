@@ -1126,11 +1126,22 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         return isNullPredicate;
     }
 
-    @Override
     public Node visitLike(SqlBaseParser.LikeContext context)
     {
-        //TODO
-        return unsupported();
+        LikePredicate like = new LikePredicate();
+        like.escape = visitOptionalContext(context.escape, Expression.class);
+        like.ignoreCase = context.LIKE() == null && context.ILIKE() != null;
+        like.value = (Expression) visit(context.value);
+        like.pattern = (Expression) visit(context.pattern);
+
+        if (context.NOT() != null)
+        {
+            NotExpression not = new NotExpression();
+            not.value = like;
+            return not;
+        }
+
+        return like;
     }
 
     @Override
@@ -1246,6 +1257,15 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitOver(SqlBaseParser.OverContext context)
     {
         return visit(context.windowDefinition());
+    }
+
+    @Override
+    public Node visitWithin(WithinContext ctx)
+    {
+        Group group = new Group();
+        group.orderBy = (SortItem) visit(ctx.sortItem());
+
+        return group;
     }
 
     @Override
@@ -1541,12 +1561,12 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         functionCall.filter = visitIfPresent(context.filter(), Expression.class).orElse(null);
         functionCall.distinct = isDistinct(context.setQuant());
         functionCall.window = visitIfPresent(context.over(), Window.class).orElse(null);
+        functionCall.group = visitIfPresent(context.within(), Group.class).orElse(null);
 
         return functionCall;
     }
 
     // Literals
-
     @Override
     public Node visitNullLiteral(SqlBaseParser.NullLiteralContext context)
     {

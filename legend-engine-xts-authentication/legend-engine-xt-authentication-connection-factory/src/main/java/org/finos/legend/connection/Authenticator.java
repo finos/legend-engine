@@ -14,6 +14,8 @@
 
 package org.finos.legend.connection;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -23,31 +25,28 @@ import java.util.Optional;
 
 public class Authenticator
 {
-    private final Identity identity;
     private final StoreInstance storeInstance;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final Class<? extends Credential> sourceCredentialType;
-
-    private final List<CredentialBuilder> credentialBuilders;
+    private final ImmutableList<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
 
-    public Authenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public Authenticator(StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
     {
-        this.identity = identity;
         this.storeInstance = storeInstance;
         this.authenticationConfiguration = authenticationConfiguration;
         this.sourceCredentialType = sourceCredentialType;
-        this.credentialBuilders = credentialBuilders;
+        this.credentialBuilders = Lists.immutable.withAll(credentialBuilders);
         this.connectionBuilder = connectionBuilder;
     }
 
-    public Credential makeCredential(EnvironmentConfiguration configuration) throws Exception
+    public Credential makeCredential(Identity identity, LegendEnvironment environment) throws Exception
     {
         Credential credential = null;
         // no need to resolve the source credential if the flow starts with generic `Credential` node
         if (!this.sourceCredentialType.equals(Credential.class))
         {
-            Optional<Credential> credentialOptional = this.identity.getCredential((Class<Credential>) this.sourceCredentialType);
+            Optional<Credential> credentialOptional = identity.getCredential((Class<Credential>) this.sourceCredentialType);
             if (!credentialOptional.isPresent())
             {
                 throw new RuntimeException(String.format("Can't resolve source credential of type '%s' from the specified identity", this.sourceCredentialType.getSimpleName()));
@@ -59,7 +58,7 @@ public class Authenticator
         }
         for (CredentialBuilder credentialBuilder : this.credentialBuilders)
         {
-            credential = credentialBuilder.makeCredential(this.identity, this.authenticationConfiguration, credential, configuration);
+            credential = credentialBuilder.makeCredential(identity, this.authenticationConfiguration, credential, environment);
         }
         return credential;
     }
@@ -79,7 +78,7 @@ public class Authenticator
         return sourceCredentialType;
     }
 
-    public List<CredentialBuilder> getCredentialBuilders()
+    public ImmutableList<CredentialBuilder> getCredentialBuilders()
     {
         return credentialBuilders;
     }

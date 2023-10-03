@@ -83,6 +83,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')), 
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     // dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForSpanner($p)})),
     // dynaFnToSql('distinct',               $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),

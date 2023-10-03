@@ -16,6 +16,7 @@ package org.finos.legend.connection.jdbc;
 
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.connection.ConnectionManager;
+import org.finos.legend.connection.Database;
 import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
 
 import java.util.ServiceLoader;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * We probably need to have a mechanism to control the connection pool
  * We cloned DatabaseManager from relational executor, we should consider if we can eventually unify these 2
  */
-public class JDBCConnectionManager implements ConnectionManager
+public final class JDBCConnectionManager implements ConnectionManager
 {
     private static final ConcurrentHashMap<String, JDBCConnectionDriver> driversByName = ConcurrentHashMap.newMap();
     private static final AtomicBoolean isInitialized = new AtomicBoolean();
@@ -54,16 +55,16 @@ public class JDBCConnectionManager implements ConnectionManager
         driver.getIds().forEach(i -> driversByName.put(i, driver));
     }
 
-    public static JDBCConnectionDriver getDriverForDatabaseType(String type)
+    public static JDBCConnectionDriver getDriverForDatabase(Database database)
     {
         if (!isInitialized.get())
         {
             throw new IllegalStateException("JDBC connection manager has not been configured properly");
         }
-        JDBCConnectionDriver driver = driversByName.get(type);
+        JDBCConnectionDriver driver = driversByName.get(database.getLabel());
         if (driver == null)
         {
-            throw new RuntimeException(String.format("Can't find matching JDBC connection driver for database type '%s'", type));
+            throw new RuntimeException(String.format("Can't find matching JDBC connection driver for database type '%s'", database));
         }
         return driver;
     }

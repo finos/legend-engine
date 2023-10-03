@@ -24,38 +24,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ConnectionFactoryTest
 {
-    @Test
-    public void testStoreInstanceManagement()
-    {
-        TestEnv env = TestEnv.create();
-        StoreInstance storeInstance = new StoreInstance.Builder(env.environmentConfiguration)
-                .withIdentifier("test-store")
-                .withStoreSupportIdentifier("test")
-                .withConnectionSpecification(new TestConnectionSpecification())
-                .build();
-        env.connectionFactory.registerStoreInstance(storeInstance);
-
-        // failure
-        Exception exception;
-
-        // error: store already registered
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env.connectionFactory.registerStoreInstance(storeInstance);
-        });
-        Assert.assertEquals("Can't register store instance: found multiple store instances with identifier 'test-store'", exception.getMessage());
-
-        // error: store not found
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env.connectionFactory.getAuthenticator(new Identity("test"), "unknown");
-        });
-        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
-    }
-
     @Test
     public void testGetConnection_WithFailures() throws Exception
     {
@@ -75,28 +47,28 @@ public class ConnectionFactoryTest
         Identity identity = new Identity("test");
 
         // success
-        env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
+        env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
 
         Exception exception;
 
         // error: store not found
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "unknown", new AuthenticationConfiguration_X()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "unknown", new AuthenticationConfiguration_X()));
         });
         Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
 
         // error: unsupported authentication mechanism
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
         });
         Assert.assertEquals("Can't get authenticator: authentication mechanism 'Z' is not supported by store 'test'. Supported mechanism(s):\n- X (config: AuthenticationConfiguration_X)\n- Y (config: AuthenticationConfiguration_Y)", exception.getMessage());
 
         // error: unresolvable authentication flow
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
         });
         Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism 'Y' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
 
@@ -114,14 +86,14 @@ public class ConnectionFactoryTest
         // error: unsupported authentication mechanism
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env2.connectionFactory.getConnection(env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
+            env2.connectionFactory.getConnection(identity, env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
         });
         Assert.assertEquals("Can't get authenticator: authentication mechanism with configuration 'AuthenticationConfiguration_Z' is not supported by store 'test'. Supported mechanism(s):\n- X (config: AuthenticationConfiguration_X)\n- Y (config: AuthenticationConfiguration_Y)", exception.getMessage());
 
         // error: unresolvable authentication flow
         exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env2.connectionFactory.getConnection(env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
+            env2.connectionFactory.getConnection(identity, env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
         });
         Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism with configuration 'AuthenticationConfiguration_Y' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
@@ -149,7 +121,7 @@ public class ConnectionFactoryTest
 
         Identity identity = new Identity("test");
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
     }
@@ -177,7 +149,7 @@ public class ConnectionFactoryTest
 
         Identity identity = new Identity("test");
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_B [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_B.class);
     }
@@ -204,7 +176,7 @@ public class ConnectionFactoryTest
 
         Identity identity = new Identity("test");
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_A [AuthenticationConfiguration_X]",
                 "Credential_A->Credential_B [AuthenticationConfiguration_X]",
                 "Credential_B->Credential_C [AuthenticationConfiguration_X]"
@@ -233,7 +205,7 @@ public class ConnectionFactoryTest
 
         Identity identity = new Identity("test", new Credential_B());
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential_B.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_B.class, Lists.mutable.with(
                 "Credential_B->Credential_C [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_C.class);
     }
@@ -263,7 +235,7 @@ public class ConnectionFactoryTest
 
         // success
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test");
-        assertAuthenticator(env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_B [AuthenticationConfiguration_Y]"
         ), ConnectionBuilder_B.class);
 
@@ -295,7 +267,7 @@ public class ConnectionFactoryTest
 
         Identity identity = new Identity("test", new Credential_A());
         Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
+        assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
 
@@ -313,7 +285,7 @@ public class ConnectionFactoryTest
         ).newStore("test", Lists.mutable.empty());
 
         authenticator = env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X());
-        assertAuthenticator(env2.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
+        assertAuthenticator(identity, env2.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
     }
@@ -340,35 +312,36 @@ public class ConnectionFactoryTest
         Identity identity = new Identity("test", new Credential_A());
         Exception exception = Assert.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
         });
         Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism 'X' (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
-    private void assertAuthenticator(ConnectionFactory connectionFactory, Authenticator authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
+    private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
     {
         Assert.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
         Assert.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
         Assert.assertArrayEquals(credentialBuilders.toArray(), authenticator.getCredentialBuilders().stream().map(builder -> String.format("%s->%s [%s]", builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName(), builder.getAuthenticationConfigurationType().getSimpleName())).toArray());
-        connectionFactory.getConnection(authenticator);
+        connectionFactory.getConnection(identity, authenticator);
     }
 
     private static class TestEnv
     {
-        final EnvironmentConfiguration environmentConfiguration;
+        final LegendEnvironment environment;
+        final InstrumentedStoreInstanceProvider storeInstanceProvider;
         final ConnectionFactory connectionFactory;
 
-        private TestEnv(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        private TestEnv(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
         {
-            this.environmentConfiguration = new EnvironmentConfiguration.Builder()
+            this.environment = new LegendEnvironment.Builder()
                     .withStoreSupport(new StoreSupport.Builder()
                             .withIdentifier("test")
                             .withAuthenticationMechanisms(supportedAuthenticationMechanisms)
                             .build())
                     .withAuthenticationMechanisms(authenticationMechanisms)
                     .build();
-
-            this.connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
+            this.storeInstanceProvider = new InstrumentedStoreInstanceProvider();
+            this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
                     .withCredentialBuilders(credentialBuilders)
                     .withConnectionBuilders(connectionBuilders)
                     .build();
@@ -376,7 +349,7 @@ public class ConnectionFactoryTest
 
         TestEnv newStore(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
         {
-            this.connectionFactory.registerStoreInstance(new StoreInstance.Builder(environmentConfiguration)
+            this.storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment)
                     .withIdentifier(identifier)
                     .withStoreSupportIdentifier("test")
                     .withAuthenticationMechanisms(authenticationMechanisms)
@@ -390,12 +363,12 @@ public class ConnectionFactoryTest
             return new TestEnv(Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty());
         }
 
-        static TestEnv create(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        static TestEnv create(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
         {
             return new TestEnv(credentialBuilders, connectionBuilders, authenticationMechanisms, supportedAuthenticationMechanisms);
         }
 
-        static TestEnv create(List<CredentialBuilder<?, ?, ?>> credentialBuilders, List<ConnectionBuilder<?, ?, ?>> connectionBuilders, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        static TestEnv create(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
         {
             return new TestEnv(credentialBuilders, connectionBuilders, Lists.mutable.with(
                     TestAuthenticationMechanismType.X,
@@ -476,7 +449,7 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_A_to_A__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_A, Credential_A>
     {
         @Override
-        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_A();
         }
@@ -485,7 +458,7 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_A_to_B__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_A, Credential_B>
     {
         @Override
-        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_B();
         }
@@ -494,7 +467,7 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_B_to_C__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_B, Credential_C>
     {
         @Override
-        public Credential_C makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_B credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_C makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_B credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_C();
         }
@@ -503,7 +476,7 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_Any_to_A__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential, Credential_A>
     {
         @Override
-        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_A();
         }
@@ -512,7 +485,7 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_A_to_B__withY extends CredentialBuilder<AuthenticationConfiguration_Y, Credential_A, Credential_B>
     {
         @Override
-        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_Y authenticationConfiguration, Credential_A credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_Y authenticationConfiguration, Credential_A credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_B();
         }
@@ -521,14 +494,25 @@ public class ConnectionFactoryTest
     private static class CredentialBuilder_Any_to_B__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential, Credential_B>
     {
         @Override
-        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfigurationX, Credential credential, EnvironmentConfiguration configuration) throws Exception
+        public Credential_B makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfigurationX, Credential credential, LegendEnvironment environment) throws Exception
         {
             return new Credential_B();
         }
     }
 
-    private static class CredentialExtractor_A__withX extends CredentialExtractor<AuthenticationConfiguration_X, Credential_A>
+    private static class CredentialExtractor_A__withX extends CredentialBuilder<AuthenticationConfiguration_X, Credential_A, Credential_A>
     {
+        @Override
+        public Credential_A makeCredential(Identity identity, AuthenticationConfiguration_X authenticationConfiguration, Credential_A credential, LegendEnvironment environment) throws Exception
+        {
+
+            Optional<Credential_A> credentialOptional = identity.getCredential(Credential_A.class);
+            if (!credentialOptional.isPresent())
+            {
+                throw new RuntimeException("");
+            }
+            return credentialOptional.get();
+        }
     }
 
     // -------------------------- Connection -------------------------------
@@ -540,7 +524,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_A extends ConnectionBuilder<Object, Credential_A, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_A credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_A credential) throws Exception
         {
             return null;
         }
@@ -549,7 +533,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_B extends ConnectionBuilder<Object, Credential_B, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_B credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_B credential) throws Exception
         {
             return null;
         }
@@ -558,7 +542,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_C extends ConnectionBuilder<Object, Credential_C, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(Credential_C credential, TestConnectionSpecification connectionSpecification, StoreInstance storeInstance) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_C credential) throws Exception
         {
             return null;
         }

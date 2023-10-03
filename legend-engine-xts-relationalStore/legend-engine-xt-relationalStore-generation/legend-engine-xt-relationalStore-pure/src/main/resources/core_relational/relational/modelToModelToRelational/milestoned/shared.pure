@@ -85,6 +85,12 @@ Class meta::relational::tests::milestoning::ProductSynonymNonMilestoned
    type : String[1];
 }
 
+Association meta::relational::tests::milestoning::ProductMilestoned_ProductSynonymMilestoned
+{
+  product : meta::relational::tests::milestoning::ProductMilestoned[1];
+  synonymsMilestonedViaAssociation : meta::relational::tests::milestoning::ProductSynonymMilestoned[*];
+}
+
 
 ###Mapping
 import meta::relational::tests::milestoning::*;
@@ -95,6 +101,7 @@ Mapping meta::relational::tests::milestoning::milestoningMapSmall
       name : [db]ProductTable.name,
       type : [db]ProductTable.type,
       synonymsMilestoned : [db]@Product_Synonym,
+       synonymsMilestonedViaAssociation : [db]@Product_Synonym,
       synonymsNonMilestoned : [db]@Product_Synonym
    }  
    

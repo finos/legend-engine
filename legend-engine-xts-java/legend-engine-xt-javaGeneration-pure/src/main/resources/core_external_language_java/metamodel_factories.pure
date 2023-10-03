@@ -1840,8 +1840,8 @@ function meta::external::language::java::factory::j_instanceof(expression:Code[1
 function meta::external::language::java::factory::j_conditional(test:Code[1], then:Code[1], else:Code[1]):Code[1]
 {
    // TODO common interface inference
-   let thenBoxed = if($then.type->isPrimitiveNumber() && $else.type->isBoxedNumberType(), | $then->j_box(), | []);
-   let elseBoxed = if($else.type->isPrimitiveNumber() && $then.type->isBoxedNumberType(), | $else->j_box(), | []);
+   let thenBoxed = if($then.type->isPrimitiveNumber() && $else.type->isBoxedNumberType() ||  ($then.type->isPrimitive() &&  $else.type->isBoxedType()   )  , | $then->j_box(), | []);
+   let elseBoxed = if($else.type->isPrimitiveNumber() && $then.type->isBoxedNumberType()||  ($else.type->isPrimitive() &&  $then.type->isBoxedType()   ) , | $else->j_box(), | []);
 
    let thenType = if($thenBoxed->isEmpty(), 
                     | if($then->instanceOf(Null) && $then.type == javaVoid(), |$else.type, |$then.type),

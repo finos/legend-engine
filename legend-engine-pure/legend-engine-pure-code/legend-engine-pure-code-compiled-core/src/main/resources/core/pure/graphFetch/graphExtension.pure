@@ -694,7 +694,9 @@ function meta::pure::functions::meta::isStrictSubType(subType:Type[1], superType
 
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], node: PropertyPathNode[1]): GraphFetchTree[1]
 {
-   let pgft = ^SystemGeneratedPropertyGraphFetchTree(property = $node.property);
+   let pgft = ^SystemGeneratedPropertyGraphFetchTree(property = $node.property,
+                                                     parameters = if($node.property->hasGeneratedMilestoningPropertyStereotype(),|$node.parameters,|[])
+                                                   );
 
    if($pTree.children->size() == 0,
       | $onto->addSubTree($pgft),

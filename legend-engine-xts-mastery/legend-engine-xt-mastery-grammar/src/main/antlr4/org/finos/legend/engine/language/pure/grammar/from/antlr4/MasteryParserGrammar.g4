@@ -9,12 +9,15 @@ options
 
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                                 VALID_STRING | STRING
-                                            | TRUE | FALSE
-                                            | MASTER_RECORD_DEFINITION | RECORD_SOURCES
+validString:                                VALID_STRING | .
 ;
 
-masteryIdentifier:                          (VALID_STRING | '-' | INTEGER) (VALID_STRING | '-' | INTEGER)*;
+identifier:                                 validString | STRING
+                                            | TRUE | FALSE
+                                            | MASTER_RECORD_DEFINITION | RECORD_SOURCES | RUNTIME
+;
+
+masteryIdentifier:                          (validString | '-' | INTEGER) (validString | '-' | INTEGER)*?;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
@@ -30,6 +33,7 @@ elementDefinition:                          (
                                              masterRecordDefinition
                                                 | dataProviderDef
                                                 | connection
+                                                | masteryRuntime
                                             )
 ;
 
@@ -236,6 +240,17 @@ connection:                                 MASTERY_CONNECTION qualifiedName
 specification:                              SPECIFICATION COLON islandSpecification SEMI_COLON
 ;
 
+// -------------------------------------- MASTERY RUNTIME --------------------------------------
+masteryRuntime:                              MASTERY_RUNTIME qualifiedName
+                                                BRACE_OPEN
+                                                (
+                                                    runtime
+                                                )*
+                                                BRACE_CLOSE
+;
+runtime:                                    RUNTIME COLON islandSpecification SEMI_COLON
+;
+
 // -------------------------------------- RESOLUTION --------------------------------------
 
 identityResolution:                         IDENTITY_RESOLUTION COLON
@@ -343,7 +358,7 @@ masterRecordFilter:                     qualifiedName filter?
 ;
 pathExtension:                           subPath filter?
 ;
-subPath:                                '.' VALID_STRING
+subPath:                                '.' validString
 ;
 filter:                                 BRACE_OPEN '$' '.' combinedExpression BRACE_CLOSE
 ;
@@ -380,7 +395,7 @@ recordSourceScope:                      RECORD_SOURCE_SCOPE
 ;
 dataProviderTypeScope:                  DATA_PROVIDER_TYPE_SCOPE
                                         BRACE_OPEN
-                                        VALID_STRING
+                                        validString
 ;
 dataProviderIdScope:                    DATA_PROVIDER_ID_SCOPE
                                         BRACE_OPEN

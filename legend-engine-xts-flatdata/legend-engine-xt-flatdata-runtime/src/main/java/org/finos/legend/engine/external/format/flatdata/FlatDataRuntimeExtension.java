@@ -85,7 +85,7 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
             FlatDataContext<?> context = specifics.createContext();
             FlatDataWriter<?> serializer = new FlatDataWriter(context, inputStream);
 
-            return new ExternalFormatSerializeResult(serializer, result);
+            return new ExternalFormatSerializeResult(serializer, result, CONTENT_TYPE);
         }
         catch (Exception e)
         {

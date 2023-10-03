@@ -23,23 +23,22 @@ Class  <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authent
 
 Class meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-   serverPrincipal: String[0..1];
+   <<equality.Key>> serverPrincipal: String[0..1];
 }
 
 Class
 {doc.doc = 'Authentication using a middle tier user/password'}
 meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-    {doc.doc = 'Username/pasword vault reference'}
-    vaultReference: String[1];
+   <<equality.Key>> {doc.doc = 'Username/pasword vault reference'} vaultReference: String[1];
 }
 
 
 Class meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-   baseVaultReference: String[0..1];
-   userNameVaultReference: String[1];
-   passwordVaultReference: String[1];
+   <<equality.Key>> baseVaultReference: String[0..1];
+   <<equality.Key>> userNameVaultReference: String[1];
+   <<equality.Key>> passwordVaultReference: String[1];
 }
 
 Class meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
@@ -52,7 +51,7 @@ Class meta::pure::alloy::connections::alloy::authentication::DefaultH2Authentica
 
 Class meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-    apiToken:String[1];
+    <<equality.Key>> apiToken:String[1];
 }
 
 Class meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy
@@ -61,6 +60,6 @@ Class meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthent
 
 Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
-    serviceAccountEmail : String[1];
-    additionalGcpScopes: String[*];
+    <<equality.Key>> serviceAccountEmail : String[1];
+    <<equality.Key>> additionalGcpScopes: String[*];
 }

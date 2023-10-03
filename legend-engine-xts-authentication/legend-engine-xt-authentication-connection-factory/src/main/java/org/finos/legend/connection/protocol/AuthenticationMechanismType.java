@@ -21,7 +21,7 @@ import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 
 public enum AuthenticationMechanismType implements AuthenticationMechanism
 {
-    USER_PASSWORD
+    USER_PASSWORD("UsernamePassword")
             {
                 @Override
                 public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
@@ -30,7 +30,7 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 }
             },
 
-    API_KEY
+    API_KEY("APIKey")
             {
                 @Override
                 public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
@@ -39,7 +39,7 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 }
             },
 
-    KEY_PAIR
+    KEY_PAIR("KeyPair")
             {
                 @Override
                 public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
@@ -48,7 +48,7 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 }
             },
 
-    KERBEROS
+    KERBEROS("Kerberos")
             {
                 @Override
                 public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
@@ -63,9 +63,16 @@ public enum AuthenticationMechanismType implements AuthenticationMechanism
                 }
             };
 
+    private final String label;
+
+    private AuthenticationMechanismType(String label)
+    {
+        this.label = label;
+    }
+
     @Override
     public String getLabel()
     {
-        return this.toString();
+        return this.label;
     }
 }

@@ -104,9 +104,10 @@ function meta::pure::milestoning::isDateArgMilestonedGeneratedQualifiedProperty(
 
 function meta::pure::milestoning::switchToNoArgMilestonedGeneratedQualifiedProperty(p:QualifiedProperty<Any>[1]):QualifiedProperty<Any>[*]
 {
-   if($p->hasGeneratedMilestoningPropertyStereotype(),
-                                |let clazz = $p.owner->toOne()->cast(@Class<Any>);
-                                 $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)
-                                      ->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name==$p.name);,
-                                |[]);
+    if($p->hasGeneratedMilestoningPropertyStereotype(),
+        | $p.owner->match([
+              clazz : Class<Any>[1] | $clazz.qualifiedProperties->concatenate($clazz.qualifiedPropertiesFromAssociations)->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name==$p.name);,
+              assoc : Association[1] | $assoc.qualifiedProperties->filter(q|$q->isNoArgMilestonedGeneratedQualifiedProperty()  && $q.name == $p.name);
+            ]);,
+        |[]);
 }

@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::mapping::*;
+import meta::pure::router::preeval::*;
+import meta::pure::functions::hash::*;
 import meta::pure::tds::extensions::*;
 import meta::relational::tests::csv::*;
 import meta::protocols::tds::preeval::router::prerouting::*;
@@ -487,4 +490,41 @@ function <<test.Test>> meta::pure::tds::tests::extensions::testFirstNotNull():Bo
 {
   assertEquals(1, [TDSNull, 1, 2]->meta::pure::tds::extensions::firstNotNull());
   assertEquals([], [TDSNull, TDSNull]->meta::pure::tds::extensions::firstNotNull());
+}
+
+function <<test.Test>>
+   meta::pure::tds::tests::extensions::testExtendDigest_InMemory() : Boolean[1]
+{
+   let scores = [1,2,3,4,5];
+   let data = range($scores->size())->map(i|'student_' +toString($i))->zip($scores);
+   
+   let tds = $data->project([col(p|$p.first, 'name'), col(p|$p.second, 'score')]);
+   
+   let result = $tds->extendWithDigestOnColumns('_digest');
+
+   println($result->toCSV());
+
+   assertEquals(['0da8968758f3a315890e2f9ac3eb2fb3', 'eab9489b8f6517e84642ed09d819fee6', '387c444764879ef47844199bc693effc', '72d92b984f7ba90fe9b1ac4962c74012', 'e9f5f78a0597a8804196a8f9ced00000'], $result->columnValues('_digest'));
+}
+
+function <<test.Test, test.AlloyOnly>>
+   meta::pure::tds::tests::extensions::testExtendDigest_Relational() : Boolean[1]
+{
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let query = {|
+            Trade.all()
+              ->project([
+                  col(x | $x.id, 'Trade ID'),
+                  col(x | $x.quantity, 'Quantity')
+              ])
+              ->extendWithDigestOnColumns('_digest')
+              ->sort('Trade ID')
+              ->limit(2);            
+         };
+   
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   assertEquals(['b7bbee4d9b6a2736c25b00dded9344c7', '9e103ea06a6999b4c5a86cf25d68b083'], $result.values->columnValues('_digest'));
 }
