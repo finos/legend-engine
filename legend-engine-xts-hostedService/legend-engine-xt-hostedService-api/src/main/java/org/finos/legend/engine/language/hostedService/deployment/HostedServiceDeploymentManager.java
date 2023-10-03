@@ -28,6 +28,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentResult;
@@ -49,9 +50,9 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
 
     public static ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    public boolean canDeploy(HostedServiceArtifact element)
+    public boolean canDeploy(FunctionActivatorArtifact element)
     {
-        return element != null;
+        return element instanceof HostedServiceArtifact;
     }
 
     public HostedServiceDeploymentResult deploy(MutableList<CommonProfile> profiles, HostedServiceArtifact artifact)

@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.snowflakeApp.deployment;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
@@ -52,9 +53,9 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     }
 
     @Override
-    public boolean canDeploy(SnowflakeAppArtifact artifact)
+    public boolean canDeploy(FunctionActivatorArtifact artifact)
     {
-        return true;
+        return artifact instanceof SnowflakeAppArtifact;
     }
 
     public SnowflakeAppDeploymentTool getSnowflakeAppDeploymentTool()

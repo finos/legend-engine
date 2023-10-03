@@ -30,5 +30,5 @@ public interface DeploymentManager<U extends FunctionActivatorArtifact, V extend
     public V deploy(MutableList<CommonProfile> profiles, U artifact, List<W> availableRuntimeConfigurations);
 
 
-    public boolean canDeploy(U activator);
+    public boolean canDeploy(FunctionActivatorArtifact activatorArtifact);
 }
