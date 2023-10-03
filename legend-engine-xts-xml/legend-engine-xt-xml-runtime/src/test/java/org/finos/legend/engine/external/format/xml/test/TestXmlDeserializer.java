@@ -217,7 +217,7 @@ public class TestXmlDeserializer
     public void testDeserializeFirmWithEmployeesWithElements()
     {
         XmlReader reader = reader(
-                "<firm name=\"Acme Inc.\" ranking=\"2\">",
+                "<firm>",
                 "  <name>Acme Inc.</name>",
                 "  <ranking>2</ranking>",
                 "  <employees>",
@@ -259,7 +259,7 @@ public class TestXmlDeserializer
     public void testDeserializeFirmWithEmployeesWithElementsNested()
     {
         XmlReader reader = reader(
-                "<firm name=\"Acme Inc.\" ranking=\"2\">",
+                "<firm>",
                 "  <name>Acme Inc.</name>",
                 "  <ranking>2</ranking>",
                 "  <employees>",
