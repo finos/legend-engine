@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRecordDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import static java.lang.String.format;
@@ -42,5 +43,23 @@ public class BuilderUtil
             return (Root_meta_legend_service_metamodel_Service) packageableElement;
         }
         throw new EngineException(format("Service '%s' is not defined", service), sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    public static Root_meta_pure_mastery_metamodel_MasterRecordDefinition buildMasterRecordDefinition(String masterRecordDefinition, CompileContext context, SourceInformation sourceInformation)
+    {
+        if (masterRecordDefinition == null)
+        {
+            return null;
+        }
+
+        String masterRecordDefinitionPath = masterRecordDefinition.substring(0, masterRecordDefinition.lastIndexOf("::"));
+        String masterRecordDefinitionName = masterRecordDefinition.substring(masterRecordDefinition.lastIndexOf("::") + 2);
+
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(masterRecordDefinitionPath)._children().detect(c -> masterRecordDefinitionName.equals(c._name()));
+        if (packageableElement instanceof Root_meta_pure_mastery_metamodel_MasterRecordDefinition)
+        {
+            return (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) packageableElement;
+        }
+        throw new EngineException(format("MasterRecord definition '%s' is not defined", masterRecordDefinition), sourceInformation, EngineErrorType.COMPILATION);
     }
 }

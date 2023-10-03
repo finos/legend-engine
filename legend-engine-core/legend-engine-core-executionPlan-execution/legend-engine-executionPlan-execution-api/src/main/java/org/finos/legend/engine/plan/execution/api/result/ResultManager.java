@@ -40,6 +40,9 @@ public class ResultManager
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ResultManager.class);
     private static final JsonStringEncoder jsonStringEncoder = JsonStringEncoder.getInstance();
 
+    public static final String LEGEND_RESPONSE_FORMAT = "x-legend-response-format";
+
+
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, LoggingEventType loggingEventType)
     {
         return manageResult(pm, result, SerializationFormat.defaultFormat, loggingEventType);
@@ -68,7 +71,7 @@ public class ResultManager
         }
         else if (result instanceof StreamingResult)
         {
-            return Response.ok(new StreamingResultHandler((StreamingResult) result, format)).build();
+            return Response.ok(new StreamingResultHandler((StreamingResult) result, format)).header(LEGEND_RESPONSE_FORMAT, ((StreamingResult) result).resultFormat).build();
         }
         else if (result instanceof ConstantResult)
         {

@@ -232,3 +232,21 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnQuot
    let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
    assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
 }
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFirstNotNullFunction():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->filter(p | meta::pure::tds::extensions::firstNotNull([$p.getString('firstName'), 'N/A']) != 'N/A'),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($result.values.columns, 1);   
+   
+   assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where (coalesce("root".FIRSTNAME, \'N/A\') <> \'N/A\' OR coalesce("root".FIRSTNAME, \'N/A\') is null)', 
+      $result->sqlRemoveFormatting());   
+}

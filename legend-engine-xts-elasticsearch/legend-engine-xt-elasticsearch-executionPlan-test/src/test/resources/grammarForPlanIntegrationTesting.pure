@@ -50,3 +50,8 @@ function abc::abc::indexToTdsFunction(): TabularDataSet[1]
 {
     indexToTDS(abc::abc::Store, 'index1')->from(abc::abc::EmptyMapping, abc::abc::Runtime);
 }
+
+function abc::abc::indexToTDSGroupByFunction(): TabularDataSet[1]
+{
+    indexToTDS(abc::abc::Store, 'index1')->from(abc::abc::EmptyMapping, abc::abc::Runtime)->groupBy(['prop1', '_id'], agg('count', r | $r.getString('prop1'), agg | $agg->count()));
+}

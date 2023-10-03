@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::mapping::*;
+import meta::pure::functions::hash::*;
 import meta::pure::tds::extensions::*;
 import meta::relational::metamodel::join::*;
 
@@ -203,3 +205,46 @@ function <<access.private>> meta::pure::tds::extensions::joinWithOptionalColumns
        | $q1->join($q2, $joinType, $cols->toOneMany())
        );
 }
+
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::extendWithDigestOnColumns(input : TabularDataSet[1], digestColumnName : String[1]) : TabularDataSet[1]
+{
+  $input->extendWithDigestOnColumns($digestColumnName, HashType.MD5, $input.columns.name->toOneMany());
+}
+
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::extendWithDigestOnColumns(input : TabularDataSet[1], digestValueColumnName : String[1], digestHashType : HashType[1], digestColumns : String[1..*]) : TabularDataSet[1]
+{
+  $input->extend(
+    col({row:TDSRow[1]|
+        $input.columns
+          ->filter(c|$c.name->in($digestColumns))
+          ->map(col|toStringForColAccessor($col)->eval($row))
+          ->joinStrings('|')
+          ->hash($digestHashType)
+        },$digestValueColumnName)
+  )
+}
+
+function <<access.private>> 
+   meta::pure::tds::extensions::toStringForColAccessor(col: TDSColumn[1]) : Function<{TDSRow[1]->String[1]}>[1]
+{ 
+  [
+//    Pending release of https://github.com/finos/legend-pure/pull/736
+//    if(!$col.type->toOne()->instanceOf(Enumeration),
+//      | [],
+//      | {r:TDSRow[1]|$r.getEnum($col.name)->toString()}
+//    )
+  ]
+  ->concatenate(
+    [
+      pair(Integer, {r:TDSRow[1]|$r.getInteger($col.name)->toString()}), 
+      pair(Float, {r:TDSRow[1]|$r.getFloat($col.name)->toString()}), 
+      pair(String, {r:TDSRow[1]|$r.getString($col.name)->toString()}), 
+      pair(Boolean, {r:TDSRow[1]|$r.getBoolean($col.name)->toString()}), 
+      pair(Date, {r:TDSRow[1]|$r.getDate($col.name)->toString()}), 
+      pair(DateTime, {r:TDSRow[1]|$r.getDateTime($col.name)->toString()}), 
+      pair(StrictDate, {r:TDSRow[1]|$r.getStrictDate($col.name)->toString()})
+    ]->filter(p|$p.first == $col.type).second
+  )
+  ->toOne('Unsupported column type: ' + $col.type->toOne()->toString() + '(' + $col.name + ')')
+}   
+

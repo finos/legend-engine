@@ -86,12 +86,16 @@ Service demo::H2PersonService
       [
         x|$x.id,
         x|$x.name,
-        x|$x.type
+        x|$x.type,
+        x|$x.name + ' Smith',
+        x|$x.derivedName
       ],
       [
         'Id',
         'Name',
-        'Employee Type'
+        'Employee Type',
+        'Full Name',
+        'Derived Name'
       ]
     );
     mapping: demo::DemoRelationalMapping;
@@ -171,6 +175,7 @@ Class demo::employee
   name: String[1];
   type: demo::employeeType[1];
   startDate: Date[1];
+  derivedName() {$this.name+'_derived'} : String[1];
 }
 
 

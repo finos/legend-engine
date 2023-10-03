@@ -25,6 +25,7 @@ import org.junit.Test;
 
 public class TestSQLRoundTrip
 {
+
     @Test
     public void testEmptyStatement()
     {
@@ -215,6 +216,18 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testNaturalJoin()
+    {
+        check("SELECT * FROM myTable NATURAL LEFT OUTER JOIN myTable2");
+    }
+
+    @Test
+    public void testCrossJoin()
+    {
+        check("SELECT * FROM myTable CROSS JOIN myTable1");
+    }
+
+    @Test
     public void testUnionAll()
     {
         check("SELECT * FROM myTable UNION ALL SELECT * FROM myTable");
@@ -261,6 +274,18 @@ public class TestSQLRoundTrip
     public void testInterval()
     {
         check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS' FROM myTable");
+    }
+
+    @Test
+    public void testLiterals()
+    {
+        check("SELECT 1, 'abc', true, 1.0, null FROM myTable");
+    }
+
+    @Test
+    public void testWithinGroup()
+    {
+        check("SELECT percentile_cont(0.1) WITHIN GROUP (ORDER BY a ASC) FROM myTable");
     }
 
     private void fail(String sql, int start, int end, String message)

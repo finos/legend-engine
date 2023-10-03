@@ -8,6 +8,29 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::generation::featureBased::pojo::*;
 import meta::external::language::java::generation::featureBased::definition::*;
 
+Enum meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice {
+   A, B
+}
+
+Class meta::external::language::java::generation::featureBased::tests::constructorInjection::Person
+{
+   firstName : String[1];
+   lastName : String[1];
+   addresses : String[*];
+   firm : meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm[0..1];
+   drives: Boolean[1];
+   choice: meta::external::language::java::generation::featureBased::tests::constructorInjection::ASimpleChoice[1];
+   preferredName: String[0..1];
+}
+
+Class meta::external::language::java::generation::featureBased::tests::constructorInjection::Firm
+{
+   legalName : String[1];
+   employees : meta::external::language::java::generation::featureBased::tests::constructorInjection::Person[*];
+   addresses : String[*];
+   count : Integer[1];
+}
+
 Enum meta::external::language::java::generation::featureBased::tests::model::ASimpleChoice {
    A, B
 }
@@ -92,7 +115,7 @@ function meta::external::language::java::generation::featureBased::tests::utils:
 {
   let expected = $expectedCode->split();
   let actual = $actualCode->split();
-  assertEquals($expected->size(),$actual->size(),'lines number dont match');
+  assertEquals($expected->size(),$actual->size(),'lines number dont match %d, %d', [$expected->size(),$actual->size()]);
   let size = $actual->size();
   range($actual->size())->map( i | assertEquals($expected->at($i),$actual->at($i),'found line differences at line %s:\nexpected: [%s] \nactual :[%s]:',[$i,$expected->at($i),$actual->at($i)]));
 
@@ -182,5 +205,16 @@ function <<test.Test>> meta::external::language::java::generation::featureBased:
   assertEquals(1, $sources->size());
   let source = $sources->at(0);
   compareJavaCode($source.fileName,expectedSourceForAddressExtension(),$source.content);
+  true;
+}
+
+function <<test.Test>> meta::external::language::java::generation::featureBased::tests::testJavaGenerationConstructorInjection():Boolean[1]
+{
+  let package = 'meta::external::language::java::generation::featureBased::tests::constructorInjection';
+  let testGenerationContext = testJavaCodeGenerationContext($package,[],constructorInjectedPojoGenerationFeatures(),noDebug());
+  let sources = $testGenerationContext->generateJava();
+  assertEquals(3, $sources->size());
+  let expectedSources = expectedSources();
+  $sources->map( source | $expectedSources->compareJavaCode($source.fileName,$source.content));
   true;
 }

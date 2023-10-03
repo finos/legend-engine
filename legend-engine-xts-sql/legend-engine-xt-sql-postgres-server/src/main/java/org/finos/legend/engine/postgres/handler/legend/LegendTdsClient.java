@@ -18,30 +18,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.IOException;
+import java.io.InputStream;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Supplier;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 public class LegendTdsClient implements LegendExecutionClient
 {
@@ -63,40 +59,84 @@ public class LegendTdsClient implements LegendExecutionClient
     @Override
     public List<LegendColumn> getSchema(String query)
     {
-        JsonNode jsonNode = this.executeSchemaApi(query);
-        if (jsonNode.get("columns") != null)
+        try (InputStream inputStream = executeSchemaApi(query);)
         {
-            ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
+            JsonNode jsonNode = mapper.readTree(inputStream);
+            if (jsonNode.get("columns") != null)
+            {
+                ArrayNode columns = (ArrayNode) jsonNode.get("columns");
+                return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
+            }
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        catch (IOException e)
+        {
+            throw new LegendTdsClientException("Failed to parse result", e);
+        }
+
     }
 
     @Override
-    public Iterable<TDSRow> executeQuery(String query)
-    {
-        JsonNode jsonNode = this.executeQueryApi(query);
-        return getRowsFromExecutionResponse(jsonNode);
-    }
-
-    @Override
-    public Pair<List<LegendColumn>, Iterable<TDSRow>> getSchemaAndExecuteQuery(String query)
+    public LegendExecutionResult executeQuery(String query)
     {
         try
         {
-            JsonNode jsonNode = this.executeQueryApi(query);
-            List<LegendColumn> schema = getSchemaFromExecutionResponse(jsonNode);
-            Iterable<TDSRow> rows = getRowsFromExecutionResponse(jsonNode);
-            return Tuples.pair(schema, rows);
+            InputStream inputStream = this.executeQueryApi(query);
+            LegendTdsResultParser parser = new LegendTdsResultParser(inputStream);
+
+            return new LegendExecutionResult()
+            {
+                @Override
+                public List<LegendColumn> getLegendColumns()
+                {
+                    return parser.getLegendColumns();
+                }
+
+                @Override
+                public void close()
+                {
+                    try
+                    {
+                        parser.close();
+                    }
+                    catch (IOException e)
+                    {
+                        throw new LegendTdsClientException("Error while closing parser", e);
+                    }
+                }
+
+                @Override
+                public boolean hasNext()
+                {
+
+                    try
+                    {
+                        return parser.hasNext();
+                    }
+                    catch (IOException e)
+                    {
+                        throw new LegendTdsClientException("Error while retrieving a row", e);
+                    }
+                }
+
+                @Override
+                public List<Object> next()
+                {
+                    return parser.next();
+                }
+
+
+            };
+
 
         }
-        catch (JsonProcessingException e)
+        catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new LegendTdsClientException("Error while parsing response", e);
         }
     }
 
-    protected JsonNode executeQueryApi(String query)
+    protected InputStream executeQueryApi(String query)
     {
         LOGGER.info("executing query " + query);
         String apiPath = "/api/sql/v1/execution/executeQueryString";
@@ -104,14 +144,14 @@ public class LegendTdsClient implements LegendExecutionClient
     }
 
 
-    protected JsonNode executeSchemaApi(String query)
+    protected InputStream executeSchemaApi(String query)
     {
         LOGGER.info("executing schema query " + query);
         String apiPath = "/api/sql/v1/execution/getSchemaFromQueryString";
         return executeApi(query, apiPath);
     }
 
-    private JsonNode executeApi(String query, String apiPath)
+    private InputStream executeApi(String query, String apiPath)
     {
         String uri = protocol + "://" + this.host + ":" + this.port + apiPath;
         HttpPost req = new HttpPost(uri);
@@ -120,10 +160,12 @@ public class LegendTdsClient implements LegendExecutionClient
         stringEntity.setContentType(TEXT_PLAIN);
         req.setEntity(stringEntity);
 
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-             CloseableHttpResponse res = client.execute(req))
+        try
         {
+            HttpClient client =  HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            HttpResponse res = client.execute(req);
             return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
+
         }
         catch (IOException e)
         {
@@ -143,45 +185,7 @@ public class LegendTdsClient implements LegendExecutionClient
     }
 
 
-    private static Iterable<TDSRow> getRowsFromExecutionResponse(JsonNode jsonNode)
-    {
-        if (jsonNode.get("result") != null)
-        {
-            ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
-            return LazyIterate.collect(result, a -> columIndex ->
-            {
-                JsonNode node = a.get("values").get(columIndex);
-                if (node.isNull())
-                {
-                    return null;
-                }
-                if (node.isInt())
-                {
-                    return node.intValue();
-                }
-                if (node.isFloat())
-                {
-                    return node.floatValue();
-                }
-                if (node.isDouble())
-                {
-                    return node.doubleValue();
-                }
-                if (node.isNumber())
-                {
-                    return node.doubleValue();
-                }
-                if (node.isBoolean())
-                {
-                    return node.booleanValue();
-                }
-                return node.asText();
-            });
-        }
-        return Collections.emptyList();
-    }
-
-    protected static JsonNode handleResponse(String query, Callable<InputStream> responseContentSupplier, Supplier<Integer> responseStatusCodeSupplier)
+    protected static InputStream handleResponse(String query, Callable<InputStream> responseContentSupplier, Supplier<Integer> responseStatusCodeSupplier)
     {
         String errorResponse = null;
         try
@@ -189,7 +193,7 @@ public class LegendTdsClient implements LegendExecutionClient
             InputStream in = responseContentSupplier.call();
             if (responseStatusCodeSupplier.get() == 200)
             {
-                return mapper.readTree(in);
+                return in;
             }
             else
             {

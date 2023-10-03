@@ -15,13 +15,10 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import java.util.List;
-import org.eclipse.collections.api.tuple.Pair;
 
 public interface LegendExecutionClient
 {
     public List<LegendColumn> getSchema(String query);
 
-    public Iterable<TDSRow> executeQuery(String query);
-
-    Pair<List<LegendColumn>, Iterable<TDSRow>> getSchemaAndExecuteQuery(String query);
+    LegendExecutionResult executeQuery(String query);
 }

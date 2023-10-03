@@ -146,7 +146,7 @@ public class RelationalExecutor
             }
             else if (node.isResultVoid())
             {
-                return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
             }
             else
             {
@@ -202,7 +202,7 @@ public class RelationalExecutor
         }
         else if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
         }
         else
         {
@@ -241,7 +241,7 @@ public class RelationalExecutor
         
         if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
         }
 
         return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());

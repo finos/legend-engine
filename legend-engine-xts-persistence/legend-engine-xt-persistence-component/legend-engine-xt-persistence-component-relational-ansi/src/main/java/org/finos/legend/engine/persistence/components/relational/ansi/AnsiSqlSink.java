@@ -61,6 +61,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
@@ -93,6 +95,8 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchIdValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchStartTimestampVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BulkLoadBatchIdValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BulkLoadBatchStatusValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.CaseVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetDefinitionVisitor;
@@ -231,6 +235,9 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchIdValue.class, new BatchIdValueVisitor());
         logicalPlanVisitorByClass.put(InfiniteBatchIdValue.class, new InfiniteBatchIdValueVisitor());
+        logicalPlanVisitorByClass.put(BulkLoadBatchIdValue.class, new BulkLoadBatchIdValueVisitor());
+        logicalPlanVisitorByClass.put(BulkLoadBatchStatusValue.class, new BulkLoadBatchStatusValueVisitor());
+
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         INSTANCE = new AnsiSqlSink();

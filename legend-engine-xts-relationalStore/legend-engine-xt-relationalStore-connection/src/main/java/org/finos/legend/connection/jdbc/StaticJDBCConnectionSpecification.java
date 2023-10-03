@@ -14,15 +14,13 @@
 
 package org.finos.legend.connection.jdbc;
 
-import org.finos.legend.connection.ConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
 
 public class StaticJDBCConnectionSpecification extends ConnectionSpecification
 {
     public String host;
     public int port;
     public String databaseName;
-    public DatabaseType databaseType;
 
     public StaticJDBCConnectionSpecification(String host, int port, String databaseName)
     {

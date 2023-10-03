@@ -15,9 +15,7 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import java.security.PrivilegedAction;
-import java.util.List;
 import javax.security.auth.Subject;
-import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -27,8 +25,7 @@ public class LegendStatement implements PostgresStatement
 {
 
     private LegendExecutionClient client;
-    private Iterable<TDSRow> tdsRows;
-    private List<LegendColumn> columns;
+    private LegendResultSet legendResultSet;
     private Identity identity;
 
     public LegendStatement(LegendExecutionClient client, Identity identity)
@@ -57,15 +54,23 @@ public class LegendStatement implements PostgresStatement
 
     private boolean executePrivate(String query)
     {
-        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-        columns = schemaAndResult.getOne();
-        tdsRows = schemaAndResult.getTwo();
+        legendResultSet = new LegendResultSet(client.executeQuery(query));
         return true;
     }
 
     @Override
-    public PostgresResultSet getResultSet() throws Exception
+    public PostgresResultSet getResultSet()
     {
-        return new LegendResultSet(tdsRows, columns);
+        return legendResultSet;
+    }
+
+    @Override
+    public void close() throws Exception
+    {
+        if (legendResultSet != null)
+        {
+            legendResultSet.close();
+            ;
+        }
     }
 }

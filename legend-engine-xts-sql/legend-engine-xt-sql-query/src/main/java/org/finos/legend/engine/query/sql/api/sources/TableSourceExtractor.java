@@ -131,6 +131,12 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
     }
 
     @Override
+    public Set<TableSource> visit(Group group)
+    {
+        return group.orderBy != null ? visit(group.orderBy) : Collections.emptySet();
+    }
+
+    @Override
     public Set<TableSource> visit(InListExpression val)
     {
         return val.values.stream()
@@ -177,6 +183,16 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
         Set<TableSource> leftTableNames = val.left.accept(this);
         Set<TableSource> rightTableNames = val.right.accept(this);
         return Sets.mutable.withAll(leftTableNames).withAll(rightTableNames);
+    }
+
+    @Override
+    public Set<TableSource> visit(LikePredicate val)
+    {
+        Set<TableSource> value = val.value.accept(this);
+        Set<TableSource> pattern = val.pattern.accept(this);
+        Set<TableSource> escape = val.escape != null ? val.escape.accept(this) : Sets.mutable.empty();
+
+        return Sets.mutable.withAll(value).withAll(pattern).withAll(escape);
     }
 
     @Override

@@ -414,6 +414,7 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
+                .with(ArrowPureCoreExtension.class)
                 ;
     }
 
@@ -427,7 +428,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLSDLFormatExtension.class)
-                .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
+                .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends FlatDataDriverDescription>> getExpectedFlatDataDriverDescriptionExtensions()
@@ -483,6 +485,7 @@ public class TestExtensions
                 .with("core_external_format_openapi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
+                .with("core_external_format_arrow")
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
                 .with("core_external_query_sql_metamodel")
@@ -506,6 +509,7 @@ public class TestExtensions
                 .with("core_relational_presto")
                 .with("core_relational_sybase")
                 .with("core_relational_sybaseiq")
+                .with("core_relational_sparksql")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")

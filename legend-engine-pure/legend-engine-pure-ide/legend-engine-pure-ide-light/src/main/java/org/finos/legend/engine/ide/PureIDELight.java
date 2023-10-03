@@ -61,6 +61,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-presto/legend-engine-xt-relationalStore-presto-pure", "relational_presto"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sybase/legend-engine-xt-relationalStore-sybase-pure", "relational_sybase"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sybaseiq/legend-engine-xt-relationalStore-sybaseiq-pure", "relational_sybaseiq"))
+                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sparksql/legend-engine-xt-relationalStore-sparksql-pure", "relational_sparksql"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-analytics/legend-engine-xt-relationalStore-store-entitlement-pure", "relational_store_entitlement"))
                 .with(this.buildCore("legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-pure", "servicestore"))
                 .with(this.buildCore("legend-engine-xts-serviceStore/legend-engine-xt-serviceStore-javaPlatformBinding-pure", "servicestore-java-platform-binding"))
@@ -100,7 +101,8 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
                 .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure","service"))
                 .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure","external-tableformat-iceberg"))
-               ;
+                .with(this.buildCore("legend-engine-xts-arrow/legend-engine-xt-arrow-pure", "external-format-arrow"))
+                ;
     }
 
     @Override

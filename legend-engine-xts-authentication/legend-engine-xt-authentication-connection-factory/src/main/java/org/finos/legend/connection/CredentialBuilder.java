@@ -14,7 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -22,13 +22,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-public abstract class CredentialBuilder<SPEC extends AuthenticationSpecification, INPUT_CRED extends Credential, OUTPUT_CRED extends Credential>
+public abstract class CredentialBuilder<CONFIG extends AuthenticationConfiguration, INPUT_CRED extends Credential, OUTPUT_CRED extends Credential>
 {
-    public abstract OUTPUT_CRED makeCredential(Identity identity, SPEC spec, INPUT_CRED cred, EnvironmentConfiguration configuration) throws Exception;
+    public abstract OUTPUT_CRED makeCredential(Identity identity, CONFIG config, INPUT_CRED cred, LegendEnvironment environment) throws Exception;
 
-    public Class<? extends AuthenticationSpecification> getAuthenticationSpecificationType()
+    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
     {
-        return (Class<? extends AuthenticationSpecification>) actualTypeArguments()[0];
+        return (Class<? extends AuthenticationConfiguration>) actualTypeArguments()[0];
     }
 
     public Class<? extends Credential> getInputCredentialType()
@@ -41,7 +41,7 @@ public abstract class CredentialBuilder<SPEC extends AuthenticationSpecification
         return (Class<? extends Credential>) actualTypeArguments()[2];
     }
 
-    private Type[] actualTypeArguments()
+    protected Type[] actualTypeArguments()
     {
         Type genericSuperClass = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
@@ -50,13 +50,13 @@ public abstract class CredentialBuilder<SPEC extends AuthenticationSpecification
 
     public static class Key
     {
-        private final Class<? extends AuthenticationSpecification> authenticationSpecificationType;
+        private final Class<? extends AuthenticationConfiguration> authenticationConfigurationType;
         private final Class<? extends Credential> inputCredentialType;
         private final Class<? extends Credential> outputCredentialType;
 
-        public Key(Class<? extends AuthenticationSpecification> authenticationSpecificationType, Class<? extends Credential> inputCredentialType, Class<? extends Credential> outputCredentialType)
+        public Key(Class<? extends AuthenticationConfiguration> authenticationConfigurationType, Class<? extends Credential> inputCredentialType, Class<? extends Credential> outputCredentialType)
         {
-            this.authenticationSpecificationType = authenticationSpecificationType;
+            this.authenticationConfigurationType = authenticationConfigurationType;
             this.inputCredentialType = inputCredentialType;
             this.outputCredentialType = outputCredentialType;
         }
@@ -73,7 +73,7 @@ public abstract class CredentialBuilder<SPEC extends AuthenticationSpecification
                 return false;
             }
             CredentialBuilder.Key that = (CredentialBuilder.Key) o;
-            return this.authenticationSpecificationType.equals(that.authenticationSpecificationType) &&
+            return this.authenticationConfigurationType.equals(that.authenticationConfigurationType) &&
                     this.inputCredentialType.equals(that.inputCredentialType) &&
                     this.outputCredentialType.equals(that.outputCredentialType);
         }
@@ -81,7 +81,7 @@ public abstract class CredentialBuilder<SPEC extends AuthenticationSpecification
         @Override
         public int hashCode()
         {
-            return Objects.hash(authenticationSpecificationType, inputCredentialType, outputCredentialType);
+            return Objects.hash(authenticationConfigurationType, inputCredentialType, outputCredentialType);
         }
     }
 }
