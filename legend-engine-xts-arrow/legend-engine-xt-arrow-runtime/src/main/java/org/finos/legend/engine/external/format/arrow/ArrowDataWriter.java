@@ -51,11 +51,9 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
 
     }
 
-
     @Override
     public void writeData(OutputStream outputStream) throws IOException
     {
-
         try
         {
             while (this.iterator.hasNext())
@@ -76,6 +74,7 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
         }
 
     }
+
     @Override
     public void writeDataAsString(OutputStream outputStream) throws IOException
     {
@@ -97,6 +96,7 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
             throw e;
         }
     }
+
     @Override
     public void close()
     {
