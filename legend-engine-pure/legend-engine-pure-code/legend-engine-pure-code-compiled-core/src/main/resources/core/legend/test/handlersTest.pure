@@ -382,6 +382,7 @@ Class meta::legend::test::handlers::model::TestString
    replace(){$this.string->replace($this.string, $this.string)}:String[1];
    reverseString(){$this.string->reverseString()}:String[1];
    split(){$this.string->split($this.string)}:String[*];
+   splitPart(){$this.string->splitPart($this.string, 0)}:String[*];
    rtrim(){$this.string->rtrim()}:String[1];
    substringTwo(){$this.string->substring(1,2)}:String[1];
    substring(){$this.string->substring(1)}:String[1];

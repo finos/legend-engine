@@ -106,10 +106,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ->join(FlatInput.all()->project(
                 [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                 ['ID', 'Integer', 'String']
-              )->renameColumns([
+              )->restrict(['ID', 'Integer'])->renameColumns([
                 pair('ID', 'id'),
                 pair('Integer', 'int')
-              ])->restrict(['id', 'int'])->renameColumns([
+              ])->renameColumns([
                 pair('id', 'id_table2'),
                 pair('int', 'int_table2')
               ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('int_table2')}
@@ -148,8 +148,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
       ->renameColumns(pair('Integer', 'int'))
-      ->restrict(['Boolean', 'int'])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -178,6 +178,18 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | $row.getString('String'), 'str'),
           col(row:TDSRow[1] | $row.getString('String'), 'String')
         ])
+      };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectColumnAliasedAsUnusedTableColumnName():Boolean[1]
+{
+  let sqlString = 'SELECT Integer as "String" FROM service."/service/service1"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->restrict('Integer')->renameColumns(pair('Integer', 'String'))
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -684,6 +696,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))
         ])
       };
+
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -699,6 +712,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         )->groupBy(['Number'], [
           agg('SUM', row | $row.getInteger('Integer'), y | $y->sum())
         ])->restrict(['SUM', 'Number'])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggWithinCase():Boolean[1]
+{
+  let sqlString = 'SELECT CASE WHEN(SUM("Integer") <10) THEN max("Integer") ELSE min("Integer") END AS "MIN/MAX", ' + 
+                  'CASE WHEN(SUM("Integer") < 10) THEN \'LOW\' ELSE \'HIGH\' END AS "HIGH/LOW" FROM service."/service/service1"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy([], [
+          agg('MIN/MAX', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | max($y), | min($y))),
+          agg('HIGH/LOW', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | 'LOW', | 'HIGH'))
+        ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -1024,10 +1053,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               pair('Integer', 'Integer_table2'),
               pair('String', 'String_table2')
             ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['Integer']
-        )->renameColumns([
+        )->restrict([
+          'Integer_table1', 'String_table2'
+        ])->renameColumns([
           pair('Integer_table1', 'Int'),
           pair('String_table2', 'Str')
-        ])->restrict(['Int', 'Str'])
+        ])
       };
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
@@ -1055,10 +1086,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               pair('Integer', 'Integer_table2'),
               pair('String', 'String_table2')
             ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
-        )->renameColumns([
+        )->restrict(['Integer_table1', 'String_table2'])->renameColumns([
           pair('Integer_table1', 'Int'),
           pair('String_table2', 'Str')
-        ])->restrict(['Int', 'Str'])
+        ])
       };
 
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -1087,10 +1118,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               pair('Integer', 'Integer_table2'),
               pair('String', 'String_table2')
             ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
-        )->filter({row|($row.getInteger('Integer_table1') == $row.getInteger('Integer_table2'))})->renameColumns([
+        )->filter({row|($row.getInteger('Integer_table1') == $row.getInteger('Integer_table2'))})
+        ->restrict(['Integer_table1', 'String_table2'])->renameColumns([
           pair('Integer_table1', 'Int'),
           pair('String_table2', 'Str')
-        ])->restrict(['Int', 'Str'])
+        ])
       };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -1119,11 +1151,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           pair('Integer', 'Integer_table2'),
           pair('String', 'String_table2')
         ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')})
+        ->restrict(['Integer_table1', 'String_table2'])
         ->renameColumns([
           pair('Integer_table1', 'Integer'),
           pair('String_table2', 'String')
         ])
-        ->restrict(['Integer', 'String'])
       };
 
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
@@ -1351,7 +1383,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
                   'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", ' +
-                  'sha256(String) AS "SHA256", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
+                  'sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -1378,6 +1410,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM2'),
                 col(row:TDSRow[1] | hash($row.getString('String'), HashType.SHA256), 'SHA256'),
+                col(row:TDSRow[1] | splitPart($row.getString('String'), ',', 2), 'SPLITPART'),
+                col(row:TDSRow[1] | splitPart($row.getString('String'), ',', $row.getInteger('Integer') + 1), 'SPLITPART2'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
                 col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),

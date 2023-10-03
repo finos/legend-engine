@@ -139,4 +139,20 @@ public class LegendH2Extensions_1_4_200
     {
         return string == null ? null : DigestUtils.sha1Hex(string);
     }
+
+    public static String legend_h2_extension_split_part(String string, String token, Integer part)
+    {
+        if (part < 1) {
+            throw new IllegalArgumentException("Split part must be greater than zero");
+        }
+
+        if (string == null) {
+            return null;
+        }
+
+        String[] parts = string.split(token);
+        int readjustedPart = part - 1;
+
+        return parts.length > readjustedPart ? parts[readjustedPart] : null;
+    }
 }

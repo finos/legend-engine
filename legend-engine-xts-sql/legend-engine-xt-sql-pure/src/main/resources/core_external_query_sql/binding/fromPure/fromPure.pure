@@ -291,6 +291,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     l:LogicalBinaryExpression[1] | $l.left->extractAggregatesFromExpression()->concatenate($l.right->extractAggregatesFromExpression()),
     n:NegativeExpression[1] | $n.value->extractAggregatesFromExpression(),
     n:NotExpression[1] | $n.value->extractAggregatesFromExpression(),
+    s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractAggregatesFromExpression(),
+    s:SearchedCaseExpression[1] |
+      $s.whenClauses->map(w | $w.operand->extractAggregatesFromExpression()->concatenate($w.result->extractAggregatesFromExpression()))->concatenate($s.defaultValue->extractAggregatesFromExpression());, 
     e:meta::external::query::sql::metamodel::Expression[0..1] | []
   ]);
 }
@@ -407,17 +410,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
                                 let aggregateExpression = extractAggregatesFromExpression($column.expression);
 
-                                let functionCall = $aggregateExpression->match([
-                                  f:FunctionCall[1] | $f,
-                                  e:meta::external::query::sql::metamodel::Expression[*] | fail('invalid aggregate expression');
-                                ])->toOne()->cast(@FunctionCall);
+                                let functionCalls = $aggregateExpression->match([
+                                  f:FunctionCall[1] | ensureAggregateFunction($f),
+                                  f:FunctionCall[1..*] |
+                                    // we can only support multiple aggs being used within a single expression if they use the case arguments
+                                    //e.g. case when sum(col) > 10 then max(col) else min(col) end
+                                    //to support more complex cases we need to extract the aggregates into separate columns 
+                                    assertEquals(1, $f.arguments->removeDuplicates()->size(), 'unsupported aggregation');
 
-                                let mapExpression = processMapFunction($functionCall, $context);
+                                    $f->map(fc | ensureAggregateFunction($fc));,
+                                  e:meta::external::query::sql::metamodel::Expression[*] | fail('invalid aggregate expression');
+                                ])->cast(@FunctionCall);
+
+                                // we take the first as the map only cares about the argument and we ensure they are the same above
+                                let mapExpression = processMapFunction($functionCalls->at(0), $context);
                                 let mapReturnType = $mapExpression.genericType.rawType->toOne();
                                 let mapFunctionType = functionType('row', TDSRow, PureOne, $mapReturnType, ZeroOne);
                                 let mapLambda = lambda($mapFunctionType, $mapExpression);
-
-                                ensureAggregateFunction($functionCall);
 
                                 let aggLambda = processAggregationLambda($column.expression, $mapReturnType, $context);
                                 let aggReturnType = $aggLambda->functionReturnType();
@@ -524,10 +533,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 //We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(functionCall:FunctionCall[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(functionCall:FunctionCall[1]):FunctionCall[1]
 {
   let processor = functionProcessor($functionCall.name);
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name, []) + ' is not currently supported as aggregate function');
+  $functionCall;
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExtend(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -551,7 +561,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   if (isSelectStar($select),
     | $context.expression->toOne(),
     | if (allColumnsSimpleSelect($select),
-        | processSelectToRenameAndRestrict($select, $restrict, $context),
+        | processSelectToRestrictAndRename($select, $restrict, $context),
         | processSelectToProject($select, $context)));
 
 }
@@ -567,7 +577,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $si->instanceOf(SingleColumn) && isExpressionAggregate($si->cast(@SingleColumn).expression, true, false)
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[1], includeParameters:Boolean[1], includeWindow:Boolean[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1], includeWindow:Boolean[1]):Boolean[1]
 {
   $e->match([
     a:ArithmeticExpression[1] | $a.left->isExpressionAggregate($includeParameters, $includeWindow) || $a.right->isExpressionAggregate($includeParameters, $includeWindow),
@@ -582,6 +592,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     l:LogicalBinaryExpression[1] | $l.left->isExpressionAggregate($includeParameters, $includeWindow) || $l.right->isExpressionAggregate($includeParameters, $includeWindow),
     n:NegativeExpression[1] | $n.value->isExpressionAggregate($includeParameters, $includeWindow),
     n:NotExpression[1] | $n.value->isExpressionAggregate($includeParameters, $includeWindow),
+    s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->isExpressionAggregate($includeParameters, $includeWindow),
+    s:SearchedCaseExpression[1] |
+      $s.whenClauses->exists(w | $w.operand->isExpressionAggregate($includeParameters, $includeWindow) || $w.result->isExpressionAggregate($includeParameters, $includeWindow)) 
+      || $s.defaultValue->isExpressionAggregate($includeParameters, $includeWindow),
     e:meta::external::query::sql::metamodel::Expression[0..1] | false
   ])
 }
@@ -613,12 +627,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   appendTdsFunc($context.expression->toOne(), project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, list($iv));
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectToRenameAndRestrict(select: Select[1], restrict:Boolean[1], context: SqlTransformContext[1]):FunctionExpression[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectToRestrictAndRename(select: Select[1], restrict:Boolean[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
   debug('processSelectToRestrict', $context.debug);
 
-  let rename = $select.selectItems->cast(@SingleColumn)->processRename($context);
-  if ($restrict, | processRestrict($select.selectItems->processSelectItems($context, true).second, ^$context(expression = $rename)), | $rename);
+  let restricted = if ($restrict, 
+  | $select.selectItems->map(si | $si->match([
+      s:SingleColumn[1] | ^$s(alias = []),
+      s:SelectItem[1] | $s
+    ]))->processSelectItems($context, true).second->processRestrict($context),
+  | $context.expression);
+
+  $select.selectItems->cast(@SingleColumn)->processRename(^$context(expression = $restricted));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRestrict(columns:String[*], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -638,7 +658,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     
 
     if ($si.alias->isNotEmpty() && $si.alias != $defaultName,
-      | 
+      |
         sfe(pair_U_1__V_1__Pair_1_, ^GenericType(rawType = Pair, typeArguments = $typeArguments), $typeArguments, [iv($defaultName), $si.alias->toOne()->iv()]),
       | []);
   );
@@ -923,7 +943,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function meta::external::query::sql::transformation::queryToPure::extractSourceArguments(expressions:meta::external::query::sql::metamodel::Expression[*]):SQLSourceArgument[*]
 {
-  $expressions->map(e | $e->extractSourceArgument($expressions->indexOf($e), []));
+  range(0, $expressions->size())->map(i | 
+    extractSourceArgument($expressions->at($i), $i, [])
+  );
 }
 
 function meta::external::query::sql::transformation::queryToPure::extractSourceArgument(expression:meta::external::query::sql::metamodel::Expression[1], index:Integer[1], name:String[0..1]):SQLSourceArgument[0..1]
@@ -1263,11 +1285,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     n:NegativeExpression[1] | '-' + $n.value->extractNameFromExpression($context),
     n:NotExpression[1] | 'NOT ' + $n.value->extractNameFromExpression($context),
     q:QualifiedNameReference[1] | $q.name->extractNameFromQualifiedName($context),
-    s:SimpleCaseExpression[1] |
-      ^SearchedCaseExpression(
-        whenClauses = $s.whenClauses->map(wc | ^$wc(operand = ^ComparisonExpression(left = $s.operand, right = $wc.operand, operator = ComparisonOperator.EQUAL))),
-        defaultValue = $s.defaultValue
-      )->extractNameFromExpression($context),
+    s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractNameFromExpression($context),
     s:SearchedCaseExpression[1] |
       let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
       let default = if ($s.defaultValue->isEmpty(), | '', | ' ELSE ' + $s.defaultValue->toOne()->extractNameFromExpression($context));
@@ -1628,12 +1646,17 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSimpleCaseExpression(s:SimpleCaseExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processSimpleCaseExpression', $context.debug);
-  let sce = ^SearchedCaseExpression(
+  let sce = $s->convertToSearchedCaseExpression();
+
+  processSearchedCaseExpression($sce, $expContext, $context);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::convertToSearchedCaseExpression(s:SimpleCaseExpression[1]):SearchedCaseExpression[1]
+{
+  ^SearchedCaseExpression(
     whenClauses = $s.whenClauses->map(wc | ^$wc(operand = ^ComparisonExpression(left = $s.operand, right = $wc.operand, operator = ComparisonOperator.EQUAL))),
     defaultValue = $s.defaultValue
   );
-
-  processSearchedCaseExpression($sce, $expContext, $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWhenClause(s:WhenClause[1], else:ValueSpecification[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -1929,6 +1952,21 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('reverse', reverseString_String_1__String_1_),
       processor('rtrim', String, {args, fc, ctx | processTrim(rtrim_String_1__String_1_, $args)}),
       processor('sha256', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.SHA256)}),
+      processor('split_part', String, {args, fc, ctx | 
+        assertEquals(3, $args->size(), 'split_part must specify three arguments');
+
+        let position = $args->at(2)->match([
+          i:InstanceValue[1] | $i.values->match([
+            i:Integer[1] | iv($i + 1),
+            a:Any[*] | fail('invalid split part position'); iv(1);
+          ]),
+          v:ValueSpecification[1] | sfe(plus_Integer_MANY__Integer_1_, iv([$args->at(2), iv(1)]))
+        ]);
+
+        let arguments = [$args->at(0), $args->at(1), $position];
+
+        sfe(splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, $arguments);
+      }),
       processor('starts_with', startsWith_String_1__String_1__Boolean_1_),
 
       processor('string_agg', true, false, String, {args, fc, ctx |
