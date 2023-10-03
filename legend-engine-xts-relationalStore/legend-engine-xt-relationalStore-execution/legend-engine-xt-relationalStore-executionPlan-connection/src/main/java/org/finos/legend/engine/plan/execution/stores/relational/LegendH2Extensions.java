@@ -131,11 +131,13 @@ public class LegendH2Extensions
 
     public static String legend_h2_extension_split_part(String string, String token, Integer part)
     {
-        if (part < 1) {
+        if (part < 1) 
+        {
             throw new IllegalArgumentException("Split part must be greater than zero");
         }
 
-        if (string == null) {
+        if (string == null) 
+        {
             return null;
         }
 
