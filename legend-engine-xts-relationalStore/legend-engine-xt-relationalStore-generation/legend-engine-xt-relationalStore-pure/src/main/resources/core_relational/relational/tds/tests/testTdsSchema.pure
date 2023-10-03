@@ -120,6 +120,16 @@ function <<test.Test>> meta::relational::tds::schema::tests::resolveSchemaTest()
                   ['tradeDate'], ['quantityA'])
             ->sort(asc('tradeDate'))
    }); 
+
+  assertSchemaRoundTripEquality({|
+         Trade.all()
+            ->groupBy([x|$x.date->adjust(0, DurationUnit.DAYS)], 
+               [ agg(x | $x.quantity, y | $y->sum()), agg(x | $x.quantity, y | $y->sum())], 
+               ['tradeDate', 'quantityA', 'quantityB']
+               )  
+            ->extendWithDigestOnColumns('_digest')
+            ->sort(asc('tradeDate'))
+   });    
 }
 
 function meta::relational::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
