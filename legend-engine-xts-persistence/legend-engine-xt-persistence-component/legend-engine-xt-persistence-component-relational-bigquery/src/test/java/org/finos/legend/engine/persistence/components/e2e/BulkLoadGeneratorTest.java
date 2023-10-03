@@ -47,25 +47,25 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
     private static final String APPEND_TIME = "append_time";
     private static final String BATCH_ID = "batch_id";
     private static final String BATCH_ID_VALUE = "xyz123";
-    private static final String col_int = "col_int";
-    private static final String col_string = "col_string";
-    private static final String col_decimal = "col_decimal";
-    private static final String col_datetime = "col_datetime";
-    private static final List<String> file_list = Arrays.asList("the uri to the staged_file1.csv on GCS", "the uri to the staged_file2.csv on GCS", "the uri to the staged_file3.csv on GCS");
+    private static final String COL_INT = "col_int";
+    private static final String COL_STRING = "col_string";
+    private static final String COL_DECIMAL = "col_decimal";
+    private static final String COL_DATETIME = "col_datetime";
+    private static final List<String> FILE_LIST = Arrays.asList("the uri to the staged_file1.csv on GCS", "the uri to the staged_file2.csv on GCS", "the uri to the staged_file3.csv on GCS");
     private static Field col1 = Field.builder()
-        .name(col_int)
+        .name(COL_INT)
         .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
         .build();
     private static Field col2 = Field.builder()
-        .name(col_string)
+        .name(COL_STRING)
         .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
         .build();
     private static Field col3 = Field.builder()
-        .name(col_decimal)
+        .name(COL_DECIMAL)
         .type(FieldType.of(DataType.DECIMAL, 5, 2))
         .build();
     private static Field col4 = Field.builder()
-        .name(col_datetime)
+        .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
         .build();
 
@@ -82,7 +82,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
                     .fileFormat(FileFormat.CSV)
-                    .addAllFiles(file_list).build())
+                    .addAllFiles(FILE_LIST).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -132,7 +132,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
         String expectedPath = "src/test/resources/expected/bulk_load/expected_table1.csv";
-        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, BATCH_ID, APPEND_TIME};
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, BATCH_ID, APPEND_TIME};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
     }
 }

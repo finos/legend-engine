@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FileFormat;
 import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
@@ -58,32 +57,32 @@ public class BulkLoadTest
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
     private static final String BATCH_ID_VALUE = "xyz123";
-    private static final String col_int = "col_int";
-    private static final String col_string = "col_string";
-    private static final String col_decimal = "col_decimal";
-    private static final String col_datetime = "col_datetime";
-    private static final String col_variant = "col_variant";
+    private static final String COL_INT = "col_int";
+    private static final String COL_STRING = "col_string";
+    private static final String COL_DECIMAL = "col_decimal";
+    private static final String COL_DATETIME = "col_datetime";
+    private static final String COL_VARIANT = "col_variant";
 
     private static Field col1 = Field.builder()
-        .name(col_int)
+        .name(COL_INT)
         .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
         .primaryKey(true)
         .build();
     private static Field col2 = Field.builder()
-        .name(col_string)
+        .name(COL_STRING)
         .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
         .build();
     private static Field col3 = Field.builder()
-        .name(col_decimal)
+        .name(COL_DECIMAL)
         .type(FieldType.of(DataType.DECIMAL, 5, 2))
         .build();
     private static Field col4 = Field.builder()
-        .name(col_datetime)
+        .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
         .build();
 
     private static Field col5 = Field.builder()
-        .name(col_variant)
+        .name(COL_VARIANT)
         .type(FieldType.of(DataType.VARIANT, Optional.empty(), Optional.empty()))
         .build();
 

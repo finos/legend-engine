@@ -64,26 +64,26 @@ public class BulkLoadTest extends BaseTest
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
     private static final String BATCH_ID_VALUE = "xyz123";
-    private static final String col_int = "col_int";
-    private static final String col_string = "col_string";
-    private static final String col_decimal = "col_decimal";
-    private static final String col_datetime = "col_datetime";
+    private static final String COL_INT = "col_int";
+    private static final String COL_STRING = "col_string";
+    private static final String COL_DECIMAL = "col_decimal";
+    private static final String COL_DATETIME = "col_datetime";
 
     private static Field col1 = Field.builder()
-            .name(col_int)
+            .name(COL_INT)
             .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
             .primaryKey(true)
             .build();
     private static Field col2 = Field.builder()
-            .name(col_string)
+            .name(COL_STRING)
             .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
             .build();
     private static Field col3 = Field.builder()
-            .name(col_decimal)
+            .name(COL_DECIMAL)
             .type(FieldType.of(DataType.DECIMAL, 5, 2))
             .build();
     private static Field col4 = Field.builder()
-        .name(col_datetime)
+        .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
         .build();
 
@@ -147,7 +147,7 @@ public class BulkLoadTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, BATCH_ID, APPEND_TIME};
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, BATCH_ID, APPEND_TIME};
 
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
@@ -219,7 +219,7 @@ public class BulkLoadTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, BATCH_ID};
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, BATCH_ID};
 
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
@@ -293,7 +293,7 @@ public class BulkLoadTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, DIGEST, BATCH_ID, APPEND_TIME};
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, DIGEST, BATCH_ID, APPEND_TIME};
 
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
@@ -370,7 +370,7 @@ public class BulkLoadTest extends BaseTest
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
-        String[] schema = new String[]{col_int.toUpperCase(), col_string.toUpperCase(), col_decimal.toUpperCase(), col_datetime.toUpperCase(), DIGEST.toUpperCase(), BATCH_ID.toUpperCase(), APPEND_TIME.toUpperCase()};
+        String[] schema = new String[]{COL_INT.toUpperCase(), COL_STRING.toUpperCase(), COL_DECIMAL.toUpperCase(), COL_DATETIME.toUpperCase(), DIGEST.toUpperCase(), BATCH_ID.toUpperCase(), APPEND_TIME.toUpperCase()};
 
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
