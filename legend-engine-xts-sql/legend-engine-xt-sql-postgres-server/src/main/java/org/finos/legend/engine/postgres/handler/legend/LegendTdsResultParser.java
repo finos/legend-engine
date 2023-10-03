@@ -104,7 +104,6 @@ public class LegendTdsResultParser
             acceptCurrent(JsonToken.START_OBJECT);
             String columnName = parseNextTextField(NAME);
             String type = parseNextTextField(TYPE);
-            //String relationType = parseNextTextField(RELATIONAL_TYPE);
             skipUntilToken(JsonToken.END_OBJECT);
             legendColumns.add(new LegendColumn(columnName, type));
         }
