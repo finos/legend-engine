@@ -98,10 +98,4 @@ public class ApiUtils
         return lockInfoDataset;
     }
 
-    public static Dataset getDedupedAndVersionedStagingDataset(IngestMode ingestMode)
-    {
-        return null;
-    }
-
-
 }

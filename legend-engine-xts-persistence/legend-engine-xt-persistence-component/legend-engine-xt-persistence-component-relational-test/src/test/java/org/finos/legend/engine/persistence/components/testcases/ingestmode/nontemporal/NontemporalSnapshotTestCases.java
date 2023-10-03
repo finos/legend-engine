@@ -207,12 +207,12 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
         RelationalTransformer transformer = new RelationalTransformer(getRelationalSink());
 
         // post actions
-        LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
-        SqlPlan physicalPlanForPostActions = transformer.generatePhysicalPlan(postActionsLogicalPlan);
-        verifyNontemporalSnapshotWithDropStagingData(physicalPlanForPostActions);
+        LogicalPlan postCleanupLogicalPlan = planner.buildLogicalPlanForPostCleanup(resources);
+        SqlPlan physicalPlanForPostCleanup = transformer.generatePhysicalPlan(postCleanupLogicalPlan);
+        verifyNontemporalSnapshotWithDropStagingData(physicalPlanForPostCleanup);
     }
 
-    public abstract void verifyNontemporalSnapshotWithDropStagingData(SqlPlan physicalPlanForPostActions);
+    public abstract void verifyNontemporalSnapshotWithDropStagingData(SqlPlan physicalPlanForPostCleanup);
 
     public abstract RelationalSink getRelationalSink();
 }

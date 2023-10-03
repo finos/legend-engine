@@ -15,10 +15,13 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import org.finos.legend.engine.persistence.components.IngestModeTest;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
@@ -39,6 +42,15 @@ public class DatasetVersioningHandlerTest extends IngestModeTest
             .name("my_table")
             .alias("stage")
             .schema(baseTableSchemaWithVersion)
+            .build();
+
+    Dataset derivedStagingDataset = DerivedDataset.builder()
+            .database("my_db")
+            .group("my_schema")
+            .name("my_table")
+            .alias("stage")
+            .schema(baseTableSchemaWithVersion)
+            .addDatasetFilters(DatasetFilter.of("bizDate", FilterType.EQUAL_TO, "2020-01-01"))
             .build();
 
     List<String> primaryKeys = Arrays.asList("id", "name");
@@ -86,7 +98,7 @@ public class DatasetVersioningHandlerTest extends IngestModeTest
     @Test
     public void testVersioningHandlerWithDeduplicationHandler()
     {
-        Dataset dedupedDataset = FailOnDuplicates.builder().build().accept(new DatasetDeduplicationHandler(stagingDataset));
+        Dataset dedupedDataset = FailOnDuplicates.builder().build().accept(new DatasetDeduplicationHandler(derivedStagingDataset));
         Dataset versionedDataset = AllVersionsStrategy.builder().versioningField("version").build().accept(new DatasetVersioningHandler(dedupedDataset, primaryKeys));
         Selection versionedSelection = (Selection) versionedDataset;
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
@@ -97,7 +109,7 @@ public class DatasetVersioningHandlerTest extends IngestModeTest
                 "stage.\"legend_persistence_count\" as \"legend_persistence_count\"," +
                 "DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" ASC) as \"legend_persistence_data_split\" " +
                 "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
-                "COUNT(*) as \"legend_persistence_count\" FROM \"my_db\".\"my_schema\".\"my_table\" as stage " +
+                "COUNT(*) as \"legend_persistence_count\" FROM \"my_db\".\"my_schema\".\"my_table\" as stage WHERE stage.\"bizDate\" = '2020-01-01' " +
                 "GROUP BY stage.\"id\", stage.\"name\", stage.\"version\", stage.\"biz_date\") as stage) as stage";
         Assertions.assertEquals(expectedSql, list.get(0));
     }

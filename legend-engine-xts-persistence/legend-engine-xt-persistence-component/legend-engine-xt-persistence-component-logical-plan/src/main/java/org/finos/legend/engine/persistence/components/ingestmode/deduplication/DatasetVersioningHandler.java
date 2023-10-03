@@ -31,7 +31,7 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     List<String> primaryKeys;
 
     private static final String RANK = "legend_persistence_rank";
-    private static final String DATA_SPLIT = "legend_persistence_data_split";
+    public static final String DATA_SPLIT = "legend_persistence_data_split";
 
     public DatasetVersioningHandler(Dataset dataset, List<String> primaryKeys)
     {

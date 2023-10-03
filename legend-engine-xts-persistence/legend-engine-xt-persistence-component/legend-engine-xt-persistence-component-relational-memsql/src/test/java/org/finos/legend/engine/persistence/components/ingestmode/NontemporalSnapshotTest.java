@@ -148,9 +148,9 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotWithDropStagingData(SqlPlan physicalPlanForPostActions)
+    public void verifyNontemporalSnapshotWithDropStagingData(SqlPlan physicalPlanForPostCleanup)
     {
-        List<String> sqlsForPostActions = physicalPlanForPostActions.getSqlList();
+        List<String> sqlsForPostActions = physicalPlanForPostCleanup.getSqlList();
         List<String> expectedSQL = new ArrayList<>();
         expectedSQL.add(MemsqlTestArtifacts.expectedDropTableQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, sqlsForPostActions);

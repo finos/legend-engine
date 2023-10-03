@@ -24,7 +24,7 @@ import java.util.List;
 public class DatasetDeduplicationHandler implements DeduplicationStrategyVisitor<Dataset>
 {
 
-    private static final String COUNT = "legend_persistence_count";
+    public static final String COUNT = "legend_persistence_count";
 
     Dataset stagingDataset;
 

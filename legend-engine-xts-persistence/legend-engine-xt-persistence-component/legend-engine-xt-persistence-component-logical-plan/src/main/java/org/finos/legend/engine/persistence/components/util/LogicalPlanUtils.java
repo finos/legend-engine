@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -36,6 +38,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Deriv
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -80,6 +83,7 @@ public class LogicalPlanUtils
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
+    public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
 
     private LogicalPlanUtils()
@@ -437,6 +441,42 @@ public class LogicalPlanUtils
                     .build();
         }
     }
+
+    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode)
+    {
+        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_BASE_NAME);
+        String datasetName = stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new) + UNDERSCORE + TEMP_STAGING_DATASET_BASE_NAME;
+        SchemaDefinition tempStagingSchema = ingestMode.versioningStrategy().accept(new DeriveTempStagingSchemaDefinition(stagingDataset.schema(), ingestMode.deduplicationStrategy()));
+        return DatasetDefinition.builder()
+                .schema(tempStagingSchema)
+                .database(stagingDataset.datasetReference().database())
+                .group(stagingDataset.datasetReference().group())
+                .name(datasetName)
+                .alias(alias)
+                .build();
+    }
+
+    public static Dataset getTempStagingDataset(IngestMode ingestMode, Dataset stagingDataset, List<String> primaryKeys)
+    {
+        DeduplicationStrategy deduplicationStrategy = ingestMode.deduplicationStrategy();
+        VersioningStrategy versioningStrategy = ingestMode.versioningStrategy();
+        Dataset dedupedDataset = deduplicationStrategy.accept(new DatasetDeduplicationHandler(stagingDataset));
+        Dataset versionedDataset = versioningStrategy.accept(new DatasetVersioningHandler(dedupedDataset, primaryKeys));
+        return versionedDataset;
+    }
+
+    public static boolean isTempTableNeededForStaging(IngestMode ingestMode)
+    {
+        boolean separateTableForStagingNeeded = true;
+        // Noversion & AllowDuplicates do not need a separate table
+        if (ingestMode.deduplicationStrategy() instanceof AllowDuplicates &&
+                ingestMode.versioningStrategy() instanceof NoVersioningStrategy)
+        {
+            separateTableForStagingNeeded = false;
+        }
+        return separateTableForStagingNeeded;
+    }
+
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));

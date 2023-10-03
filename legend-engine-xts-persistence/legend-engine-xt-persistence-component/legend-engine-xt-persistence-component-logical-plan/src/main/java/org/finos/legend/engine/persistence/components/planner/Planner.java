@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Dro
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -106,14 +107,24 @@ public abstract class Planner
     private final PlannerOptions plannerOptions;
     protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
+    private final Dataset tempStagingDataset;
+    protected final boolean isTempTableNeededForStaging;
 
     Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         this.datasets = datasets;
         this.ingestMode = ingestMode;
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
+        isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
+        this.tempStagingDataset = getTempStagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
+    }
+
+    private Dataset getTempStagingDataset()
+    {
+        Dataset stagingDataset = datasets.stagingDataset();
+        return isTempTableNeededForStaging ? LogicalPlanUtils.getTempStagingDatasetDefinition(stagingDataset, ingestMode) : stagingDataset;
     }
 
     private List<String> findCommonPrimaryKeysBetweenMainAndStaging()
@@ -129,7 +140,17 @@ public abstract class Planner
 
     protected Dataset stagingDataset()
     {
-        return datasets.stagingDataset();
+        return tempStagingDataset;
+    }
+
+    protected List<Value> getDataFields()
+    {
+        List<Value> dataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        // Remove the fields that are not copied to main - datasplit, count etc
+//        LogicalPlanUtils.removeField(dataFields, ingestMode().dataSplitField().get());
+        //
+//        LogicalPlanUtils.removeField(dataFields, ingestMode().dataSplitField().get());
+        return null;
     }
 
     protected Optional<MetadataDataset> metadataDataset()
@@ -189,21 +210,26 @@ public abstract class Planner
     public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        // Drop table or clean table based on flags
-        if (resources.externalDatasetImported())
+        if (plannerOptions.cleanupStagingData())
         {
-            operations.add(Drop.of(true, stagingDataset(), true));
-        }
-        else if (plannerOptions.cleanupStagingData())
-        {
-            operations.add(Delete.builder().dataset(stagingDataset()).build());
+            operations.add(Delete.builder().dataset(datasets.stagingDataset()).build());
         }
         return LogicalPlan.of(operations);
     }
 
     public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
     {
-        return null;
+        List<Operation> operations = new ArrayList<>();
+        // Drop table
+        if (resources.externalDatasetImported())
+        {
+            operations.add(Drop.of(true, datasets.stagingDataset(), true));
+        }
+        if (isTempTableNeededForStaging)
+        {
+            operations.add(Drop.of(true, tempStagingDataset, true));
+        }
+        return LogicalPlan.of(operations);
     }
 
     public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
