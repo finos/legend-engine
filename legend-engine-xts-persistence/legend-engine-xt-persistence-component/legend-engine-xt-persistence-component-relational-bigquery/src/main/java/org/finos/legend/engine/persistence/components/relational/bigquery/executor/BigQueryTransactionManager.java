@@ -106,7 +106,11 @@ public class BigQueryTransactionManager
         Job job = this.executeSql(sql);
         JobStatistics.QueryStatistics queryStatistics = job.getStatistics();
 
-        stats.put(StatisticName.ROWS_INSERTED, queryStatistics.getQueryPlan().get(0).getRecordsWritten());
+        long recordsWritten = queryStatistics.getQueryPlan().get(0).getRecordsWritten();
+        long recordsRead = queryStatistics.getQueryPlan().get(0).getRecordsRead();
+
+        stats.put(StatisticName.ROWS_INSERTED, recordsWritten);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, recordsRead - recordsWritten);
 
         return stats;
     }

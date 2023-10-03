@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
@@ -44,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_WITH_ERRORS;
 
 @Disabled
 public class BulkLoadExecutorTest extends BigQueryEndToEndTest
@@ -56,6 +59,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
     private static final String col_decimal = "col_decimal";
     private static final String col_datetime = "col_datetime";
     private static final List<String> file_list = Arrays.asList("the uri to the staged_file1.csv on GCS", "the uri to the staged_file2.csv on GCS", "the uri to the staged_file3.csv on GCS");
+    private static final List<String> bad_file_list = Arrays.asList("the uri to the bad_file.csv on GCS", "the uri to the staged_file1.csv on GCS");
     private static Field col1 = Field.builder()
         .name(col_int)
         .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
@@ -125,6 +129,68 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         long rowsInserted = (long) ingestorResult.statisticByName().get(ROWS_INSERTED);
+        long rowsWithErrors = (long) ingestorResult.statisticByName().get(ROWS_WITH_ERRORS);
         Assertions.assertEquals(7, rowsInserted);
+        Assertions.assertEquals(0, rowsWithErrors);
+        Assertions.assertEquals(IngestStatus.SUCCEEDED, ingestorResult.status());
+    }
+
+    @Test
+    public void testMilestoningFailure() throws IOException, InterruptedException
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormat.CSV)
+                    .loadOptions(LoadOptions.builder().maxBadRecords(10L).build())
+                    .addAllFiles(bad_file_list).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .group("demo").name("append_log")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        BulkLoadMetadataDataset bulkLoadMetadataDataset = BulkLoadMetadataDataset.builder().group("demo").name("bulk_load_batch_metadata").build();
+
+        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).bulkLoadMetadataDataset(bulkLoadMetadataDataset).build();
+
+        // Clean up
+        delete("demo", "main");
+        delete("demo", "staging");
+        delete("demo", "batch_metadata");
+        delete("demo", "append_log");
+        delete("demo", "bulk_load_batch_metadata");
+
+
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .build();
+
+        RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
+        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets);
+
+        // Verify
+        List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
+        String expectedPath = "src/test/resources/expected/bulk_load/expected_table2.csv";
+        String[] schema = new String[]{col_int, col_string, col_decimal, col_datetime, BATCH_ID, APPEND_TIME};
+        assertFileAndTableDataEquals(schema, expectedPath, tableData);
+
+        long rowsInserted = (long) ingestorResult.statisticByName().get(ROWS_INSERTED);
+        long rowsWithErrors = (long) ingestorResult.statisticByName().get(ROWS_WITH_ERRORS);
+        Assertions.assertEquals(4, rowsInserted);
+        Assertions.assertEquals(2, rowsWithErrors);
+        Assertions.assertEquals(IngestStatus.FAILED, ingestorResult.status());
     }
 }
