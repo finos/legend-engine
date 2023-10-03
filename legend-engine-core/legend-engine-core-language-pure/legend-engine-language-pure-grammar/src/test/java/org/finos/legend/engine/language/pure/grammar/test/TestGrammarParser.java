@@ -75,10 +75,14 @@ public class TestGrammarParser
                     }
                 }
             });
-            String testCode = this.getParserGrammarIdentifierInclusionTestCode(ListIterate.distinct(keywords));
-            if (testCode != null)
+
+            if (!keywords.isEmpty())
             {
-                test(testCode);
+                String testCode = this.getParserGrammarIdentifierInclusionTestCode(ListIterate.distinct(keywords));
+                if (testCode != null)
+                {
+                    test(testCode);
+                }
             }
         }
 

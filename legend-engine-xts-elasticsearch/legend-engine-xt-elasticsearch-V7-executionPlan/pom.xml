@@ -50,13 +50,19 @@
             <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
         </dependency>
 
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>
+            <artifactId>legend-engine-xt-elasticsearch-protocol-generator-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-V7-protocol</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-elasticsearch-V7-utils</artifactId>
         </dependency>
 
         <dependency>
@@ -122,11 +128,6 @@
         </dependency>
 
         <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

@@ -22,6 +22,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executi
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.context.Elasticsearch7ExecutionContext;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.data.ElasticsearchV7EmbeddedData;
 
 public class ElasticsearchV7ProtocolExtension implements PureProtocolExtension
 {
@@ -52,6 +54,10 @@ public class ElasticsearchV7ProtocolExtension implements PureProtocolExtension
                 // Execution Context
                 ProtocolSubTypeInfo.newBuilder(ExecutionContext.class)
                         .withSubtype(Elasticsearch7ExecutionContext.class, "elasticsearch7ExecutionContext")
+                        .build(),
+                // Embedded Data
+                ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
+                        .withSubtype(ElasticsearchV7EmbeddedData.class, "elasticsearch")
                         .build()
         ));
     }

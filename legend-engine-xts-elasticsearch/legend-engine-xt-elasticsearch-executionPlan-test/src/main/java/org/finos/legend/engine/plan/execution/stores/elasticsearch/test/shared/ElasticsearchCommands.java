@@ -28,15 +28,15 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.ElasticHttpResponseHandler;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.ElasticsearchV7RequestToHttpRequestVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL_Impl;
-import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.http.ElasticsearchV7RequestToHttpRequestVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -101,7 +101,7 @@ public class ElasticsearchCommands
     {
         try (CloseableHttpClient closeableHttpClient = getRestClient())
         {
-            return closeableHttpClient.execute(request, new BasicResponseHandler());
+            return closeableHttpClient.execute(request, new ElasticHttpResponseHandler());
         }
         catch (IOException e)
         {

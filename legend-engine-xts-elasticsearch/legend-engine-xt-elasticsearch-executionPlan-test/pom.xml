@@ -139,14 +139,16 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-V7-executionPlan</artifactId>
+            <scope>runtime</scope>
         </dependency>
-
-
-        <!-- scope runtime is by design, to test finding all extensions thru discovery flow-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-V7-grammar</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-elasticsearch-V7-utils</artifactId>
         </dependency>
 
         <!-- ES V7  -->

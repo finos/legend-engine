@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.service.extension;
 
+import java.util.Objects;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.testable.connection.TestConnectionBuilder;
 
 import java.io.Closeable;
@@ -56,6 +58,13 @@ public class TestRuntimeBuilder
             testStoreConnections.store = storeConnections.store;
             testStoreConnections.storeConnections = Lists.mutable.empty();
 
+            Store store = pureModelContextData.getElements()
+                    .stream()
+                    .filter(x -> x instanceof Store && Objects.equals(x.getPath(), storeConnections.store.path))
+                    .findAny()
+                    .map(Store.class::cast)
+                    .orElse(null);
+
             for (IdentifiedConnection identifiedConnection : storeConnections.storeConnections)
             {
                 ConnectionTestData connectionTestData = ListIterate.detect(testData.connectionsTestData, connectionData -> connectionData.id.equals(identifiedConnection.id));
@@ -74,7 +83,7 @@ public class TestRuntimeBuilder
                     }
                 }
 
-                Pair<Connection, List<Closeable>> connectionWithCloseables = identifiedConnection.connection.accept(new TestConnectionBuilder(embeddedData, pureModelContextData));
+                Pair<Connection, List<Closeable>> connectionWithCloseables = identifiedConnection.connection.accept(new TestConnectionBuilder(store, embeddedData, pureModelContextData));
 
                 closeables.addAll(connectionWithCloseables.getTwo());
 

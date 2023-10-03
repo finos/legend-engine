@@ -114,7 +114,7 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>
+            <artifactId>legend-engine-xt-elasticsearch-protocol-generator-utils</artifactId>
         </dependency>
 
         <dependency>

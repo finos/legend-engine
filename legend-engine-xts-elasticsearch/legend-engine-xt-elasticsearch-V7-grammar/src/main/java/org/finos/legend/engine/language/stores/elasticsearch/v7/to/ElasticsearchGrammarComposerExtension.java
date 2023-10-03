@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.language.stores.elasticsearch.v7.to;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function2;
@@ -24,9 +25,11 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
@@ -79,5 +82,11 @@ public class ElasticsearchGrammarComposerExtension implements PureGrammarCompose
 
             return null;
         });
+    }
+
+    @Override
+    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
+    {
+        return Collections.singletonList(ElasticsearchEmbeddedDataComposer::composeEmbeddedData);
     }
 }

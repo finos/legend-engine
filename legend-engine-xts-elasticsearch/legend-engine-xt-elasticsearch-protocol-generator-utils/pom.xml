@@ -7,7 +7,7 @@
         <version>4.30.3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>
+    <artifactId>legend-engine-xt-elasticsearch-protocol-generator-utils</artifactId>
     <packaging>jar</packaging>
     <name>Legend Engine - XT - ElasticSearch - Protocol - Utilities</name>
 

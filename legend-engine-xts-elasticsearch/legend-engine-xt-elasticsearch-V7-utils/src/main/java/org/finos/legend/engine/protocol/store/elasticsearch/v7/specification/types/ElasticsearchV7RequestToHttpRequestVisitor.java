@@ -13,18 +13,17 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.http;
+package org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -32,10 +31,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
-import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
-import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.apache.http.entity.StringEntity;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.BulkRequest;
@@ -55,25 +52,23 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.glo
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.create.CreateRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.delete.DeleteRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.get.GetRequest;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.AbstractRequestBaseVisitor;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestBaseVisitor<HttpUriRequest>
 {
     private static final ObjectMapper PROTOCOL_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
     private final URI url;
-    private final ExecutionState executionState;
+    private final Function<String, String> entityProcessor;
 
     public ElasticsearchV7RequestToHttpRequestVisitor(URI url)
     {
-        this(url, null);
+        this(url, Function.identity());
     }
 
-    public ElasticsearchV7RequestToHttpRequestVisitor(URI url, ExecutionState executionState)
+    public ElasticsearchV7RequestToHttpRequestVisitor(URI url, Function<String, String> entityProcessor)
     {
         this.url = url;
-        this.executionState = executionState;
+        this.entityProcessor = entityProcessor;
     }
 
     @Override
@@ -87,8 +82,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
     {
         try
         {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PrintWriter writer = new PrintWriter(out, true);
+            StringWriter writer = new StringWriter();
 
             boolean parseAsProtocol = true;
             for (Object operation : val.operations)
@@ -134,7 +128,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
                     parseAsProtocol = true;
                 }
                 ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writeValue(writer, operation);
-                writer.print('\n');
+                writer.append('\n');
             }
 
             writer.close();
@@ -153,7 +147,7 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
             }
 
             HttpPost httpPost = new HttpPost(this.url + path);
-            httpPost.setEntity(new EntityWithToString(out.toByteArray(), ContentType.create("application/x-ndjson")));
+            httpPost.setEntity(new EntityWithToString(writer.toString(), ContentType.create("application/x-ndjson")));
             return httpPost;
         }
         catch (IOException e)
@@ -246,12 +240,9 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
         try
         {
             String template = ElasticsearchObjectMapperProvider.OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(body);
-            String content = template;
-            if (this.executionState != null)
-            {
-                content = FreeMarkerExecutor.process(template, this.executionState);
-            }
-            request.setEntity(new EntityWithToString(content.getBytes(StandardCharsets.UTF_8), ContentType.APPLICATION_JSON));
+            String content = this.entityProcessor.apply(template);
+            ;
+            request.setEntity(new EntityWithToString(content, ContentType.APPLICATION_JSON));
             return request;
         }
         catch (IOException e)
@@ -260,17 +251,20 @@ public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestB
         }
     }
 
-    private static class EntityWithToString extends ByteArrayEntity
+    private static class EntityWithToString extends StringEntity
     {
-        public EntityWithToString(byte[] content, ContentType contentType) throws UnsupportedCharsetException
+        private final String contentAsString;
+
+        public EntityWithToString(String contentAsString, ContentType contentType) throws UnsupportedCharsetException
         {
-            super(content, contentType);
+            super(contentAsString, contentType);
+            this.contentAsString = contentAsString;
         }
 
         @Override
         public String toString()
         {
-            return new String(this.content);
+            return this.contentAsString;
         }
     }
 }

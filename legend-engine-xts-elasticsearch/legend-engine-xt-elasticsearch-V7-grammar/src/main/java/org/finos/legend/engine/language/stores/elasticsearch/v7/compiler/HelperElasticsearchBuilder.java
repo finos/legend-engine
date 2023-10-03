@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7StoreIndex;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7StoreIndexProperty;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.data.ElasticsearchV7EmbeddedData;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.data.ElasticsearchV7IndexEmbeddedData;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.PropertyBase;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.*;
@@ -119,5 +121,20 @@ public final class HelperElasticsearchBuilder
         org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = SourceInformationHelper.toM3SourceInformation(null);
         return new Root_meta_external_store_elasticsearch_v7_metamodel_executionPlan_context_Elasticsearch7ExecutionContext_Impl("exexCtx", sourceInformation, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::Elasticsearch7ExecutionContext"))
                 ._validate(true, sourceInformation, context.getExecutionSupport());
+    }
+
+    public static Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7EmbeddedData buildEmbeddedData(ElasticsearchV7EmbeddedData data, CompileContext compileContext)
+    {
+        Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7EmbeddedData cData = new  Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7EmbeddedData_Impl("", null, compileContext.pureModel.getType("meta::external::store::elasticsearch::v7::metamodel::store::data::ElasticsearchV7EmbeddedData"));
+        data.indexData.stream().map(x -> HelperElasticsearchBuilder.buildIndexEmbeddedData(x, compileContext)).forEach(cData::_indexDataAdd);
+        return cData;
+    }
+
+    private static Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7IndexEmbeddedData buildIndexEmbeddedData(ElasticsearchV7IndexEmbeddedData data, CompileContext compileContext)
+    {
+        Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7IndexEmbeddedData iData = new Root_meta_external_store_elasticsearch_v7_metamodel_store_data_ElasticsearchV7IndexEmbeddedData_Impl(data.index, null, compileContext.pureModel.getType("meta::external::store::elasticsearch::v7::metamodel::store::data::ElasticsearchV7IndexEmbeddedData"));
+        iData._index(data.index);
+        iData._documentsAsJson(data.documentsAsJson);
+        return iData;
     }
 }

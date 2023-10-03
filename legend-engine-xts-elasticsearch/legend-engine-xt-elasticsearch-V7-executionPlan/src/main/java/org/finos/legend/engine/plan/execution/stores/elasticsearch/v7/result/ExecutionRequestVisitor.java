@@ -54,13 +54,14 @@ import org.eclipse.collections.impl.block.function.checked.ThrowingFunction2;
 import org.eclipse.collections.impl.lazy.iterator.CollectIterator;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.TDSResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.ElasticsearchExecutionLoggingEventType;
-import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.http.ElasticsearchV7RequestToHttpRequestVisitor;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.ElasticsearchV7RequestToHttpRequestVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionMap;
@@ -580,7 +581,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                     processor = ExecutionRequestVisitor.this::processNotAggregateResponse;
                 }
 
-                HttpUriRequest request = this.searchRequest.accept(new ElasticsearchV7RequestToHttpRequestVisitor(ExecutionRequestVisitor.this.url, ExecutionRequestVisitor.this.executionState));
+                HttpUriRequest request = this.searchRequest.accept(new ElasticsearchV7RequestToHttpRequestVisitor(ExecutionRequestVisitor.this.url, s -> FreeMarkerExecutor.process(s, ExecutionRequestVisitor.this.executionState)));
                 String query = ((HttpEntityEnclosingRequest) request).getEntity().toString();
 
                 ElasticsearchV7ExecutionActivity executionActivity = new ElasticsearchV7ExecutionActivity(request.getURI(), query);

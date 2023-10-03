@@ -83,7 +83,7 @@ public class TestServiceStoreTestConnectionBuilder
     public void testServiceStoreTestConnectionBuilder() throws IOException
     {
         EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::ServiceStoreData")).data;
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(null, embeddedData, data);
         PackageableConnection serviceStoreConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::serviceStoreConnection".equals(ele.getPath()));
 
         Pair<Connection, List<Closeable>> testConnectionWithCloseables = serviceStoreConnection.connectionValue.accept(testConnectionBuilder);
@@ -103,7 +103,7 @@ public class TestServiceStoreTestConnectionBuilder
     public void testServiceStoreTestConnectionBuilderExceptionInAbsenceOfData()
     {
         EmbeddedData embeddedData = null;
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(null, embeddedData, data);
         PackageableConnection serviceStoreConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::serviceStoreConnection".equals(ele.getPath()));
 
         try

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.connection.ElasticsearchHttpContextProvider;
@@ -30,7 +29,10 @@ public class ElasticsearchV7StoreState implements StoreState
     private final List<ElasticsearchHttpContextProvider> providers = ElasticsearchHttpContextProvider.providers();
 
     private final HttpClient client = TracingHttpClientBuilder.create()
-            .setDefaultRequestConfig(RequestConfig.custom().setConnectTimeout(1000).setSocketTimeout(30000).build())
+            .setDefaultRequestConfig(RequestConfig.custom()
+                    .setConnectTimeout(60_000)
+                    .setSocketTimeout(60_000 * 5)
+                    .build())
             .disableRedirectHandling()
             .setConnectionTimeToLive(5, TimeUnit.MINUTES)
             .build();
