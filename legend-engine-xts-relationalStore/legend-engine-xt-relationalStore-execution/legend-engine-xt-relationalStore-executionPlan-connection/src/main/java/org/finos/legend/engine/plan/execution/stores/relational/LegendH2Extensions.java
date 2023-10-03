@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.value.Value;
 import org.h2.value.ValueBigint;
@@ -141,7 +142,7 @@ public class LegendH2Extensions
             return null;
         }
 
-        String[] parts = string.split(token);
+        String[] parts = StringUtils.split(string, token);
         int readjustedPart = part - 1;
 
         return parts.length > readjustedPart ? parts[readjustedPart] : null;
