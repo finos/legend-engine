@@ -14,15 +14,8 @@ import meta::rel::execute::*;
 import meta::rel::mapping::*;
 import meta::rel::contract::*;
 
-
-Class meta::rel::mapping::KeyInformation extends meta::pure::mapping::MappingInstanceData {
-   pk: Any[*];
-   sourceConnection: meta::pure::runtime::Connection[1];
-}
-
 Class meta::rel::mapping::QueryActivity extends meta::pure::mapping::Activity {
   relSource: String[1];
-  executionTimeInMS: Number[1];
 }
 
 function meta::rel::mapping::execution(
@@ -156,7 +149,7 @@ function <<access.private>> meta::rel::mapping::execution(
 
     ^meta::pure::mapping::Result<Any|*>(
       values=[], 
-      activities=[^QueryActivity(relSource=$compiled, executionTimeInMS=0)]
+      activities=[^QueryActivity(relSource=$compiled)]
     );
   }, {|
     // Fail with error message

@@ -35,11 +35,6 @@ function meta::rel::contract::contract(): StoreContract[1] {
     // --------------------------------------------------------------------------------------------- Core 
 
     // DEPRECTAED AND TO BE REMOVED
-    executeStoreQuery = meta::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
-    instance_equals = {
-      a:Any[1], b:Any[1] |
-        $a->getHiddenPayload()
-          ->cast(@meta::rel::mapping::KeyInformation).pk == $b->getHiddenPayload()->toOne()->cast(@meta::rel::mapping::KeyInformation).pk;
-    }
+    executeStoreQuery = meta::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_
   )
 }
