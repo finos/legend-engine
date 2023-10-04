@@ -8,9 +8,9 @@ function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): An
 
   assertEqualRel(
     [
-      'def output[:query](i, x) = Person(i, x)',
-      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
-      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+      'def output[:query](x) = Person(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
       ->doQuery(| Person.all())
@@ -23,9 +23,9 @@ function <<test.Test>> meta::rel::test::query::simple::testFilterByFirstName(): 
 
   assertEqualRel(
     [
-      'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John")(i, x)',
-      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
-      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+      'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John")(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
       ->doQuery(| 
@@ -41,9 +41,9 @@ function <<test.Test>> meta::rel::test::query::simple::testCombinedFilter(): Any
 
   assertEqualRel(
     [
-      'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(i, x)',
-      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
-      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+      'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
       ->doQuery(| 
@@ -59,7 +59,7 @@ function <<test.Test>> meta::rel::test::query::simple::testExists(): Any[*] {
 
   assertEqualRel(
     [
-      'def output = exists(x1 in Person: true)'
+      'def output = exists(x1 in Person: boolean_true)'
     ],
     $rai
       ->doQuery(| 
