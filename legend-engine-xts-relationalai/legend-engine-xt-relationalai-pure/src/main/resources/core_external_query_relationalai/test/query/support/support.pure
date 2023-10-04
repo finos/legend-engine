@@ -2,9 +2,9 @@ import meta::rel::runtime::*;
 import meta::rel::mapping::frontend::*;
 import meta::pure::mapping::*;
 
-/*function meta::rel::test::query::support::testConnection(schema: RAISchema[1]): TestConnection[1] {
+function meta::rel::test::query::support::testConnection(schema: RAISchema[1]): TestConnection[1] {
   $schema->TestConnection();
-}*/
+}
 
 function meta::rel::test::query::support::line(first: String[1], second: String[1]): String[1] {
   $first + '\n' + $second;
