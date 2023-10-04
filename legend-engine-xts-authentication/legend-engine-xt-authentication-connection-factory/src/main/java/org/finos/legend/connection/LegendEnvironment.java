@@ -21,16 +21,13 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.vault.CredentialVault;
-import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * This is the runtime instance of configuration for Legend Engine, the place we package common configs,
@@ -74,7 +71,6 @@ public class LegendEnvironment
     {
         private final List<CredentialVault> vaults = Lists.mutable.empty();
         private final Map<String, StoreSupport> storeSupportsIndex = new LinkedHashMap<>();
-        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
         public Builder()
         {
@@ -124,25 +120,6 @@ public class LegendEnvironment
                 throw new RuntimeException(String.format("Can't register store support: found multiple store supports with identifier '%s'", storeSupport.getIdentifier()));
             }
             this.storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
-        }
-
-        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
-        {
-            this.authenticationMechanisms.addAll(authenticationMechanisms);
-            return this;
-        }
-
-
-        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
-        {
-            this.authenticationMechanisms.addAll(Lists.mutable.with(authenticationMechanisms));
-            return this;
-        }
-
-        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
-        {
-            this.authenticationMechanisms.add(authenticationMechanism);
-            return this;
         }
 
         public LegendEnvironment build()
