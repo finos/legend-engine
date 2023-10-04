@@ -61,18 +61,16 @@ public abstract class AbstractConnectionFactoryTest<T>
                         new EnvironmentCredentialVault()
                 )
                 .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder()
+                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
                                 .withIdentifier("Postgres")
-                                .withDatabase(DatabaseType.POSTGRES)
                                 .withAuthenticationMechanismConfigurations(
                                         new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
                                                 UserPasswordAuthenticationConfiguration.class
                                         ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder()
+                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
                                 .withIdentifier("Snowflake")
-                                .withDatabase(DatabaseType.SNOWFLAKE)
                                 .withAuthenticationMechanismConfigurations(
                                         new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
                                                 EncryptedPrivateKeyPairAuthenticationConfiguration.class

@@ -64,9 +64,8 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
                 .withVault(new SystemPropertiesCredentialVault())
                 .withVault(new EnvironmentCredentialVault())
                 .withVaults(this.credentialVaults)
-                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder()
+                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
                         .withIdentifier("Postgres")
-                        .withDatabase(DatabaseType.POSTGRES)
                         .withAuthenticationMechanismConfigurations(
                                 new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(UserPasswordAuthenticationConfiguration.class).build()
                         ).build())

@@ -36,19 +36,18 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
 
     public static class Builder
     {
+        private final Database database;
         private String identifier;
-        private Database database;
         private final List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations = Lists.mutable.empty();
+
+        public Builder(Database database)
+        {
+            this.database = database;
+        }
 
         public Builder withIdentifier(String identifier)
         {
             this.identifier = identifier;
-            return this;
-        }
-
-        public Builder withDatabase(Database database)
-        {
-            this.database = database;
             return this;
         }
 
