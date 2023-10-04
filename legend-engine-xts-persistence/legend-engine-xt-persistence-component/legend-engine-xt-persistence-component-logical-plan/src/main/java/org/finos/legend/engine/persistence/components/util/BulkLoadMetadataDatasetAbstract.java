@@ -95,7 +95,7 @@ public interface BulkLoadMetadataDatasetAbstract
             .group(group())
             .name(name())
             .schema(SchemaDefinition.builder()
-                .addFields(Field.builder().name(batchIdField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
+                .addFields(Field.builder().name(batchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
                 .addFields(Field.builder().name(batchStartTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchEndTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())

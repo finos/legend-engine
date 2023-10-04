@@ -177,7 +177,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
        sink."batch_id_out" = 999999999 and
        not exists
        (
-        sink."digest" <> stage."digest" and sink.primaryKeys = stage.primaryKeys
+        sink."digest" = stage."digest" and sink.primaryKeys = stage.primaryKeys
        )
 
       Partition :

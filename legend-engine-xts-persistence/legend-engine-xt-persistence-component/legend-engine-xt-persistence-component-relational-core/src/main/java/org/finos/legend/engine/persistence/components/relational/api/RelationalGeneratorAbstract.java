@@ -114,11 +114,7 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    @Default
-    public String bulkLoadBatchIdValue()
-    {
-        return UUID.randomUUID().toString();
-    }
+    public abstract Optional<String> bulkLoadTaskIdValue();
 
     @Default
     public String bulkLoadBatchStatusPattern()
@@ -141,6 +137,7 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
             .build();
     }
 
@@ -152,7 +149,6 @@ public abstract class RelationalGeneratorAbstract
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
             .infiniteBatchIdValue(infiniteBatchIdValue())
-            .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
             .bulkLoadBatchStatusPattern(bulkLoadBatchStatusPattern())
             .batchIdPattern(batchIdPattern());
 

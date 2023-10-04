@@ -77,6 +77,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class H2Sink extends AnsiSqlSink
@@ -226,6 +227,7 @@ public class H2Sink extends AnsiSqlSink
         IngestorResult result;
         result = IngestorResult.builder()
             .status(IngestStatus.SUCCEEDED)
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
             .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))

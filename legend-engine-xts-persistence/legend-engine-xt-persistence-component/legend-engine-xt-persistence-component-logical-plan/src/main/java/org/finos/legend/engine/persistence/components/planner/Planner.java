@@ -97,6 +97,8 @@ public abstract class Planner
         {
             return false;
         }
+
+        Optional<String> bulkLoadTaskIdValue();
     }
 
     private final Datasets datasets;

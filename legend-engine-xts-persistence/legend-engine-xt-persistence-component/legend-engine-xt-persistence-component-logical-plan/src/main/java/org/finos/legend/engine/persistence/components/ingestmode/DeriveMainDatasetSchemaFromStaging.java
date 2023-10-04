@@ -149,7 +149,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         }
         Field batchIdField = Field.builder()
                 .name(bulkLoad.batchIdField())
-                .type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty()))
+                .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
                 .primaryKey(false)
                 .build();
         mainSchemaFields.add(batchIdField);

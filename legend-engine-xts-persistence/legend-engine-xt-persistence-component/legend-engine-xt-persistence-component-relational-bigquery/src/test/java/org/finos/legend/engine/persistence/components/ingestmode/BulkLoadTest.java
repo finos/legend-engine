@@ -56,7 +56,7 @@ public class BulkLoadTest
     private static final String DIGEST = "digest";
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
-    private static final String BATCH_ID_VALUE = "xyz123";
+    private static final String TASK_ID_VALUE = "xyz123";
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -66,7 +66,6 @@ public class BulkLoadTest
     private static Field col1 = Field.builder()
         .name(COL_INT)
         .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-        .primaryKey(true)
         .build();
     private static Field col2 = Field.builder()
         .name(COL_STRING)
@@ -118,17 +117,19 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .batchIdPattern("{NEXT_BATCH_ID}")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
-            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` STRING,`append_time` DATETIME)";
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64,`append_time` DATETIME)";
 
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
@@ -136,12 +137,16 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
+
+        String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
+            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"xyz123\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
         Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
@@ -150,7 +155,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithDigestNotGeneratedAuditEnabledAllOptions()
+    public void testBulkLoadWithDigestNotGeneratedAuditEnabledAllOptionsNoTaskId()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
             .batchIdField(BATCH_ID)
@@ -185,17 +190,17 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
-            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` STRING,`append_time` DATETIME)";
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64,`append_time` DATETIME)";
 
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
@@ -204,12 +209,17 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
+
+        String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
+            "(SELECT (SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+            "PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
         Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
@@ -244,7 +254,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .bulkLoadTaskIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -254,7 +264,7 @@ public class BulkLoadTest
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
-            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` STRING)";
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64)";
 
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
@@ -262,7 +272,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,'xyz123' " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -302,7 +312,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .bulkLoadTaskIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -312,7 +322,7 @@ public class BulkLoadTest
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
-            "(`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`digest` STRING,`batch_id` STRING,`append_time` DATETIME)";
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`digest` STRING,`batch_id` INT64,`append_time` DATETIME)";
 
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
@@ -320,7 +330,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `digest`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -360,7 +370,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+            .bulkLoadTaskIdValue(TASK_ID_VALUE)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
@@ -371,7 +381,7 @@ public class BulkLoadTest
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_NAME`" +
-            "(`COL_INT` INT64 NOT NULL PRIMARY KEY NOT ENFORCED,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON,`DIGEST` STRING,`BATCH_ID` STRING,`APPEND_TIME` DATETIME)";
+            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON,`DIGEST` STRING,`BATCH_ID` INT64,`APPEND_TIME` DATETIME)";
 
         String expectedCopySql = "LOAD DATA OVERWRITE `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` " +
             "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON) " +
@@ -379,7 +389,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
             "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
-            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),'xyz123',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.`BATCH_ID`),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
             "FROM `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -452,7 +462,7 @@ public class BulkLoadTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(BigQuerySink.get())
-                .bulkLoadBatchIdValue(BATCH_ID_VALUE)
+                .bulkLoadTaskIdValue(TASK_ID_VALUE)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();

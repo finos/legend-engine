@@ -77,7 +77,6 @@ import java.util.Optional;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.UUID;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
@@ -98,8 +97,8 @@ public abstract class RelationalIngestorAbstract
     private static final String STAGING = "staging";
     private static final String UNDERSCORE = "_";
     private static final String SINGLE_QUOTE = "'";
-    private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
 
+    public static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
     public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
     private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
 
@@ -161,17 +160,13 @@ public abstract class RelationalIngestorAbstract
         return Collections.emptySet();
     }
 
-    @Default
-    public String bulkLoadBatchIdValue()
-    {
-        return UUID.randomUUID().toString();
-    }
-
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
 
     public abstract RelationalSink relationalSink();
+
+    public abstract Optional<String> bulkLoadTaskIdValue();
 
     @Derived
     protected PlannerOptions plannerOptions()
@@ -182,6 +177,7 @@ public abstract class RelationalIngestorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
             .build();
     }
 
@@ -494,7 +490,7 @@ public abstract class RelationalIngestorAbstract
                 .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
-                .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
+                .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());
@@ -701,9 +697,9 @@ public abstract class RelationalIngestorAbstract
     private Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                              Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
     {
-        if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL))
+        if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL) || ingestMode instanceof BulkLoad)
         {
-            LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
+            LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
             List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
             Optional<Object> nextBatchId = Optional.ofNullable(tabularData.stream()
                 .findFirst()
