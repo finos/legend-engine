@@ -16,6 +16,7 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
@@ -80,8 +81,8 @@ public class TestPostgresConnection
             return new StoreInstance.Builder(this.environment)
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
                     .withStoreSupportIdentifier("Postgres")
-                    .withAuthenticationMechanisms(
-                            AuthenticationMechanismType.USER_PASSWORD
+                    .withAuthenticationMechanismConfigurations(
+                            new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).build()
                     )
                     .withConnectionSpecification(connectionSpecification)
                     .build();

@@ -32,15 +32,12 @@ public class InstrumentedLegendEnvironment extends LegendEnvironment
     protected final MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
     protected final MutableMap<String, StoreSupport> storeSupportsIndex;
 
-    protected final MutableMap<String, AuthenticationMechanism> authenticationMechanismsIndex;
-
-    protected InstrumentedLegendEnvironment(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex, Map<String, AuthenticationMechanism> authenticationMechanismsIndex)
+    protected InstrumentedLegendEnvironment(List<CredentialVault> vaults, Map<String, StoreSupport> storeSupportsIndex)
     {
-        super(vaults, storeSupportsIndex, authenticationMechanismsIndex);
+        super(vaults, storeSupportsIndex);
         this.vaults = super.vaults.toList();
         this.vaultsIndex = super.vaultsIndex.toMap();
         this.storeSupportsIndex = super.storeSupportsIndex.toMap();
-        this.authenticationMechanismsIndex = super.authenticationMechanismsIndex.toMap();
     }
 
     public void injectVault(CredentialVault vault)

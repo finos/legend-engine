@@ -19,6 +19,7 @@ import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 import java.sql.Connection;
@@ -29,7 +30,7 @@ public class StaticJDBCConnectionBuilder
 {
     public static class WithPlaintextUsernamePassword extends ConnectionBuilder<Connection, PlaintextUserPasswordCredential, StaticJDBCConnectionSpecification>
     {
-        public Connection getConnection(StoreInstance storeInstance, PlaintextUserPasswordCredential credential) throws Exception
+        public Connection getConnection(StoreInstance storeInstance, PlaintextUserPasswordCredential credential, Identity identity) throws Exception
         {
             StoreSupport storeSupport = storeInstance.getStoreSupport();
             StaticJDBCConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);

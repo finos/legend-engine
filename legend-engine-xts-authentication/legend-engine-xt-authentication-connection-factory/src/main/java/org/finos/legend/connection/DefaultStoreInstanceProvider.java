@@ -71,7 +71,7 @@ public class DefaultStoreInstanceProvider implements StoreInstanceProvider
         {
             if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
             {
-                throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
+                throw new RuntimeException(String.format("Found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
             }
             this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
         }

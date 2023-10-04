@@ -15,23 +15,18 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class RelationalDatabaseStoreSupport extends StoreSupport
 {
     private final Database database;
-    private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
 
-    private RelationalDatabaseStoreSupport(String identifier, Database database, List<AuthenticationMechanism> authenticationMechanisms)
+    private RelationalDatabaseStoreSupport(String identifier, Database database, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
     {
-        super(identifier, authenticationMechanisms);
-        this.database = database;
+        super(identifier, authenticationMechanismConfigurations);
+        this.database = Objects.requireNonNull(database, "Relational database store support database type is missing");
     }
 
     public Database getDatabase()
@@ -43,7 +38,7 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
     {
         private String identifier;
         private Database database;
-        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
+        private final List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations = Lists.mutable.empty();
 
         public Builder withIdentifier(String identifier)
         {
@@ -57,30 +52,30 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfiguration(AuthenticationMechanismConfiguration authenticationMechanismConfiguration)
         {
-            this.authenticationMechanisms.addAll(authenticationMechanisms);
+            this.authenticationMechanismConfigurations.add(authenticationMechanismConfiguration);
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfigurations(List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.addAll(Lists.mutable.of(authenticationMechanisms));
+            this.authenticationMechanismConfigurations.addAll(authenticationMechanismConfigurations);
             return this;
         }
 
-        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
+        public Builder withAuthenticationMechanismConfigurations(AuthenticationMechanismConfiguration... authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.add(authenticationMechanism);
+            this.authenticationMechanismConfigurations.addAll(Lists.mutable.of(authenticationMechanismConfigurations));
             return this;
         }
 
         public RelationalDatabaseStoreSupport build()
         {
             return new RelationalDatabaseStoreSupport(
-                    Objects.requireNonNull(this.identifier, "Store support identifier is required"),
-                    Objects.requireNonNull(this.database, "Store support database type is required"),
-                    new ArrayList<>(this.authenticationMechanisms)
+                    this.identifier,
+                    this.database,
+                    this.authenticationMechanismConfigurations
             );
         }
     }

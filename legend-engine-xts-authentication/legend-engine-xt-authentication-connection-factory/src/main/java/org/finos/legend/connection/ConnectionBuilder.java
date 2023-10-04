@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -23,7 +24,7 @@ import java.util.Objects;
 
 public abstract class ConnectionBuilder<CONNECTION, CRED extends Credential, SPEC extends ConnectionSpecification>
 {
-    public abstract CONNECTION getConnection(StoreInstance storeInstance, CRED credential) throws Exception;
+    public abstract CONNECTION getConnection(StoreInstance storeInstance, CRED credential, Identity identity) throws Exception;
 
     public Class<? extends Credential> getCredentialType()
     {

@@ -21,8 +21,8 @@ import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.JDBCConnectionManager;
 import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 import java.sql.Connection;
@@ -37,7 +37,7 @@ public class SnowflakeConnectionBuilder
     public static class WithKeyPair extends ConnectionBuilder<Connection, PrivateKeyCredential, SnowflakeConnectionSpecification>
     {
         @Override
-        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential) throws Exception
+        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential, Identity identity) throws Exception
         {
             SnowflakeConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
             StoreSupport storeSupport = storeInstance.getStoreSupport();
