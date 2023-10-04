@@ -1,10 +1,5 @@
 import meta::rel::runtime::*;
 
-/** 
-    Mock type for testing purposes. Unfortunatly introducing an abstract type for
-    `TestRAIConnection` and `RAIConnection` does not work, as we are running into
-    an apparent compiler bug.
-  */
 Class meta::rel::runtime::TestConnection extends meta::pure::runtime::Connection {
   onExecute: Function<{String[1]->Any[*]}>[0..1];
 }
@@ -18,20 +13,6 @@ function meta::rel::runtime::TestConnection(
 
 function meta::rel::runtime::TestConnection(element: Any[1]): TestConnection[1] {
   TestConnection($element, []);
-}
-
-Class meta::rel::runtime::RAICloudCredentials {
-  clientId: String[1];
-  clientSecret: String[1];
-  clientCredentialsURL: String[0..1];
-}
-
-function meta::rel::runtime::RAICloudCredentials(clientId: String[1], clientSecret: String[1], clientCredentialsURL: String[0..1]): RAICloudCredentials[1] {
-  ^RAICloudCredentials(clientId=$clientId, clientSecret=$clientSecret, clientCredentialsURL=$clientCredentialsURL);
-}
-
-function meta::rel::runtime::RAICloudCredentials(clientId: String[1], clientSecret: String[1]): RAICloudCredentials[1] {
-  RAICloudCredentials($clientId, $clientSecret, []);
 }
 
 function meta::rel::runtime::query(connection: TestConnection[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {  
