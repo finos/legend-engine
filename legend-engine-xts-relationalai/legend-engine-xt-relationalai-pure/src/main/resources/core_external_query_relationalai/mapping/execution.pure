@@ -29,30 +29,15 @@ function meta::rel::mapping::execution(
 ): meta::pure::mapping::Result<Any|*>[1] {
   if (!$sq.store->instanceOf(RAIDatabase), | fail('Rel queries can only be executed against an instance of `RAIDatabase`'), | '');
 
-  $sq.fe->execution(
-    $sq.store->cast(@RAIDatabase),
-    $mapping,
-    $runtime,
-    $sq.inScopeVars,
-    $exeCtx,
-    $extensions,
-    $debug
-  );
+  $sq.fe->execution($mapping, $debug);
 }
 
 function <<access.private>> meta::rel::mapping::execution(
   query: FunctionExpression[1],
-  store: RAIDatabase[1],
   mapping: meta::pure::mapping::Mapping[1],
-  runtime: meta::pure::runtime::Runtime[1], 
-  inScopeVars: Map<String, List<Any>>[1],
-  exeCtx: meta::pure::runtime::ExecutionContext[1], 
-  extensions: meta::pure::extension::Extension[*], 
   debug: DebugContext[1]
 ): meta::pure::mapping::Result<Any|*>[1] {
   let state = CompilationState($debug);
-  // TODO: safe cast
-  let connection = $runtime.connections->at(0)->cast(@TestConnection);
 
   let result = $query
     ->intoPExpr()
