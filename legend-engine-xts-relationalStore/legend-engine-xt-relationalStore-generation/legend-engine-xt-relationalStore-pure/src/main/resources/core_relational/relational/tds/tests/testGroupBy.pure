@@ -468,7 +468,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmpt
    meta::relational::functions::asserts::assertSameSQL('select "Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
 }
 
-function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByWithEnumArgumentFunctionCall():Boolean[1]
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testTDSGroupByWithEnumArgumentFunctionCall():Boolean[1]
 {
    let result = execute(
       meta::pure::router::preeval::preval(|Trade.all()
