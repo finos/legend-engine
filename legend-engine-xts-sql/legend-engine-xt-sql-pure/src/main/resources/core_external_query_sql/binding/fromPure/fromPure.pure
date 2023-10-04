@@ -1942,7 +1942,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('char_length', length_String_1__Integer_1_),
       processor('chr', char_Integer_1__String_1_),
       processor('concat', String, {args, fc, ctx | 
-        sfe(plus_String_MANY__String_1_, iv(args))
+        sfe(plus_String_MANY__String_1_, iv($args))
       }),
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
