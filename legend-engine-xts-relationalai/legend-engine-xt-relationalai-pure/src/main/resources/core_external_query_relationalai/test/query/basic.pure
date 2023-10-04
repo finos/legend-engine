@@ -1,9 +1,9 @@
 import meta::rel::test::query::support::*;
-import meta::rel::test::query::models::simple::*;
+import meta::rel::test::query::models::basicmodel::*;
 import meta::rel::mapping::*;
 import meta::rel::utils::assert::*;
 
-function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): Any[*] {
+function <<test.Test>> meta::rel::test::query::basic::testQueryAllPersons(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
@@ -18,7 +18,7 @@ function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): An
   );
 }
 
-function <<test.Test>> meta::rel::test::query::simple::testFilterByFirstName(): Any[*] {
+function <<test.Test>> meta::rel::test::query::basic::testFilterByFirstName(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
@@ -36,7 +36,7 @@ function <<test.Test>> meta::rel::test::query::simple::testFilterByFirstName(): 
   );
 }
 
-function <<test.Test>> meta::rel::test::query::simple::testCombinedFilter(): Any[*] {
+function <<test.Test>> meta::rel::test::query::basic::testCombinedFilter(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
@@ -54,7 +54,7 @@ function <<test.Test>> meta::rel::test::query::simple::testCombinedFilter(): Any
   );
 }
 
-function <<test.Test>> meta::rel::test::query::simple::testExists(): Any[*] {
+function <<test.Test>> meta::rel::test::query::basic::testExists(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
@@ -70,7 +70,7 @@ function <<test.Test>> meta::rel::test::query::simple::testExists(): Any[*] {
   );
 }
 
-function <<test.Test>> meta::rel::test::query::simple::testMap(): Any[*] {
+function <<test.Test>> meta::rel::test::query::basic::testMap(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
