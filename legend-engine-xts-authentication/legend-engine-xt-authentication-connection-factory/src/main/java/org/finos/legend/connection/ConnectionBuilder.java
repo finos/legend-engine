@@ -21,9 +21,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-public abstract class ConnectionBuilder<T, CRED extends Credential, SPEC extends ConnectionSpecification>
+public abstract class ConnectionBuilder<CONNECTION, CRED extends Credential, SPEC extends ConnectionSpecification>
 {
-    public abstract T getConnection(CRED credential, SPEC connectionSpecification, StoreInstance storeInstance) throws Exception;
+    public abstract CONNECTION getConnection(StoreInstance storeInstance, CRED credential) throws Exception;
 
     public Class<? extends Credential> getCredentialType()
     {
@@ -40,6 +40,11 @@ public abstract class ConnectionBuilder<T, CRED extends Credential, SPEC extends
         Type genericSuperClass = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
         return parameterizedType.getActualTypeArguments();
+    }
+
+    protected SPEC getCompatibleConnectionSpecification(StoreInstance storeInstance)
+    {
+        return (SPEC) storeInstance.getConnectionSpecification(this.getConnectionSpecificationType());
     }
 
     public static class Key

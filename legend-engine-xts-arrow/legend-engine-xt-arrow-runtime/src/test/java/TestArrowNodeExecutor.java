@@ -66,7 +66,7 @@ public class TestArrowNodeExecutor
             RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "GMT", conn, null, null, null, new RequestContext());
 
             ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
-
+            Assert.assertEquals(nodeExecute.resultFormat, "application/x.arrow");
             nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
             assertArrow(outputStream, "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\n" +
                     "1\tA\t1577854800000\ttrue\n" +

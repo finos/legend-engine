@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.generation;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.pure.generated.Root_meta_external_function_description_openapi_metamodel_Server_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.core_external_format_openapi_transformation_fromPure_pureToOpenApi;
@@ -26,6 +29,7 @@ import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExtension
 {
@@ -60,7 +64,8 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
     {
         try
         {
-            String result = core_external_format_openapi_transformation_fromPure_pureToOpenApi.Root_meta_external_function_description_openapi_transformation_fromPure_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_function_description_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
+            RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> packageableElements = Lists.immutable.withAll(data.getElements().stream().filter(e -> e instanceof Class).map(e -> pureModel.getPackageableElement(e._package + "::" +  e.name)).collect(Collectors.toList()));
+            String result = core_external_format_openapi_transformation_fromPure_pureToOpenApi.Root_meta_external_function_description_openapi_transformation_fromPure_serviceToOpenApi_Service_1__PackageableElement_MANY__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, packageableElements, new Root_meta_external_function_description_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
             Artifact output = new Artifact(result, element.getName() + "_spec.json", "json");
             return Collections.singletonList(output);
         }

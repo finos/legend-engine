@@ -15,7 +15,7 @@
 package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.CredentialBuilder;
-import org.finos.legend.connection.EnvironmentConfiguration;
+import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
@@ -23,10 +23,10 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 public class UserPasswordCredentialBuilder extends CredentialBuilder<UserPasswordAuthenticationConfiguration, Credential, PlaintextUserPasswordCredential>
 {
     @Override
-    public PlaintextUserPasswordCredential makeCredential(Identity identity, UserPasswordAuthenticationConfiguration authenticationConfiguration, Credential credential, EnvironmentConfiguration environmentConfiguration) throws Exception
+    public PlaintextUserPasswordCredential makeCredential(Identity identity, UserPasswordAuthenticationConfiguration authenticationConfiguration, Credential credential, LegendEnvironment environment) throws Exception
     {
 
-        String password = environmentConfiguration.lookupVaultSecret(authenticationConfiguration.password, identity);
+        String password = environment.lookupVaultSecret(authenticationConfiguration.password, identity);
         return new PlaintextUserPasswordCredential(authenticationConfiguration.username, password);
     }
 }

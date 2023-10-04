@@ -176,7 +176,7 @@ function <<access.private>> meta::relational::functions::database::resultSetToCo
                      ^Column(name = $newColumnName, type = $columnType, nullable = $isNullable, owner=$table););
 }
 
-function <<access.private>> meta::relational::functions::database::sqlTextToRelationalDataTypeMap():Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]
+function meta::relational::functions::database::sqlTextToRelationalDataTypeMap():Map<String, Function<{Integer[1], Integer[0..1]->meta::relational::metamodel::datatype::DataType[1]}>>[1]
 {
    newMap([
       pair('INT',      {columnSize:Integer[1], decimalDigits:Integer[0..1]|^meta::relational::metamodel::datatype::Integer()}),

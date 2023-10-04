@@ -11,6 +11,7 @@ IMPORT:                                     'import';
 
 // -------------------------------------- MASTERY --------------------------------------------
 MASTER_RECORD_DEFINITION:                       'MasterRecordDefinition';
+MASTER_RECORD_DEFINITIONS:                      'masterRecordDefinitions';
 
 // -------------------------------------- RECORD SERVICE --------------------------------------
 PARSE_SERVICE:                                  'parseService';
@@ -79,6 +80,10 @@ ACQUISITION_PROTOCOL:                           'acquisitionProtocol';
 
 // -------------------------------------- CONNECTION --------------------------------------
 MASTERY_CONNECTION:                             'MasteryConnection';
+
+// -------------------------------------- MASTERY_RUNTIME --------------------------------------
+MASTERY_RUNTIME:                                'MasteryRuntime';
+RUNTIME:                                        'runtime';
 
 // -------------------------------------- COMMON --------------------------------------
 

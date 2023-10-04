@@ -140,7 +140,7 @@ Class meta::external::query::sql::metamodel::IntegerLiteral extends meta::extern
 Class meta::external::query::sql::metamodel::StringLiteral extends meta::external::query::sql::metamodel::Literal
 {
   value: String[1];
-  quoted: Boolean[1];
+  quoted: Boolean[0..1];
 }
 
 Class meta::external::query::sql::metamodel::ArrayLiteral extends meta::external::query::sql::metamodel::Literal
@@ -168,6 +168,14 @@ Class meta::external::query::sql::metamodel::NamedArgumentExpression extends met
 {
   name: String[1];
   expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::LikePredicate extends meta::external::query::sql::metamodel::Expression
+{
+  value: meta::external::query::sql::metamodel::Expression[1];
+  pattern: meta::external::query::sql::metamodel::Expression[1];
+  escape: meta::external::query::sql::metamodel::Expression[0..1];
+  ignoreCase: Boolean[1];
 }
 
 Class meta::external::query::sql::metamodel::SortItem extends meta::external::query::sql::metamodel::Node
@@ -231,6 +239,7 @@ Class meta::external::query::sql::metamodel::FunctionCall extends meta::external
   arguments: meta::external::query::sql::metamodel::Expression[*];
   filter: meta::external::query::sql::metamodel::Expression[0..1];
   window: meta::external::query::sql::metamodel::Window[0..1];
+  group: meta::external::query::sql::metamodel::Group[0..1];
 }
 
 Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression
@@ -322,6 +331,11 @@ Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::exte
   min: meta::external::query::sql::metamodel::Expression[1];
   max: meta::external::query::sql::metamodel::Expression[1];
   value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Group extends meta::external::query::sql::metamodel::Statement
+{
+  orderBy: meta::external::query::sql::metamodel::SortItem[1];
 }
 
 Class meta::external::query::sql::metamodel::Window extends meta::external::query::sql::metamodel::Statement

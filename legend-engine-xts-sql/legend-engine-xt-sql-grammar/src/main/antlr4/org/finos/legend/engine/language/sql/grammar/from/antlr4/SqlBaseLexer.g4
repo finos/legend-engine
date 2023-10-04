@@ -324,6 +324,7 @@ FORWARD: F O R W A R D;
 BACKWARD: B A C K W A R D;
 RELATIVE: R E L A T I V E;
 PRIOR: P R I O R;
+WITHIN: W I T H I N;
 
 EQ  : '=';
 NEQ : '<>' | '!=';

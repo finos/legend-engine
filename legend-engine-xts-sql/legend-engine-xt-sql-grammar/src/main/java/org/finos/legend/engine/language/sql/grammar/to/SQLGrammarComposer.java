@@ -101,7 +101,14 @@ public class SQLGrammarComposer
             {
                 String args = visit(val.arguments, ", ");
                 String window = val.window != null ? " OVER (" + visit(val.window) + ")" : "";
-                return String.join(".", val.name.parts) + "(" + args + ")" + window;
+                String group = val.group != null ? " " + visit(val.group) : "";
+                return String.join(".", val.name.parts) + "(" + args + ")" + group + window;
+            }
+
+            @Override
+            public String visit(Group group)
+            {
+                return "WITHIN GROUP (ORDER BY " + visit(group.orderBy) + ")";
             }
 
             @Override
@@ -326,6 +333,15 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(LikePredicate val)
+            {
+                String like = (val.ignoreCase ? " ILIKE " : " LIKE ");
+                String escape = val.escape != null ? " ESCAPE " + visit(val.escape) : "";
+
+                return val.value.accept(this) + like + val.pattern.accept(this) + escape;
+            }
+
+            @Override
             public String visit(Literal val)
             {
                 return val.accept(this);
@@ -487,7 +503,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(StringLiteral val)
             {
-                return val.value;
+                return "'" + val.value + "'";
             }
 
             @Override

@@ -15,6 +15,7 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
@@ -27,20 +28,23 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * A StoreInstance represents a named instance of a Store.
+ */
 public class StoreInstance
 {
     private final String identifier;
     private final StoreSupport storeSupport;
-    private final List<AuthenticationMechanism> authenticationMechanisms;
-    private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
+    private final ImmutableList<AuthenticationMechanism> authenticationMechanisms;
+    private final ImmutableList<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
     private final ConnectionSpecification connectionSpecification;
 
     private StoreInstance(String identifier, StoreSupport storeSupport, List<AuthenticationMechanism> authenticationMechanisms, ConnectionSpecification connectionSpecification)
     {
         this.identifier = identifier;
         this.storeSupport = storeSupport;
-        this.authenticationMechanisms = authenticationMechanisms;
-        this.authenticationConfigurationTypes = ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType);
+        this.authenticationMechanisms = Lists.immutable.withAll(authenticationMechanisms);
+        this.authenticationConfigurationTypes = Lists.immutable.withAll(ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType));
         this.connectionSpecification = connectionSpecification;
     }
 
@@ -54,12 +58,12 @@ public class StoreInstance
         return storeSupport;
     }
 
-    public List<AuthenticationMechanism> getAuthenticationMechanisms()
+    public ImmutableList<AuthenticationMechanism> getAuthenticationMechanisms()
     {
         return authenticationMechanisms;
     }
 
-    public List<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()
+    public ImmutableList<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()
     {
         return authenticationConfigurationTypes;
     }
@@ -69,17 +73,26 @@ public class StoreInstance
         return connectionSpecification;
     }
 
+    public <T extends ConnectionSpecification> T getConnectionSpecification(Class<T> clazz)
+    {
+        if (!this.connectionSpecification.getClass().equals(clazz))
+        {
+            throw new RuntimeException(String.format("Can't get connection specification of type '%s' for store '%s'", clazz.getSimpleName(), this.identifier));
+        }
+        return (T) this.connectionSpecification;
+    }
+
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
+        private final LegendEnvironment environment;
         private String identifier;
         private String storeSupportIdentifier;
         private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
         private ConnectionSpecification connectionSpecification;
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
         public Builder withIdentifier(String identifier)
@@ -120,7 +133,7 @@ public class StoreInstance
 
         public StoreInstance build()
         {
-            StoreSupport storeSupport = this.environmentConfiguration.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store instance store support identifier is required"));
+            StoreSupport storeSupport = this.environment.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store instance store support identifier is required"));
             MutableList<AuthenticationMechanism> unsupportedAuthenticationMechanisms = ListIterate.select(new ArrayList<>(this.authenticationMechanisms), mechanism -> !storeSupport.getAuthenticationMechanisms().contains(mechanism));
             if (!unsupportedAuthenticationMechanisms.isEmpty())
             {
@@ -130,7 +143,7 @@ public class StoreInstance
                     Objects.requireNonNull(this.identifier, "Store instance identifier is required"),
                     storeSupport,
                     // NOTE: if no mechanism is specified, it means the store instance supports all mechanisms
-                    this.authenticationMechanisms.isEmpty() ? storeSupport.getAuthenticationMechanisms() : new ArrayList<>(this.authenticationMechanisms),
+                    this.authenticationMechanisms.isEmpty() ? storeSupport.getAuthenticationMechanisms().toList() : new ArrayList<>(this.authenticationMechanisms),
                     Objects.requireNonNull(this.connectionSpecification, "Store instance connection specification is required")
             );
         }

@@ -149,60 +149,61 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
   )
 }
 
-function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithExtendAndManyParam():Service[1]
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam():Service[1]
 {
    ^Service(
       pattern = '/test/service/with/extend',
-      owners = ['ibramo', 'yamaja'],
+      owners = ['dummy', 'dummy2'],
       documentation = '',
       autoActivateUpdates = true,
       execution = ^PureSingleExecution(
-         func = planningAreas: String[*]| Person.all()->filter(item |  $planningAreas->isEmpty() || $planningAreas->contains($item.firstName))->project(  [ col(x | $x.lastName, 'kerberos'), col(x | $x.age, 'planningArea') ]) ->extend(^BasicColumnSpecification<meta::pure::tds::TDSRow>(name = 'ageString', func = {row:TDSRow[1]|$row.getInteger('age')	->toString()}));,
+         func = planningAreas: String[*]| Person.all()->filter(item |  $planningAreas->isEmpty() || $planningAreas->contains($item.firstName))->project(  [ col(x | $x.lastName, 'kerberos'), col(x | $x.age, 'planningArea') ])->extend(^BasicColumnSpecification<meta::pure::tds::TDSRow>(name = 'ageString', func = {row:TDSRow[1]|$row.getInteger('age')	->toString()}));,
          mapping = personMapping,
          runtime = []
       )
    );
 }
 
-
-
-
-
-
-
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecificationOpenapiString():Boolean[1]
 {
-  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification()->serviceToOpenApi(^Server(url='test'));
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithoutColumnSpecification()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithoutColumnSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleService()->serviceToOpenApi(^Server(url='test'));
+  let openapi = simpleService()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
-function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testFailedService():Boolean[1]
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithExtendAndManyParam():Boolean[1]
 {
-  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithExtendAndManyParam()->serviceToOpenApi(^Server(url='test'));
+  let openapi = meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithExtendAndManyParam()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithExtendAndManyParam.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(^Server(url='test'));
+  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testGraphFetchOpenApiSpec.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithParamShouldReturnCorrectOpenapiString():Boolean[1]
 {
-  let openapi = simpleServiceWithParams()->serviceToOpenApi(^Server(url='test'));
+  let openapi = simpleServiceWithParams()->serviceToOpenApi(packageableElem(), ^Server(url='test'));
   let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithServiceParams.txt')->toOne();
   assertJsonStringsEqual($expected, $openapi);
+}
+
+function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElem():PackageableElement[*]
+{
+  [
+    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Person')
+  ]
 }
 
 ###Mapping

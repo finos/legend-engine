@@ -23,11 +23,11 @@ import java.util.List;
 
 public class IdentityFactory
 {
-    private final EnvironmentConfiguration environmentConfiguration;
+    private final LegendEnvironment environment;
 
-    private IdentityFactory(EnvironmentConfiguration environmentConfiguration)
+    private IdentityFactory(LegendEnvironment environment)
     {
-        this.environmentConfiguration = environmentConfiguration;
+        this.environment = environment;
     }
 
     // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should
@@ -46,16 +46,16 @@ public class IdentityFactory
 
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
+        private final LegendEnvironment environment;
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
         public IdentityFactory build()
         {
-            return new IdentityFactory(this.environmentConfiguration);
+            return new IdentityFactory(this.environment);
         }
     }
 }

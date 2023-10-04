@@ -104,7 +104,7 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
             {
                 IJsonExternalizeExecutionNodeSpecifics nodeSpecifics = (IJsonExternalizeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
                 JsonDataWriter<?> jsonDataWriter = new JsonDataWriter<>(nodeSpecifics, extractStreamFromResult(result), context);
-                return new ExternalFormatSerializeResult(jsonDataWriter, result);
+                return new ExternalFormatSerializeResult(jsonDataWriter, result, CONTENT_TYPE);
             }
             else
             {

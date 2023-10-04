@@ -15,6 +15,7 @@
     "core_diagram_metamodel",
     "core_data_space_metamodel",
     "core_analytics_lineage",
+    "core_external_compiler",
     "core_analytics_mapping"
   ]
 }
