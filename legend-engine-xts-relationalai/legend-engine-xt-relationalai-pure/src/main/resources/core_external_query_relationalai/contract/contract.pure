@@ -36,7 +36,6 @@ function meta::rel::contract::contract(): StoreContract[1] {
 
     // DEPRECTAED AND TO BE REMOVED
     executeStoreQuery = meta::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
-    localGetterOverrideMapped = meta::rel::mapping::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
     instance_equals = {
       a:Any[1], b:Any[1] |
         $a->getHiddenPayload()

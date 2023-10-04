@@ -29,34 +29,6 @@ function meta::rel::mapping::frontend::RAISchema(name: String[1]): RAISchema[1] 
   );
 }
 
-function meta::rel::mapping::frontend::insert<T>(connection: RAIConnection[1], schema: RAISchema[1], objects: T[1..*]): meta::rel::utils::Result<RAIResult|0..1>[1] {  
-  let class = $objects
-    ->genericType()
-    ->genericTypeClass()
-    ->cast(@Class<Any>);
-
-  $schema.insertFns
-    ->get($class)
-    ->okOr(| format('No insert function registered for class `%s`.', $class.name))
-    ->then({fn: FunctionDefinition<{Any[1]->Rule[*]}>[1] |
-      let program =
-        $fn
-          ->eval($objects)
-          ->program()
-          ->render()
-          ->inspect();
-      $connection->RAIExecute($program)->inspect();
-    });
-}
-
-function meta::rel::mapping::frontend::insert<T>(connection: RAIConnection[1], objects: T[1..*]): meta::rel::utils::Result<RAIResult|0..1>[1] {
-  $connection
-    .element
-    ->tryCast(@RAISchema)
-    ->else(| error('Property `element` is not an instance of `meta::rel::frontend::RAISchema`.'))
-    ->andThen(schema: RAISchema[1] | $connection->insert($schema, $objects));
-}
-
 function meta::rel::mapping::frontend::schema(class: Class<Any>[1]): RelationDeclaration[1] {
   $class.name
     ->toOne()

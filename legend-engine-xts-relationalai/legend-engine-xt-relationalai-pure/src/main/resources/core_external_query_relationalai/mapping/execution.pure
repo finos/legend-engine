@@ -1,3 +1,4 @@
+import meta::rel::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::rel::utils::*;
 import meta::rel::utils::lang::*;
@@ -58,7 +59,7 @@ function <<access.private>> meta::rel::mapping::execution(
 ): meta::pure::mapping::Result<Any|*>[1] {
   let state = CompilationState($debug);
   // TODO: safe cast
-  let connection = $runtime.connections->at(0);
+  let connection = $runtime.connections->at(0)->cast(@TestConnection);
 
   let result = $query
     ->intoPExpr()
@@ -85,36 +86,7 @@ function <<access.private>> meta::rel::mapping::execution(
               switch([
                 // Handles case 2.
                 case($class == TabularDataSet, {| 
-                  // For each case, we specify a postprocessing function which is applied
-                  // to the result response returned by RAI. 
-                  let postProcessor = {result: RAIResult[1] |
-                    let tds = ^TabularDataSet();
-                    $result.output
-                      ->map({output: Output[1] |
-                        let numRows = $output.columns->at(0).values->size();
-                        let columns = 
-                          range($output.columns->size())
-                            ->map({i |
-                              ^TDSColumn(name=$state.cols.names->maybeAt($i)->orElse('unknown'), offset=$i);
-                            });
-
-                        let rows = range($numRows)
-                          ->map({row |
-                            let values = 
-                              range($output.columns->size())
-                                ->map({col |
-                                  $output.columns->at($col).values->at($row);
-                                });
-                            ^TDSRow(parent=$tds, values=$values);
-                          });
-
-                        ^$tds(rows=$rows, columns=$columns)->ok();
-                      })
-                      ->first()
-                      ->orElse($tds->ok());
-                  };
-
-                  // Return the new state and the postprocessing function.
+                  // Return the new state.
                   let outputBody = 
                     $state.cols.names
                       ->map({col: String[1] | 
@@ -133,11 +105,8 @@ function <<access.private>> meta::rel::mapping::execution(
                       })
                     );
 
-                  pair(
-                    ^$state(
-                      program=$state.program->with($output)
-                    ), 
-                    $postProcessor
+                  ^$state(
+                    program=$state.program->with($output)
                   )
                   ->ok();
                 })
@@ -152,7 +121,7 @@ function <<access.private>> meta::rel::mapping::execution(
                     $set
                       ->propertyOutputs()
                       ->them({rules: Pair<Label,Rule>[*] | 
-                        let newState = ^$state(
+                        ^$state(
                           program=$state
                             .program
                             ->with([
@@ -162,49 +131,17 @@ function <<access.private>> meta::rel::mapping::execution(
                                 ->def($expr->atom(var('x')))
                             ])
                             ->with($rules.second)
-                        );
-
-                        let postProcessor = {result: RAIResult[1] |
-                          $result->buildClasses(
-                            $rules.first.identifier,
-                            $set,
-                            $mapping,
-                            $runtime,
-                            $exeCtx, 
-                            $extensions, 
-                            $debug
-                          );
-                        };
-
-                        pair($newState, $postProcessor);
+                        )
                       });
                   });
               });
             },
             // Handles case 3.
             {p: PrimitiveType[1] |
-              let postProcessor = {result: RAIResult[1] |
-                $result.output
-                  ->map({output: Output[1] |
-                    if ($output.columns->size() == 1, 
-                      | $output.columns->at(0)->ok(), 
-                      | ^Column(values=[true])->ok() // Handle the case of `true`
-                    )
-                    ->then({column: Column[1] |
-                      $column.values;
-                    });
-                  })
-                  ->first()
-                  ->orElse([]->okm());
-              };
-
-              pair(
-                ^$state(program=
-                  $state
-                    .program
-                    ->with(rel('output')->def($expr))
-                ), 
-                $postProcessor
+              ^$state(program=
+                $state
+                  .program
+                  ->with(rel('output')->def($expr))
               )
               ->ok();
             }
@@ -215,19 +152,10 @@ function <<access.private>> meta::rel::mapping::execution(
 
   if ($result->isOk(), {|
     let unwrapped = $result->unwrap();
-    let compiled = $unwrapped.first.program->render();
-
-    let response = $connection
-      ->doRAIExecute($compiled)
-      ->maybeFail();
-
-    let output = $unwrapped
-      .second
-      ->eval($response)
-      ->unwrapm();
+    let compiled = $unwrapped.program->render();
 
     ^meta::pure::mapping::Result<Any|*>(
-      values=[$output], 
+      values=[], 
       activities=[^QueryActivity(relSource=$compiled, executionTimeInMS=0)]
     );
   }, {|
@@ -235,31 +163,6 @@ function <<access.private>> meta::rel::mapping::execution(
     $result->unwrap();
     ^meta::pure::mapping::Result<Any|*>();
   });
-}
-
-function <<access.private>> meta::rel::mapping::doRAIExecute(connection: meta::pure::runtime::Connection[1], rel: String[1]): RAIResult[1] {
-  println(format('Executing program:\n-------------------\n%s', $rel));
-  let result = 
-    measure(| $connection->RAIExecute2($rel));
-  
-  println(format('Executed in %d milliseconds.', $result.first));
-  println('');
-
-  $result.second;
-}
-
-function <<access.private>> meta::rel::mapping::maybeFail(result: RAIResult[1]): RAIResult[1] {
-  if ($result.problems->size() > 0, 
-    {| 
-      $result
-        .problems
-        ->map(p | $p->toString())
-        ->joinStrings()
-        ->fail();
-      $result;
-    },
-    | $result
-  );
 }
 
 /**
@@ -312,124 +215,6 @@ function <<access.private>> meta::rel::mapping::propertyOutputs(
             )
         });
     });
-}
-
-function <<access.private>> meta::rel::mapping::buildClasses(
-  result: RAIResult[1],
-  keys: String[*],
-  set: RelSetImplementation[1],
-  mapping: meta::pure::mapping::Mapping[1],
-  runtime: meta::pure::runtime::Runtime[1],
-  exeCtx: meta::pure::runtime::ExecutionContext[1], 
-  extensions: meta::pure::extension::Extension[*], 
-  debug: DebugContext[1]
-): Result<Any|*>[1] {
-  println('Indexing results...');
-  let r = 
-    measure(| $result->toIndexed());
-  
-  println(format('Executed in %d milliseconds.', $r.first));
-  println('');
-
-  let indexed = $r.second;
-
-  $indexed
-    ->values(':query')
-    ->map({word |
-      let id = $word.values->at(1);
-      let keyValues = $keys
-        ->map({key |
-          let values = 
-            $indexed->values(
-              format(':%s', $key)
-                ->concatenate($id)
-            )
-            ->map(v | $v.values->last());
-
-          ^KeyValue(key=$key, value=$values);
-        });
-
-      let keyInformation = ^KeyInformation(
-        sourceConnection=$runtime.connections->at(0),
-        pk=$id,
-        static=^meta::pure::mapping::StaticMappingInstanceData(
-            runtime=$runtime,
-            mapping=$mapping,
-            systemMapping=contract(),
-            setImplementation=$set,
-            exeCtx=$exeCtx,
-            debug=$debug,
-            extensions=$extensions
-          )
-      );
-
-      $set.class->dynamicNew(
-        $keyValues,
-        meta::pure::mapping::xStore::crossGetterOverrideToOne_Any_1__Property_1__Any_$0_1$_,
-        meta::pure::mapping::xStore::crossGetterOverrideToMany_Any_1__Property_1__Any_MANY_,
-        $keyInformation,
-        $exeCtx->meta::pure::runtime::getConstraintsManager()
-      );
-    })
-    ->okm();
-}
-
-function meta::rel::mapping::getterOverrideMapped(o:Any[1], propertyMapping: meta::pure::mapping::PropertyMapping[1]):Any[*] {
-  let keyInformation = $o->getHiddenPayload()->cast(@KeyInformation);
-  let relProperty = $propertyMapping->cast(@RelPropertyMapping);
-  let mapping = $keyInformation.static.mapping;
-  let exeCtx = $keyInformation.static.exeCtx;
-  let debug = $keyInformation.static.debug;
-  let extensions = $keyInformation.static.extensions;
-  let runtime = $keyInformation.static.runtime;
-
-  let targetSet = $mapping->meta::pure::mapping::classMappingById($relProperty.targetSetImplementationId)->toOne()->cast(@RelSetImplementation);
-  let connection = $keyInformation.sourceConnection->cast(@meta::rel::runtime::RAIConnection);
-
-  let body = $relProperty.target
-    ->appl(
-      rel('uint128_hash_value_convert')
-        ->appl(
-          fragment(
-            '0x' + 
-              $keyInformation.pk
-                ->toOne()
-                ->cast(@String)
-                ->parseDecimal()
-                ->decToBinary()
-                ->binaryToHex()
-          )
-        )
-    );
-  
-  let rules = $targetSet
-    ->propertyOutputs()
-    ->unwrapm();
-
-  let program = 
-    def(
-      rel('output')->appl(label('query')),
-      $body
-    )
-    ->program()
-    ->with($rules.second);
-  
-  let response = 
-    $connection
-      ->doRAIExecute($program->render())
-      ->maybeFail();
-
-  $response
-    ->buildClasses(
-      $rules.first.identifier, 
-      $targetSet, 
-      $mapping, 
-      $runtime, 
-      $exeCtx, 
-      $extensions, 
-      $debug
-    )
-    ->unwrapm();
 }
 
 function meta::rel::mapping::supports(f: FunctionExpression[1]): Boolean[1] {
