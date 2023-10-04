@@ -53,7 +53,11 @@ public class Firm implements IReferencedObject, IExternalData
 
     private List<AddressUse> addresses;
 
+    private int addressesSize;
+
     private List<Person> employees;
+
+    private int employeesSize;
 
     public String getName()
     {
@@ -95,6 +99,7 @@ public class Firm implements IReferencedObject, IExternalData
             this.addresses = new ArrayList<AddressUse>();
         }
         this.addresses.add(value);
+        this.addressesSize++;
     }
 
     public List<Person> getEmployees()
@@ -109,6 +114,7 @@ public class Firm implements IReferencedObject, IExternalData
             this.employees = new ArrayList<Person>();
         }
         this.employees.add(value);
+        this.employeesSize++;
     }
 
     public void _employeesAdd(Person value)
@@ -127,10 +133,6 @@ public class Firm implements IReferencedObject, IExternalData
         if (this.rankingSize > 1L)
         {
             defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for ranking: expected [0..1] found [" + this.rankingSize + "]", "meta::external::format::shared::testpack::simple::Firm"));
-        }
-        if (this.addresses.size() < 1L)
-        {
-            defects.add(BasicDefect.newClassStructureDefect("Invalid multiplicity for addresses: expected [1..*] found [" + this.addresses.size() + "]", "meta::external::format::shared::testpack::simple::Firm"));
         }
         return defects;
     }
