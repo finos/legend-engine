@@ -32,6 +32,9 @@ import static org.immutables.value.Value.Style;
 )
 public interface AllVersionsStrategyAbstract extends VersioningStrategy
 {
+
+    public static final String DATA_SPLIT = "legend_persistence_data_split";
+
     @Value.Parameter(order = 0)
     String versioningField();
 
@@ -42,9 +45,15 @@ public interface AllVersionsStrategyAbstract extends VersioningStrategy
     }
 
     @Value.Default
-    default boolean performDeduplication()
+    default boolean performVersioning()
     {
         return true;
+    }
+
+    @Value.Default
+    default String dataSplitFieldName()
+    {
+        return DATA_SPLIT;
     }
 
     @Override

@@ -56,6 +56,8 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> metadataIngestSqlPlan();
 
+    public abstract Optional<SqlPlan> deduplicationAndVersioningSqlPlan();
+
     public abstract SqlPlan postActionsSqlPlan();
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
@@ -97,6 +99,11 @@ public abstract class GeneratorResultAbstract
     public List<String> metadataIngestSql()
     {
         return metadataIngestSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+    }
+
+    public List<String> deduplicationAndVersioningSql()
+    {
+        return deduplicationAndVersioningSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
     public List<String> postActionsSql()

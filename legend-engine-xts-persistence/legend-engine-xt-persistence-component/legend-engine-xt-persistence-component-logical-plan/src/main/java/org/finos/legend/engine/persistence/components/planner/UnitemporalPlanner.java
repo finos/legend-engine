@@ -36,6 +36,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
@@ -114,6 +116,27 @@ abstract class UnitemporalPlanner extends Planner
     {
         List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(stagingDataset());
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
+    }
+
+    @Override
+    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, originalStagingDataset()));
+        }
+        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
+        if (isTempTableNeededForStaging)
+        {
+            operations.add(Create.of(true, tempStagingDataset()));
+        }
+        return LogicalPlan.of(operations);
     }
 
     protected void validatePrimaryKey(List<Field> fields, String targetFieldName)

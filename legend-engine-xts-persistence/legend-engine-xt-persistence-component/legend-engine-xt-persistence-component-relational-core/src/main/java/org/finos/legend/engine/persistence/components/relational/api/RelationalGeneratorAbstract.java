@@ -242,6 +242,14 @@ public abstract class RelationalGeneratorAbstract
             planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
         }
 
+        // deduplication and versioning
+        LogicalPlan deduplicationAndVersioningLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioning(resources);
+        Optional<SqlPlan> deduplicationAndVersioningSqlPlan = Optional.empty();
+        if (deduplicationAndVersioningLogicalPlan != null)
+        {
+            deduplicationAndVersioningSqlPlan = Optional.of(transformer.generatePhysicalPlan(deduplicationAndVersioningLogicalPlan));
+        }
+
         // ingest
         LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
@@ -282,6 +290,7 @@ public abstract class RelationalGeneratorAbstract
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
+            .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();

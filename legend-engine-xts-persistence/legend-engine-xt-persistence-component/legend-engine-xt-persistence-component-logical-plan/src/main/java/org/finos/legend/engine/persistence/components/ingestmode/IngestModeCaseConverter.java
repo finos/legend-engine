@@ -85,8 +85,9 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return NontemporalSnapshot
                 .builder()
-                .dataSplitField(applyCase(nontemporalSnapshot.dataSplitField()))
                 .auditing(nontemporalSnapshot.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(nontemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(nontemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -339,15 +340,20 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .builder()
                     .versioningComparator(maxVersionStrategy.versioningComparator())
                     .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
-                    .performDeduplication(maxVersionStrategy.performDeduplication())
+                    .performVersioning(maxVersionStrategy.performVersioning())
                     .build();
         }
 
         @Override
         public VersioningStrategy visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
         {
-            return null;
+            return AllVersionsStrategy
+                    .builder()
+                    .versioningComparator(allVersionsStrategyAbstract.versioningComparator())
+                    .versioningField(strategy.apply(allVersionsStrategyAbstract.versioningField()))
+                    .dataSplitFieldName(strategy.apply(allVersionsStrategyAbstract.dataSplitFieldName()))
+                    .performVersioning(allVersionsStrategyAbstract.performVersioning())
+                    .build();
         }
     }
-
 }

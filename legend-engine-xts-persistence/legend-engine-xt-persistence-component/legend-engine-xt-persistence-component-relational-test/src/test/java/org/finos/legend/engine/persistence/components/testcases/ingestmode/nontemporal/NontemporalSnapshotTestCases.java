@@ -41,9 +41,9 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     NontemporalSnapshotTestScenarios scenarios = new NontemporalSnapshotTestScenarios();
 
     @Test
-    void testNontemporalSnapshotNoAuditingNoDataSplit()
+    void testNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -54,15 +54,15 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalSnapshotNoAuditingNoDataSplit(operations);
+        verifyNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning(operations);
     }
 
-    public abstract void verifyNontemporalSnapshotNoAuditingNoDataSplit(GeneratorResult operations);
+    public abstract void verifyNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning(GeneratorResult operations);
 
     @Test
-    void testNontemporalSnapshotNoAuditingWithDataSplit()
+    void verifyNontemporalSnapshotNoAuditingAllowDupsNoVersioning()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__ALLOW_DUPS_NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -70,15 +70,15 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalSnapshotNoAuditingWithDataSplit(operations);
+        verifyNontemporalSnapshotNoAuditingAllowDupsNoVersioning(operations);
     }
 
-    public abstract void verifyNontemporalSnapshotNoAuditingWithDataSplit(GeneratorResult operations);
+    public abstract void verifyNontemporalSnapshotNoAuditingAllowDupsNoVersioning(GeneratorResult operations);
 
     @Test
     void testNontemporalSnapshotWithAuditingNoDataSplit()
     {
-        TestScenario testScenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.WITH_AUDTING__FAIL_ON_DUPS_NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -95,7 +95,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     @Test
     void testNontemporalSnapshotWithAuditingWithDataSplit()
     {
-        TestScenario testScenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
+        TestScenario testScenario = scenarios.WITH_AUDTING__FILTER_DUPS_MAX_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -112,7 +112,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     @Test
     void testNontemporalSnapshotWithUpperCaseOptimizer()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -128,7 +128,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     @Test
     void testNontemporalSnapshotWithLessColumnsInStaging()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         Dataset stagingTable = testScenario.getStagingTable().withSchema(baseTableShortenedSchema);
         Datasets datasets = Datasets.of(testScenario.getMainTable(), stagingTable);
 
@@ -184,7 +184,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     @Test
     public void testNontemporalSnapshotWithCleanStagingData()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -200,7 +200,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     @Test
     public void testNontemporalSnapshotWithDropStagingData()
     {
-        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario testScenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Resources resources = Resources.builder().externalDatasetImported(true).build();
         Planner planner = Planners.get(testScenario.getDatasets(), testScenario.getIngestMode(), options, getRelationalSink().capabilities());

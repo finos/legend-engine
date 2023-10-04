@@ -39,7 +39,7 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     }
 
     @Value.Default
-    default boolean performDeduplication()
+    default boolean performVersioning()
     {
         return true;
     }

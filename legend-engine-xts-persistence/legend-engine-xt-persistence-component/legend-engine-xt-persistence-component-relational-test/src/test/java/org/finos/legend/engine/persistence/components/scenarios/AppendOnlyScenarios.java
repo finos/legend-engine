@@ -31,8 +31,9 @@ public class AppendOnlyScenarios extends BaseTest
     Test Scenarios for Non-temporal Delta
     Variables:
     1) Auditing: No Auditing, With Auditing
-    2) DataSplit: Enabled, Disabled
-    3) DeduplicationStrategy: Allow_Duplicates, Filter Duplicates, Fail on Duplicates
+    2) Versioning: NoVersion, MaxVersion, AllVersion
+    3) Deduplication: Allow Duplicates, Filter Duplicates, Fail on Duplicates
+    4) filterExistingRecords: true / false
 
     Valid Combinations:
     1) Allow_Duplicates, No Auditing

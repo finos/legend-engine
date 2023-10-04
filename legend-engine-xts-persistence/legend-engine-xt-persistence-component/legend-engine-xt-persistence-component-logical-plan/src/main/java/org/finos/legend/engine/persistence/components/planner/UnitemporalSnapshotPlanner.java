@@ -92,23 +92,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
         }
     }
 
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
-        return LogicalPlan.of(operations);
-    }
-
     /*
     insert into main_table
     (

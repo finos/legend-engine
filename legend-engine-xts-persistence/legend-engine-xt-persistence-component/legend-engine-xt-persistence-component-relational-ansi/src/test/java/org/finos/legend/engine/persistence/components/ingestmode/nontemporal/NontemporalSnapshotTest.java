@@ -40,7 +40,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
 
     @Override
-    public void verifyNontemporalSnapshotNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -48,7 +48,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> acquireLockSql = operations.acquireLockSql();
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
-                "(SELECT * FROM \"mydb\".\"staging\" as stage)";
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseStagingTableCreateQuery, preActionsSqlList.get(1));
@@ -64,15 +64,12 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotNoAuditingWithDataSplit(GeneratorResult operations)
+    public void verifyNontemporalSnapshotNoAuditingAllowDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage_right WHERE " +
-                "(stage.\"data_split\" < stage_right.\"data_split\") AND ((stage.\"id\" = stage_right.\"id\") AND (stage.\"name\" = stage_right.\"name\")))))";
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));

@@ -107,7 +107,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
+                .performVersioning(true)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
@@ -121,7 +121,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .performVersioning(false)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
@@ -135,7 +135,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .performVersioning(false)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
@@ -149,7 +149,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
+                .performVersioning(true)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);

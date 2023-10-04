@@ -113,22 +113,6 @@ class AppendOnlyPlanner extends Planner
         return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
-        return LogicalPlan.of(operations);
-    }
-
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
         Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeConditionForStatistics() : Optional.empty();

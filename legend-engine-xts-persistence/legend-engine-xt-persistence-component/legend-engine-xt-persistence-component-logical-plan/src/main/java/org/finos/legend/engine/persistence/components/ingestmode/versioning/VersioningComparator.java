@@ -18,4 +18,7 @@ public enum VersioningComparator
 {
     GREATER_THAN,
     GREATER_THAN_EQUAL_TO
+
+    // TODO support always
+
 }

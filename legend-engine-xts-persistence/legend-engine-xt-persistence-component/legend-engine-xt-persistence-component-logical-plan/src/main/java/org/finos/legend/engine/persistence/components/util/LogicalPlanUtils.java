@@ -21,10 +21,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveTempStagingSchemaDefinition;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -471,16 +468,10 @@ public class LogicalPlanUtils
 
     public static boolean isTempTableNeededForStaging(IngestMode ingestMode)
     {
-        boolean separateTableForStagingNeeded = true;
-        // Noversion & AllowDuplicates do not need a separate table
-        if (ingestMode.deduplicationStrategy() instanceof AllowDuplicates &&
-                ingestMode.versioningStrategy() instanceof NoVersioningStrategy)
-        {
-            separateTableForStagingNeeded = false;
-        }
-        return separateTableForStagingNeeded;
+        boolean isTempTableNeededForVersioning = ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED);
+        boolean isTempTableNeededForDedup = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.IS_TEMP_TABLE_NEEDED);
+        return isTempTableNeededForVersioning || isTempTableNeededForDedup;
     }
-
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));

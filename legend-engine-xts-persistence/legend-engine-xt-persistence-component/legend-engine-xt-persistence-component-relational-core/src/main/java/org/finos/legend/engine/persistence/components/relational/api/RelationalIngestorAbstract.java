@@ -241,6 +241,17 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
+    - Perform cleanup of temporary tables
+    */
+    public Datasets dedupAndVersion(Datasets datasets)
+    {
+        LOGGER.info("Invoked dedupAndVersion method, will perform Deduplication and Versioning");
+        init(datasets);
+        dedupAndVersion();
+        return this.enrichedDatasets;
+    }
+
+    /*
     - Perform ingestion from staging to main dataset based on the Ingest mode, executes in current transaction
     */
     public IngestorResult ingest(Datasets datasets)
@@ -335,6 +346,15 @@ public abstract class RelationalIngestorAbstract
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
     }
 
+    private void dedupAndVersion()
+    {
+        if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
+        {
+            LOGGER.info("Executing Deduplication and Versioning");
+            executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
+        }
+    }
+
     private void initializeLock()
     {
         if (enableConcurrentSafety())
@@ -403,6 +423,9 @@ public abstract class RelationalIngestorAbstract
 
         // Evolve Schema
         evolveSchema();
+
+        // Dedup and Version
+        dedupAndVersion();
 
         // Perform Ingestion
         List<IngestorResult> result;

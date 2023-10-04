@@ -22,14 +22,14 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
@@ -118,7 +118,7 @@ public abstract class Planner
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
         isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
         this.tempStagingDataset = getTempStagingDataset();
-        this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset.get() : datasets.stagingDataset();
+        this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset() : originalStagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
     }
@@ -128,7 +128,7 @@ public abstract class Planner
         Optional<Dataset> tempStagingDataset = Optional.empty();
         if (isTempTableNeededForStaging)
         {
-            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(datasets.stagingDataset(), ingestMode));
+            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode));
         }
         return tempStagingDataset;
     }
@@ -149,14 +149,31 @@ public abstract class Planner
         return effectiveStagingDataset;
     }
 
+    protected Dataset originalStagingDataset()
+    {
+        return datasets.stagingDataset();
+    }
+
+    protected Dataset tempStagingDataset()
+    {
+        return tempStagingDataset.orElseThrow(IllegalStateException::new);
+    }
+
     protected List<Value> getDataFields()
     {
         List<Value> dataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        // Remove the fields that are not copied to main - datasplit, count etc
-//        LogicalPlanUtils.removeField(dataFields, ingestMode().dataSplitField().get());
-        //
-//        LogicalPlanUtils.removeField(dataFields, ingestMode().dataSplitField().get());
-        return null;
+        // Optional<String> dataSplitField = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DATA_SPLIT_FIELD);
+        Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            LogicalPlanUtils.removeField(dataFields, ingestMode().dataSplitField().get());
+        }
+        if (dedupField.isPresent())
+        {
+            LogicalPlanUtils.removeField(dataFields, dedupField.get());
+        }
+        return dataFields;
     }
 
     protected Optional<MetadataDataset> metadataDataset()
@@ -211,29 +228,60 @@ public abstract class Planner
         return null;
     }
 
-    public abstract LogicalPlan buildLogicalPlanForPreActions(Resources resources);
+    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, originalStagingDataset()));
+        }
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
+        if (isTempTableNeededForStaging)
+        {
+            operations.add(Create.of(true, tempStagingDataset()));
+        }
+        return LogicalPlan.of(operations);
+    }
+
+    public LogicalPlan buildLogicalPlanForDeduplicationAndVersioning(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (isTempTableNeededForStaging)
+        {
+            operations.add(Delete.builder().dataset(tempStagingDataset()).build());
+            Dataset dedupAndVersionedDataset = LogicalPlanUtils.getTempStagingDataset(ingestMode(), originalStagingDataset(), primaryKeys);
+            List<Value> fieldsToInsert = new ArrayList<>(dedupAndVersionedDataset.schemaReference().fieldValues());
+            Insert.of(tempStagingDataset(), dedupAndVersionedDataset, fieldsToInsert);
+        }
+        return LogicalPlan.of(operations);
+    }
 
     public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
         if (plannerOptions.cleanupStagingData())
         {
-            operations.add(Delete.builder().dataset(datasets.stagingDataset()).build());
+            operations.add(Delete.builder().dataset(originalStagingDataset()).build());
         }
         return LogicalPlan.of(operations);
     }
 
+    // Introduce a flag
     public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
         // Drop table
         if (resources.externalDatasetImported())
         {
-            operations.add(Drop.of(true, datasets.stagingDataset(), true));
+            operations.add(Drop.of(true, originalStagingDataset(), true));
         }
         if (isTempTableNeededForStaging)
         {
-            operations.add(Drop.of(true, tempStagingDataset.orElseThrow(IllegalStateException::new), true));
+            operations.add(Drop.of(true, tempStagingDataset(), true));
         }
         return LogicalPlan.of(operations);
     }

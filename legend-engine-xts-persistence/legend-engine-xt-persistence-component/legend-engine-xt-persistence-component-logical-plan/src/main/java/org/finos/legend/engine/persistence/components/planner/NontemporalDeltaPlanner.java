@@ -298,22 +298,6 @@ class NontemporalDeltaPlanner extends Planner
         return Insert.of(mainDataset(), selectStage, fieldsToInsert);
     }
 
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
-        return LogicalPlan.of(operations);
-    }
-
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;

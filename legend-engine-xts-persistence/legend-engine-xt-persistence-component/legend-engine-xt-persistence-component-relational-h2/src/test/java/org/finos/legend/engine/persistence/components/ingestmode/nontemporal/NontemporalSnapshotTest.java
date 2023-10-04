@@ -267,7 +267,7 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .dataSplitField(dataSplitName)
+                //.dataSplitField(dataSplitName)
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

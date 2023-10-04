@@ -33,7 +33,7 @@ public class NontemporalSnapshotBasedDerivationTest
     @Test
     void testNontemporalSnapshotNoAuditingNoDataSplit()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
@@ -42,7 +42,7 @@ public class NontemporalSnapshotBasedDerivationTest
     @Test
     void testNontemporalSnapshotNoAuditingWithDataSplit()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.NO_AUDTING__ALLOW_DUPS_NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
@@ -52,7 +52,7 @@ public class NontemporalSnapshotBasedDerivationTest
     @Test
     void testNontemporalSnapshotWithAuditingNoDataSplit()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FAIL_ON_DUPS_NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
@@ -63,7 +63,7 @@ public class NontemporalSnapshotBasedDerivationTest
     @Test
     void testNontemporalSnapshotWithAuditingWithDataSplit()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FILTER_DUPS_MAX_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);

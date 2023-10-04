@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -35,7 +31,6 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     List<String> primaryKeys;
 
     private static final String RANK = "legend_persistence_rank";
-    public static final String DATA_SPLIT = "legend_persistence_data_split";
 
     public DatasetVersioningHandler(Dataset dataset, List<String> primaryKeys)
     {
@@ -100,7 +95,7 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
                 .windowFunction(FunctionImpl.builder().functionName(FunctionName.DENSE_RANK).build())
                 .addAllPartitionByFields(partitionFields)
                 .addOrderByFields(orderByField)
-                .alias(DATA_SPLIT)
+                .alias(allVersionsStrategyAbstract.dataSplitFieldName())
                 .build();
         List<Value> allColumnsWithRank = new ArrayList<>(dataset.schemaReference().fieldValues());
 

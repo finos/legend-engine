@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.D
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.immutables.value.Value;
 
 import java.util.Optional;
 
@@ -41,6 +42,12 @@ public interface AppendOnlyAbstract extends IngestMode
     Optional<String> dataSplitField();
 
     Auditing auditing();
+
+    @Value.Default
+    default boolean filterExistingRecords()
+    {
+        return false;
+    }
 
     @Check
     default void validate()

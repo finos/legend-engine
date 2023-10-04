@@ -18,6 +18,11 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 
 public class NontemporalSnapshotTestScenarios extends BaseTest
 {
@@ -26,41 +31,45 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
     Test Scenarios of Non-temporal Snapshot
     Variables:
     1) Auditing: No Auditing, With Auditing
-    2) DataSplit: Enabled, Disabled
+    2) Deduplication: Allow duplicates, Filter duplicates, Fail on duplicates
+    3) Versioning: No Versioning, Max Versioning
+
+    Invalid Scenario: All Versioning
     */
 
-    public TestScenario NO_AUDTING__NO_DATASPLIT()
+    public TestScenario NO_AUDTING__DEFAULT_DEDUP_DEFAULT_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario NO_AUDTING__WITH_DATASPLIT()
+    public TestScenario NO_AUDTING__ALLOW_DUPS_NO_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .dataSplitField(dataSplitField)
+                .versioningStrategy(NoVersioningStrategy.builder().build())
+                .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchemaHavingDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__NO_DATASPLIT()
+    public TestScenario WITH_AUDTING__FAIL_ON_DUPS_NO_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+                .versioningStrategy(NoVersioningStrategy.builder().build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__WITH_DATASPLIT()
+    public TestScenario WITH_AUDTING__FILTER_DUPS_MAX_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .dataSplitField("data_split")
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchemaHavingDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);
     }
-
-
-
 }
