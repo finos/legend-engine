@@ -1381,7 +1381,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
+  let sqlString = 'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
                   'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", ' +
                   'sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
@@ -1394,6 +1394,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project([
                 col(row:TDSRow[1] | ascii($row.getString('String')), 'ASCII'),
                 col(row:TDSRow[1] | char($row.getInteger('Integer')), 'CHR'),
+                col(row:TDSRow[1] | $row.getString('String') + 'abc', 'CONCAT'),
+                col(row:TDSRow[1] | $row.getString('String') + 'abc', 'CONCAT2'),
                 col(row:TDSRow[1] | matches($row.getString('String'), 'test'), 'MATCH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'CHAR_LENGTH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
