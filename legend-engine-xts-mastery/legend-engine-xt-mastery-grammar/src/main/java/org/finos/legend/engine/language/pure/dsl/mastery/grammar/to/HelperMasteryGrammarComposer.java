@@ -445,7 +445,14 @@ public class HelperMasteryGrammarComposer
             builder.append("\n").append(getTabString(indentLevel + 4)).append("queries: [ ");
             builder.append(renderQueries(resolutionQuery, indentLevel + 5, context));
             builder.append(getTabString(indentLevel + 4)).append("         ];\n");
-            builder.append(getTabString(indentLevel + 4)).append("keyType: ").append(resolutionQuery.keyType).append(";\n");
+            if (resolutionQuery.keyType != null)
+            {
+                builder.append(getTabString(indentLevel + 4)).append("keyType: ").append(resolutionQuery.keyType).append(";\n");
+            }
+            if (resolutionQuery.optional != null)
+            {
+                builder.append(getTabString(indentLevel + 4)).append("optional: ").append(resolutionQuery.optional).append(";\n");
+            }
             builder.append(getTabString(indentLevel + 4)).append("precedence: ").append(resolutionQuery.precedence).append(";\n");
             builder.append(getTabString(indentLevel + 3)).append("}");
         });

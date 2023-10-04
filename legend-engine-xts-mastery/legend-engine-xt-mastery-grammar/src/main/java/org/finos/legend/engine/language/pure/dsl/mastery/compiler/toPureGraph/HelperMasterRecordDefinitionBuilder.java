@@ -120,7 +120,8 @@ public class HelperMasterRecordDefinitionBuilder
             Root_meta_pure_mastery_metamodel_identity_ResolutionQuery resQuery = new Root_meta_pure_mastery_metamodel_identity_ResolutionQuery_Impl("");
 
             String KEY_TYPE_FULL_PATH = MASTERY_PACKAGE_PREFIX + "::identity::ResolutionKeyType";
-            resQuery._keyType(context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolQuery.keyType.name()));
+            resQuery._keyType(protocolQuery.keyType == null ? null : context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolQuery.keyType.name()));
+            resQuery._optional(protocolQuery.optional);
             resQuery._precedence(protocolQuery.precedence);
 
             ListIterate.forEachWithIndex(protocolQuery.queries, (lambda, i) ->
