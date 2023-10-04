@@ -1941,7 +1941,9 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('btrim', String, {args, fc, ctx | processTrim(trim_String_1__String_1_, $args)}),
       processor('char_length', length_String_1__Integer_1_),
       processor('chr', char_Integer_1__String_1_),
-      processor('concat', plus_String_MANY__String_1_),
+      processor('concat', String, {args, fc, ctx | 
+        sfe(plus_String_MANY__String_1_, iv(args))
+      }),
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
       processor('ltrim', String, {args, fc, ctx | processTrim(ltrim_String_1__String_1_, $args)}),
