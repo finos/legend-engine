@@ -122,6 +122,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='legend_h2_extension_hash_sha1(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA256\', %s))')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s, %s, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
