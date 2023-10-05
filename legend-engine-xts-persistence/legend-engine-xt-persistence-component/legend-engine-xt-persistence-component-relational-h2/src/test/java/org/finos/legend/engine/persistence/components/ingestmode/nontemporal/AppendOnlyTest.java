@@ -338,7 +338,6 @@ class AppendOnlyTest extends BaseTest
                 .digestField(digestName)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
-                .dataSplitField(dataSplitName)
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

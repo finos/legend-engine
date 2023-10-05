@@ -18,14 +18,15 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.*;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -34,9 +35,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -64,13 +63,17 @@ class AppendOnlyPlanner extends Planner
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        // validate
-        ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty,
-                this::validatePrimaryKeysNotEmpty, ingestMode.dataSplitField().isPresent()));
-        // if data splits are present, then audit Column must be a PK
-        if (ingestMode.dataSplitField().isPresent())
+        // Validation
+        // 1. MaxVersion & AllVersion Strategy must have Pks
+        ingestMode.versioningStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysNotEmpty, mainDataset(), ingestMode().auditing()));
+
+        // 2. For filterExistingRecords, We must have digest and Pks to filter them
+        if (ingestMode().filterExistingRecords())
         {
-            ingestMode.auditing().accept(ValidateAuditingForDataSplits);
+            if (!ingestMode.digestField().isPresent() || primaryKeys.isEmpty())
+            {
+                throw new IllegalStateException("Primary Keys are digest are mandatory for filterExistingRecords");
+            }
         }
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
@@ -124,68 +127,64 @@ class AppendOnlyPlanner extends Planner
         return dataSplitInRangeCondition;
     }
 
-    private AuditingVisitor<Void> ValidateAuditingForDataSplits = new AuditingVisitor<Void>()
-    {
-        @Override
-        public Void visitNoAuditing(NoAuditingAbstract noAuditing)
-        {
-            throw new IllegalStateException("DataSplits not supported for NoAuditing mode");
-        }
-
-        @Override
-        public Void visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
-        {
-            // For Data splits, audit column must be a PK
-            Field dateTimeAuditingField = mainDataset().schema().fields().stream()
-                    .filter(field -> field.name().equalsIgnoreCase(dateTimeAuditing.dateTimeField()))
-                    .findFirst().orElseThrow(() -> new IllegalStateException("dateTimeField is mandatory Field for dateTimeAuditing mode"));
-            if (!dateTimeAuditingField.primaryKey())
-            {
-                throw new IllegalStateException("dateTimeField must be a Primary Key for Data Splits");
-            }
-            return null;
-        }
-    };
-
-    static class ValidatePrimaryKeys implements DeduplicationStrategyVisitor<Void>
+    static class ValidatePrimaryKeys implements VersioningStrategyVisitor<Void>
     {
         final List<String> primaryKeys;
-        final Consumer<List<String>> validatePrimaryKeysIsEmpty;
         final Consumer<List<String>> validatePrimaryKeysNotEmpty;
-        final boolean dataSplitsEnabled;
+        private Dataset mainDataset;
+        private Auditing auditing;
 
-        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysIsEmpty, Consumer<List<String>> validatePrimaryKeysNotEmpty, boolean dataSplitsEnabled)
+        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysNotEmpty, Dataset mainDataset, Auditing auditing)
         {
             this.primaryKeys = primaryKeys;
-            this.validatePrimaryKeysIsEmpty = validatePrimaryKeysIsEmpty;
             this.validatePrimaryKeysNotEmpty = validatePrimaryKeysNotEmpty;
-            this.dataSplitsEnabled = dataSplitsEnabled;
+            this.mainDataset = mainDataset;
+            this.auditing = auditing;
         }
 
         @Override
-        public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+        public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
         {
-            // If data splits are enabled, then PKs are allowed, Otherwise PKs are not allowed
-            if (!dataSplitsEnabled)
+            return null;
+        }
+
+        @Override
+        public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            auditing.accept(validateAuditingForPKs);
+            return null;
+        }
+
+        @Override
+        public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            auditing.accept(validateAuditingForPKs);
+            return null;
+        }
+
+        private AuditingVisitor<Void> validateAuditingForPKs = new AuditingVisitor<Void>()
+        {
+            @Override
+            public Void visitNoAuditing(NoAuditingAbstract noAuditing)
             {
-                validatePrimaryKeysIsEmpty.accept(primaryKeys);
+                throw new IllegalStateException("NoAuditing not allowed with MaxVersion and AllVersion");
             }
-            return null;
-        }
 
-        @Override
-        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            validatePrimaryKeysNotEmpty.accept(primaryKeys);
-            return null;
-        }
-
-        @Override
-        public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            validatePrimaryKeysNotEmpty.accept(primaryKeys);
-            return null;
-        }
+            @Override
+            public Void visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
+            {
+                Field dateTimeAuditingField = mainDataset.schema().fields().stream()
+                        .filter(field -> field.name().equalsIgnoreCase(dateTimeAuditing.dateTimeField()))
+                        .findFirst().orElseThrow(() -> new IllegalStateException("dateTimeField is mandatory Field for dateTimeAuditing mode"));
+                if (!dateTimeAuditingField.primaryKey())
+                {
+                    throw new IllegalStateException("dateTimeField as PK is mandatory for MaxVersion and AllVersion");
+                }
+                return null;
+            }
+        };
     }
 
     static class SelectStageDatasetBuilder implements DeduplicationStrategyVisitor<Dataset>

@@ -73,7 +73,6 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return AppendOnly
                 .builder()
-                .dataSplitField(applyCase(appendOnly.dataSplitField()))
                 .digestField(applyCase(appendOnly.digestField()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())

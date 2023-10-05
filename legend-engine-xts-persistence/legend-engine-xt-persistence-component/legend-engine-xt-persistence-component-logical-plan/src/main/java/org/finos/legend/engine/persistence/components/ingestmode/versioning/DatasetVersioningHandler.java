@@ -47,6 +47,10 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     @Override
     public Dataset visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
     {
+        if (!maxVersionStrategy.performVersioning())
+        {
+            return this.dataset;
+        }
         OrderedField orderByField = OrderedField.builder()
                 .fieldName(maxVersionStrategy.versioningField())
                 .datasetRef(dataset.datasetReference())
@@ -84,6 +88,10 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     @Override
     public Dataset visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
     {
+        if (!allVersionsStrategyAbstract.performVersioning())
+        {
+            return this.dataset;
+        }
         OrderedField orderByField = OrderedField.builder()
                 .fieldName(allVersionsStrategyAbstract.versioningField())
                 .datasetRef(dataset.datasetReference())

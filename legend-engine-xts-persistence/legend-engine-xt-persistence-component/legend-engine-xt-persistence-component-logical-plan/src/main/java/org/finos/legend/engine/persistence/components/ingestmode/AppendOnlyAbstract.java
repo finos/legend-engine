@@ -39,47 +39,12 @@ public interface AppendOnlyAbstract extends IngestMode
 {
     Optional<String> digestField();
 
-    Optional<String> dataSplitField();
-
     Auditing auditing();
 
     @Value.Default
     default boolean filterExistingRecords()
     {
         return false;
-    }
-
-    @Check
-    default void validate()
-    {
-        deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
-        {
-            @Override
-            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-            {
-                return null;
-            }
-
-            @Override
-            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-            {
-                if (!digestField().isPresent())
-                {
-                    throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
-                }
-                return null;
-            }
-
-            @Override
-            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-            {
-                if (dataSplitField().isPresent())
-                {
-                    throw new IllegalStateException("Cannot build AppendOnly, DataSplits not supported for failOnDuplicates mode");
-                }
-                return null;
-            }
-        });
     }
 
     @Override

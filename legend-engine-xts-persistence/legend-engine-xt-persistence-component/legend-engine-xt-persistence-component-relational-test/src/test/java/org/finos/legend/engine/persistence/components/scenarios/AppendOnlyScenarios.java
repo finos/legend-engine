@@ -85,7 +85,6 @@ public class AppendOnlyScenarios extends BaseTest
                 .digestField(digestField)
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .dataSplitField(Optional.of(dataSplitField))
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
@@ -124,7 +123,6 @@ public class AppendOnlyScenarios extends BaseTest
     {
         AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(NoAuditing.builder().build())
                 .build();
@@ -147,7 +145,6 @@ public class AppendOnlyScenarios extends BaseTest
                 .digestField(digestField)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .dataSplitField(Optional.of(dataSplitField))
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
