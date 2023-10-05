@@ -21,8 +21,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVe
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 

@@ -19,9 +19,9 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -44,6 +44,12 @@ class NontemporalSnapshotPlanner extends Planner
     NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
+
+        // Validation
+        if (ingestMode.versioningStrategy() instanceof MaxVersionStrategy && primaryKeys.isEmpty())
+        {
+            throw new IllegalStateException("Primary keys are mandatory for MaxVersion");
+        }
     }
 
     @Override
