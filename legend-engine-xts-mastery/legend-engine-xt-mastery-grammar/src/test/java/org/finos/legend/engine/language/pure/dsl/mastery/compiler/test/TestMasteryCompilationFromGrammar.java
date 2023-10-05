@@ -113,18 +113,21 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
             "                   ];\n" +
             "          keyType: GeneratedPrimaryKey;\n" +
+            "          optional: true;\n" +
             "          precedence: 1;\n" +
             "        },\n" +
             "        {\n" +
             "          queries: [ {input: org::dataeng::Widget[1],EFFECTIVE_DATE: StrictDate[1]|org::dataeng::Widget.all()->filter(widget|((($widget.identifiers.identifierType == 'ISIN') && ($input.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier == $widget.identifiers->filter(idType|$idType.identifierType == 'ISIN').identifier)) && ($widget.identifiers.FROM_Z->toOne() <= $EFFECTIVE_DATE)) && ($widget.identifiers.THRU_Z->toOne() > $EFFECTIVE_DATE))}\n" +
             "                   ];\n" +
             "          keyType: AlternateKey;\n" +
+            "          optional: true;\n" +
             "          precedence: 2;\n" +
             "        },\n" +
             "        {\n" +
             "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.trigger == $input.trigger)}\n" +
             "                   ];\n" +
             "          keyType: Optional;\n" +
+            "          optional: true;\n" +
             "          precedence: 3;\n" +
             "        }\n" +
             "      ]\n" +
@@ -393,7 +396,6 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "        {\n" +
             "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
             "                   ];\n" +
-            "          keyType: GeneratedPrimaryKey;\n" +
             "          precedence: 1;\n" +
             "        }\n" +
             "      ]\n" +
@@ -477,6 +479,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
             "                   ];\n" +
             "          keyType: GeneratedPrimaryKey;\n" +
+            "          optional: true;\n" +
             "          precedence: 1;\n" +
             "        }" +
             "      ]\n" +
@@ -550,10 +553,12 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         Object[] queriesArray = idRes._resolutionQueries().toArray();
         assertEquals(1, ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._precedence());
         assertEquals("GeneratedPrimaryKey", ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._keyType()._name());
+        assertTrue(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._optional());
         assertResolutionQueryLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
 
         assertEquals(2, ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[1])._precedence());
         assertEquals("AlternateKey", ((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[1])._keyType()._name());
+        assertTrue(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._optional());
         assertResolutionQueryLambdas(((Root_meta_pure_mastery_metamodel_identity_ResolutionQuery) queriesArray[0])._queries().toList());
 
         //PrecedenceRule
@@ -1000,6 +1005,6 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [8:1-35:1]: Duplicated element 'org::dataeng::Widget'";
+        return "COMPILATION error at [8:1-36:1]: Duplicated element 'org::dataeng::Widget'";
     }
 }

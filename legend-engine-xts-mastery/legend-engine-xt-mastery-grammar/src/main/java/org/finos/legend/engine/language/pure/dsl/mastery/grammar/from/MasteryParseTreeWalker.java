@@ -719,8 +719,15 @@ public class MasteryParseTreeWalker
         resolutionQuery.queries = ListIterate.flatCollect(ctx.queryExpressions(), this::visitQueryExpressions);
 
         //keyType
-        MasteryParserGrammar.ResolutionQueryKeyTypeContext resolutionQueryKeyTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.resolutionQueryKeyType(), "keyType", sourceInformation);
-        resolutionQuery.keyType = visitResolutionKeyType(resolutionQueryKeyTypeContext);
+        MasteryParserGrammar.ResolutionQueryKeyTypeContext resolutionQueryKeyTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.resolutionQueryKeyType(), "keyType", sourceInformation);
+        if (resolutionQueryKeyTypeContext != null)
+        {
+            resolutionQuery.keyType = visitResolutionKeyType(resolutionQueryKeyTypeContext);
+        }
+
+        //optional
+        MasteryParserGrammar.ResolutionQueryOptionalContext resolutionQueryOptionalContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.resolutionQueryOptional(), "optional", sourceInformation);
+        resolutionQuery.optional = evaluateBoolean(resolutionQueryOptionalContext, (resolutionQueryOptionalContext != null ? resolutionQueryOptionalContext.boolean_value() : null), null);
 
         //precedence - Field 'precedence' should be specified only once
         MasteryParserGrammar.ResolutionQueryPrecedenceContext resolutionQueryPrecedenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.resolutionQueryPrecedence(), "precedence", sourceInformation);
