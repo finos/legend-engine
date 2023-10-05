@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Connection</name>
+    <name>Legend Engine - XT - Relational Store - Execution Plan - Connection</name>
 
     <build>
         <plugins>
