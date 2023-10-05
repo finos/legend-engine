@@ -62,6 +62,14 @@ public class MemsqlTestArtifacts
         "`version` INTEGER," +
         "PRIMARY KEY (`id`, `name`))";
 
+    public static String expectedBaseTempStagingTableWithCount = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+            "(`id` INTEGER NOT NULL," +
+            "`name` VARCHAR(256) NOT NULL," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "`legend_persistence_count` INTEGER," +
+            "PRIMARY KEY (`id`, `name`))";
+
     public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
         "`ID` INTEGER NOT NULL," +
         "`NAME` VARCHAR(256) NOT NULL," +
@@ -131,6 +139,7 @@ public class MemsqlTestArtifacts
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
+    public static String expectedTempStagingCleanupQuery = "DELETE FROM `mydb`.`staging_legend_persistence_temp_staging` as stage";
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
@@ -371,5 +380,15 @@ public class MemsqlTestArtifacts
             "`digest` VARCHAR(256)," +
             "`delete_indicator` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
+
+    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+            "(`id`, `name`, `amount`, `biz_date`, `legend_persistence_count`) " +
+            "((SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count`," +
+            "DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` " +
+            "FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,COUNT(*) as `legend_persistence_count` " +
+            "FROM `mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage) as stage " +
+            "WHERE stage.`legend_persistence_rank` = 1) as stage)";
 
 }

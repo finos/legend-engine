@@ -23,7 +23,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -255,7 +254,7 @@ public abstract class Planner
             operations.add(Delete.builder().dataset(tempStagingDataset()).build());
             Dataset dedupAndVersionedDataset = LogicalPlanUtils.getTempStagingDataset(ingestMode(), originalStagingDataset(), primaryKeys);
             List<Value> fieldsToInsert = new ArrayList<>(dedupAndVersionedDataset.schemaReference().fieldValues());
-            Insert.of(tempStagingDataset(), dedupAndVersionedDataset, fieldsToInsert);
+            operations.add(Insert.of(tempStagingDataset(), dedupAndVersionedDataset, fieldsToInsert));
         }
         return LogicalPlan.of(operations);
     }
@@ -356,7 +355,7 @@ public abstract class Planner
         }
 
         LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get(), filterCondition))
+                .addOps(LogicalPlanUtils.getRecordCount(originalStagingDataset(), INCOMING_RECORD_COUNT.get(), filterCondition))
                 .build();
         postRunStatisticsResult.put(INCOMING_RECORD_COUNT, incomingRecordCountPlan);
     }

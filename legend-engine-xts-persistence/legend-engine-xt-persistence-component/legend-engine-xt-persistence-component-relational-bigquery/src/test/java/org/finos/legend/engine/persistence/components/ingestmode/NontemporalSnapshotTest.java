@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -40,7 +41,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage)";
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date` FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableCreateQuery, preActionsSqlList.get(1));
@@ -52,26 +53,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotNoAuditingAllowDupsNoVersioning(GeneratorResult operations)
-    {
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date` FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`staging` as stage_right WHERE " +
-                "(stage.`data_split` < stage_right.`data_split`) AND ((stage.`id` = stage_right.`id`) AND (stage.`name` = stage_right.`name`)))))";
-
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-
-        // Stats
-        verifyStats(operations);
-    }
-
-    @Override
-    public void verifyNontemporalSnapshotWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalSnapshotWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -79,7 +61,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         String insertSql = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
-            "FROM `mydb`.`staging` as stage)";
+            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
@@ -90,21 +72,25 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotWithAuditingWithDataSplit(GeneratorResult operations)
+    public void verifyNontemporalSnapshotWithAuditingFailOnDupMaxVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
 
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
-                "FROM `mydb`.`staging` as stage WHERE NOT (EXISTS " +
-                "(SELECT * FROM `mydb`.`staging` as stage_right " +
-                "WHERE (stage.`data_split` < stage_right.`data_split`) AND ((stage.`id` = stage_right.`id`) AND " +
-                "(stage.`name` = stage_right.`name`)))))";
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') FROM " +
+                "`mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
         verifyStats(operations);
@@ -117,7 +103,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = queries.ingestSql();
 
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`) " +
-                "(SELECT * FROM `MYDB`.`STAGING` as stage)";
+                "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE` FROM `MYDB`.`STAGING` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanupMainTableSqlUpperCase, milestoningSqlList.get(0));
@@ -131,7 +117,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage)";
+                "(SELECT stage.`id`,stage.`name`,stage.`amount` FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
