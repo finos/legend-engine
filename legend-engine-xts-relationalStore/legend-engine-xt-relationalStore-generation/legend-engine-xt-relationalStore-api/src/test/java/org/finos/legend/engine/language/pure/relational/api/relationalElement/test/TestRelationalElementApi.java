@@ -57,23 +57,36 @@ public class TestRelationalElementApi
         );
     }
 
-    @Test
-    public void shouldGenerateModelsFromDatabaseSpecification() throws IOException
+
+    private void test(String inputGrammarPath, String expectedJsonPath, String dbPath) throws IOException
     {
-        String expectedJson = loadFromFile("expectedJson.json");
-        String inputGrammar = loadFromFile("inputGrammar.pure");
+        String expectedJson = loadFromFile(expectedJsonPath);
+        String inputGrammar = loadFromFile(inputGrammarPath);
         Assert.assertNotNull(expectedJson);
         Assert.assertNotNull(inputGrammar);
         PureModelContextData inputPmcd = buildPMCDFromString(inputGrammar);
-        String databasePath = "meta::relational::transform::autogen::tests::testDB";
-        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd, null);
+        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(dbPath, inputPmcd, null);
         RelationalElementAPI relationalElementAPI = new RelationalElementAPI(DeploymentMode.PROD, null);
         Response response = relationalElementAPI.generateModelsFromDatabaseSpecification(inputJson, null);
         Assert.assertNotNull(response);
         String actualJson = response.getEntity().toString();
         JsonAssert.assertJsonEquals(expectedJson, actualJson);
+        PureModelContextData generatedModel = objectMapper.readValue(actualJson, PureModelContextData.class);
+        PureModelContextData fullModel = generatedModel.combine(inputPmcd);
         // compile generated model and input database
-        PureModelContextData pureModelContextData = objectMapper.readValue(actualJson, PureModelContextData.class).combine(inputPmcd);
-        testManager.loadModelAndData(pureModelContextData, pureModelContextData.serializer.version, null, null);
+        testManager.loadModelAndData(fullModel, fullModel.serializer.version, null, null);
+    }
+
+    @Test
+    public void shouldGenerateModelsFromDatabaseSpecification() throws IOException
+    {
+        test("inputGrammar.pure", "expectedJson.json", "meta::relational::transform::autogen::tests::testDB");
+    }
+
+    @Test
+    public void generateModelsWithDbWithIncludes() throws IOException
+    {
+        test("inputGrammarWithInclude.pure", "expectedJsonWithInclude.json", "model::MyDB");
+
     }
 }
