@@ -30,9 +30,11 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.*;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_STAGING_DATASET_BASE_NAME;
 
 public class TestDedupAndVersioning extends BaseTest
 {
@@ -89,16 +91,10 @@ public class TestDedupAndVersioning extends BaseTest
         IngestMode ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
                 .build();
-        RelationalIngestor ingestor = RelationalIngestor.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
-                .build();
 
-        // Create staging Table without PKS and load Data into it
-
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        Assertions.assertEquals(false, h2Sink.doesTableExist(getTempStagingDataset()));
     }
 
     @Test
@@ -112,17 +108,12 @@ public class TestDedupAndVersioning extends BaseTest
                 .auditing(NoAuditing.builder().build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
-        RelationalIngestor ingestor = RelationalIngestor.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
-                .build();
-
-        // Create staging Table without PKS and load Data into it
         createStagingTableWithoutVersion();
+        // TODO LOAD DATA
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
     }
 
 
@@ -138,17 +129,14 @@ public class TestDedupAndVersioning extends BaseTest
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").build())
                 .build();
-        RelationalIngestor ingestor = RelationalIngestor.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
-                .build();
 
-        // Create staging Table without PKS and load Data into it
         createStagingTableWithVersion();
+        // TODO LOAD DATA
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        performDedupAndVersioining(datasets, ingestMode);
+
+        // Validate tempTableExists
+        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
     }
 
     @Test
@@ -164,17 +152,14 @@ public class TestDedupAndVersioning extends BaseTest
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").build())
                 .build();
-        RelationalIngestor ingestor = RelationalIngestor.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
-                .build();
 
-        // Create staging Table without PKS and load Data into it
         createStagingTableWithVersion();
+        // TODO LOAD DATA
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        performDedupAndVersioining(datasets, ingestMode);
+
+        // Validate tempTableExists
+        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
     }
 
     private DatasetDefinition getStagingTableWithoutVersion()
@@ -183,6 +168,14 @@ public class TestDedupAndVersioning extends BaseTest
                 .group(testSchemaName)
                 .name(stagingTableName)
                 .schema(baseSchemaWithoutVersion)
+                .build();
+    }
+
+    private Dataset getTempStagingDataset()
+    {
+        return DatasetReferenceImpl.builder()
+                .group(testSchemaName)
+                .name(stagingTableName + "_" + TEMP_STAGING_DATASET_BASE_NAME)
                 .build();
     }
 
@@ -219,7 +212,15 @@ public class TestDedupAndVersioning extends BaseTest
         h2Sink.executeStatement(createSql);
     }
 
+    private static void performDedupAndVersioining(Datasets datasets, IngestMode ingestMode) {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get())
+                .build();
 
-
-
+        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
+        datasets = ingestor.create(datasets);
+        datasets = ingestor.dedupAndVersion(datasets);
     }
+
+}

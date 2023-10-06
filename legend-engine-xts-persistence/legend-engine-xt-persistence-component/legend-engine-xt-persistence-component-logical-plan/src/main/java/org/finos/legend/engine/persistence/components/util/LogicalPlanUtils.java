@@ -460,7 +460,8 @@ public class LogicalPlanUtils
     public static Dataset getDedupedAndVersionedDataset(DeduplicationStrategy deduplicationStrategy, VersioningStrategy versioningStrategy, Dataset stagingDataset, List<String> primaryKeys)
     {
         Dataset dedupedDataset = deduplicationStrategy.accept(new DatasetDeduplicationHandler(stagingDataset));
-        if (dedupedDataset instanceof Selection)
+        boolean isTempTableNeededForVersioning = versioningStrategy.accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED);
+        if (isTempTableNeededForVersioning && dedupedDataset instanceof Selection)
         {
             Selection selection = (Selection) dedupedDataset;
             dedupedDataset = selection.withAlias(stagingDataset.datasetReference().alias());

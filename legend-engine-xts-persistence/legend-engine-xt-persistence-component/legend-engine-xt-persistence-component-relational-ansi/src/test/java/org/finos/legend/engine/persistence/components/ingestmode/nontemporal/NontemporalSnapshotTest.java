@@ -86,9 +86,9 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         String cleanupTempStagingTableSql = "DELETE FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
         String insertTempStagingTableSql = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
-                "((SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" " +
-                "FROM \"mydb\".\"staging\" as stage GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\") as stage)";
-
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+                "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+                "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(createTempStagingTable, preActionsSqlList.get(1));
