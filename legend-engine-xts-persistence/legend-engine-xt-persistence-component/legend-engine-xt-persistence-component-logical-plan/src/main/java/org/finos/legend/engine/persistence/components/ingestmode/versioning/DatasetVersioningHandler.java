@@ -79,7 +79,6 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
                 .source(selectionWithRank)
                 .addAllFields(allColumns)
                 .condition(rankFilterCondition)
-                .alias(dataset.datasetReference().alias())
                 .build();
 
         return enrichedStagingDataset;
@@ -111,7 +110,6 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
         Selection selectionWithRank = Selection.builder()
                 .source(dataset)
                 .addAllFields(allColumnsWithRank)
-                .alias(dataset.datasetReference().alias())
                 .build();
         return selectionWithRank;
     }

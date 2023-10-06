@@ -457,11 +457,14 @@ public class LogicalPlanUtils
                 .build();
     }
 
-    public static Dataset getTempStagingDataset(IngestMode ingestMode, Dataset stagingDataset, List<String> primaryKeys)
+    public static Dataset getDedupedAndVersionedDataset(DeduplicationStrategy deduplicationStrategy, VersioningStrategy versioningStrategy, Dataset stagingDataset, List<String> primaryKeys)
     {
-        DeduplicationStrategy deduplicationStrategy = ingestMode.deduplicationStrategy();
-        VersioningStrategy versioningStrategy = ingestMode.versioningStrategy();
         Dataset dedupedDataset = deduplicationStrategy.accept(new DatasetDeduplicationHandler(stagingDataset));
+        if (dedupedDataset instanceof Selection)
+        {
+            Selection selection = (Selection) dedupedDataset;
+            dedupedDataset = selection.withAlias(stagingDataset.datasetReference().alias());
+        }
         Dataset versionedDataset = versioningStrategy.accept(new DatasetVersioningHandler(dedupedDataset, primaryKeys));
         return versionedDataset;
     }

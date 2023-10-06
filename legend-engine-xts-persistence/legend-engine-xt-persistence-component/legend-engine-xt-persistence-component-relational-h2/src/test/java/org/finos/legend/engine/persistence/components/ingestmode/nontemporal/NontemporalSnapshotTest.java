@@ -20,6 +20,8 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Filter;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
@@ -52,7 +55,8 @@ class NontemporalSnapshotTest extends BaseTest
     4. No Auditing & import external CSV dataset
     5. Staging has lesser columns than main dataset
     6. Staging data cleanup
-    7. Data Splits enabled
+    7. With Auditing, Max Version, Filter Duplicates
+    8. With Auditing, No Version, Fail on Duplicates
      */
 
     /*
@@ -258,7 +262,7 @@ class NontemporalSnapshotTest extends BaseTest
     Scenario: Test Nontemporal Snapshot when data splits are enabled
     */
     @Test
-    void testNontemporalSnapshotWithDataSplits() throws Exception
+    void testNontemporalSnapshotWithMaxVersionAndFilterDuplicates() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
@@ -267,7 +271,8 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                //.dataSplitField(dataSplitName)
+                .versioningStrategy(MaxVersionStrategy.of(""))
+                .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

@@ -252,7 +252,7 @@ public abstract class Planner
         if (isTempTableNeededForStaging)
         {
             operations.add(Delete.builder().dataset(tempStagingDataset()).build());
-            Dataset dedupAndVersionedDataset = LogicalPlanUtils.getTempStagingDataset(ingestMode(), originalStagingDataset(), primaryKeys);
+            Dataset dedupAndVersionedDataset = LogicalPlanUtils.getDedupedAndVersionedDataset(ingestMode.deduplicationStrategy(), ingestMode.versioningStrategy(), originalStagingDataset(), primaryKeys);
             List<Value> fieldsToInsert = new ArrayList<>(dedupAndVersionedDataset.schemaReference().fieldValues());
             operations.add(Insert.of(tempStagingDataset(), dedupAndVersionedDataset, fieldsToInsert));
         }
