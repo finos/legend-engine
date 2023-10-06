@@ -80,8 +80,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
-                "\"legend_persistence_count\" INTEGER," +
-                "PRIMARY KEY (\"id\", \"name\"))";
+                "\"legend_persistence_count\" INTEGER)";
 
         String cleanupTempStagingTableSql = "DELETE FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
         String insertTempStagingTableSql = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +

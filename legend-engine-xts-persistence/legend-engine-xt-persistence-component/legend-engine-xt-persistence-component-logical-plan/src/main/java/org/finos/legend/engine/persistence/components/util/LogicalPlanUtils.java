@@ -457,6 +457,13 @@ public class LogicalPlanUtils
                 .build();
     }
 
+    public static Dataset getTempStagingDatasetWithoutPks(Dataset tempStagingDataset)
+    {
+        List<Field> fieldsWithoutPk = tempStagingDataset.schema().fields().stream()
+                .map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
+        return tempStagingDataset.withSchema(tempStagingDataset.schema().withFields(fieldsWithoutPk));
+    }
+
     public static Dataset getDedupedAndVersionedDataset(DeduplicationStrategy deduplicationStrategy, VersioningStrategy versioningStrategy, Dataset stagingDataset, List<String> primaryKeys)
     {
         Dataset dedupedDataset = deduplicationStrategy.accept(new DatasetDeduplicationHandler(stagingDataset));

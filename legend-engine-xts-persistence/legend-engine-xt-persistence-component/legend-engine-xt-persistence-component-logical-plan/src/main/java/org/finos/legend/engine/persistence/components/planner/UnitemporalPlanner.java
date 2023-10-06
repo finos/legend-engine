@@ -134,7 +134,7 @@ abstract class UnitemporalPlanner extends Planner
         }
         if (isTempTableNeededForStaging)
         {
-            operations.add(Create.of(true, tempStagingDataset()));
+            operations.add(Create.of(true, tempStagingDatasetWithoutPks()));
         }
         return LogicalPlan.of(operations);
     }

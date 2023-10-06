@@ -208,8 +208,7 @@ public class AnsiTestArtifacts
             "\"name\" VARCHAR NOT NULL," +
             "\"amount\" DOUBLE," +
             "\"biz_date\" DATE," +
-            "\"legend_persistence_count\" INTEGER," +
-            "PRIMARY KEY (\"id\", \"name\"))";
+            "\"legend_persistence_count\" INTEGER)";
 
     public static String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

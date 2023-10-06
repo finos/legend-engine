@@ -112,6 +112,7 @@ public abstract class Planner
     protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
     private final Optional<Dataset> tempStagingDataset;
+    private final Optional<Dataset> tempStagingDatasetWithoutPks;
     private final Dataset effectiveStagingDataset;
     protected final boolean isTempTableNeededForStaging;
 
@@ -122,6 +123,7 @@ public abstract class Planner
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
         isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
         this.tempStagingDataset = getTempStagingDataset();
+        this.tempStagingDatasetWithoutPks = getTempStagingDatasetWithoutPks();
         this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset() : originalStagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
@@ -139,6 +141,16 @@ public abstract class Planner
             tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode));
         }
         return tempStagingDataset;
+    }
+
+    private Optional<Dataset> getTempStagingDatasetWithoutPks()
+    {
+        Optional<Dataset> tempStagingDatasetWithoutPks = Optional.empty();
+        if (isTempTableNeededForStaging)
+        {
+            tempStagingDatasetWithoutPks = Optional.of(LogicalPlanUtils.getTempStagingDatasetWithoutPks(tempStagingDataset()));
+        }
+        return tempStagingDatasetWithoutPks;
     }
 
     private List<String> findCommonPrimaryKeysBetweenMainAndStaging()
@@ -165,6 +177,11 @@ public abstract class Planner
     protected Dataset tempStagingDataset()
     {
         return tempStagingDataset.orElseThrow(IllegalStateException::new);
+    }
+
+    protected Dataset tempStagingDatasetWithoutPks()
+    {
+        return tempStagingDatasetWithoutPks.orElseThrow(IllegalStateException::new);
     }
 
     protected List<Value> getDataFields()
@@ -249,7 +266,7 @@ public abstract class Planner
         }
         if (isTempTableNeededForStaging)
         {
-            operations.add(Create.of(true, tempStagingDataset()));
+            operations.add(Create.of(true, tempStagingDatasetWithoutPks()));
         }
         return LogicalPlan.of(operations);
     }
