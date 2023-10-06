@@ -42,9 +42,9 @@ public class DatasetDeduplicationHandlerTest extends IngestModeTest
             .schema(baseTableSchemaWithVersion)
             .build();
 
-    String expectedSql = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" " +
+    String expectedSql = "SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" " +
             "FROM \"my_db\".\"my_schema\".\"my_table\" as stage " +
-            "GROUP BY stage.\"id\", stage.\"name\", stage.\"version\", stage.\"biz_date\") as stage";
+            "GROUP BY stage.\"id\", stage.\"name\", stage.\"version\", stage.\"biz_date\"";
 
     @Test
     public void testDatasetDeduplicationFailOnDuplicates()

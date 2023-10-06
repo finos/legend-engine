@@ -61,7 +61,6 @@ public class DatasetDeduplicationHandler implements DeduplicationStrategyVisitor
         Selection selectionWithGroupByAllColumns = Selection.builder()
                 .source(stagingDataset)
                 .addAllFields(allColumnsWithCount)
-                .alias(stagingDataset.datasetReference().alias())
                 .groupByFields(allColumns)
                 .build();
         return selectionWithGroupByAllColumns;

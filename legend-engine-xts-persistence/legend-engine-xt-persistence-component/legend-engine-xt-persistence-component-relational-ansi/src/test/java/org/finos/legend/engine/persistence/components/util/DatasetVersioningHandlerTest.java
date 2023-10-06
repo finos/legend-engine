@@ -18,10 +18,7 @@ import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DatasetVersioningHandler;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -77,10 +74,10 @@ public class DatasetVersioningHandlerTest extends IngestModeTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(versionedSelection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\" " +
+        String expectedSql = "SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\" " +
                 "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\",DENSE_RANK() OVER " +
                 "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_rank\" " +
-                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as stage WHERE stage.\"legend_persistence_rank\" = 1) as stage";
+                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as stage WHERE stage.\"legend_persistence_rank\" = 1";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -93,28 +90,30 @@ public class DatasetVersioningHandlerTest extends IngestModeTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(versionedSelection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
+        String expectedSql = "SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
                 "DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" ASC) as \"legend_persistence_data_split\" " +
-                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as stage";
+                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
     @Test
     public void testVersioningHandlerWithDeduplicationHandler()
     {
-        Dataset dedupedDataset = FailOnDuplicates.builder().build().accept(new DatasetDeduplicationHandler(derivedStagingDataset));
-        Dataset versionedDataset = AllVersionsStrategy.builder().versioningField("version").build().accept(new DatasetVersioningHandler(dedupedDataset, primaryKeys));
-        Selection versionedSelection = (Selection) versionedDataset;
+        DeduplicationStrategy deduplicationStrategy = FailOnDuplicates.builder().build();
+        VersioningStrategy versioningStrategy = AllVersionsStrategy.builder().versioningField("version").build();
+        Dataset dedupAndVersionedDataset = LogicalPlanUtils.getDedupedAndVersionedDataset(deduplicationStrategy, versioningStrategy, derivedStagingDataset, primaryKeys);
+
+        Selection versionedSelection = (Selection) dedupAndVersionedDataset;
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(versionedSelection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
+        String expectedSql = "SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
                 "stage.\"legend_persistence_count\" as \"legend_persistence_count\"," +
                 "DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" ASC) as \"legend_persistence_data_split\" " +
                 "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
                 "COUNT(*) as \"legend_persistence_count\" FROM \"my_db\".\"my_schema\".\"my_table\" as stage WHERE stage.\"bizDate\" = '2020-01-01' " +
-                "GROUP BY stage.\"id\", stage.\"name\", stage.\"version\", stage.\"biz_date\") as stage) as stage";
+                "GROUP BY stage.\"id\", stage.\"name\", stage.\"version\", stage.\"biz_date\") as stage";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }
