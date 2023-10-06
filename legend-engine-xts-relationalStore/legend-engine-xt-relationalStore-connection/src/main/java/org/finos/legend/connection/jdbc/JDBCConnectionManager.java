@@ -19,17 +19,20 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.connection.ConnectionManager;
 import org.finos.legend.connection.Database;
-import org.finos.legend.connection.jdbc.driver.DatabaseManager;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 public final class JDBCConnectionManager implements ConnectionManager
 {
@@ -81,7 +84,6 @@ public final class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.setDriverClassName(databaseManager.getDriver());
         jdbcConfig.setPoolName(poolName);
         jdbcConfig.setJdbcUrl(jdbcUrl);
-        jdbcConfig.setDataSourceProperties(properties);
 
         // TODO: @akphi - should we allow these to be configured per connection spec, or it's something people can configure extra to override the provided
         // values from connection specification, feels like this should be per connection builder instead
@@ -96,8 +98,9 @@ public final class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
         jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
 
-        DataSource dataSource = new HikariDataSource(jdbcConfig);
-        return dataSource.getConnection();
+        jdbcConfig.setDataSource(new InternalDataSource(jdbcUrl, properties, databaseManager.getDriver()));
+
+        return new HikariDataSource(jdbcConfig).getConnection();
     }
 
     private static String getPoolName(Identity identity, ConnectionSpecification connectionSpecification, AuthenticationConfiguration authenticationConfiguration)
@@ -122,5 +125,79 @@ public final class JDBCConnectionManager implements ConnectionManager
             throw new RuntimeException(String.format("Can't find matching manager for database type '%s'", database));
         }
         return manager;
+    }
+
+    private static class InternalDataSource implements DataSource
+    {
+        private final String url;
+        private final Properties properties;
+        private final Driver driver;
+
+        public InternalDataSource(String url, Properties properties, String driverClassName)
+        {
+            this.url = url;
+            this.properties = properties;
+            try
+            {
+                this.driver = (Driver) Class.forName(driverClassName).getDeclaredConstructor().newInstance();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public Connection getConnection() throws SQLException
+        {
+            // TODO: @akphi - add logging and statistics like in execution DriverWrapper
+            return driver.connect(this.url, this.properties);
+        }
+
+        @Override
+        public Connection getConnection(String username, String password) throws SQLException
+        {
+            throw new RuntimeException();
+        }
+
+        @Override
+        public PrintWriter getLogWriter() throws SQLException
+        {
+            return null;
+        }
+
+        @Override
+        public void setLogWriter(PrintWriter out) throws SQLException
+        {
+        }
+
+        @Override
+        public void setLoginTimeout(int seconds) throws SQLException
+        {
+        }
+
+        @Override
+        public int getLoginTimeout() throws SQLException
+        {
+            return 0;
+        }
+
+        @Override
+        public <T> T unwrap(Class<T> iface) throws SQLException
+        {
+            return null;
+        }
+
+        @Override
+        public boolean isWrapperFor(Class<?> iface) throws SQLException
+        {
+            return false;
+        }
+
+        @Override
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException
+        {
+            return null;
+        }
     }
 }

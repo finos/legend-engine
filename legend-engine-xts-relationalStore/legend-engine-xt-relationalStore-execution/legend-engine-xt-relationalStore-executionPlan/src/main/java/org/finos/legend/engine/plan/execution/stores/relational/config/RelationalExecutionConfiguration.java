@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -35,6 +36,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     private CredentialProviderProvider credentialProviderProvider;
     @JsonProperty
     private RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig;
+    private ConnectionFactory connectionFactory;
 
     @Override
     public StoreType getStoreType()
@@ -71,6 +73,11 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         return credentialProviderProvider;
     }
 
+    public ConnectionFactory getConnectionFactory()
+    {
+        return connectionFactory;
+    }
+
     public void setCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
     {
         this.credentialProviderProvider = credentialProviderProvider;
@@ -84,6 +91,11 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     public void setFlowProviderConfiguration(DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration)
     {
         this.flowProviderConfiguration = flowProviderConfiguration;
+    }
+
+    public void setConnectionFactory(ConnectionFactory connectionFactory)
+    {
+        this.connectionFactory = connectionFactory;
     }
 
     public static Builder newInstance()
@@ -105,6 +117,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         private TemporaryTestDbConfiguration temporaryTestDbConfiguration;
         private CredentialProviderProvider credentialProviderProvider;
         private RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig;
+        private ConnectionFactory connectionFactory;
 
         public Builder withTempPath(String tempPath)
         {
@@ -151,6 +164,12 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             return this;
         }
 
+        public Builder withConnectionFactory(ConnectionFactory connectionFactory)
+        {
+            this.connectionFactory = connectionFactory;
+            return this;
+        }
+
         public RelationalExecutionConfiguration build()
         {
             RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration();
@@ -161,6 +180,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             relationalExecutionConfiguration.temporarytestdb = this.temporaryTestDbConfiguration;
             relationalExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
             relationalExecutionConfiguration.relationalGraphFetchExecutionConfig = relationalGraphFetchExecutionConfig;
+            relationalExecutionConfiguration.connectionFactory = connectionFactory;
             return relationalExecutionConfiguration;
         }
     }

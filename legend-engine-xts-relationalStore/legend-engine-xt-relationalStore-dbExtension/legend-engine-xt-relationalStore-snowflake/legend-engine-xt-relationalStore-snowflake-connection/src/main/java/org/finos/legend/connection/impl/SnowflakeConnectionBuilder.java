@@ -15,11 +15,9 @@
 package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.ConnectionBuilder;
-import org.finos.legend.connection.Database;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.JDBCConnectionManager;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
@@ -30,7 +28,7 @@ import java.sql.Connection;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.finos.legend.connection.jdbc.driver.SnowflakeDatabaseManager.*;
+import static org.finos.legend.connection.jdbc.impl.SnowflakeDatabaseManager.*;
 
 public class SnowflakeConnectionBuilder
 {

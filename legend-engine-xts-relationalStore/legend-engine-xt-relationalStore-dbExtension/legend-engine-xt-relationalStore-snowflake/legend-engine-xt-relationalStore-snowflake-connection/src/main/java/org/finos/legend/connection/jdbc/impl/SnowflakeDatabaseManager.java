@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection.jdbc.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.SnowflakeAccountType;
+import org.finos.legend.connection.jdbc.DatabaseManager;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.util.List;

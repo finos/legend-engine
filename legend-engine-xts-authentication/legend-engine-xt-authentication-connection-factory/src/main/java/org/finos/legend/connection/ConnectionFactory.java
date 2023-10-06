@@ -58,6 +58,11 @@ public class ConnectionFactory
         }
     }
 
+    public LegendEnvironment getEnvironment()
+    {
+        return environment;
+    }
+
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationMechanism authenticationMechanism)
     {
         return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier), authenticationMechanism);

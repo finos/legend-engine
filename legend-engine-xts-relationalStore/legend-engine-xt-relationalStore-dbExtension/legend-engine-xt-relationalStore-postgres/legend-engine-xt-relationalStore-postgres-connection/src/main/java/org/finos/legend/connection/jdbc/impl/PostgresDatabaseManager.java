@@ -12,31 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection.jdbc.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.jdbc.DatabaseManager;
 
 import java.util.List;
 import java.util.Properties;
 
-public class H2DatabaseManager implements DatabaseManager
+public class PostgresDatabaseManager implements DatabaseManager
 {
     @Override
     public List<String> getIds()
     {
-        return Lists.mutable.with(DatabaseType.H2.name());
+        return Lists.mutable.with("PostgreSQL", DatabaseType.POSTGRES.getLabel());
     }
 
     @Override
     public String getDriver()
     {
-        return "org.h2.Driver";
+        return "org.postgresql.Driver";
     }
 
     @Override
     public String buildURL(String host, int port, String databaseName, Properties properties)
     {
-        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
+        return String.format("jdbc:postgresql://%s:%s/%s", host, port, databaseName);
     }
 }
