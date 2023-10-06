@@ -14,29 +14,14 @@
 
 package org.finos.legend.connection.jdbc.driver;
 
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-
 import java.util.List;
 import java.util.Properties;
 
-public class H2_JDBCConnectionDriver implements JDBCConnectionDriver
+public interface DatabaseManager
 {
-    @Override
-    public List<String> getIds()
-    {
-        return Lists.mutable.with(DatabaseType.H2.name());
-    }
+    List<String> getIds();
 
-    @Override
-    public String getDriver()
-    {
-        return "org.h2.Driver";
-    }
+    String getDriver();
 
-    @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
-    {
-        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
-    }
+    String buildURL(String host, int port, String databaseName, Properties properties);
 }

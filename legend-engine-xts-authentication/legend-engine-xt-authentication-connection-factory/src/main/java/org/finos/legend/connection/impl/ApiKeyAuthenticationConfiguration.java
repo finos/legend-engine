@@ -39,4 +39,13 @@ public class ApiKeyAuthenticationConfiguration extends AuthenticationConfigurati
         HEADER,
         COOKIE
     }
+
+    @Override
+    public String shortId()
+    {
+        return "ApiKey" +
+                "_location:" + location +
+                "_keyName:" + keyName +
+                "_value:" + value;
+    }
 }

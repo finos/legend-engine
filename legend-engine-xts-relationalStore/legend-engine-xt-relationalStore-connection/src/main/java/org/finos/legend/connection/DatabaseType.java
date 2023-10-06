@@ -17,6 +17,7 @@ package org.finos.legend.connection;
 public enum DatabaseType implements Database
 {
     POSTGRES("Postgres"),
+    BIG_QUERY("BigQuery"),
     SNOWFLAKE("Snowflake");
 
     private final String label;

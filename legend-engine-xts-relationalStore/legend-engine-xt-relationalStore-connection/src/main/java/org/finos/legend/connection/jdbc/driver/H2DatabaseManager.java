@@ -14,15 +14,29 @@
 
 package org.finos.legend.connection.jdbc.driver;
 
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+
 import java.util.List;
 import java.util.Properties;
 
-public interface JDBCConnectionDriver
+public class H2DatabaseManager implements DatabaseManager
 {
-    List<String> getIds();
+    @Override
+    public List<String> getIds()
+    {
+        return Lists.mutable.with(DatabaseType.H2.name());
+    }
 
-    // TODO?: @akphi - should we port over the driver wrapper stuffs from DatabaseManager as well?
-    String getDriver();
+    @Override
+    public String getDriver()
+    {
+        return "org.h2.Driver";
+    }
 
-    String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties);
+    @Override
+    public String buildURL(String host, int port, String databaseName, Properties properties)
+    {
+        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
+    }
 }

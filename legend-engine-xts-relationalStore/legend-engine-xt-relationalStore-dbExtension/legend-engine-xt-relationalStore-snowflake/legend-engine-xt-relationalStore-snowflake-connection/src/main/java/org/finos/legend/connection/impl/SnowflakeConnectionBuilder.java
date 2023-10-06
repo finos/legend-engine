@@ -15,42 +15,36 @@
 package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.ConnectionBuilder;
+import org.finos.legend.connection.Database;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreSupport;
 import org.finos.legend.connection.jdbc.JDBCConnectionManager;
-import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.finos.legend.connection.jdbc.driver.Snowflake_JDBCConnectionDriver.*;
+import static org.finos.legend.connection.jdbc.driver.SnowflakeDatabaseManager.*;
 
 public class SnowflakeConnectionBuilder
 {
     public static class WithKeyPair extends ConnectionBuilder<Connection, PrivateKeyCredential, SnowflakeConnectionSpecification>
     {
         @Override
-        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential, Identity identity) throws Exception
+        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
         {
             SnowflakeConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
-            StoreSupport storeSupport = storeInstance.getStoreSupport();
-            if (!(storeSupport instanceof RelationalDatabaseStoreSupport) || !DatabaseType.SNOWFLAKE.equals(((RelationalDatabaseStoreSupport) storeSupport).getDatabase()))
-            {
-                throw new RuntimeException("Can't get connection: only support Snowflake databases");
-            }
-            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabase(DatabaseType.SNOWFLAKE);
+            RelationalDatabaseStoreSupport.cast(storeInstance.getStoreSupport(), DatabaseType.SNOWFLAKE);
             Properties properties = collectExtraSnowflakeConnectionProperties(connectionSpecification);
             properties.put("privateKey", credential.getPrivateKey());
             properties.put("user", credential.getUser());
-
-            return DriverManager.getConnection(driver.buildURL(null, 0, connectionSpecification.databaseName, properties), properties);
+            return JDBCConnectionManager.getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, identity, connectionSpecification, authenticationConfiguration, properties);
         }
     }
 

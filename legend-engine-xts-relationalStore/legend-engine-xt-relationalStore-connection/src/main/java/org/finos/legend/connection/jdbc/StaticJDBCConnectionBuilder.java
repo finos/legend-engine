@@ -17,32 +17,25 @@ package org.finos.legend.connection.jdbc;
 import org.finos.legend.connection.ConnectionBuilder;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.StoreSupport;
-import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Properties;
 
 public class StaticJDBCConnectionBuilder
 {
     public static class WithPlaintextUsernamePassword extends ConnectionBuilder<Connection, PlaintextUserPasswordCredential, StaticJDBCConnectionSpecification>
     {
-        public Connection getConnection(StoreInstance storeInstance, PlaintextUserPasswordCredential credential, Identity identity) throws Exception
+        public Connection getConnection(StoreInstance storeInstance, PlaintextUserPasswordCredential credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
         {
-            StoreSupport storeSupport = storeInstance.getStoreSupport();
+            RelationalDatabaseStoreSupport storeSupport = RelationalDatabaseStoreSupport.cast(storeInstance.getStoreSupport());
             StaticJDBCConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
-            if (!(storeSupport instanceof RelationalDatabaseStoreSupport))
-            {
-                throw new RuntimeException("Can't get connection: only support relational databases");
-            }
-            JDBCConnectionDriver driver = JDBCConnectionManager.getDriverForDatabase(((RelationalDatabaseStoreSupport) storeSupport).getDatabase());
-            return DriverManager.getConnection(
-                    driver.buildURL(connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, new Properties()),
-                    credential.getUser(), credential.getPassword()
-            );
+            Properties properties = new Properties();
+            properties.put("user", credential.getUser());
+            properties.put("password", credential.getPassword());
+            return JDBCConnectionManager.getConnection(storeSupport.getDatabase(), connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, identity, connectionSpecification, authenticationConfiguration, properties);
         }
     }
 }

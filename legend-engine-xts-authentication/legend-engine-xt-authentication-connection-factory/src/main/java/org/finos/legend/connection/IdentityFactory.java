@@ -19,6 +19,7 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 
+import javax.security.auth.Subject;
 import java.util.List;
 
 public class IdentityFactory
@@ -39,8 +40,18 @@ public class IdentityFactory
         List<Credential> credentials = Lists.mutable.empty();
         credentials.addAll(identitySpecification.getCredentials());
         // TODO: @akphi - should we restrict here that we can only either specify the subject/profiles?
-        credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
-        credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
+        if (identitySpecification.getSubject() != null)
+        {
+            credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
+        }
+        if (!identitySpecification.getProfiles().isEmpty())
+        {
+            credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
+        }
+        if (credentials.isEmpty())
+        {
+            return DEFAULT.makeUnknownIdentity();
+        }
         return new Identity(identitySpecification.getName(), credentials);
     }
 

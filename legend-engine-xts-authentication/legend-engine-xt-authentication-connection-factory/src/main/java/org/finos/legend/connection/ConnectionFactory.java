@@ -391,7 +391,7 @@ public class ConnectionFactory
     {
         Credential credential = authenticator.makeCredential(identity, this.environment);
         ConnectionBuilder<T, Credential, ConnectionSpecification> flow = (ConnectionBuilder<T, Credential, ConnectionSpecification>) authenticator.getConnectionBuilder();
-        return flow.getConnection(authenticator.getStoreInstance(), credential, identity);
+        return flow.getConnection(authenticator.getStoreInstance(), credential, authenticator.getAuthenticationConfiguration(), identity);
     }
 
     public static class Builder

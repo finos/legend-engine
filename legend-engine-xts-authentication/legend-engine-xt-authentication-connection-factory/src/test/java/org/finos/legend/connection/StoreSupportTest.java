@@ -201,6 +201,11 @@ public class StoreSupportTest
 
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     @Test

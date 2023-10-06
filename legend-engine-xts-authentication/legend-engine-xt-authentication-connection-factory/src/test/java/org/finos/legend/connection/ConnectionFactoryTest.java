@@ -410,14 +410,29 @@ public class ConnectionFactoryTest
 
     private static class AuthenticationConfiguration_X extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class AuthenticationConfiguration_Y extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class AuthenticationConfiguration_Z extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private enum TestAuthenticationMechanismType implements AuthenticationMechanism
@@ -506,12 +521,17 @@ public class ConnectionFactoryTest
 
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class ConnectionBuilder_A extends ConnectionBuilder<Object, Credential_A, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_A credential, Identity identity) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_A credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
         {
             return null;
         }
@@ -520,7 +540,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_B extends ConnectionBuilder<Object, Credential_B, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_B credential, Identity identity) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_B credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
         {
             return null;
         }
@@ -529,7 +549,7 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_C extends ConnectionBuilder<Object, Credential_C, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_C credential, Identity identity) throws Exception
+        public Object getConnection(StoreInstance storeInstance, Credential_C credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
         {
             return null;
         }

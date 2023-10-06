@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import java.util.List;
 import java.util.Properties;
 
-public class MemSQL_JDBCConnectionDriver implements JDBCConnectionDriver
+public class MemSQLDatabaseManager implements DatabaseManager
 {
     @Override
     public List<String> getIds()
@@ -36,7 +36,7 @@ public class MemSQL_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    public String buildURL(String host, int port, String databaseName, Properties properties)
     {
         return String.format("jdbc:mysql://%s:%s/%s?permitMysqlScheme", host, port, databaseName);
     }

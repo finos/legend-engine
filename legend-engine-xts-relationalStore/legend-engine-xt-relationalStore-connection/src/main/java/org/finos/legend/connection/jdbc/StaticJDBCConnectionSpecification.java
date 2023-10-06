@@ -28,4 +28,13 @@ public class StaticJDBCConnectionSpecification extends ConnectionSpecification
         this.port = port;
         this.databaseName = databaseName;
     }
+
+    @Override
+    public String shortId()
+    {
+        return "StaticJDBC" +
+                "_host:" + host +
+                "_port:" + port +
+                "_databaseName:" + databaseName;
+    }
 }

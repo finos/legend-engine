@@ -14,25 +14,29 @@
 
 package org.finos.legend.connection.jdbc;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.connection.ConnectionManager;
 import org.finos.legend.connection.Database;
-import org.finos.legend.connection.jdbc.driver.JDBCConnectionDriver;
+import org.finos.legend.connection.jdbc.driver.DatabaseManager;
+import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.ConnectionSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * TODO?: @akphi - This is a temporary hack!
- * We probably need to have a mechanism to control the connection pool
- * We cloned DatabaseManager from relational executor, we should consider if we can eventually unify these 2
- */
 public final class JDBCConnectionManager implements ConnectionManager
 {
-    private static final ConcurrentHashMap<String, JDBCConnectionDriver> driversByName = ConcurrentHashMap.newMap();
+    private static final ConcurrentHashMap<String, DatabaseManager> managerByName = ConcurrentHashMap.newMap();
     private static final AtomicBoolean isInitialized = new AtomicBoolean();
 
-    private static void detectDrivers()
+    private static void detectManagers()
     {
         if (!isInitialized.get())
         {
@@ -40,9 +44,9 @@ public final class JDBCConnectionManager implements ConnectionManager
             {
                 if (!isInitialized.get())
                 {
-                    for (JDBCConnectionDriver driver : ServiceLoader.load(JDBCConnectionDriver.class))
+                    for (DatabaseManager manager : ServiceLoader.load(DatabaseManager.class))
                     {
-                        JDBCConnectionManager.register(driver);
+                        manager.getIds().forEach(i -> managerByName.put(i, manager));
                     }
                     isInitialized.getAndSet(true);
                 }
@@ -50,28 +54,73 @@ public final class JDBCConnectionManager implements ConnectionManager
         }
     }
 
-    private static void register(JDBCConnectionDriver driver)
+    @Override
+    public void initialize()
     {
-        driver.getIds().forEach(i -> driversByName.put(i, driver));
+        JDBCConnectionManager.detectManagers();
     }
 
-    public static JDBCConnectionDriver getDriverForDatabase(Database database)
+    public static Connection getConnection(Database database, String host, int port, String databaseName, Identity identity, ConnectionSpecification connectionSpecification, AuthenticationConfiguration authenticationConfiguration, Properties properties) throws SQLException
+    {
+        // TODO: connection pooling
+        // we might need to account for things like pooling and things
+        DatabaseManager databaseManager = getManagerForDatabase(database);
+        String jdbcUrl = databaseManager.buildURL(host, port, databaseName, properties);
+
+        String poolName = getPoolName(identity, connectionSpecification, authenticationConfiguration);
+
+        //        Properties properties = new Properties();
+        //        String poolName = poolNameFor(identity);
+        //        properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
+        //        properties.putAll(this.extraDatasourceProperties);
+
+        //        properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
+        //        properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
+        //        properties.putAll(authenticationStrategy.getAuthenticationPropertiesForConnection());
+        HikariConfig jdbcConfig = new HikariConfig();
+        jdbcConfig.setDriverClassName(databaseManager.getDriver());
+        jdbcConfig.setPoolName(poolName);
+        jdbcConfig.setJdbcUrl(jdbcUrl);
+        jdbcConfig.setDataSourceProperties(properties);
+
+        // TODO: @akphi - should we allow these to be configured per connection spec, or it's something people can configure extra to override the provided
+        // values from connection specification, feels like this should be per connection builder instead
+//        jdbcConfig.setMaximumPoolSize(maxPoolSize);
+//        jdbcConfig.setMinimumIdle(minPoolSize);
+//        jdbcConfig.setConnectionTimeout(connectionTimeout);
+
+        // specific system configuration to disable database prepared statements
+        // TODO?: add docs to explain this
+        jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
+        jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
+        jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
+        jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
+
+        DataSource dataSource = new HikariDataSource(jdbcConfig);
+        return dataSource.getConnection();
+    }
+
+    private static String getPoolName(Identity identity, ConnectionSpecification connectionSpecification, AuthenticationConfiguration authenticationConfiguration)
+    {
+        return String.format("DBPool_%s_%s_%s_%s",
+                connectionSpecification.shortId(),
+                authenticationConfiguration.shortId(),
+                identity.getName(),
+                identity.getFirstCredential().getClass().getCanonicalName()
+        );
+    }
+
+    private static DatabaseManager getManagerForDatabase(Database database)
     {
         if (!isInitialized.get())
         {
             throw new IllegalStateException("JDBC connection manager has not been configured properly");
         }
-        JDBCConnectionDriver driver = driversByName.get(database.getLabel());
-        if (driver == null)
+        DatabaseManager manager = managerByName.get(database.getLabel());
+        if (manager == null)
         {
-            throw new RuntimeException(String.format("Can't find matching JDBC connection driver for database type '%s'", database));
+            throw new RuntimeException(String.format("Can't find matching manager for database type '%s'", database));
         }
-        return driver;
-    }
-
-    @Override
-    public void initialize()
-    {
-        JDBCConnectionManager.detectDrivers();
+        return manager;
     }
 }

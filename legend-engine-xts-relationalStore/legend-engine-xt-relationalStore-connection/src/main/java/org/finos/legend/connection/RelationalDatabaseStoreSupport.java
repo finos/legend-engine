@@ -34,6 +34,26 @@ public class RelationalDatabaseStoreSupport extends StoreSupport
         return database;
     }
 
+    public static RelationalDatabaseStoreSupport cast(StoreSupport storeSupport)
+    {
+        return cast(storeSupport, null);
+    }
+
+    public static RelationalDatabaseStoreSupport cast(StoreSupport storeSupport, Database database)
+    {
+        if (!(storeSupport instanceof RelationalDatabaseStoreSupport))
+        {
+            throw new RuntimeException("Expected store support for relational databases");
+        }
+        RelationalDatabaseStoreSupport relationalDatabaseStoreSupport = (RelationalDatabaseStoreSupport) storeSupport;
+        if (database != null && !database.equals(relationalDatabaseStoreSupport.getDatabase()))
+        {
+
+            throw new RuntimeException(String.format("Expected relational database store support for '%s'", database.getLabel()));
+        }
+        return relationalDatabaseStoreSupport;
+    }
+
     public static class Builder
     {
         private final Database database;
