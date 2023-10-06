@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -23,6 +24,10 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -120,6 +125,10 @@ public abstract class Planner
         this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset() : originalStagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
+
+        // Validation
+        // 1. MaxVersion & AllVersion strategies must have primary keys
+        ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
     }
 
     private Optional<Dataset> getTempStagingDataset()
@@ -161,7 +170,6 @@ public abstract class Planner
     protected List<Value> getDataFields()
     {
         List<Value> dataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        // Optional<String> dataSplitField = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_DATA_SPLIT_FIELD);
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
 
         if (ingestMode().dataSplitField().isPresent())
@@ -404,6 +412,38 @@ public abstract class Planner
         public Boolean visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
         {
             return true;
+        }
+    }
+
+    static class ValidatePrimaryKeysForVersioningStrategy implements VersioningStrategyVisitor<Void>
+    {
+        final List<String> primaryKeys;
+        final Consumer<List<String>> validatePrimaryKeysNotEmpty;
+
+        ValidatePrimaryKeysForVersioningStrategy(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysNotEmpty)
+        {
+            this.primaryKeys = primaryKeys;
+            this.validatePrimaryKeysNotEmpty = validatePrimaryKeysNotEmpty;
+        }
+
+        @Override
+        public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            return null;
+        }
+
+        @Override
+        public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            return null;
         }
     }
 }

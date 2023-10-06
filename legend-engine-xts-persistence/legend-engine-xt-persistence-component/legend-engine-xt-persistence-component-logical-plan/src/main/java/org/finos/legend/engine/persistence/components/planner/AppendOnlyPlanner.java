@@ -23,10 +23,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.A
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -48,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
@@ -64,15 +59,18 @@ class AppendOnlyPlanner extends Planner
         super(datasets, ingestMode, plannerOptions, capabilities);
 
         // Validation
-        // 1. MaxVersion & AllVersion Strategy must have Pks
-        ingestMode.versioningStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysNotEmpty, mainDataset(), ingestMode().auditing()));
+        // 1. If primary keys are present, then auditing must be turned on and the auditing column must be one of the primary keys
+        if (!primaryKeys.isEmpty())
+        {
+            ingestMode.auditing().accept(new ValidateAuditingForPrimaryKeys(mainDataset()));
+        }
 
-        // 2. For filterExistingRecords, We must have digest and Pks to filter them
-        if (ingestMode().filterExistingRecords())
+        // 2. For filterExistingRecords, we must have digest and primary keys to filter them
+        if (ingestMode.filterExistingRecords())
         {
             if (!ingestMode.digestField().isPresent() || primaryKeys.isEmpty())
             {
-                throw new IllegalStateException("Primary Keys are digest are mandatory for filterExistingRecords");
+                throw new IllegalStateException("Primary keys and digest are mandatory for filterExistingRecords");
             }
         }
 
@@ -88,14 +86,9 @@ class AppendOnlyPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
-        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-
-        if (ingestMode().dataSplitField().isPresent())
-        {
-            LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
-            LogicalPlanUtils.removeField(fieldsToInsert, ingestMode().dataSplitField().get());
-        }
+        List<Value> dataFields = getDataFields();
+        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
+        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
@@ -107,155 +100,60 @@ class AppendOnlyPlanner extends Planner
         }
         else if (!ingestMode().dataSplitField().isPresent())
         {
+            // this is just to print a "*" when we are in the simplest case (no auditing, no data split)
             fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
         }
 
-        Dataset selectStage = ingestMode().deduplicationStrategy().accept(new SelectStageDatasetBuilder(
-                mainDataset(), stagingDataset(), ingestMode(), primaryKeys, dataSplitInRangeCondition, fieldsToSelect));
+        Dataset selectStage = ingestMode().filterExistingRecords() ? getSelectStageWithFilterExistingRecords(fieldsToSelect) : getSelectStage(fieldsToSelect);
 
         return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
+    private Dataset getSelectStage(List<Value> fieldsToSelect)
+    {
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            return Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).build();
+        }
+        else
+        {
+            return Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
+        }
+    }
+
+    private Dataset getSelectStageWithFilterExistingRecords(List<Value> fieldsToSelect)
+    {
+        Condition notExistInSinkCondition = Not.of(Exists.of(Selection.builder()
+            .source(mainDataset())
+            .condition(And.builder()
+                .addConditions(
+                    getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0])),
+                    getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField().orElseThrow(IllegalStateException::new)))
+                .build())
+            .addAllFields(ALL_COLUMNS())
+            .build()));
+
+        Condition selectCondition;
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            selectCondition = And.builder().addConditions(dataSplitInRangeCondition.orElseThrow(IllegalStateException::new), notExistInSinkCondition).build();
+        }
+        else
+        {
+            selectCondition = notExistInSinkCondition;
+        }
+
+        return Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(fieldsToSelect).build();
+    }
+
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeConditionForStatistics() : Optional.empty();
-        ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult, dataSplitInRangeCondition));
+        ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult, getDataSplitInRangeConditionForStatistics()));
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;
-    }
-
-    static class ValidatePrimaryKeys implements VersioningStrategyVisitor<Void>
-    {
-        final List<String> primaryKeys;
-        final Consumer<List<String>> validatePrimaryKeysNotEmpty;
-        private Dataset mainDataset;
-        private Auditing auditing;
-
-        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysNotEmpty, Dataset mainDataset, Auditing auditing)
-        {
-            this.primaryKeys = primaryKeys;
-            this.validatePrimaryKeysNotEmpty = validatePrimaryKeysNotEmpty;
-            this.mainDataset = mainDataset;
-            this.auditing = auditing;
-        }
-
-        @Override
-        public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
-        {
-            return null;
-        }
-
-        @Override
-        public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
-        {
-            validatePrimaryKeysNotEmpty.accept(primaryKeys);
-            auditing.accept(validateAuditingForPKs);
-            return null;
-        }
-
-        @Override
-        public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
-        {
-            validatePrimaryKeysNotEmpty.accept(primaryKeys);
-            auditing.accept(validateAuditingForPKs);
-            return null;
-        }
-
-        private AuditingVisitor<Void> validateAuditingForPKs = new AuditingVisitor<Void>()
-        {
-            @Override
-            public Void visitNoAuditing(NoAuditingAbstract noAuditing)
-            {
-                throw new IllegalStateException("NoAuditing not allowed with MaxVersion and AllVersion");
-            }
-
-            @Override
-            public Void visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
-            {
-                Field dateTimeAuditingField = mainDataset.schema().fields().stream()
-                        .filter(field -> field.name().equalsIgnoreCase(dateTimeAuditing.dateTimeField()))
-                        .findFirst().orElseThrow(() -> new IllegalStateException("dateTimeField is mandatory Field for dateTimeAuditing mode"));
-                if (!dateTimeAuditingField.primaryKey())
-                {
-                    throw new IllegalStateException("dateTimeField as PK is mandatory for MaxVersion and AllVersion");
-                }
-                return null;
-            }
-        };
-    }
-
-    static class SelectStageDatasetBuilder implements DeduplicationStrategyVisitor<Dataset>
-    {
-        final Dataset mainDataset;
-        final Dataset stagingDataset;
-        final AppendOnly ingestMode;
-        final List<String> primaryKeys;
-        final Optional<Condition> dataSplitInRangeCondition;
-
-        final List<Value> fieldsToSelect;
-
-        SelectStageDatasetBuilder(Dataset mainDataset, Dataset stagingDataset, AppendOnly ingestMode, List<String> primaryKeys, Optional<Condition> dataSplitInRangeCondition, List<Value> fieldsToSelect)
-        {
-            this.mainDataset = mainDataset;
-            this.stagingDataset = stagingDataset;
-            this.ingestMode = ingestMode;
-            this.primaryKeys = primaryKeys;
-            this.dataSplitInRangeCondition = dataSplitInRangeCondition;
-            this.fieldsToSelect = fieldsToSelect;
-        }
-
-        @Override
-        public Dataset visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return selectStageDatasetWithoutDuplicateFiltering();
-        }
-
-        @Override
-        public Dataset visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            Condition notExistInSinkCondition = Not.of(Exists.of(Selection.builder()
-                .source(mainDataset)
-                .condition(And.builder()
-                    .addConditions(
-                        getPrimaryKeyMatchCondition(mainDataset, stagingDataset, primaryKeys.toArray(new String[0])),
-                        getDigestMatchCondition(mainDataset, stagingDataset, ingestMode.digestField().orElseThrow(IllegalStateException::new)))
-                    .build())
-                .addAllFields(ALL_COLUMNS())
-                .build()));
-
-            Condition selectCondition;
-            if (ingestMode.dataSplitField().isPresent())
-            {
-                selectCondition = And.builder().addConditions(dataSplitInRangeCondition.orElseThrow(IllegalStateException::new), notExistInSinkCondition).build();
-            }
-            else
-            {
-                selectCondition = notExistInSinkCondition;
-            }
-
-            return Selection.builder().source(stagingDataset).condition(selectCondition).addAllFields(fieldsToSelect).build();
-        }
-
-        @Override
-        public Dataset visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return selectStageDatasetWithoutDuplicateFiltering();
-        }
-
-        private Dataset selectStageDatasetWithoutDuplicateFiltering()
-        {
-            if (ingestMode.dataSplitField().isPresent() && !primaryKeys.isEmpty())
-            {
-                return Selection.builder().source(stagingDataset).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).build();
-            }
-            else
-            {
-                return Selection.builder().source(stagingDataset).addAllFields(fieldsToSelect).build();
-            }
-        }
     }
 
     static class PopulatePostRunStatisticsBreakdown implements DeduplicationStrategyVisitor<Void>
@@ -315,9 +213,32 @@ class AppendOnlyPlanner extends Planner
         }
     }
 
-    @Override
-    public boolean dataSplitExecutionSupported()
+    static class ValidateAuditingForPrimaryKeys implements AuditingVisitor<Void>
     {
-        return !primaryKeys.isEmpty();
+        final Dataset mainDataset;
+
+        ValidateAuditingForPrimaryKeys(Dataset mainDataset)
+        {
+            this.mainDataset = mainDataset;
+        }
+
+        @Override
+        public Void visitNoAuditing(NoAuditingAbstract noAuditing)
+        {
+            throw new IllegalStateException("NoAuditing not allowed when there are primary keys");
+        }
+
+        @Override
+        public Void visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
+        {
+            Field dateTimeAuditingField = mainDataset.schema().fields().stream()
+                .filter(field -> field.name().equalsIgnoreCase(dateTimeAuditing.dateTimeField()))
+                .findFirst().orElseThrow(() -> new IllegalStateException("dateTimeField is mandatory Field for dateTimeAuditing mode"));
+            if (!dateTimeAuditingField.primaryKey())
+            {
+                throw new IllegalStateException("auditing dateTimeField must be a primary key when there are other primary keys");
+            }
+            return null;
+        }
     }
 }

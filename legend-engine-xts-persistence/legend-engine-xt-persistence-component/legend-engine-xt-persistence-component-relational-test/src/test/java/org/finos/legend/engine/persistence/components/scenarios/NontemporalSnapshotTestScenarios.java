@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.F
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
 
 public class NontemporalSnapshotTestScenarios extends BaseTest
 {
@@ -62,7 +63,7 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").versioningComparator(VersioningComparator.ALWAYS).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);

@@ -17,10 +17,6 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
@@ -72,13 +68,20 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitAppendOnly(AppendOnlyAbstract appendOnly)
     {
+        if (mainSchemaFields.stream().anyMatch(Field::primaryKey))
+        {
+            // if primary keys are present, auditing column should also be a primary key
+            appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, true));
+        }
+        else
+        {
+            appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
+        }
         if (appendOnly.digestField().isPresent())
         {
             addDigestField(mainSchemaFields, appendOnly.digestField().get());
         }
         removeDataSplitField(appendOnly.dataSplitField());
-        boolean isAuditingFieldPK = appendOnly.deduplicationStrategy().accept(new DeriveAuditingFieldPKForAppendOnly(appendOnly.dataSplitField().isPresent()));
-        appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -183,34 +186,6 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         return mainSchemaFields.stream().anyMatch(field -> field.primaryKey());
     }
 
-    public static class DeriveAuditingFieldPKForAppendOnly implements DeduplicationStrategyVisitor<Boolean>
-    {
-
-        private boolean isDataSplitEnabled;
-
-        public DeriveAuditingFieldPKForAppendOnly(boolean isDataSplitEnabled)
-        {
-            this.isDataSplitEnabled = isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return false;
-        }
-    }
 
     public static class EnrichSchemaWithMergeStrategy implements MergeStrategyVisitor<Void>
     {

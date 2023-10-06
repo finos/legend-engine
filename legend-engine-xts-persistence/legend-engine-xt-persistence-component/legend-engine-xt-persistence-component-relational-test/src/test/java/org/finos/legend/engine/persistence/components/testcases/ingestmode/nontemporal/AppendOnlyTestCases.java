@@ -37,9 +37,9 @@ public abstract class AppendOnlyTestCases extends BaseTest
     AppendOnlyScenarios scenarios = new AppendOnlyScenarios();
 
     @Test
-    void testAppendOnlyAllowDuplicatesNoAuditing()
+    void testAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING();
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -49,13 +49,13 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyAllowDuplicatesNoAuditing(operations);
+        verifyAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords(operations);
     }
 
     @Test
-    void testAppendOnlyAllowDuplicatesNoAuditingDeriveMainSchema()
+    void testAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecordsDeriveMainSchema()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_DERIVE_MAIN_SCHEMA();
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS_DERIVE_MAIN_SCHEMA();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -65,31 +65,15 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyAllowDuplicatesNoAuditing(operations);
+        verifyAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords(operations);
     }
 
-    public abstract void verifyAppendOnlyAllowDuplicatesNoAuditing(GeneratorResult operations);
+    public abstract void verifyAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords(GeneratorResult operations);
 
     @Test
-    void testAppendOnlyAllowDuplicatesWithAuditing()
+    void testAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING();
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(scenario.getIngestMode())
-                .relationalSink(getRelationalSink())
-                .collectStatistics(true)
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .build();
-        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyAllowDuplicatesWithAuditing(operations);
-    }
-
-    public abstract void verifyAppendOnlyAllowDuplicatesWithAuditing(GeneratorResult operations);
-
-    @Test
-    void testAppendOnlyAllowDuplicatesWithAuditingWithDataSplits()
-    {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -97,64 +81,15 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
-        verifyAppendOnlyAllowDuplicatesWithAuditingWithDataSplits(operations, dataSplitRangesOneToTwo);
+        verifyAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords(operations, dataSplitRangesOneToTwo);
     }
 
-    public abstract void verifyAppendOnlyAllowDuplicatesWithAuditingWithDataSplits(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
+    public abstract void verifyAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
 
     @Test
-    void testAppendOnlyFailOnDuplicatesNoAuditing()
+    void testAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_NO_AUDITING();
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(scenario.getIngestMode())
-                .relationalSink(getRelationalSink())
-                .collectStatistics(true)
-                .build();
-
-        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyFailOnDuplicatesNoAuditing(operations);
-    }
-
-    public abstract void verifyAppendOnlyFailOnDuplicatesNoAuditing(GeneratorResult operations);
-
-    @Test
-    void testAppendOnlyFailOnDuplicatesWithAuditing()
-    {
-        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING();
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(scenario.getIngestMode())
-                .relationalSink(getRelationalSink())
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .collectStatistics(true)
-                .build();
-
-        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyFailOnDuplicatesWithAuditing(operations);
-    }
-
-    public abstract void verifyAppendOnlyFailOnDuplicatesWithAuditing(GeneratorResult operations);
-
-    @Test
-    void testAppendOnlyFilterDuplicatesNoAuditing()
-    {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING();
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(scenario.getIngestMode())
-            .relationalSink(getRelationalSink())
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyFilterDuplicatesNoAuditing(operations);
-    }
-
-    public abstract void verifyAppendOnlyFilterDuplicatesNoAuditing(GeneratorResult operations);
-
-    @Test
-    void testAppendOnlyFilterDuplicatesWithAuditing()
-    {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING();
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -164,15 +99,15 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .build();
 
         GeneratorResult queries = generator.generateOperations(scenario.getDatasets());
-        verifyAppendOnlyFilterDuplicatesWithAuditing(queries);
+        verifyAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords(queries);
     }
 
-    public abstract void verifyAppendOnlyFilterDuplicatesWithAuditing(GeneratorResult queries);
+    public abstract void verifyAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords(GeneratorResult queries);
 
     @Test
-    void testAppendOnlyFilterDuplicatesNoAuditingWithDataSplit()
+    void testAppendOnlyNoAuditingAllVersion()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING_WITH_DATA_SPLIT();
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -189,9 +124,9 @@ public abstract class AppendOnlyTestCases extends BaseTest
     }
 
     @Test
-    public void testAppendOnlyFilterDuplicatesWithAuditingWithDataSplit()
+    public void testAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_WITH_DATA_SPLIT();
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_ALL_VERSION_WITH_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -200,15 +135,15 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
-        verifyAppendOnlyFilterDuplicatesWithAuditingWithDataSplit(operations, dataSplitRangesOneToTwo);
+        verifyAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords(operations, dataSplitRangesOneToTwo);
     }
 
-    public abstract void verifyAppendOnlyFilterDuplicatesWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+    public abstract void verifyAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     @Test
     void testAppendOnlyWithUpperCaseOptimizer()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING();
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -224,7 +159,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
     @Test
     void testAppendOnlyWithLessColumnsInStaging()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING();
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
         Dataset stagingTable = scenario.getStagingTable().withSchema(stagingTableSchemaWithLimitedColumns);
         Datasets datasets = Datasets.of(scenario.getMainTable(), stagingTable);
 
@@ -242,7 +177,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
     @Test
     void testAppendOnlyValidationPkFieldsMissing()
     {
-        TestScenario testScenario = scenarios.FILTER_DUPLICATES_NO_AUDITING();
+        TestScenario testScenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
         // Staging table has no pks
         Dataset stagingTable = testScenario.getStagingTable().withSchema(baseTableSchemaWithNoPrimaryKeys);
         Datasets datasets = Datasets.of(testScenario.getMainTable(), stagingTable);

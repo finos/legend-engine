@@ -17,8 +17,6 @@ package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 public enum VersioningComparator
 {
     GREATER_THAN,
-    GREATER_THAN_EQUAL_TO
-
-    // TODO support always
-
+    GREATER_THAN_EQUAL_TO,
+    ALWAYS
 }

@@ -15,15 +15,15 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
 import java.util.Optional;
 
-import static org.immutables.value.Value.Check;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -45,6 +45,39 @@ public interface AppendOnlyAbstract extends IngestMode
     default boolean filterExistingRecords()
     {
         return false;
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                if (maxVersionStrategy.versioningComparator() != VersioningComparator.ALWAYS)
+                {
+                    throw new IllegalStateException("Cannot build AppendOnly, versioning comparator can only be Always");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                if (allVersionsStrategyAbstract.versioningComparator() != VersioningComparator.ALWAYS)
+                {
+                    throw new IllegalStateException("Cannot build AppendOnly, versioning comparator can only be Always");
+                }
+                return null;
+            }
+        });
     }
 
     @Override

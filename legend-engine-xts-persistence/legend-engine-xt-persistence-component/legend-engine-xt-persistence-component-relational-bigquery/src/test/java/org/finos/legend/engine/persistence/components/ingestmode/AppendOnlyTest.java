@@ -40,7 +40,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     }
 
     @Override
-    public void verifyAppendOnlyAllowDuplicatesNoAuditing(GeneratorResult operations)
+    public void verifyAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -55,25 +55,9 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         verifyStats(operations);
     }
 
-    @Override
-    public void verifyAppendOnlyAllowDuplicatesWithAuditing(GeneratorResult operations)
-    {
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
-                "FROM `mydb`.`staging` as stage)";
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithAuditAndNoPKs, preActionsSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
-
-        // Stats
-        verifyStats(operations);
-    }
 
     @Override
-    public void verifyAppendOnlyAllowDuplicatesWithAuditingWithDataSplits(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    public void verifyAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
@@ -101,63 +85,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     }
 
     @Override
-    public void verifyAppendOnlyFailOnDuplicatesNoAuditing(GeneratorResult operations)
-    {
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage)";
-
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
-
-        // Stats
-        verifyStats(operations);
-    }
-
-    @Override
-    public void verifyAppendOnlyFailOnDuplicatesWithAuditing(GeneratorResult operations)
-    {
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
-                "FROM `mydb`.`staging` as stage)";
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditNotPKCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
-
-        // Stats
-        verifyStats(operations);
-    }
-
-    @Override
-    public void verifyAppendOnlyFilterDuplicatesNoAuditing(GeneratorResult operations)
-    {
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-                "(sink.`digest` = stage.`digest`))))";
-
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
-
-        // Stats
-        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
-        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
-        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
-    }
-
-    @Override
-    public void verifyAppendOnlyFilterDuplicatesWithAuditing(GeneratorResult queries)
+    public void verifyAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords(GeneratorResult queries)
     {
         List<String> preActionsSqlList = queries.preActionsSql();
         List<String> milestoningSqlList = queries.ingestSql();
@@ -184,7 +112,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     }
 
     @Override
-    public void verifyAppendOnlyFilterDuplicatesWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
