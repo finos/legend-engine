@@ -39,6 +39,7 @@ public class RealizedRelationalResultCSVSerializer extends CsvSerializer
     private String databaseTimeZone;
     private boolean withHeader;
     private boolean withTransform;
+    private boolean normalizeWithTimeZone;
     private CSVFormat csvFormat;
 
     public RealizedRelationalResultCSVSerializer(RealizedRelationalResult realizedRelationalResult, String databaseTimeZone)
@@ -53,11 +54,17 @@ public class RealizedRelationalResultCSVSerializer extends CsvSerializer
 
     public RealizedRelationalResultCSVSerializer(RealizedRelationalResult realizedRelationalResult, String databaseTimeZone, boolean withHeader, boolean withTransform, CSVFormat csvFormat)
     {
+        this(realizedRelationalResult, databaseTimeZone, withHeader, withTransform, csvFormat, true);
+    }
+
+    public RealizedRelationalResultCSVSerializer(RealizedRelationalResult realizedRelationalResult, String databaseTimeZone, boolean withHeader, boolean withTransform, CSVFormat csvFormat, Boolean normalizeWithTimeZone)
+    {
         this.realizedRelationalResult = realizedRelationalResult;
         this.withHeader = withHeader;
         this.withTransform = withTransform;
         this.databaseTimeZone = databaseTimeZone;
         this.csvFormat = csvFormat;
+        this.normalizeWithTimeZone = normalizeWithTimeZone;
     }
 
     @Override
@@ -84,7 +91,7 @@ public class RealizedRelationalResultCSVSerializer extends CsvSerializer
                 }
                 for (List<Object> row : rows)
                 {
-                    List<Object> normalizedRow = row.stream().map(x -> x != null ? ResultNormalizer.normalizeToSql(x, this.databaseTimeZone) : null).collect(Collectors.toList());
+                    List<Object> normalizedRow = row.stream().map(x -> x != null ? ResultNormalizer.normalizeToSql(x, this.databaseTimeZone, this.normalizeWithTimeZone) : null).collect(Collectors.toList());
                     csvPrinter.printRecord(normalizedRow);
                 }
 
