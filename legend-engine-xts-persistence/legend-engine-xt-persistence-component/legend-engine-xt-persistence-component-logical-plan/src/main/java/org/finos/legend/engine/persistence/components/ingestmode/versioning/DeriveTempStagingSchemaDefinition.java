@@ -63,11 +63,14 @@ public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisi
     @Override
     public SchemaDefinition visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
     {
-        Field dataSplit = Field.builder().name(allVersionsStrategyAbstract.dataSplitFieldName())
-                .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-                .primaryKey(anyPKInStaging)
-                .build();
-        schemaFields.add(dataSplit);
+        if (allVersionsStrategyAbstract.performVersioning())
+        {
+            Field dataSplit = Field.builder().name(allVersionsStrategyAbstract.dataSplitFieldName())
+                    .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
+                    .primaryKey(anyPKInStaging)
+                    .build();
+            schemaFields.add(dataSplit);
+        }
         return schemaDefBuilder.addAllFields(schemaFields).build();
     }
 

@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.*;
+import static org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract.DATA_SPLIT;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_STAGING_DATASET_BASE_NAME;
 
 public class TestDedupAndVersioning extends BaseTest
@@ -54,9 +55,9 @@ public class TestDedupAndVersioning extends BaseTest
 
     6. [DONE] Filter Dups, NoVersion -> tempStagingTable with count column
     7. [DONE] Filter Dups, MaxVersion do not perform versioning -> tempStagingTable with count column
-    8. Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
+    8. [DONE, throw error left] Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
     9. [DONE] Filter Dups, AllVersion do not perform versioning -> tempStagingTable with count column
-    10. Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
+    10. [DONE, throw error left] Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
 
     11. Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
     12. Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
@@ -92,6 +93,7 @@ public class TestDedupAndVersioning extends BaseTest
     String[] schemaWithCount = new String[]{idName, nameName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
 
     String[] schemaWithVersionAndCount = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, "legend_persistence_count"};
+    String[] schemaWithVersionCountAndDataSplit = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, "legend_persistence_count", DATA_SPLIT};
 
 
     // Scenario 1
@@ -186,15 +188,13 @@ public class TestDedupAndVersioning extends BaseTest
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
-        // Validate tempTableExists
         verifyResults(expectedDataPath, schemaWithVersionAndCount);
     }
 
 
     // Scenario 8
     @Test
-    void testFilterDupsMaxVersion()
-    {
+    void testFilterDupsMaxVersion() throws Exception {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = getStagingTableWithVersion();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -205,12 +205,12 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        // TODO LOAD DATA
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2.csv";
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_max_versioning.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
-
-        // Validate tempTableExists
-        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
+        verifyResults(expectedDataPath, schemaWithVersionAndCount);
     }
 
     // Scenario 9
@@ -224,7 +224,8 @@ public class TestDedupAndVersioning extends BaseTest
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
                 .digestField("digest")
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").versioningComparator(VersioningComparator.ALWAYS).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
+                        .versioningComparator(VersioningComparator.ALWAYS).performVersioning(false).build())
                 .build();
 
         createStagingTableWithVersion();
@@ -239,7 +240,7 @@ public class TestDedupAndVersioning extends BaseTest
 
     // Scenario 10
     @Test
-    void testFilterDupsAllVersion()
+    void testFilterDupsAllVersion() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = getStagingTableWithVersion();
@@ -248,16 +249,18 @@ public class TestDedupAndVersioning extends BaseTest
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
                 .digestField("digest")
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").versioningComparator(VersioningComparator.ALWAYS).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
+                        .versioningComparator(VersioningComparator.ALWAYS).performVersioning(true).build())
                 .build();
 
         createStagingTableWithVersion();
-        // TODO LOAD DATA
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2.csv";
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_all_version.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
-
         // Validate tempTableExists
-        Assertions.assertEquals(true, h2Sink.doesTableExist(getTempStagingDataset()));
+        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit);
     }
 
     private DatasetDefinition getStagingTableWithoutVersion()
