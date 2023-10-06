@@ -75,7 +75,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(type: Un
 
 function meta::external::query::graphQL::serialization::graphQLtoString(type: ObjectTypeDefinition[1]):String[1]
 {
-  'type ' + $type.name + $type.directives->graphQLtoString() + if ($type.implements->isEmpty(),|'',|' implements '+$type.implements->joinStrings(' & ')) + ' {\n'+
+  'type ' + $type.name + if ($type.implements->isEmpty(),|'',|' implements '+$type.implements->joinStrings(' & ')) + $type.directives->graphQLtoString() + ' {\n'+
     $type.fields->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
   '\n}'
 }
@@ -94,7 +94,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(field: F
 
 function meta::external::query::graphQL::serialization::graphQLtoString(type: InterfaceTypeDefinition[1]):String[1]
 {
-  'interface ' + $type.name+' {\n' +
+  'interface ' + $type.name+ if($type.implements->isEmpty(),|'',|' implements '+$type.implements->joinStrings(' & ')) + ' {\n' +
     $type.fields->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
   '\n}'
 }

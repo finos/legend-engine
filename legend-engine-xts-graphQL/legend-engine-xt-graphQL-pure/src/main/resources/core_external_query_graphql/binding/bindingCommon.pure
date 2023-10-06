@@ -26,6 +26,17 @@ function meta::external::query::graphQL::binding::fromInputTypeName(inputTypeNam
   if($inputTypeName->endsWith('Input'), | $inputTypeName->substring(0, $inputTypeName->length() - 5), | '')
 }
 
+// These two functions must roundtrip
+function meta::external::query::graphQL::binding::toInterfaceTypeName(pureClassName: String[1]) : String[1]
+{
+  $pureClassName + 'Interface'
+}
+
+function meta::external::query::graphQL::binding::fromInterfaceTypeName(interfaceTypeName: String[1]) : String[1]
+{
+  if($interfaceTypeName->endsWith('Interface'), | $interfaceTypeName->substring(0, $interfaceTypeName->length() - 9), | '')
+}
+
 function meta::external::query::graphQL::binding::purePrimitivesToGraphQLScalarTypes(): Pair<PrimitiveType,String>[*]
 {
   [
@@ -61,4 +72,9 @@ function meta::external::query::graphQL::binding::temporalityToDirectives(): Map
     pair('businesstemporal', ^DirectiveDefinition(name = 'businesstemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT])),
     pair('processingtemporal', ^DirectiveDefinition(name = 'processingtemporal', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]))
   ]->newMap();
+}
+
+function meta::external::query::graphQL::binding::hierarchyDirective(): DirectiveDefinition[1]
+{
+  ^DirectiveDefinition(name = 'extends', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]);
 }
