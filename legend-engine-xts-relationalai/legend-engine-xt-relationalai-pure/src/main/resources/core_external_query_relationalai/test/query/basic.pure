@@ -1,4 +1,4 @@
-import meta::rel::test::query::support::*;
+import meta::rel::test::testutils::*;
 import meta::rel::test::query::models::basicmodel::*;
 import meta::rel::mapping::*;
 import meta::rel::utils::assert::*;
