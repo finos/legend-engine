@@ -25,6 +25,7 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
     private String runtimePath;
     private String queryClassPath;
     private String query;
+    private String dataspacePath;
 
     public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
     {
@@ -33,6 +34,16 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
         this.versionId = versionId;
         this.mappingPath = mappingPath;
         this.runtimePath = runtimePath;
+        this.queryClassPath = queryClassPath;
+        this.query = query;
+    }
+
+    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String dataspacePath, String queryClassPath, String query)
+    {
+        this.groupID = groupID;
+        this.artifactId = artifactId;
+        this.versionId = versionId;
+        this.dataspacePath = dataspacePath;
         this.queryClassPath = queryClassPath;
         this.query = query;
     }
@@ -49,12 +60,12 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
             return false;
         }
         GraphQLProdCacheKey that = (GraphQLProdCacheKey) o;
-        return Objects.equal(groupID, that.groupID) && Objects.equal(artifactId, that.artifactId) && Objects.equal(versionId, that.versionId) && Objects.equal(mappingPath, that.mappingPath) && Objects.equal(runtimePath, that.runtimePath) && Objects.equal(queryClassPath, that.queryClassPath) && Objects.equal(query, that.query);
+        return Objects.equal(groupID, that.groupID) && Objects.equal(artifactId, that.artifactId) && Objects.equal(versionId, that.versionId) && Objects.equal(mappingPath, that.mappingPath) && Objects.equal(runtimePath, that.runtimePath) && Objects.equal(queryClassPath, that.queryClassPath) && Objects.equal(query, that.query) && Objects.equal(dataspacePath, that.dataspacePath);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query);
+        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query, dataspacePath);
     }
 }
