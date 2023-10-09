@@ -48,13 +48,23 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
     {
         if (testAssertion instanceof EqualTo)
         {
-            if (!(result instanceof ConstantResult))
+
+            Object actual;
+            Object expected = ((EqualTo) testAssertion).expected.accept(new PrimitiveValueSpecificationToObjectVisitor());;
+            if (result instanceof ConstantResult)
+            {
+                 actual = ((ConstantResult) result).getValue();
+            }
+            else if (result instanceof StreamingResult)
+            {
+                  actual = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
+            }
+
+            else
             {
                 throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualTo Assert !!");
             }
 
-            Object expected = ((EqualTo) testAssertion).expected.accept(new PrimitiveValueSpecificationToObjectVisitor());
-            Object actual = ((ConstantResult) result).getValue();
 
             AssertionStatus assertionStatus;
             if (expected.equals(actual))
