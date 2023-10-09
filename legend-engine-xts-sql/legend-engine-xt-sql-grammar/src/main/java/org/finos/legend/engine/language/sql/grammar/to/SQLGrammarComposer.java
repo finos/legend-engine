@@ -527,7 +527,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(TableSubquery val)
             {
-                return null;
+                return "(" + visit(val.query) + ")";
             }
 
             @Override

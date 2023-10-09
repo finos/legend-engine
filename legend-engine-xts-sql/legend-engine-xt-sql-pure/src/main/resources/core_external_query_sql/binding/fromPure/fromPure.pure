@@ -155,13 +155,13 @@ function meta::external::query::sql::transformation::queryToPure::getSchemaFromS
                                                                           sources: SQLSource[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
                                                                           extensions: meta::pure::extension::Extension[*]
-                                                                      ): meta::external::query::sql::Schema[1]
+                                                                      ): meta::external::query::sql::schema::metamodel::Schema[1]
 {
   let sqlTransformContext = processRootQuery($sources, $query, $extensions);
   getSchema($sqlTransformContext);
 }
 
-function meta::external::query::sql::transformation::queryToPure::getSchema(context:SqlTransformContext[1]): meta::external::query::sql::Schema[1]
+function meta::external::query::sql::transformation::queryToPure::getSchema(context:SqlTransformContext[1]): meta::external::query::sql::schema::metamodel::Schema[1]
 {
   $context.columns()->meta::external::query::sql::tdsColsToSchema();
 }

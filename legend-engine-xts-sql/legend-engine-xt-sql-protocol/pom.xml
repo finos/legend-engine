@@ -52,6 +52,22 @@
                             <classpathScope>test</classpathScope>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate schema metamodel</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                            <arguments>
+                                <argument>core_external_query_sql_schema_metamodel.protocol.json</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
