@@ -58,8 +58,24 @@ public class BigQueryTestArtifacts
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
-            "`legend_persistence_count` INT64," +
-            "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
+            "`legend_persistence_count` INT64)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`legend_persistence_count` INT64)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`legend_persistence_count` INT64," +
+        "`data_split` INT64 NOT NULL)";
 
     public static String expectedBaseTablePlusDigestPlusVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
         "`id` INT64 NOT NULL," +
@@ -120,6 +136,15 @@ public class BigQueryTestArtifacts
             "`digest` STRING," +
             "`batch_update_time` DATETIME NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
+
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
+        "`ID` INT64 NOT NULL," +
+        "`NAME` STRING NOT NULL," +
+        "`AMOUNT` FLOAT64," +
+        "`BIZ_DATE` DATE," +
+        "`DIGEST` STRING," +
+        "`BATCH_UPDATE_TIME` DATETIME NOT NULL," +
+        "PRIMARY KEY (`ID`, `NAME`, `BATCH_UPDATE_TIME`) NOT ENFORCED)";
 
     public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL," +
@@ -389,7 +414,7 @@ public class BigQueryTestArtifacts
             "`delete_indicator` STRING," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
 
-    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
             "(`id`, `name`, `amount`, `biz_date`, `legend_persistence_count`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count`," +
@@ -397,4 +422,25 @@ public class BigQueryTestArtifacts
             "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,COUNT(*) as `legend_persistence_count` " +
             "FROM `mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage) " +
             "as stage WHERE stage.`legend_persistence_rank` = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+        "COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+        "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER " +
+        "(PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` FROM " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,COUNT(*) as `legend_persistence_count` FROM " +
+        "`mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage) as stage " +
+        "WHERE stage.`legend_persistence_rank` = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`, `data_split`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` ASC) as `data_split` " +
+        "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+        "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage)";
 }

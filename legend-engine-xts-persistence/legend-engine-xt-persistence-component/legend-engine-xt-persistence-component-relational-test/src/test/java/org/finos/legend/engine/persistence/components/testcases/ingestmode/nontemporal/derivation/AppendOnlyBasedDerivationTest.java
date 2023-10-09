@@ -19,7 +19,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseC
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.scenarios.AppendOnlyScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Assertions;
@@ -45,6 +44,7 @@ public class AppendOnlyBasedDerivationTest
     @Test
     void testAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords()
     {
+        // Auditing column is a PK
         TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
@@ -54,20 +54,19 @@ public class AppendOnlyBasedDerivationTest
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
         Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
-        // todo: check auditing is a pk
     }
 
     @Test
-    void testAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords()
+    void testAppendOnlyAllowDuplicatesWithAuditingNoVersioningNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
+        // Auditing column is not a PK
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FilterDuplicates);
-        // todo: check auditing is not a pk
+        Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
     }
 }

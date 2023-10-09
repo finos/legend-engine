@@ -186,6 +186,15 @@ public class AnsiTestArtifacts
             "\"batch_update_time\" DATETIME NOT NULL," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
+        "\"ID\" INTEGER NOT NULL," +
+        "\"NAME\" VARCHAR NOT NULL," +
+        "\"AMOUNT\" DOUBLE," +
+        "\"BIZ_DATE\" DATE," +
+        "\"DIGEST\" VARCHAR," +
+        "\"BATCH_UPDATE_TIME\" DATETIME NOT NULL," +
+        "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_UPDATE_TIME\"))";
+
     public static String expectedBaseTableWithAuditNotPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
@@ -209,6 +218,23 @@ public class AnsiTestArtifacts
             "\"amount\" DOUBLE," +
             "\"biz_date\" DATE," +
             "\"legend_persistence_count\" INTEGER)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+        "(\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"biz_date\" DATE," +
+        "\"digest\" VARCHAR," +
+        "\"legend_persistence_count\" INTEGER)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+        "(\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"biz_date\" DATE," +
+        "\"digest\" VARCHAR," +
+        "\"legend_persistence_count\" INTEGER," +
+        "\"data_split\" INTEGER NOT NULL)";
 
     public static String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
@@ -412,12 +438,39 @@ public class AnsiTestArtifacts
             "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") " +
             "(SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
-    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
-            "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\" FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER " +
-            "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" DESC) as \"legend_persistence_rank\" FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" FROM " +
-            "\"mydb\".\"staging\" as stage GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\") as stage) as stage " +
-            "WHERE stage.\"legend_persistence_rank\" = 1)";
+    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\" FROM " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER " +
+        "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" DESC) as \"legend_persistence_rank\" FROM " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" FROM " +
+        "\"mydb\".\"staging\" as stage GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\") as stage) as stage " +
+        "WHERE stage.\"legend_persistence_rank\" = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
+        "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+        "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\")";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"legend_persistence_count\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
+        "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+        "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\")";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"legend_persistence_count\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"legend_persistence_count\" as \"legend_persistence_count\" FROM " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER " +
+        "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" DESC) as \"legend_persistence_rank\" FROM " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",COUNT(*) as \"legend_persistence_count\" FROM " +
+        "\"mydb\".\"staging\" as stage GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\") as stage) as stage " +
+        "WHERE stage.\"legend_persistence_rank\" = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"legend_persistence_count\", \"data_split\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" ASC) as \"data_split\" " +
+        "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+        "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\") as stage)";
 }

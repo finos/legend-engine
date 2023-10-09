@@ -43,16 +43,5 @@ public interface IngestMode
         return NoVersioningStrategy.builder().build();
     }
 
-    @Value.Check
-    default void validate()
-    {
-        // Invalid combination
-        if ((deduplicationStrategy() instanceof AllowDuplicates) && !(versioningStrategy() instanceof NoVersioningStrategy))
-        {
-            // TODO ASHUTOSH Bring it back
-            // throw new IllegalStateException("Cannot build IngestMode, AllowDuplicates strategy only allowed with NoVersioning strategy");
-        }
-    }
-
     <T> T accept(IngestModeVisitor<T> visitor);
 }

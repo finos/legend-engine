@@ -18,11 +18,10 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.*;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -148,69 +147,23 @@ class AppendOnlyPlanner extends Planner
 
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult, getDataSplitInRangeConditionForStatistics()));
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            // Rows inserted = rows in main with audit column equals latest timestamp
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
+                .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
+                .build());
+        }
+        else
+        {
+            // Not supported at the moment
+        }
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;
-    }
-
-    static class PopulatePostRunStatisticsBreakdown implements DeduplicationStrategyVisitor<Void>
-    {
-        final AppendOnly ingestMode;
-        final Dataset mainDataset;
-        final Dataset stagingDataset;
-        final Map<StatisticName, LogicalPlan> postRunStatisticsResult;
-        Optional<Condition> dataSplitInRangeCondition;
-
-        PopulatePostRunStatisticsBreakdown(AppendOnly ingestMode, Dataset mainDataset, Dataset stagingDataset, Map<StatisticName, LogicalPlan> postRunStatisticsResult, Optional<Condition> dataSplitInRangeCondition)
-        {
-            this.ingestMode = ingestMode;
-            this.mainDataset = mainDataset;
-            this.stagingDataset = stagingDataset;
-            this.postRunStatisticsResult = postRunStatisticsResult;
-            this.dataSplitInRangeCondition = dataSplitInRangeCondition;
-        }
-
-        @Override
-        public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return populateInsertedRecordsCountUsingStagingDataset();
-        }
-
-        @Override
-        public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return populateInsertedRecordsCountUsingStagingDataset();
-        }
-
-        @Override
-        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            if (ingestMode.auditing().accept(AUDIT_ENABLED))
-            {
-                // Rows inserted = rows in main with audit column equals latest timestamp
-                String auditField = ingestMode.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-                postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
-                        .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset, auditField, ROWS_INSERTED.get()))
-                        .build());
-            }
-            else
-            {
-                // Not supported at the moment
-            }
-            return null;
-        }
-
-        private Void populateInsertedRecordsCountUsingStagingDataset()
-        {
-            LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
-                    .addOps(LogicalPlanUtils.getRecordCount(stagingDataset, ROWS_INSERTED.get(), dataSplitInRangeCondition))
-                    .build();
-            postRunStatisticsResult.put(ROWS_INSERTED, incomingRecordCountPlan);
-            return null;
-        }
     }
 
     static class ValidateAuditingForPrimaryKeys implements AuditingVisitor<Void>

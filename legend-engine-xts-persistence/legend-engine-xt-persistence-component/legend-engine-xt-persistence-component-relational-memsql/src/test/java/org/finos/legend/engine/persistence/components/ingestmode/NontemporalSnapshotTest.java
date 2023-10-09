@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -29,7 +28,6 @@ import java.util.List;
 public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 {
     String rowsDeleted = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink";
-    String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
     String rowsUpdated = "SELECT 0 as `rowsUpdated`";
     String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink";
     String rowsTerminated = "SELECT 0 as `rowsTerminated`";
@@ -49,7 +47,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging");
     }
 
     @Override
@@ -68,7 +66,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging_legend_persistence_temp_staging");
     }
 
     @Override
@@ -89,10 +87,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging_legend_persistence_temp_staging");
     }
 
     @Override
@@ -147,12 +145,13 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         return MemSqlSink.get();
     }
 
-    private void verifyStats(GeneratorResult operations)
+    private void verifyStats(GeneratorResult operations, String stageTableName)
     {
         // Pre stats:
         Assertions.assertEquals(rowsDeleted, operations.preIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
 
         // Post Stats:
+        String incomingRecordCount = String.format("SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`%s` as stage", stageTableName);
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
         Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));

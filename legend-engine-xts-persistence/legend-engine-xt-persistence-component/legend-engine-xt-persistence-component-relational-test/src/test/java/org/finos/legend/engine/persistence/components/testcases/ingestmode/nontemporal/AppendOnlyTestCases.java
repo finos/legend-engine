@@ -119,7 +119,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("DataSplits not supported for NoAuditing mode", e.getMessage());
+            Assertions.assertEquals("NoAuditing not allowed when there are primary keys", e.getMessage());
         }
     }
 
@@ -148,6 +148,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .caseConversion(CaseConversion.TO_UPPER)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
@@ -166,6 +167,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -175,27 +177,38 @@ public abstract class AppendOnlyTestCases extends BaseTest
     public abstract void verifyAppendOnlyWithLessColumnsInStaging(GeneratorResult operations);
 
     @Test
-    void testAppendOnlyValidationPkFieldsMissing()
+    void testAppendOnlyFailOnDuplicatesWithAuditingMaxVersionWithFilterExistingRecords()
     {
-        TestScenario testScenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
-        // Staging table has no pks
-        Dataset stagingTable = testScenario.getStagingTable().withSchema(baseTableSchemaWithNoPrimaryKeys);
-        Datasets datasets = Datasets.of(testScenario.getMainTable(), stagingTable);
-        try
-        {
-            RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(testScenario.getIngestMode())
-                .relationalSink(getRelationalSink())
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .build();
-            GeneratorResult queries = generator.generateOperations(datasets);
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (Exception e)
-        {
-            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
-        }
+        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING_MAX_VERSION_WITH_FILTER_EXISTING_RECORDS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyAppendOnlyFailOnDuplicatesWithAuditingMaxVersionWithFilterExistingRecords(operations);
     }
+
+    public abstract void verifyAppendOnlyFailOnDuplicatesWithAuditingMaxVersionWithFilterExistingRecords(GeneratorResult operations);
+
+    @Test
+    void testAppendOnlyFilterDuplicatesWithAuditingMaxVersionNoFilterExistingRecords()
+    {
+        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_MAX_VERSION_NO_FILTER_EXISTING_RECORDS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyAppendOnlyFilterDuplicatesWithAuditingMaxVersionNoFilterExistingRecords(operations);
+    }
+
+    public abstract void verifyAppendOnlyFilterDuplicatesWithAuditingMaxVersionNoFilterExistingRecords(GeneratorResult operations);
 
     @Test
     void testAppendOnlyValidationDateTimeFieldMissing()
@@ -212,6 +225,25 @@ public abstract class AppendOnlyTestCases extends BaseTest
         catch (Exception e)
         {
             Assertions.assertEquals("Cannot build DateTimeAuditing, some of required attributes are not set [dateTimeField]", e.getMessage());
+        }
+    }
+
+    @Test
+    void testAppendOnlyNoAuditingFilterExistingRecords()
+    {
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .build();
+        try
+        {
+            List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Primary keys and digest are mandatory for filterExistingRecords", e.getMessage());
         }
     }
 

@@ -380,7 +380,7 @@ public abstract class Planner
         }
 
         LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRecordCount(originalStagingDataset(), INCOMING_RECORD_COUNT.get(), filterCondition))
+                .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get(), filterCondition))
                 .build();
         postRunStatisticsResult.put(INCOMING_RECORD_COUNT, incomingRecordCountPlan);
     }

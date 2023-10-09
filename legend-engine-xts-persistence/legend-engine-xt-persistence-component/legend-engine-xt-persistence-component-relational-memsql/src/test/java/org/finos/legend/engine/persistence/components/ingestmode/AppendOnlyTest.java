@@ -52,28 +52,36 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         // Stats
-        verifyStats(operations);
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertNull(operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
     }
 
     @Override
     public void verifyAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
-                "FROM `mydb`.`staging` as stage " +
-                "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
+            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, generatorResults.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit, generatorResults.get(0).preActionsSql().get(1));
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, generatorResults.get(0).deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, generatorResults.get(0).deduplicationAndVersioningSql().get(1));
+
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), generatorResults.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), generatorResults.get(1).ingestSql().get(0));
         Assertions.assertEquals(2, generatorResults.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage " +
-                "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`staging` as stage " +
-                "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_update_time` = (SELECT MAX(sink.`batch_update_time`) FROM `mydb`.`main` as sink)";
 
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(1)), generatorResults.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
@@ -88,12 +96,19 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         List<String> preActionsSqlList = queries.preActionsSql();
         List<String> milestoningSqlList = queries.ingestSql();
+        List<String> deduplicationAndVersioningSql = queries.deduplicationAndVersioningSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
-                "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
+            "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
+
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTablePlusDigestWithCount, preActionsSqlList.get(1));
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
+
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         List<String> postActionsSql = queries.postActionsSql();
@@ -102,6 +117,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
 
         // Stats
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage";
         String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_update_time` = (SELECT MAX(sink.`batch_update_time`) FROM `mydb`.`main` as sink)";
         Assertions.assertEquals(incomingRecordCount, queries.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
@@ -114,23 +130,27 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     public void verifyAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
-                "FROM `mydb`.`staging` as stage " +
-                "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
-                "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-                "(sink.`digest` = stage.`digest`)))))";
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
+            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
+            "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+            "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+            "(sink.`digest` = stage.`digest`)))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit, operations.get(0).preActionsSql().get(1));
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage " +
-                "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_update_time` = (SELECT MAX(sink.`batch_update_time`) FROM `mydb`.`main` as sink)";
 
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
@@ -147,14 +167,13 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`) " +
-                "(SELECT * FROM `MYDB`.`STAGING` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink " +
-                "WHERE ((sink.`ID` = stage.`ID`) " +
-                "AND (sink.`NAME` = stage.`NAME`)) " +
-                "AND (sink.`DIGEST` = stage.`DIGEST`))))";
+        String insertSql = "INSERT INTO `MYDB`.`MAIN` " +
+            "(`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_UPDATE_TIME`) " +
+            "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,'2000-01-01 00:00:00.000000' FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage " +
+            "WHERE NOT (EXISTS " +
+            "(SELECT * FROM `MYDB`.`MAIN` as sink WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` = stage.`DIGEST`))))";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
     }
 
@@ -164,23 +183,71 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-                "(sink.`digest` = stage.`digest`))))";
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `digest`, `batch_update_time`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
+            "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
     }
 
-    private void verifyStats(GeneratorResult operations)
+    @Override
+    public void verifyAppendOnlyFailOnDuplicatesWithAuditingMaxVersionWithFilterExistingRecords(GeneratorResult operations)
     {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND " +
+            "(sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTablePlusDigestWithCount, preActionsSqlList.get(1));
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
+
+        // Stats
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage";
+        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_update_time` = (SELECT MAX(sink.`batch_update_time`) FROM `mydb`.`main` as sink)";
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
-        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
         Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
+
+    @Override
+    public void verifyAppendOnlyFilterDuplicatesWithAuditingMaxVersionNoFilterExistingRecords(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage)";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTablePlusDigestWithCount, preActionsSqlList.get(1));
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
+
+        // Stats
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage";
+        String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink WHERE sink.`batch_update_time` = (SELECT MAX(sink.`batch_update_time`) FROM `mydb`.`main` as sink)";
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
     }
 }

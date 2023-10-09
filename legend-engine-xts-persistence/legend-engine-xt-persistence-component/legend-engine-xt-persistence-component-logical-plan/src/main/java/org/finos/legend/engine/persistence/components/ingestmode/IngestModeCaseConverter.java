@@ -76,6 +76,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .digestField(applyCase(appendOnly.digestField()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
+                .filterExistingRecords(appendOnly.filterExistingRecords())
                 .build();
     }
 

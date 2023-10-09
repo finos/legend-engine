@@ -75,6 +75,7 @@ public class BaseTest
 
     protected String digestField = "digest";
     protected String versionField = "version";
+    protected String bizDateField = "biz_date";
     protected String snapshotIdField = "snapshot_id";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";

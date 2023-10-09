@@ -34,7 +34,6 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     String cleanUpMainTableSql = "DELETE FROM \"mydb\".\"main\" as sink";
     String cleanupMainTableSqlUpperCase = "DELETE FROM \"MYDB\".\"MAIN\" as sink";
     String rowsDeleted = "SELECT COUNT(*) as \"rowsDeleted\" FROM \"mydb\".\"main\" as sink";
-    String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
     String rowsUpdated = "SELECT 0 as \"rowsUpdated\"";
     String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"main\" as sink";
     String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
@@ -60,7 +59,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging");
     }
 
     @Override
@@ -75,30 +74,16 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00.000000' " +
             "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage)";
 
-        String createTempStagingTable = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
-                "(\"id\" INTEGER NOT NULL," +
-                "\"name\" VARCHAR NOT NULL," +
-                "\"amount\" DOUBLE," +
-                "\"biz_date\" DATE," +
-                "\"legend_persistence_count\" INTEGER)";
-
-        String cleanupTempStagingTableSql = "DELETE FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
-        String insertTempStagingTableSql = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
-                "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-                "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
-                "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\")";
-
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(createTempStagingTable, preActionsSqlList.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
-        Assertions.assertEquals(cleanupTempStagingTableSql, deduplicationAndVersioningSql.get(0));
-        Assertions.assertEquals(insertTempStagingTableSql, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging_legend_persistence_temp_staging");
     }
 
     @Override
@@ -119,10 +104,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndAllowDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
-        verifyStats(operations);
+        verifyStats(operations, "staging_legend_persistence_temp_staging");
     }
 
     @Override
@@ -177,12 +162,13 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         return AnsiSqlSink.get();
     }
 
-    private void verifyStats(GeneratorResult operations)
+    private void verifyStats(GeneratorResult operations, String stageTableName)
     {
         // Pre stats:
         Assertions.assertEquals(rowsDeleted, operations.preIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
 
         // Post Stats:
+        String incomingRecordCount = String.format("SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"%s\" as stage", stageTableName);
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
         Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));

@@ -83,7 +83,7 @@ public class AppendOnlyScenarios extends BaseTest
     33) No Auditing, AllVersion, Fail on Duplicates, false
 
     NoAuditing + filterExistingRecords
-    34) No Auditing, NoVersion, Allow Duplicates, true         - tested
+    34) No Auditing, NoVersion, Allow Duplicates, true        - tested
     35) No Auditing, NoVersion, Filter Duplicates, true
     36) No Auditing, NoVersion, Fail on Duplicates, true
     */
@@ -125,15 +125,15 @@ public class AppendOnlyScenarios extends BaseTest
                 .digestField(digestField)
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
-                    .versioningField("version")
-                    .dataSplitFieldName("datasplit")
+                    .versioningField(bizDateField)
+                    .dataSplitFieldName(dataSplitField)
                     .versioningComparator(VersioningComparator.ALWAYS)
                     .performVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .filterExistingRecords(false)
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     // failure case
@@ -143,15 +143,15 @@ public class AppendOnlyScenarios extends BaseTest
                 .digestField(digestField)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
-                    .versioningField("version")
-                    .dataSplitFieldName("datasplit")
+                    .versioningField(bizDateField)
+                    .dataSplitFieldName(dataSplitField)
                     .versioningComparator(VersioningComparator.ALWAYS)
                     .performVersioning(true)
                     .build())
                 .auditing(NoAuditing.builder().build())
                 .filterExistingRecords(false)
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     public TestScenario FILTER_DUPLICATES_WITH_AUDITING_ALL_VERSION_WITH_FILTER_EXISTING_RECORDS()
@@ -160,52 +160,49 @@ public class AppendOnlyScenarios extends BaseTest
                 .digestField(digestField)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
-                    .versioningField("version")
-                    .dataSplitFieldName("datasplit")
+                    .versioningField(bizDateField)
+                    .dataSplitFieldName(dataSplitField)
                     .versioningComparator(VersioningComparator.ALWAYS)
                     .performVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .filterExistingRecords(true)
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    // todo: to add test for this
     public TestScenario FAIL_ON_DUPLICATES_WITH_AUDITING_MAX_VERSION_WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
             .deduplicationStrategy(FailOnDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField("version")
+                .versioningField(bizDateField)
                 .versioningComparator(VersioningComparator.ALWAYS)
                 .performVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(true)
             .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    // todo: to add test for this
     public TestScenario FILTER_DUPLICATES_WITH_AUDITING_MAX_VERSION_NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField("version")
+                .versioningField(bizDateField)
                 .versioningComparator(VersioningComparator.ALWAYS)
                 .performVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(false)
             .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    // todo: to add test for this
     // failure case
     public TestScenario ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS()
     {
@@ -216,6 +213,18 @@ public class AppendOnlyScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .filterExistingRecords(true)
             .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeys, ingestMode);
+    }
+
+    public TestScenario ALLOW_DUPLICATES_WITH_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS()
+    {
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestField)
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+            .filterExistingRecords(false)
+            .build();
+        return new TestScenario(mainTableWithNoPrimaryKeysHavingAuditField, stagingTableWithNoPrimaryKeys, ingestMode);
     }
 }
