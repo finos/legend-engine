@@ -47,15 +47,6 @@ function meta::rel::utils::collection::valueKeys<K, V>(map: BiMap<K,V>[1]): Pair
   $map.from->keyValues();
 }
 
-Class meta::rel::utils::collection::MPair<S, T|n, m> {
-  <<equality.Key>> first: S[n];
-  <<equality.Key>> second: T[m];
-}
-
-function meta::rel::utils::collection::mpair<S,T|n,m>(first: S[n], second: T[m]): MPair<S,T|n,m>[1] {
-  ^MPair<S,T|n,m>(first=$first, second=$second);
-}
-
 Class meta::rel::utils::collection::Triple<S, T, U|n,m,p> {
   first: S[n];
   second: T[m];
