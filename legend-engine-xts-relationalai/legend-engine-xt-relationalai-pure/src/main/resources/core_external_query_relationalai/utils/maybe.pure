@@ -5,10 +5,6 @@ function meta::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefi
   if ($values->size() == 0, | $else, | $logic->eval($values->toOneMany()));
 }
 
-function meta::rel::utils::isSome<T|m>(value: T[m]): Boolean[1] {
-  $value->size() != 0;
-}
-
 function meta::rel::utils::unwrap<T>(value: T[0..1]): T[1] {
   $value->expect('Call of `unwrap` on empty object.');
 }
