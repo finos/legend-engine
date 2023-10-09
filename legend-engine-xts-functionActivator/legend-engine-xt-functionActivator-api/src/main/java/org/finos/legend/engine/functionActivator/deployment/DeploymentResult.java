@@ -12,23 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
+package org.finos.legend.engine.functionActivator.deployment;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
-
-public class SnowflakeDeploymentResult extends DeploymentResult
+public class DeploymentResult
 {
-
-    public MutableList<String> errors;
-
-    public SnowflakeDeploymentResult(boolean result)
-    {
-      this.successful = false;
-    }
-
-    public SnowflakeDeploymentResult(MutableList<String> errors)
-    {
-        this.errors = errors;
-    }
+    public String activatorIdentifier;
+    public boolean successful;
 }

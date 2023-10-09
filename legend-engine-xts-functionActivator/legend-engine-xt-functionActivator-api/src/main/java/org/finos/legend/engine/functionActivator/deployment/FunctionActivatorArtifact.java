@@ -16,5 +16,6 @@ package org.finos.legend.engine.functionActivator.deployment;
 
 public class FunctionActivatorArtifact
 {
-    FunctionActivatorDeploymentConfiguration deploymentConfiguration;
+    public FunctionActivatorDeploymentContent content;
+    public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
 }

@@ -15,14 +15,11 @@
 package org.finos.legend.engine.functionActivator.deployment;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
-public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends DeploymentConfiguration>
+public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration>
 {
 
     public V deploy(MutableList<CommonProfile> profiles, U artifact);

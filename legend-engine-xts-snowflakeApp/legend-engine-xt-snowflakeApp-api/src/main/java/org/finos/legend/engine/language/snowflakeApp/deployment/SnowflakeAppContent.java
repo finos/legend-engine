@@ -12,19 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
+package org.finos.legend.engine.language.snowflakeApp.deployment;
 
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
 
-public class SnowflakeDeploymentConfiguration extends DeploymentConfiguration
+public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
-    public ConnectionPointer activationConnection;
+    public RichIterable<String> sqlExpressions = Lists.mutable.empty();
 
-//    public String applicationName;
+    public String applicationName;
 
-    public SnowflakeDeploymentConfiguration()
+    public SnowflakeAppContent(String name, RichIterable<String> sqlExpressions)
     {
-
+        this.applicationName = name;
+        this.sqlExpressions = sqlExpressions;
     }
 }

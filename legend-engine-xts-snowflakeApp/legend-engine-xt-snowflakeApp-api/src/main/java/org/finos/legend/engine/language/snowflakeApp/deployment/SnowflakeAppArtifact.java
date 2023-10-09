@@ -20,15 +20,20 @@ import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArt
 
 public class SnowflakeAppArtifact extends FunctionActivatorArtifact
 {
-    public RichIterable<String> sqlExpressions = Lists.mutable.empty();
 
     public SnowflakeAppArtifact()
     {
         //empty artifact
     }
 
-    public SnowflakeAppArtifact(RichIterable<String> sqlExpressions)
+    public SnowflakeAppArtifact(String name, RichIterable<String> sqlExpressions)
     {
-        this.sqlExpressions = sqlExpressions;
+        this.content = new SnowflakeAppContent(name, sqlExpressions);
+    }
+
+    public SnowflakeAppArtifact(String name,RichIterable<String> sqlExpressions, SnowflakeAppDeploymentConfiguration config)
+    {
+        this.content = new SnowflakeAppContent(name, sqlExpressions);
+        this.deploymentConfiguration = config;
     }
 }

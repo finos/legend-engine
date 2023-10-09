@@ -24,13 +24,14 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorLoader;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
+//import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
+import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -63,7 +64,7 @@ public class FunctionActivatorAPI
     private final ModelManager modelManager;
     private final PureModel emptyModel;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
-    private  List<DeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
+    private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
 
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
@@ -72,7 +73,7 @@ public class FunctionActivatorAPI
         this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
     }
 
-    public FunctionActivatorAPI(ModelManager modelManager,  List<DeploymentConfiguration> activatorConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this(modelManager, routerExtensions);
         this.runtimeDeploymentConfig = activatorConfigurations;
@@ -103,7 +104,7 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.validate(profiles, pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -126,7 +127,7 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(profiles, pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig, DeploymentStage.SANDBOX),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -149,7 +150,7 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.renderArtifact(pureModel, activator, input.model, clientVersion,routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -159,9 +160,9 @@ public class FunctionActivatorAPI
         }
     }
 
-    public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
+    public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
     {
-        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
         if (service == null)
         {
             throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");

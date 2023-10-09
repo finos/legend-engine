@@ -15,34 +15,12 @@
 package org.finos.legend.engine.language.hostedService.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration;
 import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.security.PrivilegedExceptionAction;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import java.util.List;
 
 public class HostedServiceDeploymentManager implements  DeploymentManager<HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>

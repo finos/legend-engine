@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.hostedService.deployment;
 
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 
-public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration {
+public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
+{
 
 }

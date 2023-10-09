@@ -15,6 +15,9 @@
 package org.finos.legend.engine.language.snowflakeApp.deployment;
 
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
-public class SnowflakeAppDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration {
+public class SnowflakeAppDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
+{
+    RelationalDatabaseConnection connection;
 }
