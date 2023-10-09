@@ -2226,6 +2226,22 @@ function meta::relational::functions::pureToSqlQuery::processNoOp(f:FunctionExpr
    processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()
 }
 
+function meta::relational::functions::pureToSqlQuery::processSplitPart(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  //sql is 1 index based, pure is 0 index based
+  let position = $f.parametersValues->at(2)->zeroToOneBasedIndex();
+
+  let functionExpression = ^$f(parametersValues = [$f.parametersValues->at(0), $f.parametersValues->at(1), $position]);
+  $functionExpression->processDynaFunction($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::zeroToOneBasedIndex(v:ValueSpecification[1]):ValueSpecification[1]
+{
+  $v->match([
+      i:InstanceValue[1] | ^$i(values = $i.values->toOne()->cast(@Integer) + 1)
+  ]);
+}
+
 function meta::relational::functions::pureToSqlQuery::processHash(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
@@ -4355,7 +4371,9 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
                                                           b:Boolean[1] | ^Literal(value=$b),
                                                           f:ValueSpecification[1]|$f->processAggFn($params),
                                                           f:LambdaFunction<Any>[1]|$f.expressionSequence->toOne()->cast(@ValueSpecification)->processAggFn($params),
-                                                          a:Any[1] | fail('Unsupported aggregation operation'); [];
+                                                          e:Enum[1] | ^Literal(value=$e),
+                                                          e:Enumeration<Enum>[1] | ^Literal(value = $v),
+                                                          a:Any[1] | println($a);fail('Unsupported aggregation operation'); [];
                                               ]));
                                 );
       ]
@@ -5031,6 +5049,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                             ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {| 
                                               newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context))
                                             }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, second = {| 
+                                              newDynaFunction('splitPart', [
+                                                $f.parametersValues->at(0)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context)->toOne(),
+                                                $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context)->toOne(),
+                                                $f.parametersValues->at(2)->zeroToOneBasedIndex()->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context) ->toOne()                                               
+                                              ])
+                                            }),                                            
                                             ^PureFunctionTDSToRelationalFunctionPair(first = parseDate_String_1__Date_1_, second = {|
                                               let format = ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=String), values = 'YYYY-MM-DD HH24:MI:SS');
                                               newDynaFunction('toTimestamp', [
@@ -7584,6 +7609,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::replace_String_1__String_1__String_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::repeatString_String_$0_1$__Integer_1__String_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::reverseString_String_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processSplitPart_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Integer_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Number_1__Number_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::abs_Float_1__Float_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
