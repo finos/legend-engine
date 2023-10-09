@@ -102,6 +102,17 @@ class NontemporalSnapshotPlanner extends Planner
     }
 
     @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        List<String> remainingCols = new ArrayList<>();
+        if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKDataFields();
+        }
+        return remainingCols;
+    }
+
+    @Override
     public boolean dataSplitExecutionSupported()
     {
         return false;

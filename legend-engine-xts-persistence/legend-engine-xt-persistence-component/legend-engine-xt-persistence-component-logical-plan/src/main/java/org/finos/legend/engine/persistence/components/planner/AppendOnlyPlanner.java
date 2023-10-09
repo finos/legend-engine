@@ -38,6 +38,7 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +107,21 @@ class AppendOnlyPlanner extends Planner
         Dataset selectStage = ingestMode().filterExistingRecords() ? getSelectStageWithFilterExistingRecords(fieldsToSelect) : getSelectStage(fieldsToSelect);
 
         return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), selectStage, fieldsToInsert)));
+    }
+
+    @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        List<String> remainingCols = new ArrayList<>();
+        if (ingestMode().digestField().isPresent())
+        {
+            remainingCols = Arrays.asList(ingestMode().digestField().get());
+        }
+        else if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKDataFields();
+        }
+        return remainingCols;
     }
 
     private Dataset getSelectStage(List<Value> fieldsToSelect)

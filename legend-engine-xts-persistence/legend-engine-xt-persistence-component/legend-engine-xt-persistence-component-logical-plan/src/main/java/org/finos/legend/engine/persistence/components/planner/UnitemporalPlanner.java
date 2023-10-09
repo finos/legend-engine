@@ -78,7 +78,7 @@ abstract class UnitemporalPlanner extends Planner
     protected final Condition openRecordCondition;
     protected final Condition digestMatchCondition;
     protected final Condition digestDoesNotMatchCondition;
-
+    protected final String digestField;
     protected Condition primaryKeysMatchCondition;
 
     UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -99,6 +99,7 @@ abstract class UnitemporalPlanner extends Planner
         this.mainTableName = StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
         this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
+        this.digestField = transactionMilestoned.digestField();
         this.openRecordCondition = transactionMilestoned.transactionMilestoning().accept(new DetermineOpenRecordCondition(mainDataset()));
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
         this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
@@ -116,6 +117,12 @@ abstract class UnitemporalPlanner extends Planner
     {
         List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(stagingDataset());
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
+    }
+
+    @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        return Arrays.asList(digestField);
     }
 
     @Override

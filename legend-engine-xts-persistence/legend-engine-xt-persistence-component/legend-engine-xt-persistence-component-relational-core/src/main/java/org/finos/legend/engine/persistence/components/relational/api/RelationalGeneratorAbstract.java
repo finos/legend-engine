@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -250,6 +251,13 @@ public abstract class RelationalGeneratorAbstract
             deduplicationAndVersioningSqlPlan = Optional.of(transformer.generatePhysicalPlan(deduplicationAndVersioningLogicalPlan));
         }
 
+        Map<ErrorStatistics, LogicalPlan> deduplicationAndVersioningErrorChecksLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioningErrorChecks(resources);
+        Map<ErrorStatistics, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan = new HashMap<>();
+        for (ErrorStatistics statistic : deduplicationAndVersioningErrorChecksLogicalPlan.keySet())
+        {
+            deduplicationAndVersioningErrorChecksSqlPlan.put(statistic, transformer.generatePhysicalPlan(deduplicationAndVersioningErrorChecksLogicalPlan.get(statistic)));
+        }
+
         // ingest
         LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
@@ -291,6 +299,7 @@ public abstract class RelationalGeneratorAbstract
             .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
             .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
+            .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();

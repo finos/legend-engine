@@ -16,26 +16,31 @@ package org.finos.legend.engine.persistence.components.planner;
 
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorCheckLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
-import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -57,6 +62,7 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
+import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler.COUNT;
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -335,6 +341,47 @@ public abstract class Planner
         return postRunStatisticsResult;
     }
 
+    public Map<ErrorStatistics, LogicalPlan> buildLogicalPlanForDeduplicationAndVersioningErrorChecks(Resources resources)
+    {
+        Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
+        addMaxDuplicatesErrorCheck(dedupAndVersioningErrorChecks);
+        addDataErrorCheck(dedupAndVersioningErrorChecks);
+        return dedupAndVersioningErrorChecks;
+    }
+
+    protected void addMaxDuplicatesErrorCheck(Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    {
+        if (ingestMode.deduplicationStrategy() instanceof FailOnDuplicates)
+        {
+            FunctionImpl maxCount = FunctionImpl.builder()
+                    .functionName(FunctionName.MAX)
+                    .addValue(FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build())
+                    .alias(ErrorStatistics.MAX_DUPLICATES.name())
+                    .build();
+            Selection selectMaxDupsCount = Selection.builder()
+                    .source(tempStagingDataset())
+                    .addFields(maxCount)
+                    .build();
+            LogicalPlan maxDuplicatesCountPlan = LogicalPlan.builder().addOps(selectMaxDupsCount).build();
+            dedupAndVersioningErrorChecks.put(ErrorStatistics.MAX_DUPLICATES, maxDuplicatesCountPlan);
+        }
+    }
+
+    protected void addDataErrorCheck(Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    {
+        List<String> remainingColumns = getDigestOrRemainingColumns();
+        if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED))
+        {
+            LogicalPlan logicalPlan = ingestMode.versioningStrategy().accept(new DeriveDataErrorCheckLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset()));
+            if (logicalPlan != null)
+            {
+                dedupAndVersioningErrorChecks.put(ErrorStatistics.MAX_DATA_ERRORS, logicalPlan);
+            }
+        }
+    }
+
+    abstract List<String> getDigestOrRemainingColumns();
+
     protected void validatePrimaryKeysNotEmpty(List<String> primaryKeys)
     {
         if (primaryKeys.isEmpty())
@@ -407,6 +454,20 @@ public abstract class Planner
     {
         LogicalPlan rowsDeletedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L);
         postRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
+    }
+
+    protected List<String> getNonPKDataFields()
+    {
+        List<String> nonPkDataFields = stagingDataset().schemaReference().fieldValues().stream()
+                .map(fieldValue -> fieldValue.fieldName())
+                .filter(fieldName -> !primaryKeys.contains(fieldName))
+                .collect(Collectors.toList());
+        Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+        Optional<String> versioningField = ingestMode.versioningStrategy().accept(VersioningVisitors.EXTRACT_VERSIONING_FIELD);
+        nonPkDataFields.removeIf(field -> ingestMode().dataSplitField().isPresent() && field.equals(ingestMode().dataSplitField().get()));
+        nonPkDataFields.removeIf(field -> dedupField.isPresent() && field.equals(dedupField.get()));
+        nonPkDataFields.removeIf(field -> versioningField.isPresent() && field.equals(versioningField.get()));
+        return nonPkDataFields;
     }
 
     // auditing visitor

@@ -62,6 +62,27 @@ public class VersioningVisitors
         }
     };
 
+    public static final VersioningStrategyVisitor<Optional<String>> EXTRACT_VERSIONING_FIELD = new VersioningStrategyVisitor<Optional<String>>()
+    {
+        @Override
+        public Optional<String> visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return Optional.of(maxVersionStrategy.versioningField());
+        }
+
+        @Override
+        public Optional<String> visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return Optional.of(allVersionsStrategyAbstract.versioningField());
+        }
+    };
+
 
 
 }

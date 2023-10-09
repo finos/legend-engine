@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
@@ -45,7 +47,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> initializeLockSql = operations.initializeLockSql();
         List<String> acquireLockSql = operations.acquireLockSql();
-
+        Map<ErrorStatistics, String> andVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage)";
 
@@ -57,6 +59,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
         Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
         Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
+        Assertions.assertTrue(andVersioningErrorChecksSql.isEmpty());
 
         // Stats
         verifyStats(operations, "staging");
@@ -68,6 +71,8 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
@@ -78,7 +83,6 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
@@ -92,16 +96,25 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00.000000' " +
                 "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage)";
 
+        String maxDupsErrorCheckSql = "SELECT MAX(stage.\"legend_persistence_count\") as \"MAX_DUPLICATES\" FROM " +
+                "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
+        String maxDataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+                "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+                "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));

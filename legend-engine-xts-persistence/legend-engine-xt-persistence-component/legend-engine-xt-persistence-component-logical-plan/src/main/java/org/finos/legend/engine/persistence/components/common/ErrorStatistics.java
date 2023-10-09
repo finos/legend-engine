@@ -12,33 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.values;
+package org.finos.legend.engine.persistence.components.common;
 
-public enum FunctionName
+public enum ErrorStatistics
 {
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    DISTINCT,
-    COALESCE,
-    CURRENT_TIME,
-    CURRENT_DATE,
-    HASH,
-    CURRENT_TIMESTAMP,
-    UPPER,
-    ROW_NUMBER,
-    DENSE_RANK,
-    SUBSTRING,
-    PARSE_JSON,
-    DATE,
-    DATE_TRUNC,
-    DATETIME_TRUNC,
-    TIMESTAMP_TRUNC,
-    RANGE_BUCKET,
-    GENERATE_ARRAY,
-    PARSE_DATETIME,
-    OBJECT_CONSTRUCT,
-    TO_VARIANT,
-    TO_JSON;
+    MAX_DUPLICATES("maxDuplicates"),
+    MAX_DATA_ERRORS("maxDataErrors");
+
+    String value;
+
+    ErrorStatistics(String value)
+    {
+        this.value = value;
+    }
+
+    public String get()
+    {
+        return value;
+    }
 }

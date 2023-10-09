@@ -19,12 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
-import org.finos.legend.engine.persistence.components.common.Resources;
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
-import org.finos.legend.engine.persistence.components.common.FilterType;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.common.*;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
@@ -34,6 +29,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -352,6 +348,28 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
+            Map<ErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
+            System.out.println(errorStatistics);
+
+            /* Error Checks
+            1. if Dedup = fail on dups, Fail the job if count > 1
+            2. If versioining = Max Version/ All Versioin, Check for data error
+            */
+
+            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DUPLICATES));
+            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DATA_ERRORS));
+            if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+            {
+                String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
+                LOGGER.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
+            if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+            {
+                String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
+                LOGGER.error(errorMessage);
+                throw new RuntimeException(errorMessage);
+            }
         }
     }
 
@@ -674,6 +692,23 @@ public abstract class RelationalIngestorAbstract
                     .orElseThrow(IllegalStateException::new)));
     }
 
+    private Map<ErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                      Map<ErrorStatistics, SqlPlan> errorChecksPlan)
+    {
+        return errorChecksPlan.keySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        k -> k,
+                        k -> executor.executePhysicalPlanAndGetResults(errorChecksPlan.get(k))
+                                .stream()
+                                .findFirst()
+                                .map(TabularData::getData)
+                                .flatMap(t -> t.stream().findFirst())
+                                .map(Map::values)
+                                .flatMap(t -> t.stream().findFirst())
+                                .orElseThrow(IllegalStateException::new)));
+    }
+
     private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                             Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                             Optional<DataSplitRange> dataSplitRange)
@@ -733,14 +768,7 @@ public abstract class RelationalIngestorAbstract
                 .orElseThrow(IllegalStateException::new));
             if (nextBatchId.isPresent())
             {
-                if (nextBatchId.get() instanceof Integer)
-                {
-                    return Optional.of(Long.valueOf((Integer) nextBatchId.get()));
-                }
-                if (nextBatchId.get() instanceof Long)
-                {
-                    return Optional.of((Long) nextBatchId.get());
-                }
+                return retrieveValueAsLong(nextBatchId.get());
             }
         }
         return Optional.empty();
@@ -799,6 +827,19 @@ public abstract class RelationalIngestorAbstract
             }
         }
         return datasetFilters;
+    }
+
+    private Optional<Long> retrieveValueAsLong(Object obj)
+    {
+        if (obj instanceof Integer)
+        {
+            return Optional.of(Long.valueOf((Integer) obj));
+        }
+        else if (obj instanceof Long)
+        {
+            return Optional.of((Long) obj);
+        }
+        return Optional.empty();
     }
 
 }

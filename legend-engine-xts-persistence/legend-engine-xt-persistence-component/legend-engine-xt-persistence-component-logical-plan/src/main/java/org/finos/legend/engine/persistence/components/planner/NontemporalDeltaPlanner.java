@@ -45,6 +45,7 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -327,6 +328,12 @@ class NontemporalDeltaPlanner extends Planner
         }
 
         return preRunStatisticsResult;
+    }
+
+    @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        return Arrays.asList(ingestMode().digestField());
     }
 
     @Override
