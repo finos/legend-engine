@@ -5,17 +5,6 @@ function meta::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefi
   if ($values->size() == 0, | $else, | $logic->eval($values->toOneMany()));
 }
 
-function meta::rel::utils::unwrap<T>(value: T[0..1]): T[1] {
-  $value->expect('Call of `unwrap` on empty object.');
-}
-
-function meta::rel::utils::expect<T>(value: T[0..1], message: String[1]): T[1] {
-  if ($value->isEmpty(), 
-    | fail($message),
-    | $value->toOne()
-  );
-}
-
 function meta::rel::utils::error(message: FunctionDefinition<{->String[1]}>[1]): String[1] {
   let source = $message
     ->evaluateAndDeactivate()

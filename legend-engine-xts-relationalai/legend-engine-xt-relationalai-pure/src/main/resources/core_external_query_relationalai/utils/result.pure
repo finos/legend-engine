@@ -56,7 +56,7 @@ function meta::rel::utils::andThem<S,T|n>(result: Result<S|*>[1], fn: FunctionDe
 
 function meta::rel::utils::then<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->T[n]}>[1]): Result<T|n>[1] {
   if($result.errors->isEmpty(), 
-    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate()->unwrap())), 
+    | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate()->toOne())), 
     | ^Result<T|n>(errors=$result.errors)
   );
 }
