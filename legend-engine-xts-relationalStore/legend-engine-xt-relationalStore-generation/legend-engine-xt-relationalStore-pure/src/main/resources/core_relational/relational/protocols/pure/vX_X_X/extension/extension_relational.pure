@@ -59,7 +59,8 @@ function meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy(te
         createTempTableNode = if($t.createTempTableNode->isNotEmpty(),|$t.createTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
         loadTempTableNode = if($t.loadTempTableNode->isNotEmpty(),|$t.loadTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
         dropTempTableNode = if($t.dropTempTableNode->isNotEmpty(),|$t.dropTempTableNode->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions),|[]),
-        tupleBatchSize = $t.tupleBatchSize
+        tupleBatchSize = $t.tupleBatchSize,
+        quoteCharacterReplacement = $t.quoteCharacterReplacement
       );
    ])
 }

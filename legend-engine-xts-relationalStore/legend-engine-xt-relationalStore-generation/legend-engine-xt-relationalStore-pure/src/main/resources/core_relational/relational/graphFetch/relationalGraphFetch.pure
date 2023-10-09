@@ -101,6 +101,7 @@ Class meta::relational::graphFetch::executionPlan::LoadFromSubQueryTempTableStra
 Class meta::relational::graphFetch::executionPlan::LoadFromResultSetAsValueTuplesTempTableStrategy extends meta::relational::graphFetch::executionPlan::TempTableStrategy
 {
   tupleBatchSize : Integer[0..1];
+  quoteCharacterReplacement: String[0..1];
 }
 
 function meta::relational::graphFetch::executionPlan::useTempTableStrategy(dbType: DatabaseType[1]):Boolean[1]
@@ -125,6 +126,14 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::getTupl
       | 100;
       );
     );
+}
+
+function <<access.private>> meta::relational::graphFetch::executionPlan::getQuoteCharacterReplacement(dbType: DatabaseType[1]):String[1]
+{
+   if($dbType->in([DatabaseType.Snowflake, DatabaseType.H2]),
+    | '\'\'',
+    | '\''
+  );
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::dbsUsingLoadFromTempFileTempTableStrategyForRoot():DatabaseType[*]
@@ -318,7 +327,8 @@ function meta::relational::graphFetch::executionPlan::getTempTableStrategyForRoo
         createTempTableNode = $createTempTableNode,
         loadTempTableNode = $loadTempTableNode,
         dropTempTableNode = $dropTempTableNode,
-        tupleBatchSize = getTupleBatchSize($dbType)
+        tupleBatchSize = getTupleBatchSize($dbType),
+        quoteCharacterReplacement = getQuoteCharacterReplacement($dbType)
       );
   );
 }
@@ -330,7 +340,8 @@ function meta::relational::graphFetch::executionPlan::getTempTableStrategyForNon
         createTempTableNode = $createTempTableNode,
         loadTempTableNode = $loadTempTableNode,
         dropTempTableNode = $dropTempTableNode,
-        tupleBatchSize = getTupleBatchSize($dbType)
+        tupleBatchSize = getTupleBatchSize($dbType),
+        quoteCharacterReplacement = getQuoteCharacterReplacement($dbType)
       ),
     | if($dbType->in(dbsUsingLoadFromSubQueryTempTableStrategyForComplexProperty()),
       | ^LoadFromSubQueryTempTableStrategy(

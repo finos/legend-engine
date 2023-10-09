@@ -117,6 +117,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromSubQueryT
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromResultSetAsValueTuplesTempTableStrategy extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy
 {
    tupleBatchSize : Integer[0..1];
+   quoteCharacterReplacement: String[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
