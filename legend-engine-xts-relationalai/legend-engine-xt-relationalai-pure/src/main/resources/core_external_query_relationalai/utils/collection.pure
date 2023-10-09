@@ -47,48 +47,6 @@ function meta::rel::utils::collection::valueKeys<K, V>(map: BiMap<K,V>[1]): Pair
   $map.from->keyValues();
 }
 
-Class <<typemodifiers.abstract>> meta::rel::utils::collection::Entry { }
-
-Class meta::rel::utils::collection::CollectionEntry<T> extends Entry {
-  collection: T[*];
-  index: Integer[1];
-  value: T[1];
-}
-
-function meta::rel::utils::collection::entry<T>(collection: T[*], index: Integer[1]): CollectionEntry<T>[0..1] {
-  $collection
-    ->maybeAt($index)
-    ->map(entry | ^CollectionEntry<T>(collection=$collection, index=$index, value=$entry);)
-}
-
-function meta::rel::utils::collection::andModify<T>(
-  entry: CollectionEntry<T>[0..1], 
-  fn: FunctionDefinition<{T[1]->T[1]}>[1]
-): CollectionEntry<T>[0..1] {
-  $entry
-    ->map(inner |
-      let newValue = $fn->eval($inner.value);
-
-      let newCollection = $inner.collection
-        ->slice(0, $inner.index)
-        ->concatenate($newValue)
-        ->concatenate($inner.collection->slice($inner.index + 1, $inner.collection->size()));
-
-      ^$inner(value=$newValue, collection=$newCollection);
-    );
-}
-
-function meta::rel::utils::collection::modify<T>(
-  collection: T[*],
-  index: Integer[1], 
-  fn: FunctionDefinition<{T[1]->T[1]}>[1]
-): T[*] {
-  $collection
-    ->entry($index)
-    ->andModify($fn)
-    .collection;
-}
-
 Class meta::rel::utils::collection::MPair<S, T|n, m> {
   <<equality.Key>> first: S[n];
   <<equality.Key>> second: T[m];
