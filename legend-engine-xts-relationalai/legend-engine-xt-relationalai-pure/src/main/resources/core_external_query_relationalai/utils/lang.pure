@@ -32,8 +32,3 @@ function <<access.private>> meta::rel::utils::lang::switch<T|m>(
 function meta::rel::utils::lang::switch<T|m>(cases: CaseExpr<T|m>[*], default: FunctionDefinition<{->T[m]}>[1]): T[m] {
   switch(0, $cases, $default);
 }
-
-function meta::rel::utils::lang::each<T>(coll: T[*], fn: FunctionDefinition<{T[1]->Any[*]}>[1]): T[*] {
-  $coll->map($fn);
-  $coll;
-}

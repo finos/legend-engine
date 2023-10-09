@@ -1,18 +1,7 @@
 import meta::rel::utils::*;
 
-
 function meta::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefinition<{T[1..*]->S[n]}>[1], else: S[n]): S[n] {
   if ($values->size() == 0, | $else, | $logic->eval($values->toOneMany()));
-}
-
-function meta::rel::utils::error(message: FunctionDefinition<{->String[1]}>[1]): String[1] {
-  let source = $message
-    ->evaluateAndDeactivate()
-    ->sourceInformation()
-    ->toOne();
-  
-  let m = $source.source + ' at ' + $source.line->toString()->toOne() + ':';
-  $m + $source.column->toString() + ': ' + $message->eval();
 }
 
 function meta::rel::utils::else<T>(value: T[0..1], or: FunctionDefinition<{->T[1]}>[1]): T[1] {
