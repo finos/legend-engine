@@ -44,6 +44,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*
 import meta::pure::graphFetch::routing::*;
 import meta::pure::router::routing::*;
 import meta::pure::graphFetch::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::functions::meta::*;
 import meta::pure::graphFetch::*;
@@ -94,12 +95,12 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
    let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
    let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
-   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
+   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(),
                                                 | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
                                                 | []);
    let nodeInfo                            = ^NodeInfo(
-                                                  path            = $path, 
-                                                  returnType      = $returnType, 
+                                                  path            = $path,
+                                                  returnType      = $returnType,
                                                   graphFetchTrees = $node.tree->concatenate($sourceRecordTree),
                                                   data            = $bindingDetail
                                               );
@@ -123,11 +124,11 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
    assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
    assert($externalFormatJavaBindingDescriptor.externalizeDescriptor->size() == 1, | 'Expected 1 externalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.externalizeDescriptor->size()->toString());
 
-   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
+   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(),
                                                 | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
                                                 | []);
    let nodeInfo                            = ^NodeInfo(
-                                                 path            = $path, 
+                                                 path            = $path,
                                                  returnType      = ^SimpleJavaType(pureType=String, javaType=javaString()),
                                                  data            = $bindingDetail
                                               );
@@ -135,7 +136,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 
    let tree                                = resolveCheckedWrapping($node.tree);
    let updatedTypeInfo                     = $context.typeInfos->addForGraphFetchTree($tree)->addConstraintsForGraphFetchTree($tree);
-                                                   
+
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.externalizeDescriptor.externalizePreparator->isNotEmpty(),
                                                 | $externalFormatJavaBindingDescriptor.externalizeDescriptor.externalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
                                                 | $updatedTypeInfo);
@@ -162,7 +163,7 @@ Class <<access.private>> meta::external::format::shared::executionPlan::platform
    adderName         : String[1];
    adderParam        : Code[1];
    multiplicityCheck : Code[0..1];
-   
+
    name() {$this.property.name->toOne()}: String[1];
    isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
 }
@@ -175,7 +176,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 function meta::external::format::shared::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
-   
+
    let conventions = $context.conventions;
    let pureDate    = $conventions->className(PureDate);
    let defects     = j_variable(javaList($conventions->defectClass()), 'defects');
@@ -185,21 +186,21 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
    let baseClass = $conventions->dataClass($class, $path)->addModifiers('public')
                                ->implements($conventions->className($class))
                                ->addIExternalData($class, $context);
-   
+
    let properties = $context.typeInfos->allProperties($class)->map(p|
       let fieldName     = $conventions->fieldName($p);
       let sizeFieldName = $fieldName+'Size';
       let javaType      = $conventions->pureTypeToJavaType($p);
       let propType      = $p->functionReturnType().rawType->toOne();
       let itemType      = if($javaType->isJavaList(), |$javaType->elementType(), |$javaType)->toUnboxed();
-                                                                   
+
       let occurs                = occursFromMultiplicity($p.multiplicity);
       let getSize               = j_this($baseClass)->j_field($sizeFieldName, javaInt());
       let lowerBoundClause      = $getSize->j_lt($occurs.first);
       let upperBoundClause      = $getSize->j_gt($occurs.second);
       let expectedMultiplicity  = $p.multiplicity->printMultiplicity();
       let addMultiplicityDefect = $defects->j_invoke('add', $conventions->newClassStructureDefect(j_string('Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expectedMultiplicity+'] found [')->j_plus($getSize)->j_plus(j_string(']')), j_string($class->elementToPath())), javaVoid());
-                                                                   
+
       ^PropertyDetails(
          property          = $p,
          fieldName         = $fieldName,
@@ -254,10 +255,10 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
             ->addMethods({cls|
                 $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
             });
-      }, 
-      $baseClass      
+      },
+      $baseClass
    );
-   
+
    let propertyName = j_parameter(javaString(), 'propertyName');
    let objectParam  = j_parameter($withFieldsAndGetters, 'object');
 
@@ -297,7 +298,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
                                );
                             }
                          )));
-         
+
          pair(j_string($p.name), $adderImpl);
       }
    );
@@ -413,7 +414,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::platf
          let implName      = $prop.adderName+'Impl';
          let otherProp     = $prop.property.owner->cast(@Association).properties->filter(p| $p != $prop.property)->toOne();
          let otherImplName = '_' + $conventions->fieldName($otherProp) + 'AddImpl';
-         
+
          [
             javaMethod([], javaVoid(), $implName, $prop.adderParam, $impl),
             javaMethod('public', javaVoid(), $prop.adderName, $prop.adderParam,

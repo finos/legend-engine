@@ -267,11 +267,14 @@ public class LegendExecuteTest
             lines.add("function test():Any[*]{");
             lines.add("  let extensions = meta::pure::extension::defaultExtensions();");
             lines.add("  let runtime = ^Runtime(");
-            lines.add("                      connections = [");
-            lines.add("                        ^JsonModelConnection(");
-            lines.add("                          element = ^ModelStore(),");
+            lines.add("                      connectionStores = [");
+            lines.add("                        ^ConnectionStore(");
+            lines.add("                         element = ^ModelStore(),");
+            lines.add("                         connection=");
+            lines.add("                         ^JsonModelConnection(");
             lines.add("                          class = test::_S_Types,");
             lines.add("                          url = 'data:application/json,\\n{\"string\": \"string1\", \"float\": 123.123, \"int\": 123456, \"bool\": true, \"decimal\": \"789.123\", \"date\": \"2020-01-01\", \"dateTime\": \"2021-01-02T01:02:11.1223Z\"}\\n{\"string\": \"string2\", \"float\": 125.125, \"int\": 654321, \"bool\": false, \"decimal\": \"345.219\", \"date\": \"2019-01-01\", \"dateTime\": \"2023-01-02T05:02:11.1223Z\"}'");
+            lines.add("                          )");
             lines.add("                        )");
             lines.add("                      ]");
             lines.add("                    );");

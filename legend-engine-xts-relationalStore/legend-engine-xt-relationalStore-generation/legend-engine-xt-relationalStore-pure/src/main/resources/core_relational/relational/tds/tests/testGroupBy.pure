@@ -14,10 +14,12 @@
 
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::validation::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
 
@@ -25,9 +27,9 @@ import meta::pure::metamodel::tds::*;
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testValidateTdsGroupByWithIsNotEmpty():Boolean[1]
 {
    let runtime = testRuntime();
-   let connection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
    meta::relational::metamodel::execute::executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 22:00:00\');', $connection);
-   
+
    let result = validate(|AccountWithConstraints.all(), simpleRelationalMappingWithConstraints, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(1, $tds.rows->size());
@@ -170,7 +172,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAggFuncAsLambdaWithTake():Boolean[1]
 {
-   let fn = {| 
+   let fn = {|
               Trade.all()->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('sum', x|$x.getFloat('quantity'), y| $y->sum()))
                          ->sort(desc('prodName'))
@@ -398,15 +400,15 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTableToTDSWith
                                  ->restrict(['FIRST NAME'])
                                  ->groupBy(['FIRST NAME'], agg('cnt', x|$x.getString('FIRST NAME'), y|$y->count()))
                             };
-   
+
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", count("root"."FIRST NAME") as "cnt" from tableWithQuotedColumns as "root" group by "FIRST NAME"';
-   
+
    assertEquals($expectedSql, $resWithoutQuotes->sqlRemoveFormatting());
-   
+
    let queryWithQuotes = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db, 'default', 'tableWithQuotedColumns'))
                                     ->project([
                                col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
@@ -418,10 +420,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTableToTDSWith
                                  ->restrict(['"FIRST NAME"'])
                                  ->groupBy(['"FIRST NAME"'], agg('cnt', x|$x.getString('"FIRST NAME"'), y|$y->count()))
                             };
-   
+
    let resWithQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-   
-   assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());   
+
+   assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::groupBy::testTDSGroupByPercentile():Boolean[1]
@@ -451,9 +453,9 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmpt
          ->project([col(x | $x.legalName, 'Legal Name')])
          ->groupBy([], [agg('Firm Count', x|$x, y|$y->count())]),
       simpleRelationalMapping,
-      meta::relational::tests::testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions());
-   
+
    assertEquals(['4'], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select count(*) as "Firm Count" from firmTable as "root"', $result);
 }
@@ -466,9 +468,9 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmpt
          ->groupBy([], [agg('Firm Count', x|$x, y|$y->count())])
          ->filter(r | $r.getInteger('Firm Count') > 10),
       simpleRelationalMapping,
-      meta::relational::tests::testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions());
-   
+
    assertEquals([], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select "Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
 }
@@ -480,8 +482,8 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
          ->project([col(x | $x.date, 'Date')])
          ->groupBy([], [agg('Date Adjust', x|$x.getStrictDate('Date'), y|$y->max()->toOne()->adjust(1, DurationUnit.WEEKS))]), meta::relational::extension::relationalExtensions()),
       simpleRelationalMapping,
-      meta::relational::tests::testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions());
-   
+
    meta::relational::functions::asserts::assertSameSQL('select dateadd(WEEK, 1, max("root".tradeDate)) as "Date Adjust" from tradeTable as "root"', $result);
 }

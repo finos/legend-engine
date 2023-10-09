@@ -25,6 +25,8 @@ import meta::pure::mapping::modelToModel::test::dataQuality::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
@@ -39,11 +41,11 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canUseGraphFetchChe
    let func = {|WithoutConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":3}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"i":3},'+
@@ -69,11 +71,11 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canUseGraphFetchChe
    let func = {|WithoutConstraintsInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":3}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"i":3},'+
@@ -98,13 +100,14 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsPassWhen
    let func = {|SomeDataConstrained.all()->graphFetch($tree)->serialize($tree)};
    let mapping = simpleConstrainedDataMapping;
    let runtime = ^Runtime(
-      connections = ^JsonModelConnection(
-         element=^ModelStore(),
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
          class = _SomeDataConstrained,
          url = 'data:application/json,{"i":3, "b":false, "child": {"s":"Hello"}}'
-      )
+      ))
    );
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
 
    assert(true);
@@ -122,10 +125,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsPassForV
    let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = doubleIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":3, "child" : {"s": "Hello"}}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"i":6,"child":{"s":"Hello"}},'+
@@ -150,10 +153,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::unmappedConstraintP
    let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = noIMapping;
    let runtime = testJsonRuntime(_Num2, '{"int":3, "child" : {"s": "Hello"}}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -198,10 +201,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::unmappedConstraintP
    let func = {|WithConstraintsViaQualifier.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = noIViaQualifierMapping;
    let runtime = testJsonRuntime(_Num2, '{"int":3}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -220,29 +223,29 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::unmappedConstraintP
    '    "value":{},'+
    '    "source":{"number":1, "record":"{\\"int\\":3}"}'+
    '  }'+
-   '}'; 
+   '}';
 
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that defines constraints.',
    doc.doc='Given: data that fails one constraint.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the inherited constaints should be evaluated and a defect returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForInvalidDataOneDefect() : Boolean[1]
 {
    let tree = #{WithConstraints {i}}#;
    let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":2}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -265,24 +268,24 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForI
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that defines constraints.',
    doc.doc='Given: data that fails two constraints.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the inherited constaints should be evaluated and defects returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForInvalidDataTwoDefects() : Boolean[1]
 {
    let tree = #{WithConstraints {i}}#;
    let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":1}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -315,24 +318,24 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsFailForI
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that inherits constraints.',
    doc.doc='Given: data that meets those constraints.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the inherited constaints should be evaluated and no defects returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInheritedAndPassForValidData() : Boolean[1]
 {
    let tree = #{InheritsConstriants {i}}#;
    let func = {|InheritsConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":6}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"i":6},'+
@@ -345,24 +348,24 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInher
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that inherits constraints.',
    doc.doc='Given: data that fails a constraint on the superclass and one on the subclass.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the inherited constaints should be evaluated and a defect returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInheritedAndFailForInvalidData() : Boolean[1]
 {
    let tree = #{InheritsConstriants {i}}#;
    let func = {|InheritsConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":2}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -391,7 +394,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::constraintsAreInher
    '    "source":{"number":1,"record":"{\\"i\\":2}"}'+
    '  }'+
    '}';
-   
+
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -410,7 +413,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
 
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":['+
    '    {'+
@@ -445,10 +448,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    let func = {|AuthorWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = constraintsLiteratureMapping;
    let runtime = testJsonRuntime(_Author, '{"name":"Plato", "books":[{"title": "Euthyphro", "pages": 20, "marketing": { "reviews": [{"by": "Socretes"},{"by": "Plato"}] }}, {"title": "Phaedo", "pages":61}]}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -530,7 +533,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    '    "source":{"number":1, "record":"{\\"name\\":\\"Plato\\",\\"books\\":[{\\"title\\":\\"Euthyphro\\",\\"pages\\":20,\\"marketing\\":{\\"reviews\\":[{\\"by\\":\\"Socretes\\"},{\\"by\\":\\"Plato\\"}]}},{\\"title\\":\\"Phaedo\\",\\"pages\\":61}]}"}'+
    '  }'+
    '}';
-   
+
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -549,7 +552,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
 
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":['+
    '    {'+
@@ -582,25 +585,25 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that defines a constraint.',
    doc.doc='Given: a superclass without constraints.',
    doc.doc='Given: data that meets the constraint.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the constaint should be evaluated and no defects returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::canDefineConstraintAndInheritFromAClassThatDoesNotDefineConstraintsAndPassForValidData() : Boolean[1]
 {
    let tree = #{WithConstraintInheritsNoConstriants {i}}#;
    let func = {|WithConstraintInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":6}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"i":6},'+
@@ -613,25 +616,25 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canDefineConstraint
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that defines a constraint.',
    doc.doc='Given: a superclass without constraints.',
    doc.doc='Given: data that fails the constraint.',
    doc.doc='When:  the mapping is executed using graphFetch.',
    doc.doc='Then:  the constaint should be evaluated and a defect returned.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::canDefineConstraintAndInheritFromAClassThatDoesNotDefineConstraintsAndFailForInvalidData() : Boolean[1]
 {
    let tree = #{WithConstraintInheritsNoConstriants {i}}#;
    let func = {|WithConstraintInheritsNoConstriants.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = copyIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"i":2}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -666,10 +669,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    let func = {|WithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = doubleIntegerMapping;
    let runtime = testJsonRuntime(_Num, '{"child":{}}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -728,11 +731,11 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    let func = {|SomeDataConstrained.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = simpleConstrainedDataMapping;
    let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":"NaN", "b":[1, false], "child":{"s":false, "d":"notadate"}}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   
-   let expected= 
+
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -841,7 +844,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
 
    let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":[],'+
    '  "value":{"i":1,"b":false},'+
@@ -890,7 +893,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
 
    let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":[],'+
    '  "value":{"i":4,"b":false},'+
@@ -899,7 +902,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    '    "value":{"i":2,"b":false},'+
    '    "source":{"number":1,"record":"{\\"i\\":2,\\"b\\":false}"}'+
    '  }'+
-   '}';   
+   '}';
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -936,10 +939,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
    let func = {|AuthorWithConstraints.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = constraintsLiteratureMapping;
    let runtime = testJsonRuntime(_Author, '{"name":"Plato", "books":[{"title": "Euthyphro", "pages": 20, "marketing": { "reviews": [{"by": "Socretes"},{"by": "Plato"}] }}, {"title": "Phaedo", "pages":61}]}');
-   
+
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":['+
    '    {'+
@@ -999,7 +1002,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
    '    "source":{"number":1, "record":"{\\"name\\":\\"Plato\\",\\"books\\":[{\\"title\\":\\"Euthyphro\\",\\"pages\\":20,\\"marketing\\":{\\"reviews\\":[{\\"by\\":\\"Socretes\\"},{\\"by\\":\\"Plato\\"}]}},{\\"title\\":\\"Phaedo\\",\\"pages\\":61}]}"}'+
    '  }'+
    '}';
-   
+
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -1019,7 +1022,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
 
    let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":[],'+
    '  "value":{"b":false},'+
@@ -1055,10 +1058,10 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::testWordCountForM2M
   let runtime = testJsonRuntime(_Book, '{"pages":5}');
   let result = execute($func, $mapping, $runtime,meta::pure::extension::defaultExtensions());
   let json = $result.values->toOne();
-  
+
   let expected = '{"wordCount":250}';
-  
-  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));  
+
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
 
@@ -1072,7 +1075,7 @@ Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::_So
 [
    TestConstraint(
       ~function:(1 < $this.i)
-   )   
+   )
 ]
 {
    i     : Integer[1];
@@ -1160,7 +1163,7 @@ Class meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::Wi
    TestConstraint(
       ~function:(3 < $this.i)
    ),
-   
+
    MoreThanOne(
       ~externalId: 'TEST'
       ~function:(1 < $this.i)
@@ -1342,14 +1345,14 @@ import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
 
 Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::simpleLiteratureMapping
 (
-   Author : Pure 
+   Author : Pure
       {
          ~src _Author
          name  : $src.name,
          books : $src.books
       }
 
-   Book : Pure 
+   Book : Pure
       {
          ~src _Book
          title : $src.title,
@@ -1364,14 +1367,14 @@ import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
 
 Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::constraintsLiteratureMapping
 (
-   AuthorWithConstraints : Pure 
+   AuthorWithConstraints : Pure
       {
          ~src _Author
          name  : $src.name,
          books : $src.books
       }
 
-   BookWithConstraints : Pure 
+   BookWithConstraints : Pure
       {
          ~src _Book
          title     : $src.title,
@@ -1379,13 +1382,13 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::co
          marketing : $src.marketing
       }
 
-   Marketing : Pure 
+   Marketing : Pure
       {
          ~src _Marketing
          reviews : $src.reviews
       }
 
-   Review : Pure 
+   Review : Pure
       {
          ~src _Review
          by : $src.by
@@ -1398,7 +1401,7 @@ import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*
 
 Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleConstrainedDataMapping
 (
-   SomeDataConstrained : Pure 
+   SomeDataConstrained : Pure
       {
          ~src _SomeDataConstrained
          i    : $src.i*$src.i,
@@ -1420,7 +1423,7 @@ import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*
 
 Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleUnconstrainedDataMapping
 (
-   SomeDataUnconstrained : Pure 
+   SomeDataUnconstrained : Pure
       {
          ~src _SomeDataConstrained
          i    : $src.i*$src.i,
@@ -1445,7 +1448,7 @@ Mapping meta::pure::mapping::modelToModel::test::dataQuality::copyIntegerMapping
          ~src _Num
          i:$src.i
       }
-   
+
    WithConstraintInheritsNoConstriants : Pure
       {
          ~src _Num
@@ -1457,7 +1460,7 @@ Mapping meta::pure::mapping::modelToModel::test::dataQuality::copyIntegerMapping
          ~src _Num
          i:$src.i
       }
-   
+
    WithoutConstraintsInheritsNoConstriants : Pure
       {
          ~src _Num
@@ -1526,7 +1529,7 @@ Mapping meta::pure::mapping::modelToModel::test::dataQuality::simpleConstrainedW
          ~src _Y
          i:$src.i*$src.i,
          b:$src.b
-         
+
       }
 )
 
@@ -1540,8 +1543,8 @@ import meta::pure::mapping::modelToModel::test::dataQuality::*;
 
 Class meta::pure::mapping::modelToModel::test::dataQuality::SourceWidget
 {
-   name: String[0..1]; 
-} 
+   name: String[0..1];
+}
 
 Class meta::pure::mapping::modelToModel::test::dataQuality::Parent
 [
@@ -1553,8 +1556,8 @@ Class meta::pure::mapping::modelToModel::test::dataQuality::Parent
     ~message: 'Name is missing on the widget'
   )
 ]
-{   
-   name: String[0..1];   
+{
+   name: String[0..1];
    isValid() {$this.name->isNotEmpty()}: Boolean[1];
 }
 
@@ -1569,7 +1572,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpandedfForInheritedConstraintWithQualifier() : Boolean[1]
 {
    let tree = #{Widget{name}}#;
-   
+
    let result = execute(
       |Widget.all()->graphFetchChecked($tree)->serialize($tree),
       SourceWidgetToWidget,
@@ -1577,7 +1580,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
       meta::pure::extension::defaultExtensions()
    );
    let json = $result.values->toOne();
-   let expected = 
+   let expected =
    '{'+
    '  "defects":[],'+
    '  "value":{"name":"Dave"},'+
@@ -1586,7 +1589,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
    '    "value":{"name":"Dave"},'+
    '    "source":{"number":1,"record":"{\\"name\\":\\"Dave\\"}"}'+
    '  }'+
-   '}';   
+   '}';
 
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
@@ -1598,7 +1601,7 @@ Mapping meta::pure::mapping::modelToModel::test::dataQuality::SourceWidgetToWidg
 (
    *Widget[alloy_mastery_sourcing_testModel_vendors_sourceCreate_Widget]: Pure
    {
-      ~src SourceWidget     
+      ~src SourceWidget
       name: $src.name
    }
 )

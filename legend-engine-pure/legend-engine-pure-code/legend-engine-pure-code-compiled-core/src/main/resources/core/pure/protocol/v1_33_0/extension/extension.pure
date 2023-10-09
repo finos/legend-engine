@@ -15,6 +15,7 @@
 import meta::pure::mapping::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::json::*;
 
 import meta::protocols::pure::v1_33_0::extension::*;

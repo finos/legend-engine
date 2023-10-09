@@ -1,6 +1,7 @@
 import meta::pure::store::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::extension::*;
 import meta::rel::mapping::*;
 
@@ -24,15 +25,15 @@ function meta::rel::contract::contract(): StoreContract[1] {
 
     // ExecutionPlan Generation -------------------------------------------------------------------------
     supportsStreamFunction = meta::rel::mapping::supportsStream_FunctionExpression_1__Boolean_1_,
-    // ------------------------------------------------------------------------------------ ExecutionPlan 
+    // ------------------------------------------------------------------------------------ ExecutionPlan
 
     // Core ---------------------------------------------------------------------------------------------
     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelSetImplementation),
     supportsStore = s:Store[1] | $s->instanceOf(meta::rel::metamodel::store::RAIDatabase),
-    resolveStoreFromSetImplementation = {s:InstanceSetImplementation[1] | 
+    resolveStoreFromSetImplementation = {s:InstanceSetImplementation[1] |
       $s.stores->toOne();
     },
-    // --------------------------------------------------------------------------------------------- Core 
+    // --------------------------------------------------------------------------------------------- Core
 
     // DEPRECTAED AND TO BE REMOVED
     executeStoreQuery = meta::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_

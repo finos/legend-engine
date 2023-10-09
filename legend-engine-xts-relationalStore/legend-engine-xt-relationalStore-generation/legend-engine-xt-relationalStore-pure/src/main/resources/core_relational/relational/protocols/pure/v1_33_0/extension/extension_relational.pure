@@ -20,6 +20,7 @@ import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::context::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::protocols::pure::v1_33_0::invocation::execution::execute::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
@@ -80,7 +81,7 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
        transfers_valueSpecification_transformAny = {
           inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
-                r:meta::pure::runtime::Runtime[1]|
+                r:meta::core::runtime::Runtime[1]|
                 ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ClassInstance                     
                 (
                   _type = 'classInstance',
@@ -343,7 +344,7 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
       ]},
       transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
       [
-         db:meta::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+         db:meta::external::store::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
       ]},
       scan_buildPureModelAsText_getAllElementsFromMapping = {stores : meta::pure::store::Store[*] |
                         $stores->map(s|$s->concatenate($s->match([d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore()),a:Any[1]|[]])))      

@@ -147,20 +147,20 @@ Database meta::relational::tests::mapping::extend::store::testDatabase
    Table DEF(id INT PRIMARY KEY, dName VARCHAR(20), eName VARCHAR(20), fName VARCHAR(20))
    Table GHI(id INT PRIMARY KEY, gName VARCHAR(20), hName VARCHAR(20), iName VARCHAR(20))
    Table JKL(id INT PRIMARY KEY, jName VARCHAR(20), kName VARCHAR(20), lName VARCHAR(20))
-   
+
    Table ABC2(id INT PRIMARY KEY, aName VARCHAR(20), bName VARCHAR(20), cName VARCHAR(20), m1Id INT, m2Id INT,m3Id INT, m4Id INT, n1Id INT, n2Id INT, n3Id INT, o1Id INT, o2Id INT)
    Table DEF2(id INT PRIMARY KEY, dName VARCHAR(20), eName VARCHAR(20), fName VARCHAR(20))
    Table GHI2(id INT PRIMARY KEY, gName VARCHAR(20), hName VARCHAR(20), iName VARCHAR(20))
    Table JKL2(id INT PRIMARY KEY, jName VARCHAR(20), kName VARCHAR(20), lName VARCHAR(20))
-   
+
    Join AE(ABC.id = DEF.id)
    Join BH(ABC.id = GHI.id)
    Join CK(ABC.id = JKL.id)
-   
+
    Join A2E2(ABC2.id = DEF2.id)
    Join B2H2(ABC2.id = GHI2.id)
    Join C2K2(ABC2.id = JKL2.id)
-   
+
    Filter AFilter(ABC.aName = 'aName1')
    Filter CFilter(ABC.cName = 'cName1')
 )
@@ -183,12 +183,14 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::tests::mapping::extend::model::*;
 import meta::relational::tests::mapping::extend::store::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::relational::tests::mapping::extend::testRuntime():Runtime[1]
 {
-  meta::relational::tests::testRuntime(testDatabase);
+  meta::external::store::relational::tests::testRuntime(testDatabase);
 }
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp():Boolean[1]
@@ -199,7 +201,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp(
    dropAndCreateTableInDb(testDatabase, 'DEF', $connection);
    dropAndCreateTableInDb(testDatabase, 'GHI', $connection);
    dropAndCreateTableInDb(testDatabase, 'JKL', $connection);
-   
+
    dropAndCreateTableInDb(testDatabase, 'ABC2', $connection);
    dropAndCreateTableInDb(testDatabase, 'DEF2', $connection);
    dropAndCreateTableInDb(testDatabase, 'GHI2', $connection);
@@ -214,17 +216,17 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp(
    executeInDb('insert into DEF (id, dName, eName, fName) values (2, \'dName2\', \'eName2\', \'fName2\');', $connection);
    executeInDb('insert into DEF (id, dName, eName, fName) values (3, \'dName1\', \'eName1\', \'fName1\');', $connection);
    executeInDb('insert into DEF (id, dName, eName, fName) values (4, \'dName2\', \'eName2\', \'fName2\');', $connection);
-   
+
    executeInDb('insert into GHI (id, gName, hName, iName) values (1, \'gName1\', \'hName1\', \'iName1\');', $connection);
    executeInDb('insert into GHI (id, gName, hName, iName) values (2, \'gName2\', \'hName2\', \'iName2\');', $connection);
    executeInDb('insert into GHI (id, gName, hName, iName) values (3, \'gName1\', \'hName1\', \'iName1\');', $connection);
    executeInDb('insert into GHI (id, gName, hName, iName) values (4, \'gName2\', \'hName2\', \'iName2\');', $connection);
-   
+
    executeInDb('insert into JKL (id, jName, kName, lName) values (1, \'jName1\', \'kName1\', \'lName1\');', $connection);
    executeInDb('insert into JKL (id, jName, kName, lName) values (2, \'jName2\', \'kName2\', \'lName2\');', $connection);
    executeInDb('insert into JKL (id, jName, kName, lName) values (3, \'jName1\', \'kName1\', \'lName1\');', $connection);
    executeInDb('insert into JKL (id, jName, kName, lName) values (4, \'jName2\', \'kName2\', \'lName2\');', $connection);
-   
+
    executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (1, \'aName1\', \'bName1\', \'cName1\', 1, 2, 3, 4, 1, 2, 3, 1 ,2);', $connection);
    executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (2, \'aName2\', \'bName2\', \'cName2\', 2, 3, 4, 5, 2, 3, 4, 2 ,3);', $connection);
    executeInDb('insert into ABC2 (id, aName, bName, cName, m1Id, m2Id, m3Id, m4Id, n1Id, n2Id, n3Id, o1Id, o2Id) values (3, \'aName1\', \'bName1\', \'cName1\', 3, 4, 5, 6, 3, 4, 5, 3 ,4);', $connection);
@@ -234,12 +236,12 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp(
    executeInDb('insert into DEF2 (id, dName, eName, fName) values (2, \'dName2\', \'eName2\', \'fName2\');', $connection);
    executeInDb('insert into DEF2 (id, dName, eName, fName) values (3, \'dName1\', \'eName1\', \'fName1\');', $connection);
    executeInDb('insert into DEF2 (id, dName, eName, fName) values (4, \'dName2\', \'eName2\', \'fName2\');', $connection);
-   
+
    executeInDb('insert into GHI2 (id, gName, hName, iName) values (1, \'gName1\', \'hName1\', \'iName1\');', $connection);
    executeInDb('insert into GHI2 (id, gName, hName, iName) values (2, \'gName2\', \'hName2\', \'iName2\');', $connection);
    executeInDb('insert into GHI2 (id, gName, hName, iName) values (3, \'gName1\', \'hName1\', \'iName1\');', $connection);
    executeInDb('insert into GHI2 (id, gName, hName, iName) values (4, \'gName2\', \'hName2\', \'iName2\');', $connection);
-   
+
    executeInDb('insert into JKL2 (id, jName, kName, lName) values (1, \'jName1\', \'kName1\', \'lName1\');', $connection);
    executeInDb('insert into JKL2 (id, jName, kName, lName) values (2, \'jName2\', \'kName2\', \'lName2\');', $connection);
    executeInDb('insert into JKL2 (id, jName, kName, lName) values (3, \'jName1\', \'kName1\', \'lName1\');', $connection);

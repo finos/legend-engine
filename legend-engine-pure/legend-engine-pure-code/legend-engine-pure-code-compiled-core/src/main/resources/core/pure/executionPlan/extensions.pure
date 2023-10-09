@@ -1,4 +1,5 @@
 import meta::pure::executionPlan::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
@@ -17,7 +18,7 @@ Class meta::pure::executionPlan::extension::ExecutionPlanExtension
   planGraphFetchExecution : Function<{StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
   planCrossGraphFetchExecution : Function<{StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
 
-  reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
+  reprocessConnection : Function<{ConnectionStore[1]->Connection[1]}>[0..1];
   extractVariablesFromExecutionOption : Function<{ExecutionOption[1]->PlanVarPlaceHolder[*]}>[0..1];
   crossStoreSourceSupportsBatching : Function<{InstanceSetImplementation[1], AbstractProperty<Any>[*], Map<String, String>[1] -> Boolean[1]}>[0..1];
 }

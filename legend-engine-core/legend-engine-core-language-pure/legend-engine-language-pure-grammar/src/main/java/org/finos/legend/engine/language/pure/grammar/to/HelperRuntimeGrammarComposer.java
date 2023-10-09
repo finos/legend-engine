@@ -72,6 +72,26 @@ public class HelperRuntimeGrammarComposer
             builder.append(String.join(",\n", storeConnectionStrings));
             appendTabString(builder.append("\n"), baseIndentation).append("];");
         }
+        if (!engineRuntime.connectionStores.isEmpty())
+        {
+            List<String> connectionStoreStrings = new ArrayList<>();
+            engineRuntime.connectionStores.forEach(connectionPointerStore ->
+            {
+                if (!connectionPointerStore.storePointers.isEmpty())
+                {
+                    connectionStoreStrings.add(
+                            getTabString(baseIndentation + 1) + PureGrammarComposerUtility.convertPath(connectionPointerStore.connectionPointer.connection) + ":\n" +
+                                    getTabString(baseIndentation + 1) + "[\n" +
+                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + PureGrammarComposerUtility.convertPath(storePointer.path))).makeString(",\n") + "\n" +
+                                    getTabString(baseIndentation + 1) + "]"
+                    );
+                }
+            });
+            appendTabString(builder.append("\n"), baseIndentation).append("connectionStores:\n");
+            appendTabString(builder, baseIndentation).append("[\n");
+            builder.append(String.join(",\n", connectionStoreStrings));
+            appendTabString(builder.append("\n"), baseIndentation).append("];");
+        }
         return builder.toString();
     }
 }

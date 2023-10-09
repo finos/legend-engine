@@ -19,9 +19,11 @@ import meta::pure::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 
@@ -33,7 +35,7 @@ Class meta::relational::tests::functions::sqlstring::TestCase
    dbType: DatabaseType[1];
    expectedSql: String[1];
    generateUsageFor: Function<Any>[*];
-   
+
 }
 
 function meta::relational::tests::functions::sqlstring::testCasesForDocGeneration():TestCase[*]
@@ -47,7 +49,7 @@ function meta::relational::tests::functions::sqlstring::testCasesForDocGeneratio
          expectedSql = 'select "root".FIRSTNAME as "firstName", count(*) as "new" from personTable as "root" group by "firstName"',
          generateUsageFor = [meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_]
       ),
-      
+
       ^TestCase(
          id ='testToSQLStringWithAbs_2',
          query = |Person.all()->project(p|$p.firstName,'firstName')->groupBy('firstName', agg('new', e|$e, y| abs($y->count()))),
@@ -64,7 +66,7 @@ function meta::relational::tests::functions::sqlstring::runTestCaseById(testCase
    let filtered = meta::relational::tests::functions::sqlstring::testCasesForDocGeneration()->filter(c|$c.id==$testCaseId);
    assert($filtered->size()==1, 'Number of test cases found is not 1.');
    let testCase = $filtered->toOne();
-   
+
    let result = toSQLString($testCase.query, $testCase.mapping, $testCase.dbType, meta::relational::extension::relationalExtensions());
    assertEquals($testCase.expectedSql, $result, '\nSQL not as expected for \'%s\'\n\nexpected: %s\nactual:   %s', [$testCase.id, $testCase.expectedSql, $result]);
 }
@@ -94,41 +96,41 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAggregationDB2():Boolean[1]
 {
-   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName],
                                                 agg(e|$e.age, y|$y->sum()),
-                                                ['firstName', 'age']), 
-                                                meta::relational::tests::simpleRelationalMapping, 
+                                                ['firstName', 'age']),
+                                                meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithRelativeDateDB2():Boolean[1]
 {
-   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-1, DurationUnit.MONTHS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
-         meta::relational::tests::simpleRelationalMapping, 
+   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-1, DurationUnit.MONTHS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
          meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 1 MONTHS)', $s1);
 
-   let s2 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-3, DurationUnit.DAYS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
-         meta::relational::tests::simpleRelationalMapping, 
+   let s2 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-3, DurationUnit.DAYS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
          meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 3 DAYS)', $s2);
 
-   let s3 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-2, DurationUnit.WEEKS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
-         meta::relational::tests::simpleRelationalMapping, 
+   let s3 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(-2, DurationUnit.WEEKS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
          meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select "root".ID as "id", "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where ("root".settlementDateTime is not null and "root".settlementDateTime > date(current date) - 14 DAYS)', $s3);
-   
+
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringWithAbs():Boolean[1]
 {
    let s = toSQLString(|Trade.all()->project([t| abs($t.quantity), a| abs(-2)] ,['absoluteQuantity', 'positiveTwo']), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select abs("root".quantity) as "absoluteQuantity", abs(-2) as "positiveTwo" from tradeTable as "root"', $s);
-   
+
    meta::relational::tests::functions::sqlstring::runTestCaseById('testToSQLStringWithAbs_2');
 }
 
@@ -138,7 +140,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
                                      agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
                                      ['legalName', 'employeesFirstName']
                                   )};
-   
+
    let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LEGALNAME as "legalName", group_concat("personTable_d#4_d_m1".FIRSTNAME separator \'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $h2Sql);
 }
@@ -146,7 +148,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
 {
    let fn = {|Person.all()->project([p | $p.firstName + '_' + $p.lastName], ['firstName_lastName'])};
-   
+
    let h2Sql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".FIRSTNAME, \'_\', "root".LASTNAME) as "firstName_lastName" from personTable as "root"', $h2Sql);
 
@@ -194,7 +196,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
       let s = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, $db, meta::relational::extension::relationalExtensions());
       assertEquals('select char_length("root".FIRSTNAME) as "nameLength" from personTable as "root"', $s);
    );
-   
+
    let db2sql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions());
    assertEquals('select CHARACTER_LENGTH("root".FIRSTNAME,CODEUNITS32) as "nameLength" from personTable as "root"', $db2sql);
 }
@@ -357,15 +359,15 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testDayOfY
       pair(DatabaseType.H2, 'select DAY_OF_YEAR("root".tradeDate) as "doy" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select dayofyear("root".tradeDate) as "doy" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->dayOfYear(), 'doy')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -381,11 +383,11 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim()
     pair(DatabaseType.H2, $common),
     pair(DatabaseType.Composite, $common)
   ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Person.all()->project([
           a | $a.firstName->ltrim(),
@@ -393,7 +395,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim()
           a | $a.firstName->rtrim()
          ],
          ['ltrim', 'trim', 'rtrim']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -409,17 +411,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt()
     pair(DatabaseType.H2, $common),
     pair(DatabaseType.Composite, $common)
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Trade.all()->project([
           a | $a.quantity->cbrt()
          ],
          ['cbrt']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -430,8 +432,8 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select dateadd(SECOND, 86400, \'2011-12-30\') as "a" from personTable as "root"',
@@ -444,8 +446,8 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testSqlGen
 {
    let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
                                                       a | 'a'
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select \'a\' as "a" from tradeTable as "root" where dateadd(SECOND, 86400, \'2011-12-30\') > \'2011-12-30\'',
@@ -471,15 +473,15 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS + (month("root".tradeDate)-1) MONTHS as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -492,17 +494,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year("root".tradeDate)-1) YEARS as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -513,17 +515,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       pair(DatabaseType.H2, 'select dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()) as "date" from tradeTable as "root"'),
       pair(DatabaseType.DB2, 'select date(1) + (year(current date)-1) YEARS as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|firstDayOfThisYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -533,11 +535,11 @@ function meta::relational::tests::functions::sqlstring::testToSqlGenerationFirst
    let result = toSQLString(
       |Trade.all()
          ->project(col(t|$t.date->firstDayOfQuarter(), 'date')),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       $databaseType, meta::relational::extension::relationalExtensions());
 
    assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$databaseType, $expectedSql, $result]);
-   
+
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_H2():Boolean[1]
@@ -555,17 +557,17 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
    let expected = [
       pair(DatabaseType.H2, 'select dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfWeek(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -663,8 +665,8 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlst
         ])
         , simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-    assertEquals('select rawtohex(hash(\'MD5\', "root".FIRSTNAME)) as "tds_md5", rawtohex(hash(\'SHA-1\', "root".FIRSTNAME)) as "tds_sha1", rawtohex(hash(\'SHA-256\', "root".FIRSTNAME)) as "tds_sha256", ' 
-          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME))) as "tds_concat_md5", rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'\', \'\', \'\'))) as "tds_joinstrings_md5", ' 
+    assertEquals('select rawtohex(hash(\'MD5\', "root".FIRSTNAME)) as "tds_md5", rawtohex(hash(\'SHA-1\', "root".FIRSTNAME)) as "tds_sha1", rawtohex(hash(\'SHA-256\', "root".FIRSTNAME)) as "tds_sha256", '
+          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME))) as "tds_concat_md5", rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'\', \'\', \'\'))) as "tds_joinstrings_md5", '
           + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'|\'))) as "tds_digest" from personTable as "root"', $result);
 
 }

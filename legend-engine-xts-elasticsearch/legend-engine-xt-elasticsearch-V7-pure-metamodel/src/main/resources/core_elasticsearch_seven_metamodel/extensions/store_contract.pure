@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::store::*;
@@ -40,7 +41,7 @@ function meta::external::store::elasticsearch::v7::extension::elasticsearchV7Ext
                                       [
                                           pair(meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_->cast(@Function<Any>), {|
                                               meta::pure::tds::schema::createSchemaState($fe->reactivate()->cast(@TabularDataSet).columns);
-                                          })                                          
+                                          })
                                       ]
                                     }
    )
@@ -91,7 +92,7 @@ function meta::external::store::elasticsearch::v7::contract::elasticsearchV7Stor
 
       // Execution Node - Print
       printPlanNodeToString = printPlanNodeToString_String_1__Extension_MANY__Function_MANY_,
-      printConnectionToString = ext:  Extension[*] | 
+      printConnectionToString = ext:  Extension[*] |
         [
           es: Elasticsearch7StoreConnection[1] | '%s, %s'->format([$es.sourceSpec->type().name->toOne(), $es.authSpec->type().name->toOne()])
         ],
@@ -128,7 +129,7 @@ function meta::external::store::elasticsearch::v7::contract::routeFunctionExpres
 
 function meta::external::store::elasticsearch::v7::contract::supports(): Function<{FunctionExpression[1]->Boolean[1]}>[1]
 {
-  let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first; 
+  let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first;
 
   {f:FunctionExpression[1]| $supportedFunctions->exists(x | $x->eval($f.func, []))};
 }

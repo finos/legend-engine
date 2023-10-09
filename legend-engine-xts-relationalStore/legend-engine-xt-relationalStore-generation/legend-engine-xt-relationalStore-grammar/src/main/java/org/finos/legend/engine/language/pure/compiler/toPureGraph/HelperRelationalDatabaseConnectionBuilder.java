@@ -26,7 +26,7 @@ import java.util.List;
 
 public class HelperRelationalDatabaseConnectionBuilder
 {
-    public static void addTestDataSetUp(Root_meta_relational_runtime_TestDatabaseConnection test, String testDataSetupCsv, java.util.List<String> testDataSetupSqls)
+    public static void addTestDataSetUp(Root_meta_external_store_relational_runtime_TestDatabaseConnection test, String testDataSetupCsv, java.util.List<String> testDataSetupSqls)
     {
         if (testDataSetupCsv != null)
         {
@@ -39,24 +39,19 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
-    public static void addDatabaseConnectionProperties(Root_meta_relational_runtime_DatabaseConnection pureConnection, String element, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
+    public static void addDatabaseConnectionProperties(Root_meta_external_store_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
     {
-        addDatabaseConnectionProperties(pureConnection, element, null, connectionType, timeZone, quoteIdentifiers, context);
-    }
-
-    public static void addDatabaseConnectionProperties(Root_meta_relational_runtime_DatabaseConnection pureConnection, String element, SourceInformation elementSourceInformation, String connectionType, String timeZone, Boolean quoteIdentifiers, CompileContext context)
-    {
-        Root_meta_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
+        Root_meta_external_store_relational_runtime_DatabaseConnection connection = pureConnection._type(context.pureModel.getEnumValue("meta::relational::runtime::DatabaseType", connectionType));
         connection._timeZone(timeZone);
         connection._quoteIdentifiers(quoteIdentifiers);
 
         try
         {
-            connection._element(HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context));
+            HelperRelationalBuilder.resolveDatabase(element, elementSourceInformation, context);
         }
         catch (RuntimeException e)
         {
-            connection._element(new Root_meta_relational_metamodel_Database_Impl(element)._name(element));
+            new Root_meta_relational_metamodel_Database_Impl(element)._name(element);
         }
     }
 

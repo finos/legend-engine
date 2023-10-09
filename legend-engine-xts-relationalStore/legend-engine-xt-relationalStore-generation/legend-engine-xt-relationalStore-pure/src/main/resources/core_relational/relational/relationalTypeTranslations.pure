@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::translation::*;
 import meta::relational::functions::sqlQueryToString::*;

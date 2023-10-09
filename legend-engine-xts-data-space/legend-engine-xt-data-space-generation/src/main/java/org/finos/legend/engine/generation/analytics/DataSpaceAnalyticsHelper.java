@@ -86,7 +86,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analyt
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_analytics_binding_modelCoverage_analytics;
 import org.finos.legend.pure.generated.core_analytics_function_modelCoverage_analytics;
 import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_serializer;
@@ -439,7 +439,7 @@ public class DataSpaceAnalyticsHelper
                     }
                     Service serviceProtocol = (Service) _el;
                     Mapping mapping = null;
-                    Root_meta_pure_runtime_Runtime runtime = null;
+                    Root_meta_core_runtime_Runtime runtime = null;
                     LambdaFunction<?> lambdaFunc = null;
                     if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
                     {

@@ -15,8 +15,10 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
@@ -39,7 +41,7 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testF
 function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testFilterUsingFirstDayOfThisYearSybase():Boolean[1]
 {
    let fn = {|Trade.all()->filter(t | $t.date >= firstDayOfThisYear())};
-   
+
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#2_d#2_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".trade_id) where "root".tradeDate >= dateadd(DAY, -(datepart(dayofyear, today()) - 1), today())',$s);
 
@@ -48,7 +50,7 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testF
 function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testFilterUsingFirstDayOfThisQuarterSybase():Boolean[1]
 {
    let fn = {|Trade.all()->filter(t | $t.date >= firstDayOfThisQuarter())};
-   
+
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#2_d#2_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#2_d#2_m5".trade_id) where "root".tradeDate >= dateadd(QUARTER, quarter(today()) - 1, dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()))',$s);
 
@@ -56,14 +58,14 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testF
 
 function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testFilterUsingIndexOfSybase():Boolean[1]
 {
-   let fn = {|Person.all()->filter({p | ($p.firm->toOne().legalName->indexOf('S')== 9)})}; 
+   let fn = {|Person.all()->filter({p | ($p.firm->toOne().legalName->indexOf('S')== 9)})};
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#3_dy0_d#3_d_m1" on ("firmTable_d#3_dy0_d#3_d_m1".ID = "root".FIRMID) where LOCATE("firmTable_d#3_dy0_d#3_d_m1".LEGALNAME, \'S\') = 9',$s);
-   
-   let fun = {|Address.all()->filter({p | ($p.comments->toOne()->indexOf('%')== 17)})}; 
+
+   let fun = {|Address.all()->filter({p | ($p.comments->toOne()->indexOf('%')== 17)})};
    let p = toSQLString($fun, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where LOCATE("root".COMMENTS, \'%\') = 17',$p);
-   
+
 
 }
 

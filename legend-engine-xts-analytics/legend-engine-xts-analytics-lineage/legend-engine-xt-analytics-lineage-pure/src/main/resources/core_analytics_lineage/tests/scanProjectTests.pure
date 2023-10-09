@@ -15,6 +15,7 @@
 import meta::pure::lineage::scanExecutes::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProject():Any[1]
 {
@@ -33,7 +34,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                   col(f|$f.legalName,'a'),
                                   col(f|$f.employees->map(e|$e.lastName),'b'),
                                   col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
-                                ] 
+                                ]
                                ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 }
 
@@ -49,7 +50,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                   col(f|$f.legalName,'a'),
                                   col(f|$f.employees->map(e|$e.lastName),'b'),
                                   col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
-                                ] 
+                                ]
                                )}
    );
    execute($holder.lambda, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
@@ -61,7 +62,7 @@ function <<access.private>> meta::pure::lineage::scanProject::test::executeWithP
                                   ^BasicColumnSpecification<Firm>(name='a', func={f:Firm[1]|$f.legalName}),
                                   ^BasicColumnSpecification<Firm>(name='b', func={f:Firm[1]|$f.employees->map(e|$e.lastName)}),
                                   ^BasicColumnSpecification<Firm>(name='c', func={f:Firm[1]|$f.employees->map(e|2+$e.locations.place->count())})
-                                ] 
+                                ]
                                ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 }
 

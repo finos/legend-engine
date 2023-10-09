@@ -16,9 +16,11 @@ import meta::pure::executionPlan::*;
 import meta::relational::tests::mapping::tree::model::domain::*;
 import meta::relational::tests::mapping::tree::model::store::*;
 import meta::relational::tests::mapping::tree::model::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
@@ -86,7 +88,7 @@ function <<test.Test>> meta::relational::tests::mapping::tree::testProjectMerge(
 function <<test.Test>> meta::relational::tests::mapping::tree::testProjection():Boolean[1]
 {
    let result = execute(|Person.all()->project(
-                                                [   
+                                                [
                                                    #/Person/firstName#,
                                                    #/Person/lastName#,
                                                    #/Person/orgByName('TEAM')/name!team#,
@@ -155,7 +157,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::tree::testProjectionDe
 {
    // Need to fix the mixup with the type column!
    let result = execute(|Person.all()->project(
-                                                [   
+                                                [
                                                    #/Person/firstName#,
                                                    #/Person/lastName#,
                                                    #/Person/orgByName('TEAM')/parent/name!teamParentName#,
@@ -181,7 +183,7 @@ function <<test.Test>> meta::relational::tests::mapping::tree::testProjectWithFi
                            ->project([#/Person/firstName#, #/Person/orgByName('BUSINESS UNIT')/name!buName#]), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(1, $tds.rows->size());
-   
+
    assertEquals(['firstName', 'buName'], $tds.columns.name);
    assertEquals(['Julie',^TDSNull()],$tds.rows->at(0).values);
    assertEquals('select "root".firstName as "firstName", "orgtreeoptimizationtable_0".name as "buName" from personTable as "root" left outer join (select "orgtreeoptimizationtable_1".node as node, "orgtable_0".name as name from orgTreeOptimizationTable as "orgtreeoptimizationtable_1" inner join orgTable as "orgtable_0" on ("orgtreeoptimizationtable_1".ancestor = "orgtable_0".id) where "orgtable_0".type = \'BUSINESS UNIT\') as "orgtreeoptimizationtable_0" on ("root".id = "orgtreeoptimizationtable_0".node) where "root".firstName = \'Julie\'', $result->sqlRemoveFormatting());
@@ -195,10 +197,10 @@ function <<test.Test>> meta::relational::tests::mapping::tree::testJoinIsolation
                                                  ['number', 'team']), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   
+
    assertEquals(['number', 'team'], $tds.columns.name);
-   
-   
+
+
    assertEquals([11, 'OrgName3'],$tds.rows->at(0).values);
    assertEquals([11, 'OrgName6'],$tds.rows->at(1).values);
    assertEquals([11, ^TDSNull()],$tds.rows->at(2).values);
@@ -215,7 +217,7 @@ function <<test.Test>> meta::relational::tests::mapping::tree::testJoinIsolation
                                                  ['number', 'firstName', 'team', 'bu']), meta::relational::tests::mapping::tree::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   
+
    assertEquals(['number', 'firstName', 'team', 'bu'], $tds.columns.name);
    assertEquals([11, 'Alex', 'OrgName3', 'OrgName2'],$tds.rows->at(0).values);
    assertEquals([11, 'David', 'OrgName6', 'OrgName5'],$tds.rows->at(1).values);
@@ -229,14 +231,13 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::tre
 {
    let oldTable = myDB->schema('default')->toOne()->table('orgTable')->toOne();
    let newTable = myDB->schema('default')->toOne()->table('otherOrgTable')->toOne();
-   
-   let runtime = ^Runtime
-   (
-      connections = ^TestDatabaseConnection(
-                        element = myDB,
+
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(
+    element = myDB,
+    connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | meta::relational::postProcessor::replaceTables($query, pair($oldTable, $newTable)) }]
-                    )
+                    ))
    );
 
    let result = execute(|Account.all()->project([ a | $a.number,
@@ -265,7 +266,7 @@ Class meta::relational::tests::mapping::tree::model::domain::Trade
 {
    ref: String[1];
    trader: Person[1];
-   
+
 }
 
 Association meta::relational::tests::mapping::tree::model::domain::Account_Trade
@@ -295,12 +296,11 @@ Class meta::relational::tests::mapping::tree::model::domain::Org
 
 function meta::relational::tests::mapping::tree::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   ^Runtime
-   (
-      connections = ^TestDatabaseConnection(
-                        element = myDB,
+   ^Runtime(connectionStores= ^ConnectionStore(
+    element = myDB,
+    connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    )   
+                    ))
    );
 }
 
@@ -336,16 +336,16 @@ function meta::relational::tests::mapping::tree::model::store::createTablesAndFi
    executeInDb('insert into personTable (id, firstName, lastName) values (1, \'Alex\', \'Radu\');', $connection);
    executeInDb('insert into personTable (id, firstName, lastName) values (2, \'David\', \'Ma\');', $connection);
    executeInDb('insert into personTable (id, firstName, lastName) values (3, \'Julie\', \'Andrews\');', $connection);
-   
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'tradeTable', $connection);
    executeInDb('insert into tradeTable (id, traderId, accountId) values (1, 1, 11);', $connection);
    executeInDb('insert into tradeTable (id, traderId, accountId) values (2, 2, 11);', $connection);
    executeInDb('insert into tradeTable (id, traderId, accountId) values (3, 3, 11);', $connection);
-   
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'accountTable', $connection);
    executeInDb('insert into accountTable (id) values (11)', $connection);
    executeInDb('insert into accountTable (id) values (22)', $connection);
-   
+
    true;
 }
 
@@ -362,7 +362,7 @@ Database meta::relational::tests::mapping::tree::model::store::myDB
         name2 VARCHAR(200),
         type VARCHAR(200)
     )
-    
+
     Table otherOrgTable
     (
         id INT PRIMARY KEY,
@@ -377,31 +377,31 @@ Database meta::relational::tests::mapping::tree::model::store::myDB
         node INT PRIMARY KEY,
         ancestor INT PRIMARY KEY
     )
-    
+
     Table personTable
     (
        id INT PRIMARY KEY,
        firstName VARCHAR(200),
        lastName VARCHAR(200)
     )
-    
+
     Table tradeTable
     (
        id VARCHAR(20) PRIMARY KEY,
        traderId INT,
        accountId INT
     )
-    
+
     Table accountTable
     (
        id INT PRIMARY KEY
     )
-    
+
     Join tradeToTrader
     (
        tradeTable.traderId = personTable.id
     )
-    
+
     Join accountToTrade
     (
        accountTable.id = tradeTable.accountId
@@ -411,7 +411,7 @@ Database meta::relational::tests::mapping::tree::model::store::myDB
     (
        personTable.id = orgTreeOptimizationTable.node
     )
-    
+
     Join orgTreeOptimizationTableToOrgTable
     (
        orgTreeOptimizationTable.ancestor= orgTable.id
@@ -443,19 +443,19 @@ Mapping meta::relational::tests::mapping::tree::model::mapping::orgTestMapping
         type : [myDB] orgTable.type,
         parent : [myDB] @parent
     }
-    
+
     Trade: Relational
     {
        ref  : [myDB] tradeTable.id,
        trader : [myDB] @tradeToTrader,
-       
+
        account : [myDB] @accountToTrade
     }
-    
+
     Account: Relational
     {
        number : [myDB] accountTable.id,
-       
+
        trades: [myDB] @accountToTrade
     }
 )

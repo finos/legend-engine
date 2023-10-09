@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -45,10 +46,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +57,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getElement;
 
 public class MappingTestRunner implements TestRunner
 {
@@ -133,12 +132,19 @@ public class MappingTestRunner implements TestRunner
         List<Pair<Connection, List<Closeable>>> connections = Lists.mutable.empty();
         try
         {
-            Root_meta_pure_runtime_Runtime_Impl runtime = new Root_meta_pure_runtime_Runtime_Impl("");
+            Root_meta_core_runtime_Runtime_Impl runtime = new Root_meta_core_runtime_Runtime_Impl("");
             List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
             connections = connectionInfo.stream()
                     .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
                             .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
-            connections.forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.getConnectionVisitor())));
+            connections.forEach(connection ->
+            {
+                Connection conn = connection.getOne();
+                Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
+                        ._connection(conn.accept(context.getConnectionVisitor()))
+                        ._element(getElement(conn.element, conn.elementSourceInformation, context.getPureModel().getContext()));
+                runtime._connectionStoresAdd(connectionStore);
+            });
             handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context);
             // execute assertion
             TestAssertion assertion = mappingTest.assertions.get(0);
@@ -162,7 +168,7 @@ public class MappingTestRunner implements TestRunner
         }
     }
 
-    private void handleGenerationOfPlan(List<Connection> incomingConnections, Root_meta_pure_runtime_Runtime_Impl runtime, MappingTestRunnerContext context)
+    private void handleGenerationOfPlan(List<Connection> incomingConnections, Root_meta_core_runtime_Runtime_Impl runtime, MappingTestRunnerContext context)
     {
         SingleExecutionPlan executionPlan = context.getPlan();
         boolean reusePlan = false;

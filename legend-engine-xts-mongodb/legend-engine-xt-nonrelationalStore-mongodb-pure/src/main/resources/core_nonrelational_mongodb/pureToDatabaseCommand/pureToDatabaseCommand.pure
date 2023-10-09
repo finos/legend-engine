@@ -19,6 +19,7 @@ import meta::pure::metamodel::path::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::meta::*;
@@ -92,7 +93,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::build
     if ($nextValue->instanceOf(SimpleFunctionExpression),
       |
         if ($simpleFunctionExpression.func == toOne_T_MANY__T_1_,
-          | 
+          |
             let functionExpression = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
             buildFilterPathRecursively($functionExpression, $path);,
           |
@@ -124,7 +125,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
 
   let path = if($firstParameterValue->instanceOf(VariableExpression),
-    | 
+    |
       $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(),
     |
       buildFilterPathRecursively($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
@@ -156,7 +157,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
 
   let path = if($firstParameterValue->instanceOf(VariableExpression),
-    | 
+    |
       if ($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name != 'toOne_T_MANY__T_1_',
         | $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
         | $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->toOne()->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();

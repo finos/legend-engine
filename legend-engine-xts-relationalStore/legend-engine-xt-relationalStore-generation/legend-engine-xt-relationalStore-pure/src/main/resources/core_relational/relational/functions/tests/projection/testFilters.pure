@@ -15,6 +15,7 @@
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::projection::filter::greaterThan::testGreaterThan():Boolean[1]
 {
@@ -79,7 +80,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
     let result = execute(|Firm.all()->project(e| if(false,|$e.employeeWithFirmAddressName().name,|$e.legalName),'name'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
     let tds = $result.values->at(0);
     assertEquals(['Firm X', 'Firm A', 'Firm B', 'Firm C'],$tds.rows->map(r|$r.values->makeString(',')));
-    assertEquals('select case when false then concat("firmtable_1".FIRSTNAME, \' \', "firmtable_1".LASTNAME) else "root".LEGALNAME end as "name" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());  
+    assertEquals('select case when false then concat("firmtable_1".FIRSTNAME, \' \', "firmtable_1".LASTNAME) else "root".LEGALNAME end as "name" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, "persontable_0".FIRSTNAME as FIRSTNAME, "persontable_0".LASTNAME as LASTNAME from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_2".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::isolation::testIsolatioWhereNoConstaintsAndInnerJoin():Boolean[1]
@@ -87,5 +88,5 @@ function <<test.Test>> meta::relational::tests::projection::filter::isolation::t
     let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.address.name],['legalName','addressName']), meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner, testRuntime(), meta::relational::extension::relationalExtensions());
     let tds = $result.values->at(0);
     assertEquals(['Firm X, UK', 'Firm X, Europe', 'Firm X, Europe', 'Firm X, Europe', 'Firm A, Europe', 'Firm B, Europe', 'Firm C, Europe'],$tds.rows->map(r|$r.values->makeString(', ')));
-    assertEquals('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());  
+    assertEquals('select "root".LEGALNAME as "legalName", case when ("firmpersonbridgetable_0".ADDRESSID = 1 or "addresstable_0".ID = 1) then \'UK\' else \'Europe\' end as "addressName" from firmTable as "root" left outer join (select "firmpersonbridgetable_1".FIRM_ID as FIRM_ID, "persontable_0".ADDRESSID as ADDRESSID from firmPersonBridgeTable as "firmpersonbridgetable_1" inner join personTable as "persontable_0" on ("persontable_0".ID = "firmpersonbridgetable_1".PERSON_ID)) as "firmpersonbridgetable_0" on ("root".ID = "firmpersonbridgetable_0".FIRM_ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result->sqlRemoveFormatting());
 }

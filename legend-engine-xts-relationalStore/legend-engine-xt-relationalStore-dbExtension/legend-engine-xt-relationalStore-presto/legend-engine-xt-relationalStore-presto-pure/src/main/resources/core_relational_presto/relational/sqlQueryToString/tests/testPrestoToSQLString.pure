@@ -17,10 +17,12 @@ import meta::pure::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::presto::testToSQLStringPrestoSchemaNameShouldContainCatalogName():Boolean[1]
 {
@@ -435,10 +437,10 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::presto::te
 function <<test.Test>> meta::relational::tests::functions::sqlstring::presto::testPrestoDistinctTake():Boolean[1]
 {
    let presto = meta::relational::functions::sqlstring::toSQLString(|Person.all()->project(f|$f.firstName, 'firstName')->distinct()->take(10), simpleRelationalMapping, DatabaseType.Presto, meta::relational::extension::relationalExtensions());
-   
+
    let sql = 'select distinct "root".FIRSTNAME as "firstName" from personTable as "root" limit 10';
-   
-   assertSameSQL($sql, $presto); 
+
+   assertSameSQL($sql, $presto);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::presto::testToSQLStringToNumericCasts():Boolean[1]

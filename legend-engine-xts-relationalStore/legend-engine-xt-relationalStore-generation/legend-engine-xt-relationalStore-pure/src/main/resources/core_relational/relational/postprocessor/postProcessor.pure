@@ -20,9 +20,11 @@ import meta::relational::extension::*;
 import meta::relational::transform::fromPure::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::pure::executionPlan::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
@@ -46,29 +48,29 @@ function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], stor
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions)
                                    ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
-   
+
    $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);
 }
 
 function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions);
-   
+
    $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);
 }
 
 //Execution
-function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[0..1], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[*], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
 {
    let defaultPostProcessors = sqlQueryDefaultPostProcessors();
    let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));
-   let c = if($store->isNotEmpty(),|$runtime->connectionByElement($store->toOne()),|$runtime.connections->at(0));
+   let c = if($store->isNotEmpty(),|$store->map(s|$runtime->connectionByElement($s))->removeDuplicates()->toOne(),|$runtime.connectionStores.connection->at(0));
    let postProcessors1 = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessors, | []);
    let newQuery1 = if($postProcessors1->isEmpty(), | $postProcesedQuery, | $postProcessors1->fold({pp,q|$pp->eval($q).values->toOne()}, $postProcesedQuery->cast(@SelectSQLQuery)));
    let postProcessors = if($c->instanceOf(DatabaseConnection), | $c->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);
    let newQuery = if($postProcessors->isEmpty(), | $newQuery1, | $postProcessors->fold({pp,q|$pp->eval($q, $c->cast(@DatabaseConnection)).values->toOne()}, $newQuery1->cast(@SelectSQLQuery)));
-   let newQueryAfterTrimColumnNameProcessing = if($runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
-                                   | let type = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
+   let newQueryAfterTrimColumnNameProcessing = if($runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->isNotEmpty(),
+                                   | let type = $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
                                      if ($type->isNotEmpty() && $type->toOne()->createDbConfig([]).dbExtension.aliasLimit->isNotEmpty() && $type != DatabaseType.H2,
                                           | trimColumnNamePostProcessors()->eval($newQuery->cast(@SelectSQLQuery),$runtime).values->cast(@SelectSQLQuery);,
                                           | $newQuery);,
@@ -246,7 +248,7 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
 function meta::relational::postProcessor::transformNonCached(r:RelationalTreeNode[1], parentAlias:TableAlias[0..1], f:meta::pure::metamodel::function::Function<Any>[1]):RelationalTreeNode[1]
 {
      $r->match([
-                 j:JoinTreeNode[1] |  
+                 j:JoinTreeNode[1] |
                     let join = $j.join;
                     let transformedAlias = $j.alias->transformNonCached($f)->cast(@TableAlias);
                     let joinTarget = if($j.join.target->isNotEmpty(),
@@ -274,7 +276,7 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
 {
    let tR = $f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r);
    let toReturn = $tR->match([
-                      s:SelectSQLQuery[1] | 
+                      s:SelectSQLQuery[1] |
                                             let newS = ^$s( data= if($s.data->isEmpty(), | [], |$s.data->toOne()->transformNonCached([], $f)->cast(@RootJoinTreeNode)),
                                                             columns=$s.columns->map(c|$c->transformNonCached($f)),
                                                             filteringOperation=$s.filteringOperation->map(c|$c->transformNonCached($f)),
@@ -284,32 +286,32 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
                                                           );
                                             let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
                                             $newSWithLeftSideModified;,
- 
+
                       v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->transformNonCached($f)->cast(@SelectSQLQuery)),
- 
+
                       u:Union[1] | ^$u(queries=$u.queries->map(q|$q->transformNonCached($f)->cast(@SelectSQLQuery))),
- 
+
                       a:Alias[1] | ^$a(relationalElement=$a.relationalElement->transformNonCached($f)),
- 
+
                       u:UnaryOperation[1] | ^$u(nested=transformNonCached($u.nested, $f)),
- 
+
                       b:BinaryOperation[1] | ^$b(left= transformNonCached($b.left, $f), right=transformNonCached($b.right, $f)),
- 
+
                       va:VariableArityOperation[1] | ^$va(args=$va.args->map(a|$a->transformNonCached($f))),
- 
+
                       d:DynaFunction[1] | ^$d(parameters=$d.parameters->map(p|$p->transformNonCached($f))),
- 
-                      j:JoinStrings[1] | 
+
+                      j:JoinStrings[1] |
                         ^$j(
                            strings = $j.strings->map(s|$s->transformNonCached($f)),
                            prefix = $j.prefix->map(s|$s->transformNonCached($f)),
                            separator = $j.separator->map(s|$s->transformNonCached($f)),
                            suffix = $j.suffix->map(s|$s->transformNonCached($f))
                         ),
- 
+
                       s: SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->transformNonCached($f), property = $s.property->transformNonCached($f), index = $s.index->map(i | $i->transformNonCached($f))),
                       s: SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->transformNonCached($f), index = $s.index->transformNonCached($f)),
-                     
+
                       rel:RelationalOperationElement[1] | $rel
                     ]);
 }
@@ -366,8 +368,8 @@ function meta::relational::postProcessor::replaceTablesInJoin(r:RelationalTreeNo
 
 function meta::relational::runtime::addPostProcessors(r:Runtime[1], store:Store[0..1], pps : meta::pure::metamodel::function::Function<{SelectSQLQuery[1]->meta::pure::mapping::Result<SelectSQLQuery|1>[1]}>[*]):Runtime[1]
 {
-  let connection = if($store->isNotEmpty(),| let conn = $r->connectionByElement($store->toOne()),|$r.connections->at(0)); 
-  $connection->match([d:DatabaseConnection[1]| let updatedConnections = $r.connections->remove($d)->add(^$d(sqlQueryPostProcessors+=$pps)); 
-                                               ^$r(connections=$updatedConnections);,
-                                     a:Any[1]| fail('Connection must be of type DatabaseConnection'); $r;]);   
+  let connection = if($store->isNotEmpty(),| let conn = $r.connectionStores->filter(c|$c.element==$store->toOne()),|$r.connectionStores->at(0));
+  $connection.connection->match([d:DatabaseConnection[1]| let updatedConnections = $r.connectionStores->map(c|if($c.connection!=$d,|$c,|^$c(connection=^$d(sqlQueryPostProcessors+=$pps))));
+                                               ^$r(connectionStores=$updatedConnections);,
+                                     a:Any[1]| fail('Connection must be of type DatabaseConnection'); $r;]);
 }

@@ -15,6 +15,7 @@
 import meta::relational::tests::injection::model::*;
 import meta::relational::tests::injection::store::*;
 import meta::relational::tests::injection::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 
@@ -37,7 +38,7 @@ Class meta::relational::tests::injection::model::Trade
    d :Date[1];
    products : meta::relational::tests::injection::model::Product[*];
    productAtTimeOfTrade(){$this.products->filter(p|$p.date == $this.d)->toOne()}:Product[1];
-   
+
 }
 
 Class meta::relational::tests::injection::model::Product
@@ -95,14 +96,14 @@ function meta::relational::tests::injection::createTablesAndInsert():Boolean[1]
 
    executeInDb('insert into Book (id, name) values (1, \'Book 1\');', $connection);
    executeInDb('insert into Book (id, name) values (2, \'Book 2\');', $connection);
-   
+
    true;
-   
+
 }
 
-function meta::relational::tests::injection::testRuntime():meta::pure::runtime::Runtime[1]
+function meta::relational::tests::injection::testRuntime():meta::core::runtime::Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 ###Relational
@@ -127,7 +128,7 @@ Mapping meta::relational::tests::injection::mapping::myMapping
               d : [myDB]Trade.tradeDate,
               products : [myDB]@TradeProduct
            }
-           
+
    Product : Relational
              {
                 name : [myDB]Product.name,

@@ -31,7 +31,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 import java.util.Objects;
 
-public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_pure_runtime_Connection>
+public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_core_runtime_Connection>
 {
     private final CompileContext context;
 
@@ -41,7 +41,7 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection connection)
+    public Root_meta_core_runtime_Connection visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection connection)
     {
         return this.context.getCompilerExtensions().getExtraConnectionValueProcessors().stream()
                 .map(processor -> processor.value(connection, this.context))
@@ -51,47 +51,43 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(ConnectionPointer connectionPointer)
+    public Root_meta_core_runtime_Connection visit(ConnectionPointer connectionPointer)
     {
         return this.context.resolveConnection(connectionPointer.connection, connectionPointer.sourceInformation);
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(ModelConnection modelConnection)
+    public Root_meta_core_runtime_Connection visit(ModelConnection modelConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(modelConnection.element, modelConnection.elementSourceInformation);
         MutableMap<Class<?>, List<Root_meta_pure_metamodel_type_Any_Impl>> pureInstancesMap = HelperConnectionBuilder.processModelInput((ModelStringInput) modelConnection.input, this.context, false, null);
-        return new Root_meta_pure_mapping_modelToModel_ModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
+        return new Root_meta_external_store_model_ModelConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelConnection"))
                 ._instances(new PureMap(pureInstancesMap));
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(JsonModelConnection jsonModelConnection)
+    public Root_meta_core_runtime_Connection visit(JsonModelConnection jsonModelConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(jsonModelConnection.element, jsonModelConnection.elementSourceInformation);
-        return new Root_meta_pure_mapping_modelToModel_JsonModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::JsonModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
+        return new Root_meta_external_store_model_JsonModelConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::JsonModelConnection"))
                 ._class(this.context.resolveClass(jsonModelConnection._class, jsonModelConnection.classSourceInformation))
                 ._url(jsonModelConnection.url);
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(XmlModelConnection xmlModelConnection)
+    public Root_meta_core_runtime_Connection visit(XmlModelConnection xmlModelConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(xmlModelConnection.element, xmlModelConnection.elementSourceInformation);
-        return new Root_meta_pure_mapping_modelToModel_XmlModelConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::XmlModelConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
+        return new Root_meta_external_store_model_XmlModelConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::XmlModelConnection"))
                 ._class(this.context.resolveClass(xmlModelConnection._class, xmlModelConnection.classSourceInformation))
                 ._url(xmlModelConnection.url);
     }
 
     @Override
-    public Root_meta_pure_runtime_Connection visit(ModelChainConnection modelChainConnection)
+    public Root_meta_core_runtime_Connection visit(ModelChainConnection modelChainConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(modelChainConnection.element, modelChainConnection.elementSourceInformation);
-        return new Root_meta_pure_mapping_modelToModel_ModelChainConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelChainConnection"))
-                ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
+        return new Root_meta_external_store_model_ModelChainConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelChainConnection"))
                 ._mappings(ListIterate.collect(modelChainConnection.mappings, m -> this.context.resolveMapping(m, modelChainConnection.mappingsSourceInformation)));
     }
 }

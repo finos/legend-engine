@@ -18,10 +18,12 @@ import meta::pure::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 
 function meta::relational::functions::sqlToString::postgres::runTestCaseById(testCaseId: String[1]): Boolean[1]
 {
@@ -44,7 +46,7 @@ function meta::relational::functions::sqlToString::postgres::testCasesForDocGene
          expectedSql = 'select "root".FIRSTNAME as "name" from personTable as "root" limit 0',
          generateUsageFor = [meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_]
       )
-      
+
    ]
 }
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringJoinStrings():Boolean[1]
@@ -53,7 +55,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                      agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
                                      ['legalName', 'employeesFirstName']
                                   )};
-                                  
+
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $postGresSql);
 }
@@ -133,14 +135,14 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select strpos("root".FIRSTNAME, Text\'Jo\') as "index" from personTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |meta::relational::tests::model::simple::Person.all()->project(p|$p.firstName->indexOf('Jo'), 'index'),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -254,15 +256,15 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testD
    let expected = [
       pair(DatabaseType.Postgres, 'select date_part(\'doy\', "root".tradeDate) as "doy" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->dayOfYear(), 'doy')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -276,11 +278,11 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
     pair(DatabaseType.Postgres, $common)
   ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Person.all()->project([
           a | $a.firstName->ltrim(),
@@ -288,7 +290,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
           a | $a.firstName->rtrim()
          ],
          ['ltrim', 'trim', 'rtrim']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -302,17 +304,17 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testC
    let expected = [
     pair(DatabaseType.Postgres, $common)
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Trade.all()->project([
           a | $a.quantity->cbrt()
          ],
          ['cbrt']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -334,8 +336,8 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.SECONDS)
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 SECONDS\' * 1)) as "a" from personTable as "root"', $result);
 }
@@ -344,8 +346,8 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30T08:55:00.0->datePart(), %2011-12-30T08:55:00.0->hour(), DurationUnit.HOURS)
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select (Date(Timestamp\'2011-12-30 08:55:00.0\') + (INTERVAL \'1 HOURS\' * date_part(\'hour\', Timestamp\'2011-12-30 08:55:00.0\'))) as "a" from personTable as "root"', $result);
 }
@@ -354,8 +356,8 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | adjust(%2011-12-30, 86400, DurationUnit.SECONDS)
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) as "a" from personTable as "root"', $result);
 }
@@ -364,8 +366,8 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30, 86400, DurationUnit.SECONDS) > %2011-12-30)->project([
                                                       a | 'a'
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Date\'2011-12-30\' + (INTERVAL \'1 SECONDS\' * 86400)) > Date\'2011-12-30\'', $result);
 }
@@ -374,8 +376,8 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let result = toSQLString(|Trade.all()->filter(it| adjust(%2011-12-30T08:55:00.0, 1, DurationUnit.DAYS) > %2011-12-30T08:55:00.0)->project([
                                                       a | 'a'
-                                                   ], 
-                                                   ['a']), 
+                                                   ],
+                                                   ['a']),
                               simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select Text\'a\' as "a" from tradeTable as "root" where (Timestamp\'2011-12-30 08:55:00.0\' + (INTERVAL \'1 DAYS\' * 1)) > Timestamp\'2011-12-30 08:55:00.0\'', $result);
 }
@@ -385,15 +387,15 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'month\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -425,17 +427,17 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'year\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -445,17 +447,17 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'year\', CURRENT_DATE) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|firstDayOfThisYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -465,17 +467,17 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'quarter\', CURRENT_DATE) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|firstDayOfThisQuarter(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -490,17 +492,17 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
       pair(DatabaseType.Postgres, 'select date_trunc(\'week\', "root".tradeDate) as "date" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfWeek(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -510,18 +512,18 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
    let expected = [
    pair(DatabaseType.Postgres, 'select date_part(\'minute\', "root".settlementDateTime) as "settlementDateTimeMinute", date_part(\'second\', "root".settlementDateTime) as "settlementDateTimeSecond" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()->project([
                                                      t | $t.settlementDateTime->cast(@Date)->toOne()->minute(),
                                                      t | $t.settlementDateTime->cast(@Date)->toOne()->second()
                                                   ],
                                                   ['settlementDateTimeMinute', 'settlementDateTimeSecond']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -532,7 +534,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testS
 {
    let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
    let expectedSQL = 'select ((1.0 * "root".quantity) / 1000000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#4_d#4_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#4_d#4_m5".trade_id) where "root".ID = 2';
-   
+
    let resultPostgresSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertSameSQL($expectedSQL, $resultPostgresSQL);
 }

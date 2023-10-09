@@ -20,6 +20,7 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
 //empty target property in result because source is not milestoned
 function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::nonMilestonedSourceToMilestonedTargetProperty::testWithHardcodedDate():Boolean[1]
@@ -95,7 +96,7 @@ import meta::relational::tests::*;
 Mapping meta::relational::tests::m2m2r::milestoning::nonMilestonedSourceToMilestonedTargetProperty::TargetToModelMappingWithMilestonedComplexProperty
 (
   include meta::relational::tests::milestoning::milestoningMapSmall
- 
+
   *meta::relational::tests::milestoning::TargetProductMilestoned: Pure
   {
     ~src meta::relational::tests::milestoning::ProductMilestoned
@@ -103,7 +104,7 @@ Mapping meta::relational::tests::m2m2r::milestoning::nonMilestonedSourceToMilest
     name: $src.name,
     synonymsMilestonedAllVersions: $src.synonymsNonMilestoned
   }
-  
+
   *meta::relational::tests::milestoning::TargetProductSynonymMilestoned: Pure
   {
     ~src meta::relational::tests::milestoning::ProductSynonymNonMilestoned

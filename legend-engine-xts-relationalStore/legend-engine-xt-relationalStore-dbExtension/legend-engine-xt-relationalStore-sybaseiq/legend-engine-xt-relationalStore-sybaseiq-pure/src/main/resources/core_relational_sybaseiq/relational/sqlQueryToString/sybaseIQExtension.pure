@@ -4,6 +4,7 @@ import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -100,7 +101,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='datetime(date(%s))')),
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='dateadd(microsecond, -(datepart(microsecond, %s)), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='dateadd(hour, datepart(hour, %s), date(%s))', transform={p:String[1] | $p->repeat(2)})),
-    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='dateadd(minute, datepart(minute, %s), dateadd(hour, datepart(hour, %s), date(%s)))', transform={p:String[1] | $p->repeat(3)})),  
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='dateadd(minute, datepart(minute, %s), dateadd(hour, datepart(hour, %s), date(%s)))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
     dynaFnToSql('isEmpty',                $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
@@ -136,7 +137,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='hash(%s, \'SHA1\')')),
-    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='hash(%s, \'SHA256\')')),    
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='hash(%s, \'SHA256\')')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
@@ -249,7 +250,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   let s = if($isSubSelect && ($sq.fromRow->isNotEmpty() || $sq.toRow->isNotEmpty()), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-  
+
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format, $dbConfig, $extensions) +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +
   if ($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
@@ -282,23 +283,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
    let day = if(startsWith($dayOfWeek->at(1),'\''),|$dayOfWeek->at(1)->removeQuotes(),|$dayOfWeek->at(1));
    assert(or($day == 'Sunday',$day == 'Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
    if($day =='Sunday',|'datepart(Weekday,'+$dayOfWeek->at(0)+')',|'mod (datepart(weekday,'+$dayOfWeek->at(0)+')+5,7)+1');
-}    
+}
 
 function meta::relational::functions::sqlQueryToString::sybaseIQ::translateCreateTableStatementForSybaseIQ(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
 {
   let columns = $c.table.columns->map(r|$r->match([c:Column[1]| '[' + $c.name->processColumnName($dbConfig) + '] ' + $c.type->getColumnTypeSqlTextDefault(),
                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]));
-  
+
   if($c.isTempTable->isTrue(),| 'DECLARE LOCAL TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $columns->joinStrings(',') + ') ON COMMIT PRESERVE ROWS'
                              ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig));
-                                  
+
 }
 
 function meta::relational::functions::sqlQueryToString::sybaseIQ::loadValuesToDbTableForSybaseIQ(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
   let columns = $l.table.columns->map(r|$r->match([c:Column[1]| $c.name->toOne(),
                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]));
-                                                   
+
   if($l.absolutePathToFile->isNotEmpty(),| 'load table ' + $l.table->tableToString($dbConfig) +'( '+ $columns->map(c|'['+$c + '] null(blanks)')->joinStrings(',') + ' ) USING CLIENT FILE \'' + $l.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\' FORMAT BCP \nwith checkpoint on \nquotes on \nescapes off \ndelimited by \',\' \nROW DELIMITED BY \'\r\n\'';
 
                               ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig));

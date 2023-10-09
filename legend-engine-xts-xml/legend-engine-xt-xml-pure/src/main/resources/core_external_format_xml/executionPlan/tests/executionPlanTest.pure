@@ -24,7 +24,9 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::model::unit::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::external::format::xml::executionPlan::test::Person
@@ -102,7 +104,7 @@ function meta::external::format::xml::executionPlan::test::getTestBinding(): Bin
         )
     )
   );
-   
+
   ^Binding(
     name      = 'TestBinding',
     package   = meta::external::format::xml::executionPlan::test,

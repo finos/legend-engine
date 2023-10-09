@@ -19,6 +19,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::tests::milestoning::businessdate::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::rangeQuery::testBusinessTemporalRangeQueryOnRoot():Boolean[1]
 {

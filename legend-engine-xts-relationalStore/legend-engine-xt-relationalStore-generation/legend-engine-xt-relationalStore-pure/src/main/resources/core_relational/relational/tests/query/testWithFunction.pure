@@ -15,9 +15,11 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
@@ -53,11 +55,11 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    assertSize($result.values, 11);
    assertSameElements(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York'], $result.values.lastName);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'Fir%\'', $result->sqlRemoveFormatting());
-   
+
    let result_escape= execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->startsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSize($result_escape.values, 0);  
+   assertSize($result_escape.values, 0);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'\\\\%%\'', $result_escape->sqlRemoveFormatting());
-   
+
 }
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::testFilterUsingIsAlphaNumericFunction():Boolean[1]
@@ -136,7 +138,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%X%\'', $result->sqlRemoveFormatting());
-   
+
    let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->contains('\\%BoA'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result_escape.values, 0);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%\\\\%BoA%\'', $result_escape->sqlRemoveFormatting());
@@ -148,7 +150,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%X\'', $result->sqlRemoveFormatting());
-   
+
    let result_escape = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->endsWith('\\%'))}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result_escape.values, 0);
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME like \'%\\\\%\'', $result_escape->sqlRemoveFormatting());
@@ -181,12 +183,12 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 // Alloy exclusion reason: 5. Should recurse in system functions
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::function::dates::testMostRecentDayOfWeek():Boolean[1]
 {
-   
+
    let fn = {|
       let startDate = mostRecentDayOfWeek(DayOfWeek.Monday);
       Trade.all()->filter(d | $d.date == $startDate);
    };
-   
+
    let result = execute($fn,simpleRelationalMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    assert($result->sqlRemoveFormatting(0)->startsWith('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where "root".tradeDate ='));
 }
@@ -218,7 +220,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    let result = execute(|Person.all()->filter({p|$p.lastName->toLower() =='harris'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values,1);
    assertSameElements(['Harris'], $result.values.lastName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where lower("root".LASTNAME) = \'harris\'', $result->sqlRemoveFormatting());   
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where lower("root".LASTNAME) = \'harris\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::toString::testFilterUsingToStringFunction():Boolean[1]
@@ -434,10 +436,10 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterTimes
 {
    let result = execute(|Person.all()->project([p| $p.lastName, p|$p.age->toOne() * 2 * $p.firm->toOne().sumEmployeesAge() ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "name", ("root".AGE * 2 * "firmtable_1".aggCol) as "ages" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select "firmtable_2".ID as ID, sum("persontable_1".AGE) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_1" on ("firmtable_2".ID = "persontable_1".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("firmtable_0".ID = "firmtable_1".ID)', $result);
-   
+
    let result2= execute(|Person.all()->project([p| $p.lastName,p | times([$p.age->toOne() , 2 , $p.firm->toOne().sumEmployeesAge(), 100]) ],['name','ages']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".LASTNAME as "name", ("root".AGE * 2 * "firmtable_1".aggCol * 100) as "ages" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select "firmtable_2".ID as ID, sum("persontable_1".AGE) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_1" on ("firmtable_2".ID = "persontable_1".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("firmtable_0".ID = "firmtable_1".ID)', $result2);
-     
+
 }
 
 
@@ -446,9 +448,9 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
    let result = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 4), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], $result.values.id->sort());
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where quarter("root".tradeDate) = 4', $result);
-   
+
    let result2 = execute(|Trade.all()->filter(t | $t.date->quarterNumber() == 2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameElements([], $result2.values.id->sort());   
+   assertSameElements([], $result2.values.id->sort());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::distinct::testCollectionDistinctFunction():Boolean[1]

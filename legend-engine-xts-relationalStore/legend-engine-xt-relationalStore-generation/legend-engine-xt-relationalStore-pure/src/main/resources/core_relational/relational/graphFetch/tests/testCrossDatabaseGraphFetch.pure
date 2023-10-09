@@ -98,15 +98,17 @@ Mapping meta::relational::graphFetch::tests::crossDatabase::CrossMappingWithRelO
 ###Pure
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::graphFetch::tests::crossDatabase::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDatabase::setUpDBs():Any[*]
 {
-   let runtime1 = meta::relational::tests::testRuntime(EmployeeDB);
-   let connection1 = $runtime1.connections->toOne()->cast(@DatabaseConnection);
+   let runtime1 = meta::external::store::relational::tests::testRuntime(EmployeeDB);
+   let connection1 = $runtime1.connectionStores.connection->toOne()->cast(@DatabaseConnection);
 
    executeInDb('Drop table if exists employee;', $connection1);
    executeInDb('Create Table employee(name VARCHAR(100), id INT, ceoName VARCHAR(100));', $connection1);
@@ -120,8 +122,8 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::crossDataba
    executeInDb('Insert into ceo values (\'C2\', 2);', $connection1);
 
 
-   let runtime2 = meta::relational::tests::testRuntime(FirmDB);
-   let connection2 = $runtime2.connections->toOne()->cast(@DatabaseConnection);
+   let runtime2 = meta::external::store::relational::tests::testRuntime(FirmDB);
+   let connection2 = $runtime2.connectionStores.connection->toOne()->cast(@DatabaseConnection);
 
    executeInDb('Drop table if exists firm;', $connection2);
    executeInDb('Create Table firm(id INT, legalName VARCHAR(100), ceoIdentifier INT);', $connection2);
@@ -142,20 +144,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          }
       }
    }#;
-   
-   
-   let runtime = ^Runtime(connections = meta::relational::tests::testRuntime(EmployeeDB)->concatenate(meta::relational::tests::testRuntime(FirmDB)).connections);
-   
+
+
+   let runtime = ^Runtime(connectionStores= meta::external::store::relational::tests::testRuntime(EmployeeDB)->concatenate(meta::external::store::relational::tests::testRuntime(FirmDB)).connectionStores);
+
    let result = execute(
       {|Firm.all()->graphFetch($tree)->serialize($tree)},
       CrossMappingWithRelOpWithJoinKeys,
       $runtime,
       meta::relational::extension::relationalExtensions()
    ).values;
-   
+
    assertJsonStringsEqual(
       '[' +
-         '{"legalName":"F1","ceo":{"name":"C1"},"employees":[{"name":"E1"},{"name":"E2"}]},' + 
+         '{"legalName":"F1","ceo":{"name":"C1"},"employees":[{"name":"E1"},{"name":"E2"}]},' +
          '{"legalName":"F2","ceo":{"name":"C2"},"employees":[{"name":"E3"}]}' +
       ']',
       $result

@@ -14,32 +14,34 @@
 
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::router::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testSelectEqual(config:DbTestConfig[1]):Boolean[1]
 {
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName == 'John'), simpleRelationalMapping, meta::relational::tests::db, $config,meta::relational::extension::relationalExtensions());
-   
+
   runDataAssertion($result, $config,
   | assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
-  ); 
+  );
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testLessThanEqualString(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName <= 'John'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-  
+
   runDataAssertion($result, $config,
   | assertSameElements(['Johnson', 'Hill', 'Allen', 'Roberts', 'Harris'], $result.values->map(p|$p.lastName));
   );
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testGreaterThanEqualString(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName >= 'John'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
@@ -57,7 +59,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterOnAssociatedClassAggValueAfterGroupBy(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|Person.all()->groupBy([p|$p.age], agg(x|$x.address.name,y|$y->joinStrings(',')),['age', 'addresses'])->filter({r|$r.getString('addresses')->contains('Hoboken')}), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
@@ -66,11 +68,11 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterMultipleExpressions(config:DbTestConfig[1]):Boolean[1]
-{ 
-  let result = executeViaPlan(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | 
+{
+  let result = executeViaPlan(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r |
         and([
-              $r.isNotNull('first'), 
-              eq($r.getString('first'), 'John'), 
+              $r.isNotNull('first'),
+              eq($r.getString('first'), 'John'),
               eq($r.getString('last'), 'Johnson')
         ])
     }), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
@@ -81,12 +83,12 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterAfterFilter(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|Person.all()->filter(p | $p.firstName->startsWith('Peter'))->filter(p | if($p.firstName->length() < 10,
-                                                                                                    | $p.firm.address->filter(a | $a.name == 'New York').name->isNotEmpty(), 
+                                                                                                    | $p.firm.address->filter(a | $a.name == 'New York').name->isNotEmpty(),
                                                                                                     | $p.firm.address->filter(a | $a.name == 'New York').name->isEmpty()))
                         , simpleRelationalMappingWithFilter, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-                        
+
   runDataAssertion($result, $config,| assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString()););
 }
 

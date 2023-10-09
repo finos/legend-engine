@@ -19,6 +19,7 @@ import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::runtime::*
 import meta::pure::functions::io::http::*;
 import meta::protocols::pure::v1_29_0::invocation::execution::execute::*;
 import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::context::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::json::*;
 
@@ -135,13 +136,13 @@ function meta::protocols::pure::v1_29_0::invocation::execution::execute::buildEx
             clientVersion = 'v1_29_0',
             function = transformLambda($f, $extensions),
             mapping = if($m.name->isEmpty(), |[], |$m->toOne()->elementToPath()),
-            runtime = if($runtime.connections->isEmpty(), |[], |transformRuntime($runtime->toOne(), $extensions)),
+            runtime = if($runtime.connectionStores->isEmpty(), |[], |transformRuntime($runtime->toOne(), $extensions)),
             context = $transformedContext,
             model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
-                        |let stores =  $runtime.connections.element->cast(@meta::pure::store::Store)
+                        |let stores =  $runtime.connectionStores.element->cast(@meta::pure::store::Store)
                                           ->map(s|$s->findAllStoreIncludes())
                                           ->removeDuplicates()
-                                          ->filter(s | !$s->instanceOf(meta::pure::mapping::modelToModel::ModelStore))
+                                          ->filter(s | !$s->instanceOf(meta::external::store::model::ModelStore))
                                           ->map(c|^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
                          let transformedMappings = $mappings->map(m|^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath()));
                          ^meta::protocols::pure::v1_29_0::metamodel::PureModelContextPointer
@@ -213,7 +214,7 @@ function meta::protocols::pure::v1_29_0::invocation::execution::execute::legendE
    let resultClassType=$typeAndresultJSON.first;
 
    let res= legendBuildResultFromJSON($resultJSON, $resultClassType, $m, $pureRuntime, $context, $extensions);
-   
+
    let values = $res.values->cast(@T);
    ^Result<T|m>(values=$values, activities=$res.activities);
 }

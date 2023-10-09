@@ -14,12 +14,15 @@
 
 import meta::pure::profiles::*;
 import meta::relational::tests::mapping::database::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::test::*;
 import meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::*;
 
@@ -28,18 +31,18 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
    let result = executeViaPlan(| MyClass.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
    runDataAssertion($result, $config,
-   | 
+   |
       assertSize($result->toOne(), 1);
       assertEquals(2, $result.values->first()->cast(@MyClass).a);
       assertEquals(MyEnum.NO, $result.values->first()->cast(@MyClass).d);
    );
-   
+
    let result2 = executeViaPlan(| MyClassB.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
    runDataAssertion($result2, $config,
     |  assertSize($result2, 1);
        assertEquals('\'Description A\'', $result2.values->first()->cast(@MyClassB).c);
     );
-         
+
    let filteredResult = executeViaPlan(| MyClass.all()->filter(m | $m.a == 2), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
    runDataAssertion($filteredResult, $config,
     |  assertSize($filteredResult, 1);
@@ -49,8 +52,6 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testTableNameInJoinAlias(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
-  
    let result = executeViaPlan(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
     runDataAssertion($result, $config,
        | assertSize($result, 1);
@@ -61,7 +62,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let result = executeViaPlan(| MyClassC.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
    runDataAssertion($result, $config,
-   | 
+   |
       assertSize($result->toOne(), 1);
       assertEquals(0, $result.values->first()->cast(@MyClassC).capitalAlphabets);
       assertEquals(1, $result.values->first()->cast(@MyClassC).numbers);
@@ -78,14 +79,13 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let smallAlphabets = 'abcdefghijklmnopqrstuvwxzy';
   let capitalAlphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-  let runtime = ^Runtime(connections=$config.connection);
   let result = executeViaPlan(| MyClassD.all()->project([x | $x.a, x | $x.b, x | $x.c, x | $x.d] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-  
+
   runDataAssertion($result, $config,
-  | 
+  |
   assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);
   );
- 
+
    true;
 }
 
@@ -99,7 +99,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
    let result = executeViaPlan(| MyClassC.all()->project([x | $x.specialCharacters, x | $x.numbers, x | $x.smallAlphabets, x | $x.capitalAlphabets] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]),testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | 
+  |
    assertEquals($result.values.rows->map(x | $x.values), ['testData', 1, 2, 0]);
    assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);
   );
@@ -110,12 +110,12 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
   // let setupSqls = ['Drop table if exists testTable;',
   //  'Create Table testTable(ID INT, "Column Name with Space" INT, "Column&A" INT, "Column.ID" INT);',
   //  'insert into testTable(ID, "Column Name with Space", "Column&A", "Column.ID") values (1,2,0,3);',
-   
+
   //  'Drop table if exists "test Table2";',
   //  'Create Table "test Table2"("Column&ID" INT, "My#Data" VARCHAR(20));',
   //  'insert into "test Table2"("Column&ID", "My#Data") values (3,\'Description A\');'
   //  ];
-   
+
    let records =
                'default\n'+
                 'testTable\n'+
@@ -171,7 +171,7 @@ Class meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyCl
   b : Integer[1];
   c : String[1];
   d : Integer[1];
-} 
+}
 
 Enum meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyEnum
 {
@@ -192,13 +192,13 @@ Database meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::m
        "Column&A" INT,
        "Column.ID" INT
     )
-    
+
     Table "test Table2"
     (
        "Column&ID" INT PRIMARY KEY,
        "My#Data" VARCHAR(20)
     )
-    
+
     Table testTable3
     (
       ABCDEFGHIJKLMNOPQRSTUVWXYZ INT PRIMARY KEY,
@@ -232,19 +232,19 @@ Mapping meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::te
         YES:  1,
         NO: 0
     }
-    
+
     MyClass: Relational
     {
         a: [myDB] testTable."Column Name with Space",
         b: [myDB] @testJoin,
         d: EnumerationMapping Active : [myDB] testTable."Column&A"
     }
-    
+
     MyClassB: Relational
     {
        c: [myDB] "test Table2"."My#Data"
     }
-    
+
     MyClassC: Relational
     {
        capitalAlphabets: [myDB] testTable3.ABCDEFGHIJKLMNOPQRSTUVWXYZ,

@@ -26,14 +26,15 @@ import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::router::preeval::*;
 import meta::pure::router::preeval::tests::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-Class meta::pure::router::preeval::tests::Person 
+Class meta::pure::router::preeval::tests::Person
 {
   firstName : String[1];
   lastName : String[1];
   otherNames : String[*];
-  
+
   name(){$this.firstName+' '+$this.lastName}:String[1];
   nameWithTitle(title:String[1]){$title+' '+$this.firstName+' '+$this.lastName}:String[1];
   nameWithPrefixAndSuffix(prefix:String[0..1], suffixes:String[*])
@@ -385,9 +386,9 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mapOnI
   let input = {| range(1, $c+1, 1)->map(index|$index->toString() + currentUserId()->toString()) ;};
 
   let expected = {|[
-      ('1' + meta::pure::runtime::currentUserId()->toString()),
-      ('2' + meta::pure::runtime::currentUserId()->toString()),
-      ('3' + meta::pure::runtime::currentUserId()->toString())
+      ('1' + meta::core::runtime::currentUserId()->toString()),
+      ('2' + meta::core::runtime::currentUserId()->toString()),
+      ('3' + meta::core::runtime::currentUserId()->toString())
       ] };
 
   assertRoundTrip($input, $expected);
@@ -398,13 +399,13 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_foldOn
   let c = 2;
 
   let input = {|
-    range(1, $c+1, 1)->fold({index, r| 
+    range(1, $c+1, 1)->fold({index, r|
         $r + ($index->toString() + currentUserId() + ';');
       }, 'Values: ')
     };
 
   let expected = {|
-    'Values: ' + '1' + meta::pure::runtime::currentUserId() + ';' + '2' + meta::pure::runtime::currentUserId() + ';'
+    'Values: ' + '1' + meta::core::runtime::currentUserId() + ';' + '2' + meta::core::runtime::currentUserId() + ';'
   };
 
   assertRoundTrip($input, $expected);
@@ -415,14 +416,14 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_foldOn
   let c = 2;
 
   let input = {|
-    range(1, $c+1, 1)->fold({index, r| 
+    range(1, $c+1, 1)->fold({index, r|
         $r->concatenate(($index->toString() + currentUserId()));
       }, [])
     };
 
   let expected = {|
     [('1' + currentUserId()), ('2' + currentUserId())]
-    ///[('1' + meta::pure::runtime::currentUserId())]	        ->concatenate('2' + meta::pure::runtime::currentUserId())
+    ///[('1' + meta::core::runtime::currentUserId())]	        ->concatenate('2' + meta::core::runtime::currentUserId())
   };
 
   assertRoundTrip($input, $expected);
@@ -458,7 +459,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_concat
 
     let g = currentUserId()->concatenate(currentUserId());
     let h = ['hello', currentUserId()]->concatenate(['hello', currentUserId()]);
-    let i = ['hello', currentUserId(), (currentUserId() + $x->toString())]->concatenate(['hello', currentUserId(), (currentUserId() + $x->toString())]);      
+    let i = ['hello', currentUserId(), (currentUserId() + $x->toString())]->concatenate(['hello', currentUserId(), (currentUserId() + $x->toString())]);
 
     let j = myCollectionFunc($x->toString())->concatenate(currentUserId());
 
@@ -473,15 +474,15 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_concat
   let expected = {|
     let a = currentUserId();
     let b = ['hello', currentUserId()];
-    let c = ['hello',meta::pure::runtime::currentUserId(),(meta::pure::runtime::currentUserId() + '2')];
+    let c = ['hello',meta::core::runtime::currentUserId(),(meta::core::runtime::currentUserId() + '2')];
 
     let d = currentUserId();
     let e = ['hello', currentUserId()];
-    let f = ['hello',meta::pure::runtime::currentUserId(),(meta::pure::runtime::currentUserId() + '2')];
+    let f = ['hello',meta::core::runtime::currentUserId(),(meta::core::runtime::currentUserId() + '2')];
 
-    let g = [meta::pure::runtime::currentUserId(),meta::pure::runtime::currentUserId()];
-    let h = ['hello',meta::pure::runtime::currentUserId(),'hello',meta::pure::runtime::currentUserId()];
-    let i = ['hello',meta::pure::runtime::currentUserId(),(meta::pure::runtime::currentUserId() + '2'),'hello',meta::pure::runtime::currentUserId(),(meta::pure::runtime::currentUserId() + '2')];      
+    let g = [meta::core::runtime::currentUserId(),meta::core::runtime::currentUserId()];
+    let h = ['hello',meta::core::runtime::currentUserId(),'hello',meta::core::runtime::currentUserId()];
+    let i = ['hello',meta::core::runtime::currentUserId(),(meta::core::runtime::currentUserId() + '2'),'hello',meta::core::runtime::currentUserId(),(meta::core::runtime::currentUserId() + '2')];
 
     let j= ['2', currentUserId()];
 
@@ -770,7 +771,7 @@ function <<access.private>> meta::pure::router::preeval::tests::myExpandableFunc
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting30():Boolean[1]
 {
-  let input = {| 
+  let input = {|
     range(3)->map(index|[$index, today()]);
     };
 
@@ -954,11 +955,11 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_parame
 {
   let input = {item:Pair<String,String>[1]|
       let other = $item;
-      $other.first->isNotEmpty(); 
+      $other.first->isNotEmpty();
     };
 
   let expected = {item:Pair<String,String>[1]|
-      $item.first->isNotEmpty(); 
+      $item.first->isNotEmpty();
     };
 
   assertRoundTrip($input, $expected);
@@ -1068,7 +1069,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Proper
 {
   let prop = meta::pure::router::preeval::tests::Person.properties->at(0);
   let name = $prop.name;
-  
+
   let input = {| $prop.name;};
 
   let expected = {| $name};
@@ -1079,7 +1080,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Proper
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_OptionalLimit1():Boolean[1]
 {
   let limit = 5;
-   
+
   let input = {|
       meta::pure::router::preeval::tests::Person.all()
         ->project([
@@ -1088,7 +1089,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Option
         ->meta::pure::router::preeval::tests::optionalLimit($limit)
       };
 
-  let expected = {|     
+  let expected = {|
       meta::pure::router::preeval::tests::Person.all()
        ->project([
           ^BasicColumnSpecification<meta::pure::router::preeval::tests::Person>(name = 'firstName', func = {p:meta::pure::router::preeval::tests::Person[1]|$p.firstName})
@@ -1102,7 +1103,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Option
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_OptionalLimit2():Boolean[1]
 {
   let limit = [];
-  
+
   let input = {|
   meta::pure::router::preeval::tests::Person.all()
       ->project([
@@ -1111,7 +1112,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Option
       ->meta::pure::router::preeval::tests::optionalLimit($limit)
     };
 
-  let expected = {|     
+  let expected = {|
     meta::pure::router::preeval::tests::Person.all()
       ->project([
         ^BasicColumnSpecification<meta::pure::router::preeval::tests::Person>(name = 'firstName', func = {p:meta::pure::router::preeval::tests::Person[1]|$p.firstName})
@@ -1130,7 +1131,7 @@ function meta::pure::router::preeval::tests::optionalLimit(t: TabularDataSet[1],
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mappedTdsAgg():Boolean[1]
 {
   let v = [pair('name', '6')];
-   
+
   let input = {|meta::pure::router::preeval::tests::Person.all()
                 ->project([
                   col({p:meta::pure::router::preeval::tests::Person[1]|$p.age}, 'age')
@@ -1149,10 +1150,10 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mapped
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mappedModelAgg():Boolean[1]
 {
   let v = [pair('name', '6')];
-   
+
   let input = {|meta::pure::router::preeval::tests::Person.all()
-                  ->groupBy([], 
-                    $v->map(pv|agg({p:meta::pure::router::preeval::tests::Person[1]|if($p.age->toOne()->toString() == $pv.second, | 1, | 0)}, y|$y->sum())), 
+                  ->groupBy([],
+                    $v->map(pv|agg({p:meta::pure::router::preeval::tests::Person[1]|if($p.age->toOne()->toString() == $pv.second, | 1, | 0)}, y|$y->sum())),
                     $v->map(pv|'sumAgg_' + $pv.first)
                   )
               };
@@ -1165,7 +1166,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mapped
 }
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_constantInAgg():Boolean[1]
-{   
+{
   let lambda = {|
     let businessDate = %2023-01-01;
     let x = 'a';
@@ -1199,7 +1200,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_consta
   let newGroupBy = ^$groupBy(parametersValues = [$groupBy.parametersValues->at(0), $groupBy.parametersValues->at(1), $newAggregateValueInstance, $groupBy.parametersValues->at(3)]);
   let newLambda = ^$lambda(expressionSequence = [$expressionSequence->at(0), $expressionSequence->at(1), $newGroupBy]);
 
- 
+
   let expected = {|
     meta::pure::router::preeval::tests::Position.all(%2023-01-01)->groupBy([], ^meta::pure::functions::collection::AggregateValue<meta::pure::router::preeval::tests::Position, String, Integer>(mapFn={x:meta::pure::router::preeval::tests::Position[1] | $x.client(%2023-01-01).name + $x->toString()},aggregateFn={y:String[*]|$y->count()}), ['ID Count'])
   };
@@ -1220,8 +1221,8 @@ function <<test.Test>> meta::pure::router::preeval::tests::testDecimalType():Boo
                   ->project([
                       ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'price', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| $f.price }),
                       ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'decimal_constant_col', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| 3.14})
-                    ])                    
-                  };  
+                    ])
+                  };
 
   assertRoundTrip($input,$expected);
 }
@@ -1266,7 +1267,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testEvalWithArgs3():B
   let expected = {a:Integer[1]| $a+1 };
 
   assertRoundTrip($input, $expected);
-} 
+}
 
 function <<test.Test>> meta::pure::router::preeval::tests::testProjectWithInferredParameterType():Boolean[1]
 {
@@ -1286,7 +1287,7 @@ function meta::pure::router::preeval::tests::myFunc888() : TabularDataSet[1]
   meta::pure::router::preeval::tests::Person.all()
 	   ->project([
          col({p:meta::pure::router::preeval::tests::Person[1]|$p.age}, 'age')
-      ])  
+      ])
 }
 
 
@@ -1294,7 +1295,7 @@ function meta::pure::router::preeval::tests::myFunc888() : TabularDataSet[1]
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPreroutingRemoveUnnecessaryStatements():Boolean[1]
 {
-  let input = {| 
+  let input = {|
       range(5)->map(x|$x+1)->map(index|'i' + $index->toString());
       123;
       };
@@ -1362,7 +1363,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimpli
 {
   let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false).id;};
   let result = $input->preval([]);
-  
+
   assertEquals(Integer, $result->functionReturnType().rawType);
 }
 
@@ -1461,11 +1462,11 @@ function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination3
 function <<test.Test>> meta::pure::router::preeval::tests::testRecursiveSimpleConcreteFunctionDefinition():Boolean[1]
 {
   // This is specially selected to be a single function that is recursive on itself
-  // The test is to validate that we don't keep trying to inline ad infinitum 
+  // The test is to validate that we don't keep trying to inline ad infinitum
 
   let input = {s:Class<Any>[1]|meta::pure::functions::meta::hierarchicalProperties($s)};
 
-  let expected = {s:Class<Any>[1]| 
+  let expected = {s:Class<Any>[1]|
     if($s == Any, {|[]}, {|$s.properties->concatenate($s.generalizations->map({g|$g.general.rawType->cast(Any)
       ->toOne()
       ->hierarchicalProperties()}))
@@ -1504,7 +1505,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testSchemaStateUnfurl
 
 function <<test.Test>> meta::pure::router::preeval::tests::testLambdaParamOverride2():Boolean[1]
 {
-  let val = 1; 
+  let val = 1;
   let input    = { | let x = 1;
                      {p:Integer[1]|$p->map(x|$x+$val)};};
   let expected = { | {p:Integer[1]|$p->map(x|$x+1)}};
@@ -1520,7 +1521,7 @@ function <<access.private>> meta::pure::router::preeval::tests::myFunc2():String
 function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]
 {
   // Need element as string to allow roundtrip to pass. When using ^ModelStore(), preeval evaluates it to a instance, however expected as it as a new function
-  ^Runtime(connections=^meta::pure::mapping::modelToModel::ModelConnection(element = 'DummyStore', instances=newMap(pair($sourceClass, list($inputs)))));
+  ^Runtime(connectionStores=^ConnectionStore(element = 'DummyStore', connection=^meta::external::store::model::ModelConnection(instances=newMap(pair($sourceClass, list($inputs))))));
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]
@@ -1566,7 +1567,7 @@ function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(
 
   // Open variables on lambdas should have been inlined / eliminated
   if (!$result->instanceOf(LambdaFunction),
-    | true, 
+    | true,
     | assertEmpty($result->cast(@LambdaFunction<Any>).openVariables)
   );
 

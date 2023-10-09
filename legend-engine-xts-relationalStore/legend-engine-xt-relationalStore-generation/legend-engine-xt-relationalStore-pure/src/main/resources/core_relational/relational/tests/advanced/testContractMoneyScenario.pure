@@ -15,7 +15,9 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::advanced::contractmoneyscenario::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
@@ -86,7 +88,7 @@ function meta::relational::tests::advanced::contractmoneyscenario::createDatabas
 
 function meta::relational::tests::advanced::contractmoneyscenario::testRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(db);
+   meta::external::store::relational::tests::testRuntime(db);
 }
 
 function meta::relational::tests::advanced::contractmoneyscenario::createTablesAndFillDb():Boolean[1]
@@ -107,7 +109,7 @@ function meta::relational::tests::advanced::contractmoneyscenario::createTablesA
    executeInDb('insert into Fx (id, Rate, Currency) values (1, 1.1, \'EUR\');', $connection);
    executeInDb('insert into Fx (id, Rate, Currency) values (2, 1.5, \'EUR\');', $connection);
    executeInDb('insert into Fx (id, Rate, Currency) values (3, 1.5, \'EUR\');', $connection);
-    
+
    executeInDb('insert into Currency (contractId,  Value) values (1, \'EUR\');', $connection);
    executeInDb('insert into Currency (contractId,  Value) values (2, \'EUR\');', $connection);
 

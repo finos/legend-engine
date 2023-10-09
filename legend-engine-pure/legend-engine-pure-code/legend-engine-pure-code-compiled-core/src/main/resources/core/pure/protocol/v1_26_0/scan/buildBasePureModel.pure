@@ -16,6 +16,7 @@ import meta::protocols::*;
 import meta::json::*;
 import meta::pure::store::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::milestoning::*;
 import meta::pure::mapping::*;
 import meta::protocols::pure::v1_26_0::transformation::fromPureGraph::*;

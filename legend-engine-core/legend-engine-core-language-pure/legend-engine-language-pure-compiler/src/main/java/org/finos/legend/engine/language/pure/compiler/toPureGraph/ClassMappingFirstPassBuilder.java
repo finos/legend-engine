@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MergeOperationSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_OperationSetImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -41,7 +41,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MergeOperationSet
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
@@ -103,7 +103,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> srcClass = classMapping.srcClass == null ? null : this.context.resolveClass(classMapping.srcClass, classMapping.sourceClassSourceInformation);
-        PureInstanceSetImplementation mappingClass = new Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::PureInstanceSetImplementation"));
+        PureInstanceSetImplementation mappingClass = new Root_meta_external_store_model_PureInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::model::PureInstanceSetImplementation"));
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
         PureInstanceSetImplementation rootSetImpl = mappingClass
                 ._id(id)

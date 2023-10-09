@@ -1,11 +1,13 @@
 import meta::relational::metamodel::join::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::snowflake::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -153,7 +155,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
@@ -168,14 +170,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let returnType = $params->at(2);
 
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
-  let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);    
+  let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);
 
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
-  if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |   
+  if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |
   if ($returnType == 'BOOLEAN', | 'to_boolean(' + $elementAccess + ')', |
   if ($returnType == 'FLOAT', | 'to_double(' + $elementAccess + ')', |
-  if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |  
+  if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |
   $elementAccess))))));
 }
 
@@ -200,9 +202,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformToTimestampSnowflake(params:String[2]):String[1]
 {
-  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
-   let timestampFormat = $params->at(1);   
+   let timestampFormat = $params->at(1);
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
 
@@ -241,7 +243,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForSnowflake($sgc),
       a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForSnowflake($sgc),
       a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc)
-   ])  
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]

@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.pure.generated.Root_meta_analytics_store_entitlements_TableWithType;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_relational_store_entitlement_relational_relationalAnalyzer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -47,7 +47,7 @@ public class RelationalDatabaseEntitlementServiceExtension implements Entitlemen
     }
 
     @Override
-    public List<DatasetSpecification> generateDatasetSpecifications(Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel)
+    public List<DatasetSpecification> generateDatasetSpecifications(Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel)
     {
         RichIterable<? extends Root_meta_analytics_store_entitlements_TableWithType> tablesWithType =
                 query == null ?
@@ -60,7 +60,7 @@ public class RelationalDatabaseEntitlementServiceExtension implements Entitlemen
     }
 
     @Override
-    public List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, MutableList<CommonProfile> profiles)
+    public List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, MutableList<CommonProfile> profiles)
     {
         return datasets.stream().filter(specification -> specification instanceof RelationalDatabaseTableSpecification).map(specification -> specification.getType().equals(DatabaseType.H2.name()) ? new DatasetEntitlementAccessGrantedReport(specification) : new DatasetEntitlementUnsupportedReport(specification)).collect(Collectors.toList());
     }

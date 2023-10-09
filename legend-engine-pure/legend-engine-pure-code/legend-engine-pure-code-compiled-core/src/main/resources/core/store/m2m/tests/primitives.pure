@@ -15,7 +15,9 @@
 import meta::pure::mapping::modelToModel::test::primitives::*;
 import meta::pure::mapping::modelToModel::test::filter::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -25,14 +27,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->filter(f|$f.addresses->exists(a|$a.street == 'MyStreet')),
             primitiveModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= ^ConnectionStore(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_Person_Address , list([
                                                                                                                         ^_Person_Address (name='ok', street='MyStreet')
                                                                                                                     ])
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    assertSameElements(['ok'], $res.values->at(0).lastName);
@@ -54,7 +56,7 @@ Mapping meta::pure::mapping::modelToModel::test::primitives::primitiveModelMappi
                lastName : $src.name,
                addresses[add] : $src.street
             }
-   
+
    Address[add] : Pure
             {
                ~src String

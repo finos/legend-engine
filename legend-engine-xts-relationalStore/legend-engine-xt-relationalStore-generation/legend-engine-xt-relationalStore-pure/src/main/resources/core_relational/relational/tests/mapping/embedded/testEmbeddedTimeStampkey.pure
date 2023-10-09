@@ -14,11 +14,11 @@
 
 Class meta::relational::tests::mapping::embedded::model::ClassWithTimeStampKey
 {
-   <<equality.Key>>     
-   id1         : Integer[1];  
+   <<equality.Key>>
+   id1         : Integer[1];
    <<equality.Key>>
    id2        : Date[1];
-   id3        : String[1];  
+   id3        : String[1];
    embeddedElement: meta::relational::tests::mapping::embedded::model::EmbeddedElement[0..1];
 }
 
@@ -26,7 +26,7 @@ Class meta::relational::tests::mapping::embedded::model::EmbeddedElement
 {
     propFloat: Float[0..1];
     propString : String[0..1];
-    propInt    : Integer[0..1];    
+    propInt    : Integer[0..1];
 }
 
 
@@ -47,7 +47,7 @@ Mapping meta::relational::tests::mapping::embedded::model::mapping::EmbeddedWith
            embeddedElement(
    		      propString:  PROP_STRING,
 		      propInt: PROP_INT
-           )   
+           )
 	   )
    }
 )
@@ -55,9 +55,11 @@ Mapping meta::relational::tests::mapping::embedded::model::mapping::EmbeddedWith
 
 
 ###Pure
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::embedded::model::*;
@@ -69,53 +71,53 @@ import meta::pure::functions::string::*;
 
 function meta::relational::tests::mapping::embedded::model::store::testDataTypeMappingRuntimeWithTz():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 
 function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStampPrimaryKeyStringAsDate():Boolean[1]
-{       
-     
+{
+
   let stringDate = '2016-01-25 10:00:00.000000000'; //EST 2016-01-25 10:00:00......GMT : 2016-01-25 15:00:00
-  
+
   // translates string to date assumes string is time in EST, resulting date is traslated to GMT
-  let res = execute(| ClassWithTimeStampKey.all() 
+  let res = execute(| ClassWithTimeStampKey.all()
               -> filter(x|$x.id2  == $stringDate )
              ,EmbeddedWithTimstampKeys
              ,testDataTypeMappingRuntimeWithTz()
           , meta::relational::extension::relationalExtensions());
 
- 
-   assertNotEmpty($res.values);    
+
+   assertNotEmpty($res.values);
    let first = $res.values->at(0);
-   assertEquals(1, $first.id1);  
+   assertEquals(1, $first.id1);
    println('Filter with Date from String :' + $first.id2->toString());
-   assertEquals($first.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null'); 
-  
+   assertEquals($first.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null');
+
    true;
 }
 
 
 function <<test.ToFix>> meta::relational::tests::mapping::embedded::testTimeStampPrimaryKeyDateInFilter():Boolean[1]
-{       
-     
+{
+
    //date in UTC
    let date = meta::pure::functions::date::date(2016,1,25,15,0,00.000000000); //EST 20016-01-25 15:00:00......
    print('date:');
    println($date);
-  
-   let res2 = execute(| ClassWithTimeStampKey.all() 
+
+   let res2 = execute(| ClassWithTimeStampKey.all()
                -> filter(x|$x.id2  == $date )
              ,EmbeddedWithTimstampKeys
              ,testDataTypeMappingRuntimeWithTz(), meta::relational::extension::relationalExtensions());
 
    assertNotEmpty($res2.values);
-   
+
    let first2 = $res2.values->at(0);
    println('Filter with date from date : ' + $first2.id2->toString());
    assertEquals(4, $first2.id1);
-   assertEquals($first2.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null'); 
-     
+   assertEquals($first2.embeddedElement.propString, 'foo', 'Embedded Element is not supposed to be null');
+
    true;
 }
 

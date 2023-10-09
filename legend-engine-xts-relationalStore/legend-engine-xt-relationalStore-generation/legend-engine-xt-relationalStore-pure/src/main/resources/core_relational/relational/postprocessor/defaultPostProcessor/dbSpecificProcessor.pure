@@ -13,12 +13,15 @@
 // limitations under the License.
 
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::relation::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::functions::collection::*;
@@ -26,7 +29,8 @@ import meta::relational::functions::sqlQueryToString::*;
 
 function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
-   let conn = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection);
+   let connectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection));
+   let conn = $connectionStore.connection->cast(@DatabaseConnection);
    let postProcessorQuery = if($conn->isNotEmpty(),
                                 | let type = $conn.type;
                                   assert(type->size()==1, 'found not enough or too many DB types');

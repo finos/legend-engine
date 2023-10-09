@@ -29,7 +29,7 @@ Database meta::relational::tests::database::mainDb
 (
    include meta::relational::tests::database::dbA
    include meta::relational::tests::database::dbB
-   
+
    Join Firm_Person([meta::relational::tests::database::mainDb]personTable.FIRMID = [meta::relational::tests::database::mainDb]firmTable.ID)
 )
 
@@ -52,6 +52,7 @@ Mapping meta::relational::tests::database::mainMapping
 import meta::relational::metamodel::join::*;
 import meta::relational::tests::tds::tdsJoin::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>>  meta::relational::tests::database::setUp(): Boolean[1]
 {

@@ -18,6 +18,7 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
@@ -58,7 +59,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
 // Generate
 function meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
-{   
+{
    if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
       | generateImplementionForNow($context.conventions),
       |
@@ -75,14 +76,14 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::gener
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]
-{   
+{
    ^GeneratedCode(
       implementation = ^JavaPlatformImplementation
                        (
                           executionClassFullName = $conventions->className(PredefinedExpressions)->typeToString(),
                           executionMethodName    = 'now'
                        )
-   );   
+   );
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForCurrentUserId(conventions:Conventions[1]):GeneratedCode[1]

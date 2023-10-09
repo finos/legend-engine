@@ -16,6 +16,7 @@ import meta::relational::mapping::*;
 import meta::analytics::mapping::modelCoverage::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
 
 Class meta::analytics::mapping::modelCoverage::AnalysisConfiguration
@@ -256,7 +257,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
          !$pm.localMappingProperty->isTrue()
          && !$pm.property->meta::pure::milestoning::isRangeMilestoningProperty()
          && ($pm.property->isPrimitiveValueProperty()
-            || $pm->match([semi: meta::relational::mapping::SemiStructuredRelationalPropertyMapping[1] | false, rpm:InstanceSetImplementation[1] | true, a: PropertyMapping[1] | false]) 
+            || $pm->match([semi: meta::relational::mapping::SemiStructuredRelationalPropertyMapping[1] | false, rpm:InstanceSetImplementation[1] | true, a: PropertyMapping[1] | false])
             // handle SemiStructuredRelationalPropertyMapping manually to take care of automapped properties
             || $pm.targetSetImplementationId->in($rootClassMappings.id))
       );
@@ -289,7 +290,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
          ); //TODO check how types work with qp's.we n eed to filter on whether the type is root supported currently
    );
 
-   // handle auto mapped properties 
+   // handle auto mapped properties
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
                                                      ->filter(pm| $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions()));
 
@@ -322,24 +323,24 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
 ): AutoMappedHelperClass[1]
 {
    if($property->isPrimitiveValueProperty(),
-      |let mappedProp = ^MappedProperty(name = $property.name->toOne(), 
-                       info = if($config.returnMappedPropertyInfo == true, 
-                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()), 
-                              | []));                             
+      |let mappedProp = ^MappedProperty(name = $property.name->toOne(),
+                       info = if($config.returnMappedPropertyInfo == true,
+                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
+                              | []));
       ^AutoMappedHelperClass(mappedProperties = [$mappedProp], mappedEntities=[]);,
-     | 
+     |
 
        if($visited->map(p|$p.first->elementToPath())->contains($property.genericType.rawType->toOne()->elementToPath()),
          |let entityMappedProp = ^EntityMappedProperty(entityPath=$visited->filter(p|$p.first->elementToPath()==$property.genericType.rawType->toOne()->elementToPath())->at(0).second,
                                                     name=$property.name->toOne(),
-                                                    info = if($config.returnMappedPropertyInfo == true, 
+                                                    info = if($config.returnMappedPropertyInfo == true,
                                                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
                                                              | []));
-         
+
          ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[]);,
          |let entityPath = $prefix + $property.name->toOne();
          let entityMappedProp = ^EntityMappedProperty(entityPath=$entityPath,name=$property.name->toOne(),
-                                                    info = if($config.returnMappedPropertyInfo == true, 
+                                                    info = if($config.returnMappedPropertyInfo == true,
                                                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
                                                              | []));
           let newVisited = $visited->concatenate([^Pair<Class<Any>, String>(first = $property.genericType.rawType->toOne()->cast(@Class<Any>), second = $entityPath)]);

@@ -14,7 +14,9 @@
 
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::execute::*;
@@ -187,7 +189,7 @@ function meta::relational::tests::functions::distance::testDisplayMapFromDB():Ge
 
 function meta::relational::tests::functions::distance::testDistanceRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(testDistanceDB);
+   meta::external::store::relational::tests::testRuntime(testDistanceDB);
 }
 
 function meta::relational::tests::functions::distance::createAndFillTestDb():Boolean[1]

@@ -33,6 +33,7 @@ import meta::pure::metamodel::constraint::*;
 import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::milestoning::*;
 
@@ -57,30 +58,30 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::graphFe
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
 {
-   let ex       = j_parameter(javaException(), 'e');   
+   let ex       = j_parameter(javaException(), 'e');
    let fullBody = j_try(
                      $body,
                      j_catch($ex,
                         javaRuntimeException()->j_new([j_string('Failed in node: '+$path), $ex])->j_throw()
                      )
                   );
-   
+
    let classesUsed = $param.type->cast(@meta::external::language::java::metamodel::Class)->concatenate($fullBody->classesUsed())->removeDuplicates();
    let withImports = $conventions->planNodeClass('public', $path, 'Execute')->imports($classesUsed);
-   
+
    $withImports->addMethod(javaMethod(['public', 'static'], $body.type, 'execute', $param->cast(@meta::external::language::java::metamodel::Parameter), $fullBody));
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
-{ 
+{
    javaParameterizedType($conventions->className(GraphInstance), $elementType);
 }
- 
+
 function meta::pure::executionPlan::platformBinding::legendJava::shared::castExpressionToReturnType(expression:Code[1], returnType:meta::external::language::java::metamodel::Type[1]): Code[1]
-{ 
-  if($expression.type == $returnType, 
+{
+  if($expression.type == $returnType,
     |
-      $expression, 
+      $expression,
     |
   if($returnType->isJavaList(),
     |
@@ -89,11 +90,11 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::castExp
       $expression->j_cast($returnType)
   ));
 }
- 
+
 // ----------------------------------------------------------------------------------------------------------
 // --- Implementation
 // ----------------------------------------------------------------------------------------------------------
-    
+
 function meta::pure::executionPlan::platformBinding::legendJava::shared::generateTypes(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateTypes\n', |''));
@@ -104,10 +105,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       createUnitClasses($context, $debug->indent())
    ]);
 }
-   
+
 function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacesAndEnums(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
-    generateInterfacesAndEnums($context.conventions, $context.typeInfos, $debug);  
+    generateInterfacesAndEnums($context.conventions, $context.typeInfos, $debug);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacesAndEnums(conventions:Conventions[1], typeInfos:TypeInfoSet[1], debug:DebugContext[1]) : Project[1]
@@ -119,7 +120,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
 
    let unitInfos   = $typeInfos->allUnitInfos();
    assert($unitInfos->forAll(ti| !$conventions->isProvidedType($ti.type)), 'Units cannot be provided until the Unit interface is a provded type');
-   
+
    let units = if($unitInfos->isEmpty(),
                   | [],
                   {|
@@ -178,7 +179,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createG
                                                                                       ),
                                        $conventions->pureTypeToJavaType($mp)
                                       )->j_return();
-         
+
          let propertyMultiplicity     = $mp.multiplicity;
          let bodyWithMultiplicityCast = if($propertyMultiplicity->isToOne(),
                                            | $conventions->className(Library)->j_invoke('toOne', $body, $returnType),
@@ -225,7 +226,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaDataReco
 {
    {doc.doc = 'Data record classes (which should not extend IReferencedObject interface)'}
    dataRecordClasses: meta::pure::metamodel::type::Class<Any>[*];
-}  
+}
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfaceForClass(typeInfo: ClassTypeInfo[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
@@ -236,7 +237,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       ->implements($typeInfo.supertypes->map(c|$conventions->className($c)))
       ->imports($conventions->standardDataTypeImports())
       ->imports($typeInfo.supertypes->map(st|$conventions->className($st))->filter(c| $c.package != $pkg));
-   
+
    let withTypeNameAndPath = $proto->addMethod(javaMethod(['default'], javaString(), typeNameMethod(), [], [j_return(j_string($typeInfo.class.name->toOne()))]))
                                    ->addMethod(javaMethod(['default'], javaString(), typePathMethod(), [], [j_return(j_string($typeInfo.class->elementToPath()))]));
 
@@ -253,7 +254,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       },
       $withPropertyGetters
    );
-   
+
    let dataRecordClass   = $conventions.extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaDataRecordClassesExtension).dataRecordClasses;
    let iReferencedObject = $conventions->className(IReferencedObject);
    if($typeInfo.class->in($dataRecordClass),
@@ -305,7 +306,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::updateI
 
    let jThis = j_this($implClass);
    let size  = javaLong()->j_variable('size');
-   
+
    let classSizeMethod = javaMethod(
       ['private', 'static'], javaLong(), $conventions->getterName(classSizeIdentifier()), [],
       j_long(

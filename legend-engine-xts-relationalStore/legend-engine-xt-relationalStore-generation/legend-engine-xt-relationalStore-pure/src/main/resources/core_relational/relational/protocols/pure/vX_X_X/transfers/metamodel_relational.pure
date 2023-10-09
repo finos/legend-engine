@@ -20,6 +20,7 @@ import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::mo
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::modelToModel::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::csv::*;
 import meta::pure::mapping::*;

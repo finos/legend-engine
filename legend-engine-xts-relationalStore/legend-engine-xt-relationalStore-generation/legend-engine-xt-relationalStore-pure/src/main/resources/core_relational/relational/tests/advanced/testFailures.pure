@@ -87,7 +87,7 @@ Mapping meta::relational::tests::advanced::failures::moveFilterInOnClause::mappi
                 name : [db]productTable.NAME,
                 synonyms : [db]@Product_Synonym
              }
-             
+
    ProductSynonymType: EnumerationMapping SynonymEnum
    {
         CUSIP:  'CUSIP',
@@ -105,18 +105,18 @@ Mapping meta::relational::tests::advanced::failures::moveFilterInOnClause::mappi
              {
                 name : [db]productTable.NAME,
                 synonyms : [db]@Product_Synonym
-             }              
+             }
 
    FSynonym : Relational
              {
                 name : [db]synonymTable.NAME,
                 type : [db]@Synonym_SynonymType
-             }             
-             
+             }
+
    FSynonymType : Relational
              {
                 value : EnumerationMapping SynonymEnum: [db]synonymType.TYPE
-             }             
+             }
 )
 
 
@@ -125,13 +125,15 @@ import meta::relational::tests::advanced::failures::moveFilterInOnClause::*;
 import meta::relational::metamodel::*;
 import meta::pure::profiles::*;
 import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::toDDL::*;
 
 function meta::relational::tests::advanced::failures::moveFilterInOnClause::testRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(db);
+   meta::external::store::relational::tests::testRuntime(db);
 }
 
 function meta::relational::tests::advanced::failures::moveFilterInOnClause::createTablesAndFillDb():Boolean[1]
