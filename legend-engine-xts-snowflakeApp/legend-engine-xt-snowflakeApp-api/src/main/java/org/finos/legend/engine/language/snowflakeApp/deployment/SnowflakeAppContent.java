@@ -16,15 +16,16 @@ package org.finos.legend.engine.language.snowflakeApp.deployment;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
 
 public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
-    public RichIterable<String> sqlExpressions = Lists.mutable.empty();
+    public MutableList<String> sqlExpressions = Lists.mutable.empty();
 
     public String applicationName;
 
-    public SnowflakeAppContent(String name, RichIterable<String> sqlExpressions)
+    public SnowflakeAppContent(String name, MutableList<String> sqlExpressions)
     {
         this.applicationName = name;
         this.sqlExpressions = sqlExpressions;

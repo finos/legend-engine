@@ -25,7 +25,9 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifact;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppGenerator;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
@@ -92,9 +94,10 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public MutableList<? extends FunctionActivatorError> validate(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
-        return sqlExpressions.size() != 1 ?
-                Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + sqlExpressions.size() + "' SQL expressions", sqlExpressions.toList())) :
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.size();
+        return size != 1 ?
+                Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", ((SnowflakeAppContent)artifact.content).sqlExpressions)) :
                 Lists.mutable.empty();
 
     }
@@ -102,68 +105,20 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public SnowflakeDeploymentResult publishToSandbox(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        Object[] objects = this.extractSQLExpressionsAndConnectionMetadata(pureModel, activator, routerExtensions);
-        RichIterable<String> sqlExpressions = (RichIterable<String>) objects[0];
-
-        Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification ds  = (Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification) objects[1];
-        Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy as = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) objects[2];
-
-        String applicationName = activator._applicationName();
-//        SnowflakeDeploymentConfiguration config = new SnowflakeDeploymentConfiguration(applicationName);
-        SnowflakeAppArtifact deploymentArtifact = new SnowflakeAppArtifact(applicationName, sqlExpressions);
-        Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration deploymentConf  = (Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration)activator._activationConfiguration();
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection  deploymentConn = deploymentConf._target();
-        return this.snowflakeDeploymentManager.fakeDeploy((Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification)deploymentConn._datasourceSpecification(),
-                (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy)deploymentConn._authenticationStrategy(), applicationName);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        return this.snowflakeDeploymentManager.deploy(profiles, artifact, runtimeConfigurations);
     }
 
     @Override
     public SnowflakeAppArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
-        return new SnowflakeAppArtifact(activator._applicationName(), sqlExpressions);
-    }
-
-    private RichIterable<String> extractSQLExpressions(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        PackageableFunction<?> function = activator._function();
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
-        Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
-        return collectAllNodes(node)
-                .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
-                .select(x -> !x.toLowerCase().startsWith("alter"));
-    }
-
-    private Object[] extractSQLExpressionsAndConnectionMetadata(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
-    {
-        PackageableFunction<?> function = activator._function();
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
-        Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
-
-        RichIterable<String> expressions = collectAllNodes(node)
-                .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
-                .select(x -> !x.toLowerCase().startsWith("alter"));
-
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection relCOnn = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection)collectAllNodes(node).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
-                .getAny()
-                ._connection();
-        Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification ds = (Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification) relCOnn._datasourceSpecification();
-        Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy as = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) relCOnn._authenticationStrategy();
-
-        return new Object[]{expressions, ds, as};
-    }
-
-    private RichIterable<Root_meta_pure_executionPlan_ExecutionNode> collectAllNodes(Root_meta_pure_executionPlan_ExecutionNode node)
-    {
-        return Lists.mutable.with(node).withAll(node._executionNodes().flatCollect(this::collectAllNodes));
+        return SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
     }
 
     @Override
-    public List<SnowflakeAppDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations, DeploymentStage stage)
+    public List<SnowflakeAppDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof SnowflakeAppDeploymentConfiguration /*&& e.stage.equals(stage)*/).collect(e -> (SnowflakeAppDeploymentConfiguration) e);
+        return Lists.mutable.withAll(configurations).select(e -> e instanceof SnowflakeAppDeploymentConfiguration).collect(e -> (SnowflakeAppDeploymentConfiguration) e);
     }
 
 

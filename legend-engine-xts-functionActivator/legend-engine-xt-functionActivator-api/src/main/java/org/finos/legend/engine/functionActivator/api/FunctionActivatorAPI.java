@@ -128,7 +128,7 @@ public class FunctionActivatorAPI
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(profiles, pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig, DeploymentStage.SANDBOX),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(profiles, pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {

@@ -13,7 +13,7 @@ import meta::pure::graphFetch::*;
 
 function meta::external::function::activator::hostedService::tests::defaultConfig():HostedServiceDeploymentConfiguration[1]
 {
-  ^HostedServiceDeploymentConfiguration(stage = DeploymentStage.PRODUCTION);
+  ^HostedServiceDeploymentConfiguration();
 }
 
 // =========================================================================================================

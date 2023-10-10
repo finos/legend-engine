@@ -96,6 +96,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         return result;
     }
 
+
     public SnowflakeAppDeploymentTool getSnowflakeAppDeploymentTool()
     {
         return snowflakeAppDeploymentTool;

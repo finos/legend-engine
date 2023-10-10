@@ -20,5 +20,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class DeploymentConfiguration extends PackageableElement
 {
-    public DeploymentStage stage;
+    //public DeploymentStage stage;
 }

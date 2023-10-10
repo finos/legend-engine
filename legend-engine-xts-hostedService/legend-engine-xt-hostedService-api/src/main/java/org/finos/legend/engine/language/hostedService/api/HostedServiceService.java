@@ -97,9 +97,9 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
-    public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations, DeploymentStage stage)
+    public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration /*&& e.stage.equals(stage)*/).collect(e -> (HostedServiceDeploymentConfiguration)e);
+        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);
     }
 
 

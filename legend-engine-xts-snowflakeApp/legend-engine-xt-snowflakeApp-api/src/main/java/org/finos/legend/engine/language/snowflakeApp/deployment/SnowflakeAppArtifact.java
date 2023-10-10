@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.snowflakeApp.deployment;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 
 public class SnowflakeAppArtifact extends FunctionActivatorArtifact
@@ -26,12 +27,12 @@ public class SnowflakeAppArtifact extends FunctionActivatorArtifact
         //empty artifact
     }
 
-    public SnowflakeAppArtifact(String name, RichIterable<String> sqlExpressions)
+    public SnowflakeAppArtifact(String name, MutableList<String> sqlExpressions)
     {
         this.content = new SnowflakeAppContent(name, sqlExpressions);
     }
 
-    public SnowflakeAppArtifact(String name,RichIterable<String> sqlExpressions, SnowflakeAppDeploymentConfiguration config)
+    public SnowflakeAppArtifact(String name, MutableList<String> sqlExpressions, SnowflakeAppDeploymentConfiguration config)
     {
         this.content = new SnowflakeAppContent(name, sqlExpressions);
         this.deploymentConfiguration = config;
