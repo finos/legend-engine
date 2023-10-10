@@ -268,6 +268,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       t:RenameField[1]|_handleRenameFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
+      t:RenamedClass[1]|_handleRenamedClassUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
@@ -343,6 +344,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       t:RenameField[1]|_handleRenameFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:AddedClass[1]|[],
       t:RemovedClass[1]|[],
+      t:RenamedClass[1]|_handleRenamedClassDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
       t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
     ]))
     ->fold({t,res|$res->concatenate($t)}, []);
@@ -569,6 +571,31 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
   );
 }
 
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenamedClassUpcast
+(
+class:meta::external::language::java::metamodel::Class[1],
+token:RenamedClass[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+  $typeVar->j_invoke('equals', [j_string($token.class)]),
+  $objVar->j_invoke('put', [j_string('@type'), j_string($token.newName)])
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleRenamedClassDowncast
+(
+class:meta::external::language::java::metamodel::Class[1],
+token:RenamedClass[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.newName))
+  j_if(
+  $typeVar->j_invoke('equals', [j_string($token.newName)]),
+  $objVar->j_invoke('put', [j_string('@type'), j_string($token.class)])
+  );
+}
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldUpcast
 (
