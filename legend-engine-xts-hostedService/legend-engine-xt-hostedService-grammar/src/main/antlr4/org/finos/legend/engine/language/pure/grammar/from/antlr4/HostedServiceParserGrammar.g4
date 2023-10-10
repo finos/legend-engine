@@ -198,7 +198,6 @@ embeddedRuntimeContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAN
 // ----------------------------------- Deployment ------------------------------------------------------
 deploymentConfigs:                      SERVICE_CONFIGURATION qualifiedName
                                             BRACE_OPEN
-                                                deploymentStage
                                             BRACE_CLOSE
 ;
 deploymentStage:                        SERVICE_DEPLOYMENT_STAGE COLON STRING SEMI_COLON

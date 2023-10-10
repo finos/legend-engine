@@ -12,23 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
+package org.finos.legend.engine.language.snowflakeApp.deployment;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
 
-public class SnowflakeDeploymentResult extends DeploymentResult
+public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
+    public MutableList<String> sqlExpressions = Lists.mutable.empty();
 
-    public MutableList<String> errors;
+    public String applicationName;
 
-    public SnowflakeDeploymentResult(boolean result)
+    public SnowflakeAppContent(String name, MutableList<String> sqlExpressions)
     {
-      this.successful = false;
-    }
-
-    public SnowflakeDeploymentResult(MutableList<String> errors)
-    {
-        this.errors = errors;
+        this.applicationName = name;
+        this.sqlExpressions = sqlExpressions;
     }
 }

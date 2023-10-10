@@ -151,19 +151,6 @@ public class HostedServiceTreeWalker
     private HostedServiceDeploymentConfiguration visitDeploymentConfig(HostedServiceParserGrammar.DeploymentConfigsContext ctx)
     {
         HostedServiceDeploymentConfiguration config = new HostedServiceDeploymentConfiguration();
-        String stage = ctx.deploymentStage().getText();
-        if (stage.equals("PRODUCTION"))
-        {
-            config.stage = DeploymentStage.PRODUCTION;
-        }
-        else if (stage.equals("SANDBOX"))
-        {
-            config.stage = DeploymentStage.SANDBOX;
-        }
-        else
-        {
-            throw new EngineException("Valid types for deployment stage are: SANDBOX, PRODUCTION");
-        }
         return config;
     }
 

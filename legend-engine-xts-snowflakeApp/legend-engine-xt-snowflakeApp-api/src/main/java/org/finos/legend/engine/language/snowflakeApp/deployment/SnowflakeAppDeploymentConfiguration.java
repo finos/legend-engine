@@ -12,19 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
+package org.finos.legend.engine.language.snowflakeApp.deployment;
 
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
-public class SnowflakeDeploymentConfiguration extends DeploymentConfiguration
+public class SnowflakeAppDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
-    public ConnectionPointer activationConnection;
-
-//    public String applicationName;
-
-    public SnowflakeDeploymentConfiguration()
-    {
-
-    }
+    RelationalDatabaseConnection connection;
 }
