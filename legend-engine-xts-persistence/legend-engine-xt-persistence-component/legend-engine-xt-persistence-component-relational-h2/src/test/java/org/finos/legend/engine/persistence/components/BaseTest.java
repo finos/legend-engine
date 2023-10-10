@@ -192,7 +192,7 @@ public class BaseTest
                                                           String expectedDataPath, Map<String, Object> expectedStats, boolean verifyStagingFilters) throws Exception
     {
         // Execute physical plans
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -300,7 +300,7 @@ public class BaseTest
         datasets = ingestor.dedupAndVersion(datasets);
 
         executor.begin();
-        IngestorResult result = ingestor.ingest(datasets);
+        IngestorResult result = ingestor.ingest(datasets).get(0);
         // Do more stuff if needed
         executor.commit();
 

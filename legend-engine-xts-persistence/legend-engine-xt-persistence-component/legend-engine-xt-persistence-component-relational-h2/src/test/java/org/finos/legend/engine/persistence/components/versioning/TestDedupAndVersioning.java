@@ -48,23 +48,23 @@ public class TestDedupAndVersioning extends BaseTest
 {
 
     /* Scenarios:
-    1. [DONE] No Dedup, NoVersion -> No tempStagingTable
-    2. [DONE] No Dedup, MaxVersion do not perform versioning -> No tempStagingTable
-    3. [DONE] No Dedup, MaxVersion with perform versioning -> tempStagingTable with only MaxVersioned Data [throw Error on Data errors]
-    4. [DONE] No Dedup, AllVersion do not perform versioning -> No tempStagingTable
-    5. [DONE] No Dedup, AllVersion with perform versioning -> tempStagingTable with Data splits [throw Error on Data errors]
+    1. No Dedup, NoVersion -> No tempStagingTable
+    2. No Dedup, MaxVersion do not perform versioning -> No tempStagingTable
+    3. No Dedup, MaxVersion with perform versioning -> tempStagingTable with only MaxVersioned Data [throw Error on Data errors]
+    4. No Dedup, AllVersion do not perform versioning -> No tempStagingTable
+    5. No Dedup, AllVersion with perform versioning -> tempStagingTable with Data splits [throw Error on Data errors]
 
-    6. [DONE] Filter Dups, NoVersion -> tempStagingTable with count column
-    7. [DONE] Filter Dups, MaxVersion do not perform versioning -> tempStagingTable with count column
-    8. [DONE, throw error left] Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
-    9. [DONE] Filter Dups, AllVersion do not perform versioning -> tempStagingTable with count column
-    10. [DONE, throw error left] Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
+    6. Filter Dups, NoVersion -> tempStagingTable with count column
+    7. Filter Dups, MaxVersion do not perform versioning -> tempStagingTable with count column
+    8. throw error left] Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
+    9. Filter Dups, AllVersion do not perform versioning -> tempStagingTable with count column
+    10. throw error left] Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
 
-    11. [DONE] Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
-    12. [DONE] Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
-    13. [DONE] Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
-    14. [DONE] Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
-    15. [DONE] Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
+    11.Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
+    12.Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
+    13.Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
+    14.Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
+    15. Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
     */
 
     private static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).primaryKey(true).fieldAlias(nameName).build();

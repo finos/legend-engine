@@ -90,7 +90,7 @@ public class UnitemporalDeltaRunner implements Runnable
                     .executionTimestampClock(clock)
                     .build();
 
-            IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+            IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
             if (maxBatchIdCounter.get() < result.batchId().get())
             {
                 maxBatchIdCounter.set(result.batchId().get());

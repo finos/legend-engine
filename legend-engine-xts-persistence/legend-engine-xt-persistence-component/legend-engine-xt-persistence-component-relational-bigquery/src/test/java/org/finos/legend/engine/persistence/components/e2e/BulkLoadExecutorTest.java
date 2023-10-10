@@ -120,7 +120,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
-        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets);
+        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets).get(0);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
@@ -178,7 +178,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
-        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets);
+        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets).get(0);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");

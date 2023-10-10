@@ -170,7 +170,7 @@ public abstract class Planner
         return datasets.mainDataset();
     }
 
-    protected Dataset stagingDataset()
+    public Dataset stagingDataset()
     {
         return effectiveStagingDataset;
     }

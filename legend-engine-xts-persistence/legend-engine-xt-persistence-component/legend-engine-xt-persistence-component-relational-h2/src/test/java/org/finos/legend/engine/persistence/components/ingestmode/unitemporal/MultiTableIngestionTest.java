@@ -171,7 +171,7 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets);
+                IngestorResult result = ingestor.ingest(datasets).get(0);
                 multiTableIngestionResult.add(result);
             }
 
@@ -256,7 +256,7 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets);
+                IngestorResult result = ingestor.ingest(datasets).get(0);
                 multiTableIngestionResult.add(result);
             }
 
