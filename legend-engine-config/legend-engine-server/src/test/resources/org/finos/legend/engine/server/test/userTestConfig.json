@@ -80,12 +80,5 @@
   },
   "errorhandlingconfiguration": {
     "enabled": true
-  },
-  "activatorConfiguration":[
-    {"_type":"hostedServiceConfig", "host": "127.0.0.1",
-      "port":9090,
-      "path": "/api/service/v1/registerHostedService",
-      "stage": "SANDBOX"
-    }
-  ]
+  }
 }
