@@ -50,9 +50,9 @@ public class TestDedupAndVersioning extends BaseTest
     /* Scenarios:
     1. [DONE] No Dedup, NoVersion -> No tempStagingTable
     2. [DONE] No Dedup, MaxVersion do not perform versioning -> No tempStagingTable
-    3. [DONE, throw error left] No Dedup, MaxVersion with perform versioning -> tempStagingTable with only MaxVersioned Data [throw Error on Data errors]
+    3. [DONE] No Dedup, MaxVersion with perform versioning -> tempStagingTable with only MaxVersioned Data [throw Error on Data errors]
     4. [DONE] No Dedup, AllVersion do not perform versioning -> No tempStagingTable
-    5. [DONE, throw error left] No Dedup, AllVersion with perform versioning -> tempStagingTable with Data splits [throw Error on Data errors]
+    5. [DONE] No Dedup, AllVersion with perform versioning -> tempStagingTable with Data splits [throw Error on Data errors]
 
     6. [DONE] Filter Dups, NoVersion -> tempStagingTable with count column
     7. [DONE] Filter Dups, MaxVersion do not perform versioning -> tempStagingTable with count column
@@ -60,11 +60,11 @@ public class TestDedupAndVersioning extends BaseTest
     9. [DONE] Filter Dups, AllVersion do not perform versioning -> tempStagingTable with count column
     10. [DONE, throw error left] Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
 
-    11. Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
-    12. Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
-    13. Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
-    14. Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
-    15. Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
+    11. [DONE] Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
+    12. [DONE] Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
+    13. [DONE] Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
+    14. [DONE] Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
+    15. [DONE] Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
     */
 
     private static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).primaryKey(true).fieldAlias(nameName).build();
@@ -146,12 +146,25 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_allow_dups_max_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
         verifyResults(expectedDataPath, schemaWithVersion);
+
+        // Data error scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+        }
     }
 
     // Scenario 4
@@ -189,13 +202,25 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_allow_dups_all_version.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
-        // Validate tempTableExists
         verifyResults(expectedDataPath, schemaWithVersionAndDataSplit);
+
+        // Data error scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+        }
     }
 
     // Scenario 6
@@ -210,7 +235,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
         createStagingTableWithoutVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data1_with_dups.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data1_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithoutVersion(srcDataPath);
 
@@ -233,7 +258,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
@@ -256,12 +281,25 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_max_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
         verifyResults(expectedDataPath, schemaWithVersionAndCount);
+
+        // Data error scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+        }
     }
 
     // Scenario 9
@@ -280,7 +318,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_no_versioning.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
@@ -305,13 +343,26 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
 
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
         String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_all_version.csv";
         loadDataIntoStagingTableWithVersion(srcDataPath);
 
         performDedupAndVersioining(datasets, ingestMode);
         // Validate tempTableExists
         verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit);
+
+        // Data error scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+        }
     }
 
     // Scenario 11
@@ -326,7 +377,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         createStagingTableWithoutVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups.csv";
+        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data1_with_dups.csv";
         loadDataIntoStagingTableWithoutVersion(srcDataPath);
 
         try
@@ -353,11 +404,139 @@ public class TestDedupAndVersioning extends BaseTest
                 .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(false).versioningComparator(VersioningComparator.ALWAYS).build())
                 .build();
 
+        // Happy scenario
         createStagingTableWithVersion();
-        String srcDataPath = "src/test/resources/data/dedup-and-versioning/input/data_with_dups_no_data_error.csv";
-        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data2_filter_dups_no_versioning.csv";
-        loadDataIntoStagingTableWithVersion(srcDataPath);
+        String srcDataPath1 = "src/test/resources/data/dedup-and-versioning/input/data4_without_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath1);
 
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+
+
+        // Duplicates scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+        }
+    }
+
+    // Scenario 13
+    @Test
+    void testFailOnDupsMaxVersion() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = NontemporalSnapshot.builder()
+                .auditing(NoAuditing.builder().build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versioningComparator(VersioningComparator.ALWAYS).build())
+                .build();
+
+        // Happy scenario
+        createStagingTableWithVersion();
+        String srcDataPath1 = "src/test/resources/data/dedup-and-versioning/input/data4_without_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath1);
+
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_max_versioin.csv";
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+
+
+        // Duplicates scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+        }
+    }
+
+
+    // Scenario 14
+    @Test
+    void testFailOnDupsAllVersionDoNotPerform() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = AppendOnly.builder()
+                .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
+                .digestField("digest")
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
+                        .versioningComparator(VersioningComparator.ALWAYS).performVersioning(false).build())
+                .build();
+
+        // Happy scenario
+        createStagingTableWithVersion();
+        String srcDataPath1 = "src/test/resources/data/dedup-and-versioning/input/data4_without_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath1);
+
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        verifyResults(expectedDataPath, schemaWithVersionAndCount);
+
+
+        // Duplicates scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
+        try
+        {
+            performDedupAndVersioining(datasets, ingestMode);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+        }
+    }
+
+    // Scenario 15
+    @Test
+    void testFailOnDupsAllVersion() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = getStagingTableWithVersion();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        IngestMode ingestMode = AppendOnly.builder()
+                .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
+                .digestField("digest")
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
+                        .versioningComparator(VersioningComparator.ALWAYS).performVersioning(true).build())
+                .build();
+
+        // Happy scenario
+        createStagingTableWithVersion();
+        String srcDataPath1 = "src/test/resources/data/dedup-and-versioning/input/data4_without_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath1);
+
+        String expectedDataPath = "src/test/resources/data/dedup-and-versioning/expected/expected_data4_fail_on_dups_no_versioning.csv";
+        performDedupAndVersioining(datasets, ingestMode);
+        // Validate tempTableExists
+        verifyResults(expectedDataPath, schemaWithVersionCountAndDataSplit);
+
+
+        // Duplicates scenario, should throw error
+        String srcDataPath2 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
+        loadDataIntoStagingTableWithVersion(srcDataPath2);
         try
         {
             performDedupAndVersioining(datasets, ingestMode);
