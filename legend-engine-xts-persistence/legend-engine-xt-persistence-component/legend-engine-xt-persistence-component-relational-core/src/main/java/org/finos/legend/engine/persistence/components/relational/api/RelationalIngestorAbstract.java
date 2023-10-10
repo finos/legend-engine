@@ -349,12 +349,10 @@ public abstract class RelationalIngestorAbstract
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
             Map<ErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
-
             /* Error Checks
             1. if Dedup = fail on dups, Fail the job if count > 1
             2. If versioining = Max Version/ All Versioin, Check for data error
             */
-
             Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DUPLICATES));
             Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DATA_ERRORS));
             if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
@@ -694,18 +692,26 @@ public abstract class RelationalIngestorAbstract
     private Map<ErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                       Map<ErrorStatistics, SqlPlan> errorChecksPlan)
     {
-        return errorChecksPlan.keySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        k -> k,
-                        k -> executor.executePhysicalPlanAndGetResults(errorChecksPlan.get(k))
-                                .stream()
-                                .findFirst()
-                                .map(TabularData::getData)
-                                .flatMap(t -> t.stream().findFirst())
-                                .map(Map::values)
-                                .flatMap(t -> t.stream().findFirst())
-                                .orElseThrow(IllegalStateException::new)));
+        Map<ErrorStatistics, Object> results = new HashMap<>();
+        for (Map.Entry<ErrorStatistics, SqlPlan> entry: errorChecksPlan.entrySet())
+        {
+            Object value = null;
+            List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue());
+            if (!result.isEmpty())
+            {
+                List<Map<String, Object>> data = result.get(0).getData();
+                if (!data.isEmpty())
+                {
+                     Map row = data.get(0);
+                     if (!row.isEmpty())
+                     {
+                         value = row.get(entry.getKey().name());
+                     }
+                }
+            }
+            results.put(entry.getKey(), value);
+        }
+        return results;
     }
 
     private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
