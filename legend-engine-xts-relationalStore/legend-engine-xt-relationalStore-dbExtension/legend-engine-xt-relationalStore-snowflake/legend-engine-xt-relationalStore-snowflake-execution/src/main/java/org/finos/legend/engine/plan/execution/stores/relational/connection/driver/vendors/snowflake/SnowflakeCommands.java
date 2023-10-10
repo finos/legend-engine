@@ -50,13 +50,22 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
             optionalCSVFileLocation = optionalCSVFileLocation.substring(1);
         }
         List<String> strings = Arrays.asList(
-                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(",", "(", ")")),
+                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + mapColumnTypeToSqlText(c.type)).collect(Collectors.joining(",", "(", ")")),
                 "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
                 "PUT file:///" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
                 "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + optionalCSVFileLocation + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
                 "DROP STAGE " + tempStageName()
         );
         return strings;
+    }
+    
+    private String mapColumnTypeToSqlText(String columnType)
+    {
+        switch (columnType)
+        {
+            case "BIT" : return "BOOLEAN";
+            default: return columnType;
+        }
     }
 
     @Override
