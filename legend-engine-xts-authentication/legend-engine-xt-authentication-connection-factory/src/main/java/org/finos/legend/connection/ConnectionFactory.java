@@ -34,7 +34,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 public class ConnectionFactory
@@ -110,7 +109,7 @@ public class ConnectionFactory
                     storeInstance.getConnectionSpecification().getClass().getSimpleName()
             ));
         }
-        return new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+        return new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)), this.environment);
     }
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier)
@@ -131,7 +130,7 @@ public class ConnectionFactory
                 AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationMechanism, authenticationConfiguration, storeInstance.getConnectionSpecification());
                 if (result != null)
                 {
-                    authenticator = new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+                    authenticator = new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)), this.environment);
                     break;
                 }
             }
@@ -394,9 +393,8 @@ public class ConnectionFactory
 
     public <T> T getConnection(Identity identity, Authenticator authenticator) throws Exception
     {
-        Credential credential = authenticator.makeCredential(identity, this.environment);
         ConnectionBuilder<T, Credential, ConnectionSpecification> flow = (ConnectionBuilder<T, Credential, ConnectionSpecification>) authenticator.getConnectionBuilder();
-        return flow.getConnection(authenticator.getStoreInstance(), credential, authenticator.getAuthenticationConfiguration(), identity);
+        return flow.getConnection(authenticator.getStoreInstance().getConnectionSpecification(), flow.getAuthenticatorCompatible(authenticator), identity);
     }
 
     public static class Builder
@@ -450,9 +448,9 @@ public class ConnectionFactory
 
         public ConnectionFactory build()
         {
-            for (ConnectionManager connectionManager : ServiceLoader.load(ConnectionManager.class))
+            for (ConnectionBuilder connectionBuilder : connectionBuilders)
             {
-                connectionManager.initialize();
+                connectionBuilder.getConnectionManager().initialize(environment);
             }
 
             return new ConnectionFactory(

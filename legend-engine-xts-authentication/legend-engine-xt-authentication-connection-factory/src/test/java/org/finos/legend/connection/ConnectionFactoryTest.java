@@ -15,6 +15,7 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
@@ -341,7 +342,7 @@ public class ConnectionFactoryTest
         Assert.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
-    private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
+    private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator<?> authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
     {
         Assert.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
         Assert.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
@@ -519,6 +520,14 @@ public class ConnectionFactoryTest
 
     // -------------------------- Connection -------------------------------
 
+    private static class TestConnectionManager implements ConnectionManager
+    {
+        @Override
+        public void initialize(LegendEnvironment environment)
+        {
+        }
+    }
+
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
         @Override
@@ -531,27 +540,45 @@ public class ConnectionFactoryTest
     private static class ConnectionBuilder_A extends ConnectionBuilder<Object, Credential_A, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_A credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_A> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 
     private static class ConnectionBuilder_B extends ConnectionBuilder<Object, Credential_B, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_B credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_B> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 
     private static class ConnectionBuilder_C extends ConnectionBuilder<Object, Credential_C, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_C credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_C> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 }

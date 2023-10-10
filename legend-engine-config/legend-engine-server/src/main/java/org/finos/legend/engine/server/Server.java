@@ -45,7 +45,7 @@ import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVaul
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.InstrumentedStoreInstanceProvider;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstanceProvider;
@@ -55,7 +55,7 @@ import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.jdbc.StaticJDBCConnectionBuilder;
+import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
 import org.finos.legend.engine.api.analytics.DiagramAnalytics;
@@ -409,11 +409,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         enableCors(environment);
     }
 
-    /**
-     * TODO: @akphi - this is temporary
-     * Until we find a better way to handle the initialization of connection factory from config
-     * or some external source?
-     */
+    // TODO: @akphi - this is temporary, rework when we find a better way to handle the initialization of connection factory from config or some external source.
     private ConnectionFactory setupConnectionFactory(List<VaultConfiguration> vaultConfigurations)
     {
         LegendEnvironment environment = new LegendEnvironment.Builder()
@@ -441,7 +437,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
                                 .build()
                 ).build();
 
-        StoreInstanceProvider storeInstanceProvider = new InstrumentedStoreInstanceProvider();
+        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
         return new ConnectionFactory.Builder(environment, storeInstanceProvider)
                 .withCredentialBuilders(
                         new KerberosCredentialExtractor(),

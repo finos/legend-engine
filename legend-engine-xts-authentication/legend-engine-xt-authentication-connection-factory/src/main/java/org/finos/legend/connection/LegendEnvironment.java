@@ -74,7 +74,6 @@ public class LegendEnvironment
 
         public Builder()
         {
-
         }
 
         public Builder withVaults(List<CredentialVault> vaults)

@@ -38,9 +38,9 @@ public class EncryptedPrivateKeyPairAuthenticationConfiguration extends Authenti
     public String shortId()
     {
         return "EncryptedPrivateKeyPair" +
-                "_userName:" + userName +
+                "_userName__" + userName +
                 // TODO: @akphi - think if we need to also add shortId for these credential refs
-                "_privateKey:" + privateKey +
-                "_passphrase:" + passphrase;
+                "_privateKey__" + privateKey +
+                "_passphrase__" + passphrase;
     }
 }

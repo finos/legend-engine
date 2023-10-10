@@ -36,18 +36,18 @@ public class SnowflakeConnectionSpecification extends ConnectionSpecification
     public String shortId()
     {
         return "Snowflake" +
-                "_account:" + accountName +
-                "_region:" + region +
-                "_warehouse:" + warehouseName +
-                "_db:" + databaseName +
-                "_cloudType:" + cloudType +
-                "_proxyHost:" + proxyHost +
-                "_proxyPort:" + proxyPort +
-                "_nonProxyHosts:" + nonProxyHosts +
-                "_accountType:" + accountType +
-                "_organisation:" + organization +
-                "_quoteIdentifiers:" + quotedIdentifiersIgnoreCase +
-                "_role:" + role +
-                "_enableQueryTags:" + enableQueryTags;
+                "--account__" + accountName +
+                "--region__" + region +
+                "--warehouse__" + warehouseName +
+                "--db__" + databaseName +
+                "--cloudType__" + cloudType +
+                "--proxyHost__" + proxyHost +
+                "--proxyPort__" + proxyPort +
+                "--nonProxyHosts__" + nonProxyHosts +
+                "--accountType__" + accountType +
+                "--organisation__" + organization +
+                "--quoteIdentifiers__" + quotedIdentifiersIgnoreCase +
+                "--role__" + role +
+                "--enableQueryTags__" + enableQueryTags;
     }
 }

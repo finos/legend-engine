@@ -31,8 +31,7 @@ public class IdentityFactory
         this.environment = environment;
     }
 
-    // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should
-    // think of when we can unify them
+    // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should think about unifying them
     private static final DefaultIdentityFactory DEFAULT = new DefaultIdentityFactory();
 
     public Identity createIdentity(IdentitySpecification identitySpecification)

@@ -15,6 +15,7 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.impl.KerberosAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;

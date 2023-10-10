@@ -24,7 +24,7 @@ import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVaul
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.DefaultStoreInstanceProvider;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;

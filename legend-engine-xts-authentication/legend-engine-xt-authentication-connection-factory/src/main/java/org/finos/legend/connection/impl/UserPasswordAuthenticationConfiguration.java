@@ -36,8 +36,7 @@ public class UserPasswordAuthenticationConfiguration extends AuthenticationConfi
     public String shortId()
     {
         return "UserPassword" +
-                "_username:" + username +
-                // TODO: @akphi - think if we need to also add shortId for these credential refs
-                "_password:" + password;
+                "--username__" + username +
+                "--password__" + password;
     }
 }

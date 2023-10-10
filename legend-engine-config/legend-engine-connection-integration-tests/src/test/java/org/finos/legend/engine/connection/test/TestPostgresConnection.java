@@ -20,7 +20,7 @@ import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.connection.jdbc.StaticJDBCConnectionSpecification;
+import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.connection.protocol.ConnectionSpecification;

@@ -14,39 +14,49 @@
 
 package org.finos.legend.connection.impl;
 
-import org.finos.legend.connection.ConnectionBuilder;
+import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.jdbc.JDBCConnectionManager;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 import java.sql.Connection;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
-import static org.finos.legend.connection.jdbc.impl.SnowflakeDatabaseManager.*;
+import static org.finos.legend.connection.impl.SnowflakeDatabaseManager.*;
 
 public class SnowflakeConnectionBuilder
 {
-    public static class WithKeyPair extends ConnectionBuilder<Connection, PrivateKeyCredential, SnowflakeConnectionSpecification>
+    public static class WithKeyPair extends JDBCConnectionBuilder<PrivateKeyCredential, SnowflakeConnectionSpecification>
     {
         @Override
-        public Connection getConnection(StoreInstance storeInstance, PrivateKeyCredential credential, AuthenticationConfiguration authenticationConfiguration, Identity identity) throws Exception
+        public Connection getConnection(SnowflakeConnectionSpecification connectionSpecification, Authenticator<PrivateKeyCredential> authenticator, Identity identity) throws Exception
         {
-            SnowflakeConnectionSpecification connectionSpecification = this.getCompatibleConnectionSpecification(storeInstance);
+            StoreInstance storeInstance = authenticator.getStoreInstance();
             RelationalDatabaseStoreSupport.cast(storeInstance.getStoreSupport(), DatabaseType.SNOWFLAKE);
-            Properties properties = collectExtraSnowflakeConnectionProperties(connectionSpecification);
-            properties.put("privateKey", credential.getPrivateKey());
-            properties.put("user", credential.getUser());
-            return JDBCConnectionManager.getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, identity, connectionSpecification, authenticationConfiguration, properties);
+
+            Properties connectionProperties = generateJDBCConnectionProperties(connectionSpecification);
+            Function<Credential, Properties> authenticationPropertiesSupplier = cred ->
+            {
+                PrivateKeyCredential credential = (PrivateKeyCredential) cred;
+                Properties properties = new Properties();
+                properties.put("privateKey", credential.getPrivateKey());
+                properties.put("user", credential.getUser());
+                return properties;
+            };
+
+            return this.getConnectionManager().getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, connectionProperties, authenticationPropertiesSupplier, authenticator, identity);
         }
     }
 
-    private static Properties collectExtraSnowflakeConnectionProperties(SnowflakeConnectionSpecification connectionSpecification)
+    private static Properties generateJDBCConnectionProperties(SnowflakeConnectionSpecification connectionSpecification)
     {
         Properties properties = new Properties();
         // TODO: @akphi - handle quoted identifiers
@@ -70,17 +80,17 @@ public class SnowflakeConnectionBuilder
         properties.put("db", databaseName);
         properties.put("ocspFailOpen", true);
 
-        setProperty(properties, SNOWFLAKE_ACCOUNT_TYPE_NAME, connectionSpecification.accountType);
-        setProperty(properties, SNOWFLAKE_ORGANIZATION_NAME, connectionSpecification.organization);
-        setProperty(properties, SNOWFLAKE_PROXY_HOST, connectionSpecification.proxyHost);
-        setProperty(properties, SNOWFLAKE_PROXY_PORT, connectionSpecification.proxyPort);
-        setProperty(properties, SNOWFLAKE_NON_PROXY_HOSTS, connectionSpecification.nonProxyHosts);
+        setNullableProperty(properties, SNOWFLAKE_ACCOUNT_TYPE_NAME, connectionSpecification.accountType);
+        setNullableProperty(properties, SNOWFLAKE_ORGANIZATION_NAME, connectionSpecification.organization);
+        setNullableProperty(properties, SNOWFLAKE_PROXY_HOST, connectionSpecification.proxyHost);
+        setNullableProperty(properties, SNOWFLAKE_PROXY_PORT, connectionSpecification.proxyPort);
+        setNullableProperty(properties, SNOWFLAKE_NON_PROXY_HOSTS, connectionSpecification.nonProxyHosts);
         properties.put(SNOWFLAKE_USE_PROXY, properties.get(SNOWFLAKE_PROXY_HOST) != null);
 
         return properties;
     }
 
-    private static void setProperty(Properties properties, String key, Object value)
+    private static void setNullableProperty(Properties properties, String key, Object value)
     {
         Optional.ofNullable(value).ifPresent(x -> properties.put(key, value));
     }
