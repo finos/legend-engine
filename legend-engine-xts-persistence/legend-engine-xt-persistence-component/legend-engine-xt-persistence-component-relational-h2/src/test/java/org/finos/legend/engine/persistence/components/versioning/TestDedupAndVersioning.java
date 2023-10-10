@@ -56,15 +56,15 @@ public class TestDedupAndVersioning extends BaseTest
 
     6. Filter Dups, NoVersion -> tempStagingTable with count column
     7. Filter Dups, MaxVersion do not perform versioning -> tempStagingTable with count column
-    8. throw error left] Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
+    8. Filter Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [throw Error on Data errors]
     9. Filter Dups, AllVersion do not perform versioning -> tempStagingTable with count column
-    10. throw error left] Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
+    10. Filter Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [throw Error on Data errors]
 
     11.Fail on Dups, NoVersion -> tempStagingTable with count column [Throw error on dups]
     12.Fail on Dups, MaxVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
     13.Fail on Dups, MaxVersion with perform versioning -> tempStagingTable with count column and only max version [Throw error on dups, throw Error on Data errors]
     14.Fail on Dups, AllVersion do not perform versioning -> tempStagingTable with count column [Throw error on dups]
-    15. Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
+    15.Fail on Dups, AllVersion with perform versioning -> tempStagingTable with count column and Data splits [Throw error on dups, throw Error on Data errors]
     */
 
     private static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).primaryKey(true).fieldAlias(nameName).build();
@@ -566,7 +566,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .build();
     }
 
-    private DatasetDefinition getStagingTableWithVersion()
+    public static DatasetDefinition getStagingTableWithVersion()
     {
         return DatasetDefinition.builder()
                 .group(testSchemaName)
@@ -587,7 +587,7 @@ public class TestDedupAndVersioning extends BaseTest
         h2Sink.executeStatement(createSql);
     }
 
-    private void createStagingTableWithVersion()
+    public static void createStagingTableWithVersion()
     {
         String createSql = "CREATE TABLE IF NOT EXISTS \"TEST\".\"staging\"" +
                 "(\"id\" INTEGER NOT NULL," +
@@ -621,7 +621,7 @@ public class TestDedupAndVersioning extends BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadDataIntoStagingTableWithVersion(String path) throws Exception
+    public static void loadDataIntoStagingTableWithVersion(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +

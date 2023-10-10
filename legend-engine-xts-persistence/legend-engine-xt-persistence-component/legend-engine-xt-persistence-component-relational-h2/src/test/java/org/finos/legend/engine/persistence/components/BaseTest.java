@@ -542,7 +542,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void validateFileExists(String path) throws Exception
+    protected static void validateFileExists(String path) throws Exception
     {
         File f = new File(path);
         if (!f.exists())

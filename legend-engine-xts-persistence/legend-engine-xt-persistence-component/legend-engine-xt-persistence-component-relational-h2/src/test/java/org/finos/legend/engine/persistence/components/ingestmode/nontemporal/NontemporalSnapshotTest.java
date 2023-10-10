@@ -22,10 +22,12 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.versioning.TestDedupAndVersioning;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,14 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Filter;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class NontemporalSnapshotTest extends BaseTest
 {
@@ -259,39 +254,54 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test Nontemporal Snapshot when data splits are enabled
+    Scenario: Test Nontemporal Snapshot when MaxVersion and FilterDuplicates are enabled
     */
     @Test
     void testNontemporalSnapshotWithMaxVersionAndFilterDuplicates() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
-        String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
-        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+        DatasetDefinition stagingTable = TestDedupAndVersioning.getStagingTableWithVersion();
+
+        // Create staging table
+        TestDedupAndVersioning.createStagingTableWithVersion();
 
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(MaxVersionStrategy.of(""))
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").versioningComparator(VersioningComparator.ALWAYS).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
 
-        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
-        String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
-        // Execute plans and verify results
-        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
-        dataSplitRanges.add(DataSplitRange.of(1, 1));
-        dataSplitRanges.add(DataSplitRange.of(2, 2));
-        dataSplitRanges.add(DataSplitRange.of(3, 3));
+        // ------------ Perform snapshot milestoning Pass1 ------------------------
+        String dataPass1 = "src/test/resources/data/dedup-and-versioning/input/data2_with_dups_no_data_error.csv";
+        String expectedDataPass1 = basePath + "expected/max_version_filter_duplicates/expected_pass1.csv";
+        // 1. Load staging table
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersion(dataPass1);
+        // 2. Execute plans and verify results
 
-        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
-        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 3, 0, 0);
-        expectedStatsList.add(expectedStats);
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform snapshot milestoning Pass2 ------------------------
+        // Throw Data Error
+        String dataPass2 = "src/test/resources/data/dedup-and-versioning/input/data3_with_dups_and_data_error.csv";
+        // 1. Load staging table
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+        }
     }
 
 }
