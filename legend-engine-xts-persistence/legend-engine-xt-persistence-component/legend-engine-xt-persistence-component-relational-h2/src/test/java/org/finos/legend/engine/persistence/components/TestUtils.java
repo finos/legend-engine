@@ -253,6 +253,19 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithNonPkVersion()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(version)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithFilterForDB()
     {
         return SchemaDefinition.builder()
@@ -333,6 +346,15 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getStagingTableWithNoPks()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getSchemaWithNoPKs())
+            .build();
+    }
+
     public static DatasetDefinition getBasicStagingTableWithExpiryDatePk()
     {
         return DatasetDefinition.builder()
@@ -348,6 +370,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithNonPkVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithNonPkVersion())
             .build();
     }
 

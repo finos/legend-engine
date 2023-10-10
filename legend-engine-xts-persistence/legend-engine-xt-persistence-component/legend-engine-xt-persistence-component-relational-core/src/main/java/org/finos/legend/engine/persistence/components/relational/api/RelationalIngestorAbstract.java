@@ -349,7 +349,6 @@ public abstract class RelationalIngestorAbstract
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
             Map<ErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
-            System.out.println(errorStatistics);
 
             /* Error Checks
             1. if Dedup = fail on dups, Fail the job if count > 1

@@ -76,6 +76,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .digestField(applyCase(appendOnly.digestField()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
+                .versioningStrategy(appendOnly.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .filterExistingRecords(appendOnly.filterExistingRecords())
                 .build();
     }
@@ -100,6 +101,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .dataSplitField(applyCase(nontemporalDelta.dataSplitField()))
                 .mergeStrategy(nontemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
                 .auditing(nontemporalDelta.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(nontemporalDelta.deduplicationStrategy())
                 .versioningStrategy(nontemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
@@ -114,6 +116,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .addAllPartitionFields(applyCase(unitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(unitemporalSnapshot.partitionValuesByField()))
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
+                .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -127,6 +131,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .addAllOptimizationFilters(unitemporalDelta.optimizationFilters().stream().map(filter -> applyCase(filter)).collect(Collectors.toList()))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .mergeStrategy(unitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
+                .deduplicationStrategy(unitemporalDelta.deduplicationStrategy())
                 .versioningStrategy(unitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
@@ -141,6 +146,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .validityMilestoning(bitemporalSnapshot.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .addAllPartitionFields(applyCase(bitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(bitemporalSnapshot.partitionValuesByField()))
+                .deduplicationStrategy(bitemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(bitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -155,6 +162,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .validityMilestoning(bitemporalDelta.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
                 .mergeStrategy(bitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
+                .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
+                .versioningStrategy(bitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -165,6 +174,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .batchIdField(applyCase(bulkLoad.batchIdField()))
                 .digestGenStrategy(bulkLoad.digestGenStrategy().accept(new DigestGenStrategyCaseConverter()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(bulkLoad.deduplicationStrategy())
+                .versioningStrategy(bulkLoad.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 

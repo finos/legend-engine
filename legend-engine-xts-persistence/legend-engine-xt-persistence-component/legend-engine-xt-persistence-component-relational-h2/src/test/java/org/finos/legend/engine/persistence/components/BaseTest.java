@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BaseTest
 {
@@ -124,6 +126,17 @@ public class BaseTest
     {
         RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
         LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(tempTable, true);
+        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
+        executor.executePhysicalPlan(tableCreationPhysicalPlan);
+    }
+
+    protected void createStagingTableWithoutPrimaryKeys(DatasetDefinition stagingTable) throws Exception
+    {
+        List<Field> fieldsWithoutPk = stagingTable.schema().fields().stream()
+            .map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
+        DatasetDefinition stagingTableWithoutPrimaryKeys =  stagingTable.withSchema(stagingTable.schema().withFields(fieldsWithoutPk));
+        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTableWithoutPrimaryKeys, true);
         SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
         executor.executePhysicalPlan(tableCreationPhysicalPlan);
     }
@@ -284,6 +297,7 @@ public class BaseTest
 
         datasets = ingestor.create(datasets);
         datasets = ingestor.evolve(datasets);
+        datasets = ingestor.dedupAndVersion(datasets);
 
         executor.begin();
         IngestorResult result = ingestor.ingest(datasets);
@@ -328,6 +342,26 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataWithNoPk(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(name, income, expiry_date) " +
+            "SELECT \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE)" +
+            " FROM CSVREAD( '" + path + "', 'name, income, expiry_date', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithNoPkInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(NAME, INCOME, EXPIRY_DATE) " +
+            "SELECT \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"EXPIRY_DATE\", DATE)" +
+            " FROM CSVREAD( '" + path + "', 'NAME, INCOME, EXPIRY_DATE', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataForWithPartition(String path) throws Exception
     {
         validateFileExists(path);
@@ -355,6 +389,16 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithVersionInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION) " +
+            "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

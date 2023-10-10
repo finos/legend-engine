@@ -514,6 +514,10 @@ public abstract class Planner
         public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
         {
             validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            if (primaryKeys.contains(maxVersionStrategy.versioningField()))
+            {
+                throw new IllegalStateException("Versioning field cannot be a primary key");
+            }
             return null;
         }
 
@@ -521,6 +525,10 @@ public abstract class Planner
         public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
         {
             validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            if (primaryKeys.contains(allVersionsStrategyAbstract.versioningField()))
+            {
+                throw new IllegalStateException("Versioning field cannot be a primary key");
+            }
             return null;
         }
     }
