@@ -427,12 +427,13 @@ public class AnsiTestArtifacts
             "\"delete_indicator\" VARCHAR," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
-    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+    public static String expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
             "\"amount\" DOUBLE," +
             "\"validity_from_reference\" DATETIME NOT NULL," +
             "\"digest\" VARCHAR," +
+            "\"version\" INTEGER," +
             "\"data_split\" BIGINT NOT NULL," +
             "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"data_split\"))";
 

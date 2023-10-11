@@ -293,6 +293,18 @@ public class MemsqlTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
+    public static String expectedBitemporalFromOnlyMainTableWithVersionCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+        "(`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`digest` VARCHAR(256)," +
+        "`version` INTEGER," +
+        "`batch_id_in` INTEGER NOT NULL," +
+        "`batch_id_out` INTEGER," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
     public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
@@ -346,6 +358,18 @@ public class MemsqlTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
+    public static String expectedBitemporalFromOnlyTempTableWithVersionCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`" +
+        "(`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`digest` VARCHAR(256)," +
+        "`version` INTEGER," +
+        "`batch_id_in` INTEGER NOT NULL," +
+        "`batch_id_out` INTEGER," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
     public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`(" +
             "`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
@@ -390,12 +414,13 @@ public class MemsqlTestArtifacts
             "`delete_indicator` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
-    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+    public static String expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`validity_from_reference` DATETIME NOT NULL," +
             "`digest` VARCHAR(256)," +
+            "`version` INTEGER," +
             "`data_split` BIGINT NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`))";
 

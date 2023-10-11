@@ -300,6 +300,18 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
+    public static String expectedBitemporalFromOnlyMainTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`digest` STRING," +
+        "`version` INT64," +
+        "`batch_id_in` INT64 NOT NULL," +
+        "`batch_id_out` INT64," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
+
     public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
@@ -354,6 +366,18 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
+    public static String expectedBitemporalFromOnlyTempTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`temp`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`digest` STRING," +
+        "`version` INT64," +
+        "`batch_id_in` INT64 NOT NULL," +
+        "`batch_id_out` INT64," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
+
     public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`temp`(" +
             "`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
@@ -398,12 +422,13 @@ public class BigQueryTestArtifacts
             "`delete_indicator` STRING," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
-    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+    public static String expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`validity_from_reference` DATETIME NOT NULL," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`data_split` INT64 NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`) NOT ENFORCED)";
 

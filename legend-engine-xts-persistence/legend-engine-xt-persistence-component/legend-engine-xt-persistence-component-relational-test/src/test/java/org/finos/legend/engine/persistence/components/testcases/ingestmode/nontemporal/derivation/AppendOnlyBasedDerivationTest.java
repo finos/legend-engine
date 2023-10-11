@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseC
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.scenarios.AppendOnlyScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Assertions;
@@ -53,7 +54,7 @@ public class AppendOnlyBasedDerivationTest
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
+        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FailOnDuplicates);
     }
 
     @Test
