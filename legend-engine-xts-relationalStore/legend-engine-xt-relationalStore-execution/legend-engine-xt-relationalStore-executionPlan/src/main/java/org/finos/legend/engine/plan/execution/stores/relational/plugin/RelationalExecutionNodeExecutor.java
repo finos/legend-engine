@@ -928,7 +928,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    static Function<Object, String> getNormalizer(String quoteCharacterReplacement, String databaseTimeZone) {
+    static Function<Object, String> getNormalizer(String quoteCharacterReplacement, String databaseTimeZone)
+    {
         return v ->
         {
             if (v == null)
