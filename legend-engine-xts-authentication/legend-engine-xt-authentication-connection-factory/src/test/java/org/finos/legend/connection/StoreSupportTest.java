@@ -22,8 +22,8 @@ import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class StoreSupportTest
 {
@@ -38,13 +38,13 @@ public class StoreSupportTest
         // failure
         Exception exception;
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreSupport.Builder().build();
         });
-        Assert.assertEquals("Identifier is missing", exception.getMessage());
+        Assertions.assertEquals("Identifier is missing", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreSupport.Builder()
                     .withIdentifier("test")
@@ -57,9 +57,9 @@ public class StoreSupportTest
                                     .build()
                     ).build();
         });
-        Assert.assertEquals("Found multiple configurations for authentication mechanism 'UsernamePassword'", exception.getMessage());
+        Assertions.assertEquals("Found multiple configurations for authentication mechanism 'UsernamePassword'", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreSupport.Builder()
                     .withIdentifier("test")
@@ -72,9 +72,9 @@ public class StoreSupportTest
                                     .build()
                     ).build();
         });
-        Assert.assertEquals("Authentication configuration type 'UserPasswordAuthenticationConfiguration' is associated with multiple authentication mechanisms", exception.getMessage());
+        Assertions.assertEquals("Authentication configuration type 'UserPasswordAuthenticationConfiguration' is associated with multiple authentication mechanisms", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreSupport.Builder()
                     .withIdentifier("test")
@@ -83,7 +83,7 @@ public class StoreSupportTest
                                     .build()
                     ).build();
         });
-        Assert.assertEquals("No authentication configuration type is associated with authentication mechanism 'UsernamePassword'", exception.getMessage());
+        Assertions.assertEquals("No authentication configuration type is associated with authentication mechanism 'UsernamePassword'", exception.getMessage());
     }
 
     @Test
@@ -116,7 +116,7 @@ public class StoreSupportTest
                 )
                 .withConnectionSpecification(new TestConnectionSpecification())
                 .build();
-        Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD}, testStore.getAuthenticationMechanisms().toArray());
+        Assertions.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD}, testStore.getAuthenticationMechanisms().toArray());
 
         // make sure if no auth mechanisms is specified, all mechanisms will be supported
         StoreInstance testStore2 = new StoreInstance.Builder(environment)
@@ -124,7 +124,7 @@ public class StoreSupportTest
                 .withStoreSupportIdentifier("test")
                 .withConnectionSpecification(new TestConnectionSpecification())
                 .build();
-        Assert.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD, AuthenticationMechanismType.KERBEROS}, testStore2.getAuthenticationMechanisms().toArray());
+        Assertions.assertArrayEquals(new AuthenticationMechanism[]{AuthenticationMechanismType.USER_PASSWORD, AuthenticationMechanismType.KERBEROS}, testStore2.getAuthenticationMechanisms().toArray());
 
         // make sure if no authentication configuration type is specified, all types will be supported
         StoreInstance testStore3 = new StoreInstance.Builder(environment)
@@ -133,7 +133,7 @@ public class StoreSupportTest
                 .withConnectionSpecification(new TestConnectionSpecification())
                 .withAuthenticationMechanismConfiguration(new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).build())
                 .build();
-        Assert.assertArrayEquals(Lists.mutable.of(
+        Assertions.assertArrayEquals(Lists.mutable.of(
                 UserPasswordAuthenticationConfiguration.class,
                 EncryptedPrivateKeyPairAuthenticationConfiguration.class
         ).toArray(), testStore3.getAuthenticationMechanismConfiguration(AuthenticationMechanismType.USER_PASSWORD).getAuthenticationConfigurationTypes().toArray());
@@ -141,16 +141,16 @@ public class StoreSupportTest
         // failure
         Exception exception;
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
                     .withStoreSupportIdentifier("test")
                     .build();
         });
-        Assert.assertEquals("Connection specification is missing", exception.getMessage());
+        Assertions.assertEquals("Connection specification is missing", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
@@ -164,9 +164,9 @@ public class StoreSupportTest
                     .withConnectionSpecification(new TestConnectionSpecification())
                     .build();
         });
-        Assert.assertEquals("Found multiple configurations for authentication mechanism 'UsernamePassword'", exception.getMessage());
+        Assertions.assertEquals("Found multiple configurations for authentication mechanism 'UsernamePassword'", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
@@ -178,11 +178,11 @@ public class StoreSupportTest
                     .withConnectionSpecification(new TestConnectionSpecification())
                     .build();
         });
-        Assert.assertEquals("Authentication mechanism 'APIKey' is not covered by store support 'test'. Supported mechanism(s):\n" +
+        Assertions.assertEquals("Authentication mechanism 'APIKey' is not covered by store support 'test'. Supported mechanism(s):\n" +
                 "- UsernamePassword\n" +
                 "- Kerberos", exception.getMessage());
 
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new StoreInstance.Builder(environment)
                     .withIdentifier("test-store")
@@ -195,7 +195,7 @@ public class StoreSupportTest
                     .withConnectionSpecification(new TestConnectionSpecification())
                     .build();
         });
-        Assert.assertEquals("Authentication configuration type 'KerberosAuthenticationConfiguration' is not covered by store support 'test' for authentication mechanism 'UsernamePassword'. Supported configuration type(s):\n" +
+        Assertions.assertEquals("Authentication configuration type 'KerberosAuthenticationConfiguration' is not covered by store support 'test' for authentication mechanism 'UsernamePassword'. Supported configuration type(s):\n" +
                 "- UserPasswordAuthenticationConfiguration\n" +
                 "- EncryptedPrivateKeyPairAuthenticationConfiguration", exception.getMessage());
     }
@@ -238,17 +238,17 @@ public class StoreSupportTest
         Exception exception;
 
         // error: store already registered
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             new DefaultStoreInstanceProvider.Builder().withStoreInstances(storeInstance, storeInstance).build();
         });
-        Assert.assertEquals("Found multiple store instances with identifier 'test-store'", exception.getMessage());
+        Assertions.assertEquals("Found multiple store instances with identifier 'test-store'", exception.getMessage());
 
         // error: store not found
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             storeInstanceProvider.lookup("unknown");
         });
-        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
+        Assertions.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
     }
 }

@@ -18,7 +18,6 @@ import net.bytebuddy.asm.Advice;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.Authenticator;
-import org.finos.legend.connection.ConnectionBuilder;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
@@ -39,7 +38,6 @@ import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -173,7 +171,7 @@ public class TestJDBCConnectionManager
 
         // 5. Get yet another connection while the first and second one are still alive and used, this will
         // exceed the pool size, throwing an error
-        Assert.assertThrows(SQLTransientConnectionException.class, () ->
+        Assertions.assertThrows(SQLTransientConnectionException.class, () ->
         {
             this.connectionFactory.getConnection(identity, authenticator);
         });
@@ -231,6 +229,12 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(1, connectionPool2.getTotalConnections());
         Assertions.assertEquals(1, connectionPool2.getActiveConnections());
         Assertions.assertEquals(0, connectionPool2.getIdleConnections());
+    }
+
+    @Test
+    public void testRetryOnBrokenConnection()
+    {
+        //
     }
 
     public static class CustomAdvice

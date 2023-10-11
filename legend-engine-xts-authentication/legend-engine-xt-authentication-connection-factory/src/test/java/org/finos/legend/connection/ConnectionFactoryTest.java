@@ -21,8 +21,8 @@ import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,44 +57,44 @@ public class ConnectionFactoryTest
         Exception exception;
 
         // error: store not found
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "unknown", new AuthenticationConfiguration_X()));
         });
-        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
+        Assertions.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
 
         // error: unsupported authentication mechanism
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", TestAuthenticationMechanismType.Z));
         });
-        Assert.assertEquals("Store 'test' does not support authentication mechanism 'Z'. Supported mechanism(s):\n" +
+        Assertions.assertEquals("Store 'test' does not support authentication mechanism 'Z'. Supported mechanism(s):\n" +
                 "- X\n" +
                 "- Y", exception.getMessage());
 
         // error: authentication mechanism does not come with a default config generator
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", TestAuthenticationMechanismType.X));
         });
-        Assert.assertEquals("Can't auto-generate authentication configuration for store 'test' with authentication mechanism 'X'. Please provide a configuration of one of the following type(s):\n" +
+        Assertions.assertEquals("Can't auto-generate authentication configuration for store 'test' with authentication mechanism 'X'. Please provide a configuration of one of the following type(s):\n" +
                 "- AuthenticationConfiguration_X", exception.getMessage());
 
         // error: unsupported authentication configuration
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
         });
-        Assert.assertEquals("Store 'test' does not accept authentication configuration type 'AuthenticationConfiguration_Z'. Supported configuration type(s):\n" +
+        Assertions.assertEquals("Store 'test' does not accept authentication configuration type 'AuthenticationConfiguration_Z'. Supported configuration type(s):\n" +
                 "- AuthenticationConfiguration_X\n" +
                 "- AuthenticationConfiguration_Y", exception.getMessage());
 
         // error: unresolvable authentication flow
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
         });
-        Assert.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
     /**
@@ -256,11 +256,11 @@ public class ConnectionFactoryTest
         ), ConnectionBuilder_B.class);
 
         // error: unresolvable authentication flow
-        Exception exception = Assert.assertThrows(RuntimeException.class, () ->
+        Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getAuthenticator(new Identity("test"), "test");
         });
-        Assert.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity. Try specifying an authentication mechanism or authentication configuration. Supported configuration type(s):\n" +
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity. Try specifying an authentication mechanism or authentication configuration. Supported configuration type(s):\n" +
                 "- AuthenticationConfiguration_X (X)\n" +
                 "- AuthenticationConfiguration_Y (Y)\n" +
                 "- AuthenticationConfiguration_Z (Z)", exception.getMessage());
@@ -335,18 +335,18 @@ public class ConnectionFactoryTest
         ).newStore("test", Lists.mutable.empty());
 
         Identity identity = new Identity("test", new Credential_A());
-        Exception exception = Assert.assertThrows(RuntimeException.class, () ->
+        Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
         });
-        Assert.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
     private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator<?> authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
     {
-        Assert.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
-        Assert.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
-        Assert.assertArrayEquals(credentialBuilders.toArray(), authenticator.getCredentialBuilders().stream().map(builder -> String.format("%s->%s [%s]", builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName(), builder.getAuthenticationConfigurationType().getSimpleName())).toArray());
+        Assertions.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
+        Assertions.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
+        Assertions.assertArrayEquals(credentialBuilders.toArray(), authenticator.getCredentialBuilders().stream().map(builder -> String.format("%s->%s [%s]", builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName(), builder.getAuthenticationConfigurationType().getSimpleName())).toArray());
         connectionFactory.getConnection(identity, authenticator);
     }
 
