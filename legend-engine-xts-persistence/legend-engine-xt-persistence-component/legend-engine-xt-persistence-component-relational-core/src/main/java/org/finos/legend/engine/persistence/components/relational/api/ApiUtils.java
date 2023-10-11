@@ -231,7 +231,8 @@ public class ApiUtils
         Optional<Object> object = Optional.empty();
         if (!row.isEmpty())
         {
-            object = row.values().stream().findFirst();
+            String key = row.keySet().stream().findFirst().orElseThrow(IllegalStateException::new);
+            object = Optional.ofNullable(row.get(key));
         }
         return object;
     }

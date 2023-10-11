@@ -162,7 +162,6 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .validityMilestoning(bitemporalDelta.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
                 .mergeStrategy(bitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
-                .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
                 .versioningStrategy(bitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }

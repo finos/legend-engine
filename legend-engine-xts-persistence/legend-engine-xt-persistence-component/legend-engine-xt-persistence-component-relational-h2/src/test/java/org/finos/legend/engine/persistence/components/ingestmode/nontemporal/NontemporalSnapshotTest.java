@@ -284,7 +284,7 @@ class NontemporalSnapshotTest extends BaseTest
         TestDedupAndVersioning.loadDataIntoStagingTableWithVersion(dataPass1);
         // 2. Execute plans and verify results
 
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform snapshot milestoning Pass2 ------------------------

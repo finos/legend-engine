@@ -27,12 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorCheckLogicalPlan;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -417,17 +412,29 @@ public abstract class Planner
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
         Optional<Condition> filterCondition = Optional.empty();
-        if (dataSplitExecutionSupported())
+        Value countIncomingRecords = FunctionImpl.builder().functionName(FunctionName.COUNT).alias(INCOMING_RECORD_COUNT.get()).addValue(All.INSTANCE).build();
+        Dataset dataset = originalStagingDataset();
+
+        // If the data splits
+        if (ingestMode.dataSplitField().isPresent())
         {
-            Optional<Condition> dataSplitInRangeCondition = getDataSplitInRangeConditionForStatistics();
-            if (dataSplitInRangeCondition.isPresent())
+            dataset = stagingDataset();
+            filterCondition = getDataSplitInRangeConditionForStatistics();
+            Optional<String> duplicateCountFieldName = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+            // if the deduplication has been performed
+            if (duplicateCountFieldName.isPresent())
             {
-                filterCondition = Optional.of(dataSplitInRangeCondition.get());
+                FieldValue duplicateCountField = FieldValue.builder().fieldName(duplicateCountFieldName.get()).datasetRef(dataset.datasetReference()).build();
+                countIncomingRecords = FunctionImpl.builder().functionName(FunctionName.SUM).alias(INCOMING_RECORD_COUNT.get()).addValue(duplicateCountField).build();
             }
         }
 
         LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get(), filterCondition))
+                .addOps(Selection.builder()
+                        .source(dataset)
+                        .addFields(countIncomingRecords)
+                        .condition(filterCondition)
+                        .build())
                 .build();
         postRunStatisticsResult.put(INCOMING_RECORD_COUNT, incomingRecordCountPlan);
     }

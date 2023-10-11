@@ -172,7 +172,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(3, 0, 2, 0, 0);
+        expectedStats = createExpectedStatsMap(4, 0, 2, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
     }
 
@@ -261,7 +261,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(4, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
@@ -270,7 +270,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        expectedStats = createExpectedStatsMap(4, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
     }
 
