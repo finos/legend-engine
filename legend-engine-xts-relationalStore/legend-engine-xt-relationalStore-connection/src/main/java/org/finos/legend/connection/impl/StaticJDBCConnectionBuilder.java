@@ -46,7 +46,7 @@ public class StaticJDBCConnectionBuilder
                 return properties;
             };
 
-            return this.getConnectionManager().getConnection(storeSupport.getDatabase(), connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, connectionProperties, authenticationPropertiesSupplier, authenticator, identity);
+            return this.getConnectionManager().getConnection(storeSupport.getDatabase(), connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
         }
     }
 }

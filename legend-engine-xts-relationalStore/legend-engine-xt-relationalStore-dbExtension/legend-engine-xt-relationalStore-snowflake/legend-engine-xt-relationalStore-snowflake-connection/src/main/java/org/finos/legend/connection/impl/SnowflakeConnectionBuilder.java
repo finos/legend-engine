@@ -52,7 +52,7 @@ public class SnowflakeConnectionBuilder
                 return properties;
             };
 
-            return this.getConnectionManager().getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, connectionProperties, authenticationPropertiesSupplier, authenticator, identity);
+            return this.getConnectionManager().getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
         }
     }
 

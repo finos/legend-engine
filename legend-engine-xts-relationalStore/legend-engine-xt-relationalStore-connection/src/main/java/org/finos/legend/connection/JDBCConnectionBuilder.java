@@ -22,6 +22,8 @@ import java.sql.Connection;
 
 public abstract class JDBCConnectionBuilder<CRED extends Credential, SPEC extends ConnectionSpecification> extends ConnectionBuilder<Connection, CRED, SPEC>
 {
+    private JDBCConnectionManager.ConnectionPoolConfig connectionPoolConfig;
+
     @Override
     public Class<? extends Credential> getCredentialType()
     {
@@ -38,5 +40,15 @@ public abstract class JDBCConnectionBuilder<CRED extends Credential, SPEC extend
     public JDBCConnectionManager getConnectionManager()
     {
         return JDBCConnectionManager.getInstance();
+    }
+
+    public void setConnectionPoolConfig(JDBCConnectionManager.ConnectionPoolConfig connectionPoolConfig)
+    {
+        this.connectionPoolConfig = connectionPoolConfig;
+    }
+
+    public JDBCConnectionManager.ConnectionPoolConfig getConnectionPoolConfig()
+    {
+        return connectionPoolConfig;
     }
 }

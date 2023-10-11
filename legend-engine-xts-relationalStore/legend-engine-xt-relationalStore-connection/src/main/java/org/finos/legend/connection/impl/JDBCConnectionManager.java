@@ -46,6 +46,10 @@ import java.util.logging.Logger;
 
 public class JDBCConnectionManager implements ConnectionManager
 {
+    private static final long HIKARICP_DEFAULT_CONNECTION_TIMEOUT = 30000L;
+    private static final int HIKARICP_DEFAULT_MAX_POOL_SIZE = 100;
+    private static final int HIKARICP_DEFAULT_MIN_POOL_SIZE = 0;
+
     private static final ConcurrentHashMap<String, DatabaseManager> managerByName = ConcurrentHashMap.newMap();
     private static final AtomicBoolean isInitialized = new AtomicBoolean();
 
@@ -91,14 +95,15 @@ public class JDBCConnectionManager implements ConnectionManager
         JDBCConnectionManager.setup();
     }
 
-    protected Connection getConnection(Database database,
-                                       String host,
-                                       int port,
-                                       String databaseName,
-                                       Properties connectionProperties,
-                                       Function<Credential, Properties> authenticationPropertiesSupplier,
-                                       Authenticator authenticator,
-                                       Identity identity
+    public Connection getConnection(Database database,
+                                    String host,
+                                    int port,
+                                    String databaseName,
+                                    Properties connectionProperties,
+                                    ConnectionPoolConfig connectionPoolConfig,
+                                    Function<Credential, Properties> authenticationPropertiesSupplier,
+                                    Authenticator authenticator,
+                                    Identity identity
     ) throws SQLException
     {
         StoreInstance storeInstance = authenticator.getStoreInstance();
@@ -107,7 +112,7 @@ public class JDBCConnectionManager implements ConnectionManager
         String poolName = getPoolName(identity, connectionSpecification, authenticationConfiguration);
 
         // TODO: @akphi - this is simplistic, we need to handle concurrency and errors
-        Supplier<HikariDataSource> dataSourceSupplier = () -> this.buildDataSource(database, host, port, databaseName, connectionProperties, authenticationPropertiesSupplier, authenticator, identity);
+        Supplier<HikariDataSource> dataSourceSupplier = () -> this.buildDataSource(database, host, port, databaseName, connectionProperties, connectionPoolConfig, authenticationPropertiesSupplier, authenticator, identity);
         Function0<ConnectionPool> connectionPoolSupplier = () -> new ConnectionPool(dataSourceSupplier.get());
         ConnectionPool connectionPool = this.poolIndex.getIfAbsentPut(poolName, connectionPoolSupplier);
 
@@ -147,6 +152,7 @@ public class JDBCConnectionManager implements ConnectionManager
             int port,
             String databaseName,
             Properties connectionProperties,
+            ConnectionPoolConfig connectionPoolConfig,
             Function<Credential, Properties> authenticationPropertiesSupplier,
             Authenticator authenticator,
             Identity identity
@@ -165,11 +171,10 @@ public class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.setPoolName(poolName);
         jdbcConfig.setJdbcUrl(jdbcUrl);
 
-        // TODO: @akphi - should we give more granularity here?? check with @pierredebelen, @kevin-m-knight-gs, @epsstan
-        // values from connection specification, feels like this should be per connection builder instead
-//        jdbcConfig.setMaximumPoolSize(maxPoolSize);
-//        jdbcConfig.setMinimumIdle(minPoolSize);
-//        jdbcConfig.setConnectionTimeout(connectionTimeout);
+        // NOTE: we could allow more granularity by allow specifying these pooling configurations at specification level
+        jdbcConfig.setMinimumIdle(connectionPoolConfig != null && connectionPoolConfig.getMinPoolSize() != null ? connectionPoolConfig.getMinPoolSize() : HIKARICP_DEFAULT_MIN_POOL_SIZE);
+        jdbcConfig.setMaximumPoolSize(connectionPoolConfig != null && connectionPoolConfig.getMaxPoolSize() != null ? connectionPoolConfig.getMaxPoolSize() : HIKARICP_DEFAULT_MAX_POOL_SIZE);
+        jdbcConfig.setConnectionTimeout(connectionPoolConfig != null && connectionPoolConfig.getConnectionTimeout() != null ? connectionPoolConfig.getConnectionTimeout() : HIKARICP_DEFAULT_CONNECTION_TIMEOUT);
 
         // specific system configuration to disable statement cache for all databases
         // TODO: @akphi - document why we need to do this, check with @pierredebelen, @kevin-m-knight-gs, @epsstan
@@ -223,6 +228,65 @@ public class JDBCConnectionManager implements ConnectionManager
             throw new RuntimeException(String.format("Can't find any matching managers for database type '%s'", database.getLabel()));
         }
         return manager;
+    }
+
+    public static class ConnectionPoolConfig
+    {
+        private final Integer minPoolSize;
+        private final Integer maxPoolSize;
+        private final Long connectionTimeout;
+
+        private ConnectionPoolConfig(Integer minPoolSize, Integer maxPoolSize, Long connectionTimeout)
+        {
+            this.minPoolSize = minPoolSize;
+            this.maxPoolSize = maxPoolSize;
+            this.connectionTimeout = connectionTimeout;
+        }
+
+        public Integer getMinPoolSize()
+        {
+            return minPoolSize;
+        }
+
+        public Integer getMaxPoolSize()
+        {
+            return maxPoolSize;
+        }
+
+        public Long getConnectionTimeout()
+        {
+            return connectionTimeout;
+        }
+
+        public static class Builder
+        {
+            private Integer minPoolSize = null;
+            private Integer maxPoolSize = null;
+            private Long connectionTimeout = null;
+
+            public Builder withMinPoolSize(Integer minPoolSize)
+            {
+                this.minPoolSize = minPoolSize;
+                return this;
+            }
+
+            public Builder withMaxPoolSize(Integer maxPoolSize)
+            {
+                this.maxPoolSize = maxPoolSize;
+                return this;
+            }
+
+            public Builder withConnectionTimeout(Long connectionTimeout)
+            {
+                this.connectionTimeout = connectionTimeout;
+                return this;
+            }
+
+            public ConnectionPoolConfig build()
+            {
+                return new ConnectionPoolConfig(this.minPoolSize, this.maxPoolSize, this.connectionTimeout);
+            }
+        }
     }
 
     public static class ConnectionPool

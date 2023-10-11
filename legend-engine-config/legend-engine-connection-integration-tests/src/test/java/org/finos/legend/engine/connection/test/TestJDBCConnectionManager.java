@@ -18,10 +18,12 @@ import net.bytebuddy.asm.Advice;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.Authenticator;
+import org.finos.legend.connection.ConnectionBuilder;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
+import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
@@ -37,12 +39,14 @@ import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.SQLTransientConnectionException;
 import java.util.Properties;
 
 public class TestJDBCConnectionManager
@@ -105,12 +109,19 @@ public class TestJDBCConnectionManager
     @Test
     public void testBasicConnectionPooling() throws Exception
     {
+        JDBCConnectionBuilder customizedJDBCConnectionBuilder = new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword();
+        customizedJDBCConnectionBuilder.setConnectionPoolConfig(
+                new JDBCConnectionManager.ConnectionPoolConfig.Builder()
+                        .withMaxPoolSize(2)
+                        .withConnectionTimeout(1000L)
+                        .build()
+        );
         this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
                 .withCredentialBuilders(
                         new UserPasswordCredentialBuilder()
                 )
                 .withConnectionBuilders(
-                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
+                        customizedJDBCConnectionBuilder
                 )
                 .build();
         this.storeInstanceProvider.injectStoreInstance(this.storeInstance);
@@ -159,6 +170,13 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(2, connectionPool.getTotalConnections());
         Assertions.assertEquals(2, connectionPool.getActiveConnections());
         Assertions.assertEquals(0, connectionPool.getIdleConnections());
+
+        // 5. Get yet another connection while the first and second one are still alive and used, this will
+        // exceed the pool size, throwing an error
+        Assert.assertThrows(SQLTransientConnectionException.class, () ->
+        {
+            this.connectionFactory.getConnection(identity, authenticator);
+        });
     }
 
     @Test
@@ -233,8 +251,6 @@ public class TestJDBCConnectionManager
 //    {
 //        static class WithPlaintextUsernamePassword extends StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword
 //        {
-//            private final InstrumentedJDBCConnectionManager connectionManager;
-//
 //            WithPlaintextUsernamePassword(Function<HikariConfig, Void> hikariConfigHandler)
 //            {
 //                this.connectionManager = new InstrumentedJDBCConnectionManager(hikariConfigHandler);
