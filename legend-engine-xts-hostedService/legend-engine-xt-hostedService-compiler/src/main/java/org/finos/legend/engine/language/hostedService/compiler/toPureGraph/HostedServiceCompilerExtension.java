@@ -80,8 +80,8 @@ public class HostedServiceCompilerExtension implements CompilerExtension
 
     public Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration buildDeploymentConfig(HostedServiceDeploymentConfiguration config, CompileContext context)
     {
-        return new Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration_Impl("", null, context.pureModel.getClass("meta::external::function::activator::hostedService::HostedServiceDeploymentConfiguration"))
-                ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", config.stage.name()));
+        return new Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration_Impl("", null, context.pureModel.getClass("meta::external::function::activator::hostedService::HostedServiceDeploymentConfiguration"));
+              //  ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", config.stage.name()));
     }
 
     public Root_meta_external_function_activator_hostedService_HostedService buildHostedService(HostedService app, CompileContext context)

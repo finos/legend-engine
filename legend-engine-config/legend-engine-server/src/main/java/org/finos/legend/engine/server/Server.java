@@ -349,7 +349,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, serverConfiguration.activatorConfiguration, routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());

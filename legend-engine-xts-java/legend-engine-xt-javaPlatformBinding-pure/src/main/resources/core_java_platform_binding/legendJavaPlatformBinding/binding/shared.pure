@@ -194,10 +194,7 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
       let itemType      = if($javaType->isJavaList(), |$javaType->elementType(), |$javaType)->toUnboxed();
                                                                    
       let occurs                = occursFromMultiplicity($p.multiplicity);
-      let getSize               = if($javaType->isJavaList(), 
-                                     | j_this($baseClass)->j_field($fieldName, $javaType)->j_invoke('size', [], javaInt()),
-                                     | j_this($baseClass)->j_field($sizeFieldName, javaInt())
-                                  );
+      let getSize               = j_this($baseClass)->j_field($sizeFieldName, javaInt());
       let lowerBoundClause      = $getSize->j_lt($occurs.first);
       let upperBoundClause      = $getSize->j_gt($occurs.second);
       let expectedMultiplicity  = $p.multiplicity->printMultiplicity();
@@ -234,37 +231,29 @@ function meta::external::format::shared::executionPlan::platformBinding::legendJ
 
    let withFieldsAndGetters = $properties->fold(
       {p, c|
-         if($p.javaType->isJavaList(), 
-            {|
-               $c ->addField(javaField('private', $p.javaType, $p.fieldName))
-                  ->addMethod({cls|
-                     let field = j_this($cls)->j_field($p.fieldName);
-
-                     javaMethod('public', $p.javaType, $p.getterName, [],
-                        j_return(j_conditional($field->j_eq(j_null()), javaCollections()->j_invoke($p.itemType, 'emptyList', [], $p.javaType), $field))
-                     );
-                  })
-                  ->addMethods({cls|
-                     $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
-                  });
-            },
-            {|
-               $c ->addField(javaField('private', $p.javaType->toUnboxed(), $p.fieldName))
-                  ->addField(javaField('private', javaInt(), $p.sizeFieldName, j_int(0)))
-                  ->addMethod({cls|
-                     let field     = j_this($cls)->j_field($p.fieldName);
-                     let fieldSize = j_this($cls)->j_field($p.sizeFieldName);
-
-                     javaMethod('public', $p.javaType, $p.getterName, [],
-                        j_return(j_conditional($fieldSize->j_eq(j_int(0)), j_null(), $field))
-                     );
-                  })
-                  ->addMethods({cls|
-                     $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
-                  });
-
-            }
+         let javaType = if($p.javaType->isJavaList(),
+            |$p.javaType,
+            |$p.javaType->toUnboxed()
          );
+
+         let nullValue = if($p.javaType->isJavaList(),
+            |javaCollections()->j_invoke('emptyList', [], $p.javaType),
+            |j_null()
+         );
+
+         $c ->addField(javaField('private', $javaType, $p.fieldName))
+            ->addField(javaField('private', javaInt(), $p.sizeFieldName, j_int(0)))
+            ->addMethod({cls|
+                let field     = j_this($cls)->j_field($p.fieldName);
+                let fieldSize = j_this($cls)->j_field($p.sizeFieldName);
+
+                javaMethod('public', $p.javaType, $p.getterName, [],
+                  j_return(j_conditional($fieldSize->j_eq(j_int(0)), $nullValue, $field))
+                );
+            })
+            ->addMethods({cls|
+                $cls->filter(c| $p.property->in($mappedProperties))->map(c| $c->adderMethods($p, $conventions));
+            });
       }, 
       $baseClass      
    );
@@ -396,6 +385,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::platf
                      ));
 
 
+   let fieldSize = j_this($jc)->j_field($prop.sizeFieldName);
    let impl = $adderValue.create->concatenate(
       if($prop.javaType->isJavaList(),
          {|
@@ -403,12 +393,11 @@ function <<access.private>> meta::external::format::shared::executionPlan::platf
                j_if($field->j_eq(j_null()),
                   $field->j_assign(javaArrayList($prop.itemType)->j_new([]))
                ),
-               $field->j_invoke('add', $adderValue.access)
-            ]
+               $field->j_invoke('add', $adderValue.access),
+               $fieldSize->j_inc()
+            ];
          },
          {|
-            let fieldSize = j_this($jc)->j_field($prop.sizeFieldName);
-
             [
                j_if($fieldSize->j_eq(j_int(0)),
                   $field->j_assign($adderValue.access)

@@ -21,12 +21,7 @@ public class SnowflakeDeploymentConfiguration extends DeploymentConfiguration
 {
     public ConnectionPointer activationConnection;
 
-    public String applicationName;
-
-    public SnowflakeDeploymentConfiguration(String applicationName)
-    {
-        this.applicationName = applicationName;
-    }
+//    public String applicationName;
 
     public SnowflakeDeploymentConfiguration()
     {

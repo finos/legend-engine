@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 import meta::xsd::tests::toPure::*;
 import meta::external::format::xml::executionPlan::test::*;
 import meta::external::format::xml::metamodel::xml::*;
@@ -32,6 +31,41 @@ Class meta::external::format::xml::executionPlan::test::Person
 {
   firstName : String[1];
   lastName  : String[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::PersonWithFirm
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::PersonWithFirmConstraint
+[
+  $this.age > 0
+]
+{
+  firstName   : String[1];
+  lastName    : String[1];
+  age         : Integer[0..1];
+  dateOfBirth : StrictDate[0..1];
+  firm        : Firm[1];
+  addresses   : Address[1..*];
+}
+
+Class meta::external::format::xml::executionPlan::test::Firm
+{
+  legalName : String[1];
+  firmAddress: Address[*];
+  active    : Boolean[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::Address
+{
+  street : String[1];
 }
 
 Class meta::external::format::xml::executionPlan::test::TargetPerson
@@ -78,66 +112,6 @@ function meta::external::format::xml::executionPlan::test::getTestBinding(): Bin
   );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::xml::executionPlan::test::xmlNodes(): Boolean[1]
-{
-  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::external::format::xml::extension::xsdFormatExtension());
-
-  let binding = getTestBinding();
-  
-  let tree = #{Person {firstName, lastName}}#;
-
-  let plan = executionPlan(
-    data:Byte[*]|Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding, checked($tree, $binding)),
-    ^ExecutionContext(),
-    $extensions,
-    noDebug()
-  );
-
-  let planString = $plan->planToString(false, $extensions);
-  
-  let expected = 'Sequence\n' +
-                '(\n' +
-                '  type = String\n' +
-                '  resultSizeRange = 1\n' +
-                '  (\n' +
-                '    FunctionParametersValidationNode\n' +
-                '    (\n' +
-                '      functionParameters = [data:Byte[*]]\n' +
-                '    )\n' +
-                '    ExternalFormat_Externalize\n' +
-                '    (\n' +
-                '      type = String\n' +
-                '      resultSizeRange = 1\n' +
-                '      checked = true\n' +
-                '      binding = meta::external::format::xml::executionPlan::test::TestBinding\n' +
-                '\n' +
-                '      (\n' +
-                '        ExternalFormat_Internalize\n' +
-                '        (\n' +
-                '          type = Class[impls=]\n' +
-                '          resultSizeRange = *\n' +
-                '          binding = meta::external::format::xml::executionPlan::test::TestBinding[application/xml]\n' +
-                '          enableConstraints = true\n' +
-                '          checked = true\n' +
-                '          graphFetchTree = #{meta::external::format::xml::executionPlan::test::Person{firstName,lastName}}#\n' +
-                '\n' +
-                '          (\n' +
-                '            VariableResolution\n' +
-                '            (\n' +
-                '              type = Byte\n' +
-                '              varName = data\n' +
-                '\n' +
-                '            )\n' +
-                '          )\n' +
-                '        )\n' +
-                '      )\n' +
-                '    )\n' +
-                '  )\n' +
-                ')\n';
-
-  assertEquals($expected, $planString);   
-}
-
 function meta::external::format::xml::executionPlan::test::xsType(type: String[1]): QName[1]
 {
    ^QName(localPart=$type, namespace='http://www.w3.org/2001/XMLSchema');
@@ -145,7 +119,6 @@ function meta::external::format::xml::executionPlan::test::xsType(type: String[1
 
 ###Mapping
 import meta::external::format::xml::executionPlan::test::*;
-
 Mapping meta::external::format::xml::executionPlan::test::M2MMapping
 (
   TargetPerson: Pure

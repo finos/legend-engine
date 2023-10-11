@@ -20,8 +20,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 
 public class ResolutionQuery
 {
-    //public List<Function> queries;
     public List<Lambda> queries;
     public ResolutionKeyType keyType;
+    public Boolean optional;
     public Integer precedence;
 }

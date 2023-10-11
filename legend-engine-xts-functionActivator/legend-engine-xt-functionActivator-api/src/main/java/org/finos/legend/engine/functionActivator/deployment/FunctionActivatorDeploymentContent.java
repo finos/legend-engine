@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.functionActivator.metamodel;
+package org.finos.legend.engine.functionActivator.deployment;
 
-public class DeploymentResult
+public class FunctionActivatorDeploymentContent
 {
-    public boolean successful;
 }

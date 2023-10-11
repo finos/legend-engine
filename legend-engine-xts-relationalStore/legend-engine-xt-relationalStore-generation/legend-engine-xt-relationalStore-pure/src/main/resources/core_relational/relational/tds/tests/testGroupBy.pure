@@ -467,3 +467,16 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmpt
    assertEquals([], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select "Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
 }
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testTDSGroupByWithEnumArgumentFunctionCall():Boolean[1]
+{
+   let result = execute(
+      meta::pure::router::preeval::preval(|Trade.all()
+         ->project([col(x | $x.date, 'Date')])
+         ->groupBy([], [agg('Date Adjust', x|$x.getStrictDate('Date'), y|$y->max()->toOne()->adjust(1, DurationUnit.WEEKS))]), meta::relational::extension::relationalExtensions()),
+      simpleRelationalMapping,
+      meta::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions());
+   
+   meta::relational::functions::asserts::assertSameSQL('select dateadd(WEEK, 1, max("root".tradeDate)) as "Date Adjust" from tradeTable as "root"', $result);
+}

@@ -203,12 +203,23 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    assertEquals('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $db2Sql);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSplitPart():Boolean[1]
+{
+   let sql = toSQLString({|Person.all()
+    ->project([
+      col(p|splitPart($p.firstName, '|', 0), 'splitBar')
+    ])->project([
+      col(row:TDSRow[1] | splitPart($row.getString('splitBar'), ',', 1), 'splitComma')
+    ])}, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma" from personTable as "root"', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringAscii():Boolean[1]
 {
    let sql = toSQLString(|Person.all()->project(p|ascii($p.firstName), 'ascii'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select ascii("root".FIRSTNAME) as "ascii" from personTable as "root"', $sql);
 }
-
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringChar():Boolean[1]
 {

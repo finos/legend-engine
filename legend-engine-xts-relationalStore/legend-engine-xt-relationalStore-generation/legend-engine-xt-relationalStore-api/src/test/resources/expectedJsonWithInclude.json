@@ -1,0 +1,629 @@
+{
+  "elements": [
+    {
+      "package": "model",
+      "_type": "mapping",
+      "name": "MyDBMapping",
+      "associationMappings": [
+        {
+          "stores": [
+            "model::MyDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployee",
+                    "db": "model::MyDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeTestSchema1Company",
+                "class": "model::testSchema1::Employee"
+              },
+              "source": "model_testSchema1_Employee",
+              "target": "model_testSchema1_Company"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "CompanyEmployee",
+                    "db": "model::MyDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "companyEmployeeTestSchema1Employee",
+                "class": "model::testSchema1::Company"
+              },
+              "source": "model_testSchema1_Company",
+              "target": "model_testSchema1_Employee"
+            }
+          ],
+          "association": "model::CompanyEmployee",
+          "id": "model_CompanyEmployee"
+        }
+      ],
+      "classMappings": [
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "model::MyDB",
+            "_type": "table",
+            "mainTableDb": "model::MyDB",
+            "table": "Company"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "model::testSchema1::Company"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Company",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Company"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "model::testSchema1::Company"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "model_testSchema1_Company",
+          "class": "model::testSchema1::Company",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Company",
+              "table": {
+                "schema": "testSchema1",
+                "database": "model::MyDB",
+                "_type": "table",
+                "mainTableDb": "model::MyDB",
+                "table": "Company"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "testSchema1",
+            "database": "model::MyDB",
+            "_type": "table",
+            "mainTableDb": "model::MyDB",
+            "table": "Employee"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "fullname",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "fullname",
+                "class": "model::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "passportId",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "passportId",
+                "class": "model::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "firmname",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firmname",
+                "class": "model::testSchema1::Employee"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "location",
+                "tableAlias": "Employee",
+                "table": {
+                  "schema": "testSchema1",
+                  "database": "model::MyDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyDB",
+                  "table": "Employee"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "location",
+                "class": "model::testSchema1::Employee"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "model_testSchema1_Employee",
+          "class": "model::testSchema1::Employee",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "fullname",
+              "tableAlias": "Employee",
+              "table": {
+                "schema": "testSchema1",
+                "database": "model::MyDB",
+                "_type": "table",
+                "mainTableDb": "model::MyDB",
+                "table": "Employee"
+              }
+            },
+            {
+              "_type": "column",
+              "column": "passportId",
+              "tableAlias": "Employee",
+              "table": {
+                "schema": "testSchema1",
+                "database": "model::MyDB",
+                "_type": "table",
+                "mainTableDb": "model::MyDB",
+                "table": "Employee"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model::testSchema1",
+      "_type": "class",
+      "name": "Company",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model::testSchema1",
+      "_type": "class",
+      "name": "Employee",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "fullname",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "passportId",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "firmname",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "location",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model",
+      "_type": "association",
+      "name": "CompanyEmployee",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeTestSchema1Company",
+          "type": "model::testSchema1::Company"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "companyEmployeeTestSchema1Employee",
+          "type": "model::testSchema1::Employee"
+        }
+      ]
+    },
+    {
+      "package": "model",
+      "_type": "mapping",
+      "name": "MyIncludeDBMapping",
+      "associationMappings": [
+        {
+          "stores": [
+            "model::MyIncludeDB"
+          ],
+          "_type": "relational",
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "PersonAddress",
+                    "db": "model::MyIncludeDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "personAddressHrPerson",
+                "class": "model::HR::Address"
+              },
+              "source": "model_HR_Address",
+              "target": "model_HR_Person"
+            },
+            {
+              "relationalOperation": {
+                "joins": [
+                  {
+                    "name": "PersonAddress",
+                    "db": "model::MyIncludeDB"
+                  }
+                ],
+                "_type": "elemtWithJoins"
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "personAddressHrAddress",
+                "class": "model::HR::Person"
+              },
+              "source": "model_HR_Person",
+              "target": "model_HR_Address"
+            }
+          ],
+          "association": "model::PersonAddress",
+          "id": "model_PersonAddress"
+        }
+      ],
+      "classMappings": [
+        {
+          "mainTable": {
+            "schema": "HR",
+            "database": "model::MyIncludeDB",
+            "_type": "table",
+            "mainTableDb": "model::MyIncludeDB",
+            "table": "Person"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "tableAlias": "Person",
+                "table": {
+                  "schema": "HR",
+                  "database": "model::MyIncludeDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyIncludeDB",
+                  "table": "Person"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "name",
+                "class": "model::HR::Person"
+              },
+              "target": ""
+            },
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "addressId",
+                "tableAlias": "Person",
+                "table": {
+                  "schema": "HR",
+                  "database": "model::MyIncludeDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyIncludeDB",
+                  "table": "Person"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "addressId",
+                "class": "model::HR::Person"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "model_HR_Person",
+          "class": "model::HR::Person",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "name",
+              "tableAlias": "Person",
+              "table": {
+                "schema": "HR",
+                "database": "model::MyIncludeDB",
+                "_type": "table",
+                "mainTableDb": "model::MyIncludeDB",
+                "table": "Person"
+              }
+            }
+          ]
+        },
+        {
+          "mainTable": {
+            "schema": "HR",
+            "database": "model::MyIncludeDB",
+            "_type": "table",
+            "mainTableDb": "model::MyIncludeDB",
+            "table": "Address"
+          },
+          "root": true,
+          "propertyMappings": [
+            {
+              "relationalOperation": {
+                "_type": "column",
+                "column": "id",
+                "tableAlias": "Address",
+                "table": {
+                  "schema": "HR",
+                  "database": "model::MyIncludeDB",
+                  "_type": "table",
+                  "mainTableDb": "model::MyIncludeDB",
+                  "table": "Address"
+                }
+              },
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "id",
+                "class": "model::HR::Address"
+              },
+              "target": ""
+            }
+          ],
+          "_type": "relational",
+          "distinct": false,
+          "id": "model_HR_Address",
+          "class": "model::HR::Address",
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "tableAlias": "Address",
+              "table": {
+                "schema": "HR",
+                "database": "model::MyIncludeDB",
+                "_type": "table",
+                "mainTableDb": "model::MyIncludeDB",
+                "table": "Address"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model::HR",
+      "_type": "class",
+      "name": "Person",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 0
+          },
+          "name": "addressId",
+          "type": "Integer"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model::HR",
+      "_type": "class",
+      "name": "Address",
+      "properties": [
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "id",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "Generated Element"
+        }
+      ],
+      "package": "model",
+      "_type": "association",
+      "name": "PersonAddress",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1
+          },
+          "name": "personAddressHrPerson",
+          "type": "model::HR::Person"
+        },
+        {
+          "multiplicity": {
+            "upperBound": 1,
+            "lowerBound": 1
+          },
+          "name": "personAddressHrAddress",
+          "type": "model::HR::Address"
+        }
+      ]
+    }
+  ],
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  }
+}

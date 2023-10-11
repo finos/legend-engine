@@ -488,6 +488,7 @@ public class DeserializeContext<CLS>
         Frame finish()
         {
             XmlDataRecord source = new XmlDataRecord(recordNumber, reader.endCapture());
+            get().checkMultiplicities().forEach(this::addDefect);
             IChecked<CLS> checked = getDefects().stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical)
                     ? (IChecked<CLS>) BasicChecked.newChecked(null, source, getDefects())
                     : (IChecked<CLS>) BasicChecked.newChecked(get(), source, getDefects());
