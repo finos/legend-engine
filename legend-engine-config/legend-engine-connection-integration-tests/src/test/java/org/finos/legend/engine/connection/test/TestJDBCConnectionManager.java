@@ -14,9 +14,7 @@
 
 package org.finos.legend.engine.connection.test;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariPoolMXBean;
-import org.eclipse.collections.api.block.function.Function;
+import net.bytebuddy.asm.Advice;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.Authenticator;
@@ -44,13 +42,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.util.Properties;
 
@@ -107,6 +98,8 @@ public class TestJDBCConnectionManager
     public void cleanUp()
     {
         postgresContainer.stop();
+
+        JDBCConnectionManager.getInstance().flushPool();
     }
 
     @Test
@@ -117,14 +110,9 @@ public class TestJDBCConnectionManager
                         new UserPasswordCredentialBuilder()
                 )
                 .withConnectionBuilders(
-                        new InstrumentedStaticJDBCConnectionBuilder.WithPlaintextUsernamePassword((HikariConfig config) -> {
-                            config.setKeepaliveTime(10000);
-                            config.setMaximumPoolSize(10);
-                            return null;
-                        })
+                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
                 )
                 .build();
-
         this.storeInstanceProvider.injectStoreInstance(this.storeInstance);
         Identity identity = identityFactory.createIdentity(
                 new IdentitySpecification.Builder()
@@ -136,91 +124,152 @@ public class TestJDBCConnectionManager
                 postgresContainer.getUser(),
                 new PropertiesFileSecret("passwordRef")
         );
-
         Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_STORE_INSTANCE_NAME, authenticationConfiguration);
+
+        JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
+        Assertions.assertEquals(0, connectionManager.getPoolSize());
 
         // 1. Get a connection, this should initialize the pool as well as create a new connection in the empty pool
         // this connection should be active
         Connection connection0 = this.connectionFactory.getConnection(identity, authenticator);
 
-        HikariPoolMXBean poolProxy = getPoolProxy(identity, connectionSpecification, authenticationConfiguration);
-        Assertions.assertEquals(1, poolProxy.getTotalConnections());
-        Assertions.assertEquals(1, poolProxy.getActiveConnections());
-        Assertions.assertEquals(0, poolProxy.getIdleConnections());
+        String poolName = JDBCConnectionManager.getPoolName(identity, connectionSpecification, authenticationConfiguration);
+        JDBCConnectionManager.ConnectionPool connectionPool = connectionManager.getPool(poolName);
 
         // 2. Close the connection, verify that the pool keeps this connection around in idle state
+        Connection underlyingConnection0 = connection0.unwrap(Connection.class);
         connection0.close();
 
-        Assertions.assertEquals(1, poolProxy.getTotalConnections());
-        Assertions.assertEquals(0, poolProxy.getActiveConnections());
-        Assertions.assertEquals(1, poolProxy.getIdleConnections());
+        Assertions.assertEquals(1, connectionPool.getTotalConnections());
+        Assertions.assertEquals(0, connectionPool.getActiveConnections());
+        Assertions.assertEquals(1, connectionPool.getIdleConnections());
 
         // 3. Get a new connection, the pool should return the idle connection and create no new connection
         Connection connection1 = this.connectionFactory.getConnection(identity, authenticator);
-//        Connection connection2 = this.connectionFactory.getConnection(identity, authenticator);
 
-//        connection1.isValid()
-        Assertions.assertEquals(1, poolProxy.getTotalConnections());
-        Assertions.assertEquals(1, poolProxy.getActiveConnections());
-        Assertions.assertEquals(0, poolProxy.getIdleConnections());
+        Assertions.assertEquals(underlyingConnection0, connection1.unwrap(Connection.class));
+        Assertions.assertEquals(1, connectionPool.getTotalConnections());
+        Assertions.assertEquals(1, connectionPool.getActiveConnections());
+        Assertions.assertEquals(0, connectionPool.getIdleConnections());
 
         // 4. Get another connection while the first one is still alive and used, a new connection
         // will be created in the pool
         this.connectionFactory.getConnection(identity, authenticator);
 
-        Assertions.assertEquals(2, poolProxy.getTotalConnections());
-        Assertions.assertEquals(2, poolProxy.getActiveConnections());
-        Assertions.assertEquals(0, poolProxy.getIdleConnections());
+        Assertions.assertEquals(2, connectionPool.getTotalConnections());
+        Assertions.assertEquals(2, connectionPool.getActiveConnections());
+        Assertions.assertEquals(0, connectionPool.getIdleConnections());
     }
 
-    private static HikariPoolMXBean getPoolProxy(Identity identity, ConnectionSpecification connectionSpecification, AuthenticationConfiguration authenticationConfiguration) throws MalformedObjectNameException
+    @Test
+    public void testConnectionPoolingForDifferentIdentities() throws Exception
     {
-        String poolName = JDBCConnectionManager.getPoolName(identity, connectionSpecification, authenticationConfiguration);
-        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        return JMX.newMXBeanProxy(mBeanServer, new ObjectName("com.zaxxer.hikari:type=Pool (" + poolName + ")"), HikariPoolMXBean.class);
+        this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
+                .withCredentialBuilders(
+                        new UserPasswordCredentialBuilder()
+                )
+                .withConnectionBuilders(
+                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
+                )
+                .build();
+        this.storeInstanceProvider.injectStoreInstance(this.storeInstance);
+        Identity identity1 = identityFactory.createIdentity(
+                new IdentitySpecification.Builder()
+                        .withName("testUser1")
+                        .build()
+        );
+        Identity identity2 = identityFactory.createIdentity(
+                new IdentitySpecification.Builder()
+                        .withName("testUser2")
+                        .build()
+        );
+        ConnectionSpecification connectionSpecification = this.storeInstance.getConnectionSpecification();
+        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(
+                postgresContainer.getUser(),
+                new PropertiesFileSecret("passwordRef")
+        );
+
+        JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
+        Assertions.assertEquals(0, connectionManager.getPoolSize());
+
+        // 1. Get a new connection for identity1, which should initialize a pool
+        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, TEST_STORE_INSTANCE_NAME, authenticationConfiguration));
+
+        String poolName1 = JDBCConnectionManager.getPoolName(identity1, connectionSpecification, authenticationConfiguration);
+        JDBCConnectionManager.ConnectionPool connectionPool1 = connectionManager.getPool(poolName1);
+
+        Assertions.assertEquals(1, connectionManager.getPoolSize());
+        Assertions.assertEquals(1, connectionPool1.getTotalConnections());
+        Assertions.assertEquals(1, connectionPool1.getActiveConnections());
+        Assertions.assertEquals(0, connectionPool1.getIdleConnections());
+
+        // 2. Get a new connection for identity2, which should initialize another pool
+        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, TEST_STORE_INSTANCE_NAME, authenticationConfiguration));
+
+        String poolName2 = JDBCConnectionManager.getPoolName(identity2, connectionSpecification, authenticationConfiguration);
+        JDBCConnectionManager.ConnectionPool connectionPool2 = connectionManager.getPool(poolName2);
+
+        Assertions.assertEquals(2, connectionManager.getPoolSize());
+        Assertions.assertEquals(1, connectionPool2.getTotalConnections());
+        Assertions.assertEquals(1, connectionPool2.getActiveConnections());
+        Assertions.assertEquals(0, connectionPool2.getIdleConnections());
     }
 
-    private static class InstrumentedStaticJDBCConnectionBuilder
+    public static class CustomAdvice
     {
-        static class WithPlaintextUsernamePassword extends StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword
+        @Advice.OnMethodExit
+        public static void intercept(@Advice.Return(readOnly = false) String value)
         {
-            private final InstrumentedJDBCConnectionManager connectionManager;
-
-            WithPlaintextUsernamePassword(Function<HikariConfig, Void> hikariConfigHandler)
-            {
-                this.connectionManager = new InstrumentedJDBCConnectionManager(hikariConfigHandler);
-            }
-
-            @Override
-            public JDBCConnectionManager getConnectionManager()
-            {
-                return this.connectionManager;
-            }
-
-            @Override
-            protected Type[] actualTypeArguments()
-            {
-                Type genericSuperClass = this.getClass().getSuperclass().getGenericSuperclass();
-                ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
-                return parameterizedType.getActualTypeArguments();
-            }
+            System.out.println("intercepted: " + value);
+            value = "hi: " + value;
         }
     }
 
-    private static class InstrumentedJDBCConnectionManager extends JDBCConnectionManager
-    {
-        private final Function<HikariConfig, Void> hikariConfigHandler;
-
-        InstrumentedJDBCConnectionManager(Function<HikariConfig, Void> hikariConfigHandler)
-        {
-            this.hikariConfigHandler = hikariConfigHandler;
-        }
-
-        @Override
-        protected void handleHikariConfig(HikariConfig config)
-        {
-            config.setRegisterMbeans(true);
-            this.hikariConfigHandler.apply(config);
-        }
-    }
+//    public static class MyWay
+//    {
+//    }
+//
+//    private static class InstrumentedStaticJDBCConnectionBuilder
+//    {
+//        static class WithPlaintextUsernamePassword extends StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword
+//        {
+//            private final InstrumentedJDBCConnectionManager connectionManager;
+//
+//            WithPlaintextUsernamePassword(Function<HikariConfig, Void> hikariConfigHandler)
+//            {
+//                this.connectionManager = new InstrumentedJDBCConnectionManager(hikariConfigHandler);
+//            }
+//
+//            @Override
+//            public JDBCConnectionManager getConnectionManager()
+//            {
+//                return this.connectionManager;
+//            }
+//
+//            @Override
+//            protected Type[] actualTypeArguments()
+//            {
+//                Type genericSuperClass = this.getClass().getSuperclass().getGenericSuperclass();
+//                ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
+//                return parameterizedType.getActualTypeArguments();
+//            }
+//        }
+//    }
+//
+//    private static class InstrumentedJDBCConnectionManager extends JDBCConnectionManager
+//    {
+//        private final Function<HikariConfig, Void> hikariConfigHandler;
+//
+//        InstrumentedJDBCConnectionManager(Function<HikariConfig, Void> hikariConfigHandler)
+//        {
+//            this.hikariConfigHandler = hikariConfigHandler;
+//        }
+//
+////        @Override
+////        protected void handleHikariConfig(HikariConfig config)
+////        {
+////            config.setRegisterMbeans(true);
+////            this.hikariConfigHandler.apply(config);
+////        }
+//    }
 }

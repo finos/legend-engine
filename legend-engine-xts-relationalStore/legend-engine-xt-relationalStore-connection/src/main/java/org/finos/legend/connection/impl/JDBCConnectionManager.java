@@ -16,6 +16,8 @@ package org.finos.legend.connection.impl;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.ConnectionManager;
@@ -39,6 +41,7 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public class JDBCConnectionManager implements ConnectionManager
@@ -47,6 +50,7 @@ public class JDBCConnectionManager implements ConnectionManager
     private static final AtomicBoolean isInitialized = new AtomicBoolean();
 
     private static JDBCConnectionManager INSTANCE;
+    private final ConcurrentMutableMap<String, ConnectionPool> poolIndex = ConcurrentHashMap.newMap();
 
     protected JDBCConnectionManager()
     {
@@ -87,7 +91,57 @@ public class JDBCConnectionManager implements ConnectionManager
         JDBCConnectionManager.setup();
     }
 
-    public Connection getConnection(
+    protected Connection getConnection(Database database,
+                                       String host,
+                                       int port,
+                                       String databaseName,
+                                       Properties connectionProperties,
+                                       Function<Credential, Properties> authenticationPropertiesSupplier,
+                                       Authenticator authenticator,
+                                       Identity identity
+    ) throws SQLException
+    {
+        StoreInstance storeInstance = authenticator.getStoreInstance();
+        ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
+        AuthenticationConfiguration authenticationConfiguration = authenticator.getAuthenticationConfiguration();
+        String poolName = getPoolName(identity, connectionSpecification, authenticationConfiguration);
+
+        // TODO: @akphi - this is simplistic, we need to handle concurrency and errors
+        Supplier<HikariDataSource> dataSourceSupplier = () -> this.buildDataSource(database, host, port, databaseName, connectionProperties, authenticationPropertiesSupplier, authenticator, identity);
+        Function0<ConnectionPool> connectionPoolSupplier = () -> new ConnectionPool(dataSourceSupplier.get());
+        ConnectionPool connectionPool = this.poolIndex.getIfAbsentPut(poolName, connectionPoolSupplier);
+
+        return connectionPool.dataSource.getConnection();
+
+//        try (Scope scope = GlobalTracer.get().buildSpan("Get Connection").startActive(true))
+//        {
+//            ConnectionKey connectionKey = this.getConnectionKey();
+//            // Logs and traces -----
+//            String principal = identityState.getIdentity().getName();
+//            scope.span().setTag("Principal", principal);
+//            scope.span().setTag("DataSourceSpecification", this.toString());
+//            LOGGER.info("Get Connection as [{}] for datasource [{}]", principal, connectionKey.shortId());
+//            // ---------------------
+//            try
+//            {
+//                DataSourceWithStatistics dataSourceWithStatistics = this.connectionStateManager.getDataSourceForIdentityIfAbsentBuild(identityState, this, dataSourcePoolBuilder);
+//                // Logs and traces and stats -----
+//                String poolName = dataSourceWithStatistics.getPoolName();
+//                scope.span().setTag("Pool", poolName);
+//                int requests = dataSourceWithStatistics.requestConnection();
+//                LOGGER.info("Principal [{}] has requested [{}] connections for pool [{}]", principal, requests, poolName);
+//                return authenticationStrategy.getConnection(dataSourceWithStatistics, identityState.getIdentity());
+//            }
+//            catch (ConnectionException ce)
+//            {
+//                LOGGER.error("ConnectionException  {{}} : pool stats [{}] ", principal, connectionStateManager.getPoolStatisticsAsJSON(poolNameFor(identityState.getIdentity())));
+//                LOGGER.error("ConnectionException ", ce);
+//                throw ce;
+//            }
+//        }
+    }
+
+    protected HikariDataSource buildDataSource(
             Database database,
             String host,
             int port,
@@ -96,7 +150,7 @@ public class JDBCConnectionManager implements ConnectionManager
             Function<Credential, Properties> authenticationPropertiesSupplier,
             Authenticator authenticator,
             Identity identity
-    ) throws SQLException
+    )
     {
         StoreInstance storeInstance = authenticator.getStoreInstance();
         ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
@@ -125,17 +179,26 @@ public class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
         jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
 
-        handleHikariConfig(jdbcConfig);
+        jdbcConfig.setRegisterMbeans(true);
 
+        // TODO:
         jdbcConfig.setDataSource(new DataSourceWrapper(jdbcUrl, connectionProperties, databaseManager, authenticationPropertiesSupplier, authenticator, identity));
-        HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
-
-        return dataSource.getConnection();
+        return new HikariDataSource(jdbcConfig);
     }
 
-    protected void handleHikariConfig(HikariConfig config)
+    public ConnectionPool getPool(String poolName)
     {
-        // do nothing
+        return this.poolIndex.get(poolName);
+    }
+
+    public int getPoolSize()
+    {
+        return this.poolIndex.size();
+    }
+
+    public void flushPool()
+    {
+        this.poolIndex.forEachKey(this.poolIndex::remove);
     }
 
     public static String getPoolName(Identity identity, ConnectionSpecification connectionSpecification, AuthenticationConfiguration authenticationConfiguration)
@@ -162,7 +225,7 @@ public class JDBCConnectionManager implements ConnectionManager
         return manager;
     }
 
-    private static class ConnectionPool
+    public static class ConnectionPool
     {
         private final HikariDataSource dataSource;
 
@@ -201,7 +264,6 @@ public class JDBCConnectionManager implements ConnectionManager
     {
         private final String url;
         private final Properties connectionProperties;
-        private final DatabaseManager databaseManager;
         private final Function<Credential, Properties> authenticationPropertiesSupplier;
         private final Authenticator authenticator;
         // TODO: @akphi - how do we get rid of this here?
@@ -219,7 +281,6 @@ public class JDBCConnectionManager implements ConnectionManager
         {
             this.url = url;
             this.connectionProperties = connectionProperties;
-            this.databaseManager = databaseManager;
             try
             {
                 this.driver = (Driver) Class.forName(databaseManager.getDriver()).getDeclaredConstructor().newInstance();

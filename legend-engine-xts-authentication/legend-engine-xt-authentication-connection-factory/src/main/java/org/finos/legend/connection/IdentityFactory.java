@@ -17,9 +17,9 @@ package org.finos.legend.connection;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 
-import javax.security.auth.Subject;
 import java.util.List;
 
 public class IdentityFactory
@@ -49,7 +49,7 @@ public class IdentityFactory
         }
         if (credentials.isEmpty())
         {
-            return DEFAULT.makeUnknownIdentity();
+            return identitySpecification.getName() != null ? new Identity(identitySpecification.getName(), new AnonymousCredential()) : DEFAULT.makeUnknownIdentity();
         }
         return new Identity(identitySpecification.getName(), credentials);
     }

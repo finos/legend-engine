@@ -31,7 +31,7 @@ public class IdentitySpecification
 
     private IdentitySpecification(String name, List<CommonProfile> profiles, Subject subject, List<Credential> credentials)
     {
-        this.name = Objects.requireNonNull(name, "Name is missing");
+        this.name = name;
         this.profiles = profiles;
         this.subject = subject;
         this.credentials = credentials;
