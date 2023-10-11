@@ -450,7 +450,11 @@ public class ConnectionFactory
         {
             for (ConnectionBuilder connectionBuilder : connectionBuilders)
             {
-                connectionBuilder.getConnectionManager().initialize(environment);
+                ConnectionManager connectionManager = connectionBuilder.getConnectionManager();
+                if (connectionManager != null)
+                {
+                    connectionManager.initialize(environment);
+                }
             }
 
             return new ConnectionFactory(

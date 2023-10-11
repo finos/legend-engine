@@ -52,7 +52,10 @@ public abstract class ConnectionBuilder<CONNECTION, CRED extends Credential, SPE
         return (Authenticator<CRED>) authenticator;
     }
 
-    public abstract ConnectionManager getConnectionManager();
+    public ConnectionManager getConnectionManager()
+    {
+        return null;
+    }
 
     public static class Key
     {
