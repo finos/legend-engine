@@ -184,9 +184,6 @@ public class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
         jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
 
-        jdbcConfig.setRegisterMbeans(true);
-
-        // TODO:
         jdbcConfig.setDataSource(new DataSourceWrapper(jdbcUrl, connectionProperties, databaseManager, authenticationPropertiesSupplier, authenticator, identity));
         return new HikariDataSource(jdbcConfig);
     }
