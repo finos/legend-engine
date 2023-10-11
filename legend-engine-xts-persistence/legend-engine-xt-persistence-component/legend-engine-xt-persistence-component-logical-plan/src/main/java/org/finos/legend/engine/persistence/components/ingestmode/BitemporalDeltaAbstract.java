@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
 import static org.immutables.value.Value.Default;
@@ -60,5 +69,57 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
         return visitor.visitBitemporalDelta(this);
     }
 
-    // todo: only allow duplicates and no version and all versions (do not perform) for now
+    @Value.Check
+    default void validate()
+    {
+        versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                throw new IllegalStateException("Cannot build BitemporalDelta, max version is not supported");
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                if (allVersionsStrategyAbstract.versioningComparator() != VersioningComparator.ALWAYS)
+                {
+                    throw new IllegalStateException("Cannot build BitemporalDelta, versioning comparator can only be Always");
+                }
+                if (allVersionsStrategyAbstract.performVersioning())
+                {
+                    throw new IllegalStateException("Cannot build BitemporalDelta, perform versioning not allowed");
+                }
+                return null;
+            }
+        });
+
+        deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+            {
+                throw new IllegalStateException("Cannot build BitemporalDelta, filter duplicates is not supported");
+            }
+
+            @Override
+            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+            {
+                throw new IllegalStateException("Cannot build BitemporalDelta, fail on duplicates is not supported");
+            }
+        });
+    }
 }

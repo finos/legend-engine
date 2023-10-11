@@ -293,6 +293,18 @@ public class AnsiTestArtifacts
             "\"validity_through_target\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
+    public static String expectedBitemporalFromOnlyMainTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
+        "(\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"digest\" VARCHAR," +
+        "\"version\" INTEGER," +
+        "\"batch_id_in\" INTEGER NOT NULL," +
+        "\"batch_id_out\" INTEGER," +
+        "\"validity_from_target\" DATETIME NOT NULL," +
+        "\"validity_through_target\" DATETIME," +
+        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
     public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
@@ -358,6 +370,18 @@ public class AnsiTestArtifacts
             "\"validity_from_target\" DATETIME NOT NULL," +
             "\"validity_through_target\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyTempTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
+        "(\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"digest\" VARCHAR," +
+        "\"version\" INTEGER," +
+        "\"batch_id_in\" INTEGER NOT NULL," +
+        "\"batch_id_out\" INTEGER," +
+        "\"validity_from_target\" DATETIME NOT NULL," +
+        "\"validity_through_target\" DATETIME," +
+        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
             "\"id\" INTEGER NOT NULL," +

@@ -821,6 +821,25 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getBitemporalFromOnlyMainTableWithVersionIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(version)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalFromOnlyTempTableIdBased()
     {
         return DatasetDefinition.builder()
@@ -830,6 +849,25 @@ public class TestUtils
                 .addFields(index)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getBitemporalFromOnlyTempTableWithVersionIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(tempTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(version)
                 .addFields(startDateTime)
                 .addFields(endDateTime)
                 .addFields(batchIdIn)
@@ -888,7 +926,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -898,6 +936,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(dataSplit)
                 .build()
             )
@@ -920,7 +959,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -930,6 +969,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
                 .build()
@@ -937,7 +977,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -947,6 +987,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
                 .build()

@@ -492,23 +492,23 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForBitemporalFromOnlyWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithVersionWithDataSplit(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithVersionWithDataSplit(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, delete_indicator, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, delete_indicator, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
