@@ -139,12 +139,13 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                 .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField()).build())
                 .build()));
 
-        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> dataFields = getDataFields();
+        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
         List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
         fieldsToSelect.addAll(milestoneUpdateValues);
         Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
 
-        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
         fieldsToInsert.addAll(transactionMilestoningFields());
 
         return Insert.of(mainDataset(), selectStage, fieldsToInsert);

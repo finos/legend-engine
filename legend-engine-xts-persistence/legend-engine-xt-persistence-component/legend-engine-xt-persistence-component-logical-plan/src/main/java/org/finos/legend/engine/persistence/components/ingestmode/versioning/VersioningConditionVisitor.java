@@ -61,7 +61,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
 
         switch (maxVersionStrategy.versioningComparator())
         {
-            case GREATER_THAN:
+            case GREATER_THAN_ACTIVE_VERSION:
                 if (invertComparison)
                 {
                     return LessThanEqualTo.of(stagingVersioningField, mainVersioningField);
@@ -70,7 +70,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
                 {
                     return GreaterThan.of(stagingVersioningField, mainVersioningField);
                 }
-            case GREATER_THAN_EQUAL_TO:
+            case GREATER_THAN_EQUAL_TO_ACTIVE_VERSION:
                 if (invertComparison)
                 {
                     return LessThan.of(stagingVersioningField, mainVersioningField);

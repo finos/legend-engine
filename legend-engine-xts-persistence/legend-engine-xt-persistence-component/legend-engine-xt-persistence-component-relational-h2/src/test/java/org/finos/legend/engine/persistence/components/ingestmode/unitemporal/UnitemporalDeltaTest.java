@@ -20,7 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -252,7 +252,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -312,7 +312,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versioningComparator(VersioningResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -372,7 +372,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -432,7 +432,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versioningComparator(VersioningResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -558,7 +558,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -621,7 +621,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versioningComparator(VersioningResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -684,7 +684,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -747,7 +747,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versioningComparator(VersioningResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -809,7 +809,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -868,7 +868,7 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(nameName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versioningComparator(VersioningResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();

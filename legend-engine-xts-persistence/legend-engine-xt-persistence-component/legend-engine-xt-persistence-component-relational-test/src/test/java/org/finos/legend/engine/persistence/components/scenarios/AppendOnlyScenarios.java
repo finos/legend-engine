@@ -24,7 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.F
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 
 public class AppendOnlyScenarios extends BaseTest
 {
@@ -127,7 +127,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -145,7 +145,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(true)
                     .build())
                 .auditing(NoAuditing.builder().build())
@@ -162,7 +162,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -178,7 +178,7 @@ public class AppendOnlyScenarios extends BaseTest
             .deduplicationStrategy(FailOnDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
-                .versioningComparator(VersioningComparator.ALWAYS)
+                .versioningComparator(VersioningResolver.DIGEST_BASED)
                 .performVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -194,7 +194,7 @@ public class AppendOnlyScenarios extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
-                .versioningComparator(VersioningComparator.ALWAYS)
+                .versioningComparator(VersioningResolver.DIGEST_BASED)
                 .performVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())

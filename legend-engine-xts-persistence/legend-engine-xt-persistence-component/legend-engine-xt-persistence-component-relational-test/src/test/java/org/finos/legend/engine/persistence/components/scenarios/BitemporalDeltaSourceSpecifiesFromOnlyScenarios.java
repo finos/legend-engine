@@ -24,7 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -89,7 +89,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(BatchId.builder()
@@ -151,7 +151,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(BatchId.builder()
@@ -207,7 +207,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(BatchId.builder()
@@ -287,7 +287,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(BatchId.builder()

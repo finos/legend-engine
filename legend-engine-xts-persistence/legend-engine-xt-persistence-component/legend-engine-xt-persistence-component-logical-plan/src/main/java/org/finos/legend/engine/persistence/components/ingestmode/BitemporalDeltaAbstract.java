@@ -25,7 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
@@ -89,9 +89,9 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                if (allVersionsStrategyAbstract.versioningComparator() != VersioningComparator.ALWAYS)
+                if (allVersionsStrategyAbstract.versioningComparator() != VersioningResolver.DIGEST_BASED)
                 {
-                    throw new IllegalStateException("Cannot build BitemporalDelta, versioning comparator can only be Always");
+                    throw new IllegalStateException("Cannot build BitemporalDelta, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }
                 if (allVersionsStrategyAbstract.performVersioning())
                 {

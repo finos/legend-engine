@@ -22,19 +22,16 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
-import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.versioning.TestDedupAndVersioning;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Filter;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
@@ -268,7 +265,7 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").versioningComparator(VersioningComparator.ALWAYS).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").versioningComparator(VersioningResolver.DIGEST_BASED).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
 

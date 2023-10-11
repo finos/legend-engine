@@ -18,6 +18,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.D
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -83,5 +88,32 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 }
             }
         }
+
+        // Allowed Versioning Strategy - NoVersioning, MaxVersioining
+        this.versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                if (maxVersionStrategy.versioningComparator() != VersioningResolver.DIGEST_BASED)
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                throw new IllegalStateException("Cannot build UnitemporalSnapshot, AllVersionsStrategy not supported");
+            }
+        });
+
     }
 }

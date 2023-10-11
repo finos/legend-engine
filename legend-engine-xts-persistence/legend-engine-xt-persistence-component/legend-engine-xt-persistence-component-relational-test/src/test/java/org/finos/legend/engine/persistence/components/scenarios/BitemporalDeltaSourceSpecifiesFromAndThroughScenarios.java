@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -74,7 +74,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughScenarios extends BaseT
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -126,7 +126,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughScenarios extends BaseT
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(versionField)
                     .dataSplitFieldName(dataSplitField)
-                    .versioningComparator(VersioningComparator.ALWAYS)
+                    .versioningComparator(VersioningResolver.DIGEST_BASED)
                     .performVersioning(false)
                     .build())
                 .transactionMilestoning(TransactionDateTime.builder()
