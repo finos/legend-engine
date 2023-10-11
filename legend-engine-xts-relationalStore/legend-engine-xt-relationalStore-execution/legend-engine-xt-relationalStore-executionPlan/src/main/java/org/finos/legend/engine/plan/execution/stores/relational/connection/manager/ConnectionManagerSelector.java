@@ -44,11 +44,14 @@ import java.util.ServiceLoader;
 
 public class ConnectionManagerSelector
 {
-    private static final String TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK = "org.finos.legend.engine.execution.enableNewConnectionFramework";
     private final Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
-    private final ConnectionFactory connectionFactory;
-    private final List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
     private MutableList<ConnectionManager> connectionManagers;
+    private final ConnectionFactory connectionFactory;
+
+    // TODO: @akphi - these are temporary hacks to bootstrap the new connection framework
+    private final List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
+    public static final String TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK = "org.finos.legend.engine.execution.enableNewConnectionFramework";
+    private boolean enableNewConnectionFramework = false;
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles)
     {
@@ -74,6 +77,19 @@ public class ConnectionManagerSelector
         this.flowProviderHolder = flowProviderHolder;
         this.connectionFactory = connectionFactory;
         this.relationalDatabaseConnectionAdapters.addAll(Lists.mutable.withAll(ServiceLoader.load(HACKY__RelationalDatabaseConnectionAdapter.class)));
+    }
+
+    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory, List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters)
+    {
+        MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
+        this.connectionManagers = Lists.mutable.<ConnectionManager>with(
+                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
+        ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));
+        this.flowProviderHolder = flowProviderHolder;
+
+        this.connectionFactory = connectionFactory;
+        this.relationalDatabaseConnectionAdapters.addAll(relationalDatabaseConnectionAdapters);
+        this.enableNewConnectionFramework = true;
     }
 
     public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
@@ -132,7 +148,7 @@ public class ConnectionManagerSelector
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
 
-            if ("true".equals(System.getenv(TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK)))
+            if ("true".equals(System.getenv(TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK)) || this.enableNewConnectionFramework)
             {
                 if (this.connectionFactory != null && !this.relationalDatabaseConnectionAdapters.isEmpty())
                 {
