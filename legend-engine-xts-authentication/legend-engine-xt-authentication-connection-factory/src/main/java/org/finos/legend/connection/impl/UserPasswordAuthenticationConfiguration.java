@@ -37,6 +37,6 @@ public class UserPasswordAuthenticationConfiguration extends AuthenticationConfi
     {
         return "UserPassword" +
                 "--username__" + username +
-                "--password__" + password;
+                "--password__" + password.shortId();
     }
 }

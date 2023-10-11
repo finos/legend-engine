@@ -37,6 +37,15 @@ public class AWSSTSAssumeRoleCredentials extends AWSCredentials
     }
 
     @Override
+    public String shortId()
+    {
+        return "AWSSTSAssumeRoleCredentials" +
+                "--roleArn__" + roleArn +
+                "--roleSessionName__" + roleSessionName +
+                "--awsCredentials__" + awsCredentials.shortId();
+    }
+
+    @Override
     public <T> T accept(AWSCredentialsVisitor<T> visitor)
     {
         return visitor.visit(this);

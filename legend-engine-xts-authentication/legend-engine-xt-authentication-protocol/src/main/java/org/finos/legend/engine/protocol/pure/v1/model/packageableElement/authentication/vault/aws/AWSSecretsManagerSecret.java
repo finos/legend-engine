@@ -41,6 +41,16 @@ public class AWSSecretsManagerSecret extends CredentialVaultSecret
     }
 
     @Override
+    public String shortId()
+    {
+        return "AWSSecretsManagerSecret" +
+                "--secretId__" + secretId +
+                "--versionId__" + versionId +
+                "--versionStage__" + versionStage +
+                "--awsCredentials__" + awsCredentials.shortId();
+    }
+
+    @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);

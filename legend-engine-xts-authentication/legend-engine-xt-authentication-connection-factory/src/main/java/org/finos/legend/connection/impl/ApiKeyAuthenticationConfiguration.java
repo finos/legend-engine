@@ -46,6 +46,6 @@ public class ApiKeyAuthenticationConfiguration extends AuthenticationConfigurati
         return "ApiKey" +
                 "--location__" + location +
                 "--keyName__" + keyName +
-                "--value__" + value;
+                "--value__" + value.shortId();
     }
 }

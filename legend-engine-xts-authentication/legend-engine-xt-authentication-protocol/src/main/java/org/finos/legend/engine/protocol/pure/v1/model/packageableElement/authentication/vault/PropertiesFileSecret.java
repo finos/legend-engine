@@ -32,6 +32,13 @@ public class PropertiesFileSecret extends CredentialVaultSecret
     }
 
     @Override
+    public String shortId()
+    {
+        return "PropertiesFileSecret" +
+                "--propertyName__" + propertyName;
+    }
+
+    @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);
