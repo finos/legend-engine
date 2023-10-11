@@ -68,18 +68,7 @@ public class ConnectionManagerSelector
         this.connectionFactory = null;
     }
 
-    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory)
-    {
-        MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
-        this.connectionManagers = Lists.mutable.<ConnectionManager>with(
-                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
-        ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));
-        this.flowProviderHolder = flowProviderHolder;
-        this.connectionFactory = connectionFactory;
-        this.relationalDatabaseConnectionAdapters.addAll(Lists.mutable.withAll(ServiceLoader.load(HACKY__RelationalDatabaseConnectionAdapter.class)));
-    }
-
-    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory, List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters)
+    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory, List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters, boolean enableNewConnectionFrameworkByDefault)
     {
         MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
@@ -89,7 +78,7 @@ public class ConnectionManagerSelector
 
         this.connectionFactory = connectionFactory;
         this.relationalDatabaseConnectionAdapters.addAll(relationalDatabaseConnectionAdapters);
-        this.enableNewConnectionFramework = true;
+        this.enableNewConnectionFramework = enableNewConnectionFrameworkByDefault;
     }
 
     public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
@@ -155,7 +144,7 @@ public class ConnectionManagerSelector
                     HACKY__RelationalDatabaseConnectionAdapter.ConnectionFactoryMaterial connectionFactoryMaterial = null;
                     for (HACKY__RelationalDatabaseConnectionAdapter adapter : this.relationalDatabaseConnectionAdapters)
                     {
-                        connectionFactoryMaterial = adapter.adapt(relationalDatabaseConnection, this.connectionFactory.getEnvironment());
+                        connectionFactoryMaterial = adapter.adapt(relationalDatabaseConnection, identity, this.connectionFactory.getEnvironment());
                         if (connectionFactoryMaterial != null)
                         {
                             break;

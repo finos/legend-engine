@@ -23,13 +23,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class HACKY__SnowflakeConnectionAdapter
 {
     public static class WithKeyPair implements HACKY__RelationalDatabaseConnectionAdapter
     {
         @Override
-        public ConnectionFactoryMaterial adapt(RelationalDatabaseConnection relationalDatabaseConnection, LegendEnvironment environment)
+        public ConnectionFactoryMaterial adapt(RelationalDatabaseConnection relationalDatabaseConnection, Identity identity, LegendEnvironment environment)
         {
             if (
                     DatabaseType.Snowflake.equals(relationalDatabaseConnection.databaseType) &&

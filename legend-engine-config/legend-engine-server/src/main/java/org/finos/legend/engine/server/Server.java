@@ -45,17 +45,18 @@ import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVaul
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstanceProvider;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
+import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
 import org.finos.legend.engine.api.analytics.DiagramAnalytics;
@@ -279,6 +280,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
             relationalExecution.setFlowProviderConfiguration(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         }
         relationalExecution.setConnectionFactory(this.setupConnectionFactory(serverConfiguration.vaults));
+        relationalExecution.setRelationalDatabaseConnectionAdapters(Lists.mutable.of(
+                new HACKY__SnowflakeConnectionAdapter.WithKeyPair()
+        ));
 
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
 

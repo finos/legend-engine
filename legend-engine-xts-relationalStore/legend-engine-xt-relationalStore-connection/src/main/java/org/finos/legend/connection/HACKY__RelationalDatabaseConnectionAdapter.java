@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 /**
  * NOTE: this is hacky way of us to realize the relational database connection that we can support
@@ -24,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
  */
 public interface HACKY__RelationalDatabaseConnectionAdapter
 {
-    ConnectionFactoryMaterial adapt(RelationalDatabaseConnection relationalDatabaseConnection, LegendEnvironment environment);
+    ConnectionFactoryMaterial adapt(RelationalDatabaseConnection relationalDatabaseConnection, Identity identity, LegendEnvironment environment);
 
     class ConnectionFactoryMaterial
     {
