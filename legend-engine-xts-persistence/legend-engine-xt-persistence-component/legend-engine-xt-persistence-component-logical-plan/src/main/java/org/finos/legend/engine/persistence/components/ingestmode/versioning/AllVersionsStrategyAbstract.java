@@ -36,9 +36,9 @@ public interface AllVersionsStrategyAbstract extends VersioningStrategy
     String versioningField();
 
     @Value.Default
-    default VersioningResolver versioningComparator()
+    default VersionResolver versionResolver()
     {
-        return VersioningResolver.DIGEST_BASED;
+        return VersionResolver.DIGEST_BASED;
     }
 
     @Value.Default

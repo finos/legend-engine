@@ -348,7 +348,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return MaxVersionStrategy
                     .builder()
-                    .versioningComparator(maxVersionStrategy.versioningComparator())
+                    .versionResolver(maxVersionStrategy.versionResolver())
                     .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
                     .performVersioning(maxVersionStrategy.performVersioning())
                     .build();
@@ -359,7 +359,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return AllVersionsStrategy
                     .builder()
-                    .versioningComparator(allVersionsStrategyAbstract.versioningComparator())
+                    .versionResolver(allVersionsStrategyAbstract.versionResolver())
                     .versioningField(strategy.apply(allVersionsStrategyAbstract.versioningField()))
                     .dataSplitFieldName(strategy.apply(allVersionsStrategyAbstract.dataSplitFieldName()))
                     .performVersioning(allVersionsStrategyAbstract.performVersioning())

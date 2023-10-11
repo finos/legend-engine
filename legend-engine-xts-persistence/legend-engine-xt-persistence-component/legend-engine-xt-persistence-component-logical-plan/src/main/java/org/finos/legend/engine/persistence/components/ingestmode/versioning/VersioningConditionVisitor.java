@@ -59,7 +59,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
         FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
         FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
 
-        switch (maxVersionStrategy.versioningComparator())
+        switch (maxVersionStrategy.versionResolver())
         {
             case GREATER_THAN_ACTIVE_VERSION:
                 if (invertComparison)

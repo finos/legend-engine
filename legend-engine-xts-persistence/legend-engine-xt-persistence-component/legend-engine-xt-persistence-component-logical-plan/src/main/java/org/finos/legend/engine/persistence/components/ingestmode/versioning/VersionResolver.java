@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-public enum VersioningResolver
+public enum VersionResolver
 {
     GREATER_THAN_ACTIVE_VERSION,
     GREATER_THAN_EQUAL_TO_ACTIVE_VERSION,

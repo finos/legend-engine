@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Vers
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -101,7 +101,7 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                if (maxVersionStrategy.versioningComparator() != VersioningResolver.DIGEST_BASED)
+                if (maxVersionStrategy.versionResolver() != VersionResolver.DIGEST_BASED)
                 {
                     throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }
