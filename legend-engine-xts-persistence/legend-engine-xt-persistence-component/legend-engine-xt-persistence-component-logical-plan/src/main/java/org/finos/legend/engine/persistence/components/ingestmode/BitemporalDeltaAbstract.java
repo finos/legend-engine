@@ -18,8 +18,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStra
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
-
-import java.util.Optional;
+import org.immutables.value.Value;
 
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
@@ -35,9 +34,13 @@ import static org.immutables.value.Value.Style;
 )
 public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestoned
 {
-    String digestField();
+    @Value.Default
+    default boolean filterExistingRecords()
+    {
+        return false;
+    }
 
-    Optional<String> dataSplitField();
+    String digestField();
 
     @Override
     TransactionMilestoning transactionMilestoning();
@@ -56,4 +59,6 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
     {
         return visitor.visitBitemporalDelta(this);
     }
+
+    // todo: only allow duplicates and no version and all versions (do not perform) for now
 }

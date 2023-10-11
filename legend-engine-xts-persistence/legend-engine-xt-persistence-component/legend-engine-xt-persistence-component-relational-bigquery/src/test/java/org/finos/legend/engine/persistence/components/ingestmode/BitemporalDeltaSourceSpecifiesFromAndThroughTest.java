@@ -78,9 +78,9 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "(sink.`validity_from_target` = stage.`validity_from_reference`) AND (sink.`digest` <> stage.`digest`)))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `validity_from_target`, " +
-                "`validity_through_target`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
+                "`validity_through_target`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`validity_through_reference`," +
-                "stage.`digest`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "stage.`digest`,stage.`version`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
                 "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE " +
                 "(sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
@@ -88,7 +88,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "(sink.`validity_from_target` = stage.`validity_from_reference`)))) AND " +
                 "((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -162,10 +162,10 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "((sink.`digest` <> stage.`digest`) OR (stage.`delete_indicator` IN ('yes','1','true')))))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `validity_from_target`, `validity_through_target`, `digest`, " +
+                "(`id`, `name`, `amount`, `validity_from_target`, `validity_through_target`, `digest`, `version`, " +
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`," +
-                "stage.`validity_through_reference`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')," +
+                "stage.`validity_through_reference`,stage.`digest`,stage.`version`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')," +
                 "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM `mydb`.`staging` as stage WHERE " +
                 "((NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) " +
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND " +
@@ -173,7 +173,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "AND ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) AND " +
                 "(stage.`delete_indicator` NOT IN ('yes','1','true')))";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalMainTableWithDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));

@@ -387,11 +387,12 @@ public class BaseTest
         .addFields(validityThroughTarget)
         .build();
 
-    protected SchemaDefinition bitemporalMainTableSchemaWithBatchIdAndTime = SchemaDefinition.builder()
+    protected SchemaDefinition bitemporalMainTableSchemaWithVersionBatchIdAndTime = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(digest)
+            .addFields(version)
             .addFields(batchIdIn)
             .addFields(batchIdOut)
             .addFields(batchTimeInNonPrimary)
@@ -400,11 +401,12 @@ public class BaseTest
             .addFields(validityThroughTarget)
             .build();
 
-    protected SchemaDefinition bitemporalMainTableSchemaWithDateTime = SchemaDefinition.builder()
+    protected SchemaDefinition bitemporalMainTableSchemaWithVersionBatchDateTime = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(digest)
+            .addFields(version)
             .addFields(batchTimeIn)
             .addFields(batchTimeOut)
             .addFields(validityFromTarget)
@@ -455,13 +457,14 @@ public class BaseTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition bitemporalStagingTableSchemaWithDataSplit = SchemaDefinition.builder()
+    protected SchemaDefinition bitemporalStagingTableSchemaWithVersionWithDataSplit = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(validityFromReference)
             .addFields(validityThroughReference)
             .addFields(digest)
+            .addFields(version)
             .addFields(dataSplit)
             .build();
 
@@ -475,13 +478,14 @@ public class BaseTest
         .addFields(deleteIndicator)
         .build();
 
-    protected SchemaDefinition bitemporalStagingTableSchemaWithDeleteIndicatorAndDataSplit = SchemaDefinition.builder()
+    protected SchemaDefinition bitemporalStagingTableSchemaWithDeleteIndicatorVersionAndDataSplit = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(validityFromReference)
             .addFields(validityThroughReference)
             .addFields(digest)
+            .addFields(version)
             .addFields(dataSplit)
             .addFields(deleteIndicator)
             .build();
@@ -715,9 +719,9 @@ public class BaseTest
             .schema(bitemporalMainTableSchema)
             .build();
 
-    protected Dataset mainTableWithBitemporalSchemaWithDateTime = DatasetDefinition.builder()
+    protected Dataset mainTableWithBitemporalSchemaWithVersionBatchDateTime = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(bitemporalMainTableSchemaWithDateTime)
+            .schema(bitemporalMainTableSchemaWithVersionBatchDateTime)
             .build();
 
     protected Dataset stagingTableWithBitemporalSchema = DatasetDefinition.builder()
@@ -732,21 +736,21 @@ public class BaseTest
             .schema(bitemporalStagingTableSchemaWithDeleteIndicator)
             .build();
 
-    protected Dataset stagingTableWithBitemporalSchemaWithDeleteIndicatorAndDataSplit = DatasetDefinition.builder()
+    protected Dataset stagingTableWithBitemporalSchemaWithDeleteIndicatorVersionAndDataSplit = DatasetDefinition.builder()
             .database(stagingDbName)
             .name(stagingTableName)
             .alias(stagingTableAlias)
-            .schema(bitemporalStagingTableSchemaWithDeleteIndicatorAndDataSplit)
+            .schema(bitemporalStagingTableSchemaWithDeleteIndicatorVersionAndDataSplit)
             .build();
 
-    protected Dataset mainTableWithBitemporalSchemaWithBatchIdAndTime = DatasetDefinition.builder()
+    protected Dataset mainTableWithBitemporalSchemaWithVersionBatchIdAndTime = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(bitemporalMainTableSchemaWithBatchIdAndTime)
+            .schema(bitemporalMainTableSchemaWithVersionBatchIdAndTime)
             .build();
 
-    protected Dataset stagingTableWithBitemporalSchemaWithDataSplit = DatasetDefinition.builder()
+    protected Dataset stagingTableWithBitemporalSchemaWithVersionWithDataSplit = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(bitemporalStagingTableSchemaWithDataSplit)
+            .schema(bitemporalStagingTableSchemaWithVersionWithDataSplit)
             .build();
 
     protected DatasetDefinition mainTableWithBitemporalFromOnlySchema = DatasetDefinition.builder()

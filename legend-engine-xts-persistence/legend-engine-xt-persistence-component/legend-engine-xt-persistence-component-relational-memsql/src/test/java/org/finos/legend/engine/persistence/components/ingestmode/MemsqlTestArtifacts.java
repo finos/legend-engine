@@ -256,11 +256,12 @@ public class MemsqlTestArtifacts
             "`digest` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
 
-    public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`digest` VARCHAR(256)," +
+            "`version` INTEGER," +
             "`batch_id_in` INTEGER NOT NULL," +
             "`batch_id_out` INTEGER," +
             "`batch_time_in` DATETIME," +
@@ -269,11 +270,12 @@ public class MemsqlTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
-    public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`digest` VARCHAR(256)," +
+            "`version` INTEGER," +
             "`batch_time_in` DATETIME NOT NULL," +
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME NOT NULL," +

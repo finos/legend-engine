@@ -157,12 +157,12 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return BitemporalDelta
                 .builder()
                 .digestField(applyCase(bitemporalDelta.digestField()))
-                .dataSplitField(applyCase(bitemporalDelta.dataSplitField()))
                 .transactionMilestoning(bitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .validityMilestoning(bitemporalDelta.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
                 .mergeStrategy(bitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
                 .versioningStrategy(bitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .filterExistingRecords(bitemporalDelta.filterExistingRecords())
                 .build();
     }
 

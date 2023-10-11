@@ -263,11 +263,12 @@ public class BigQueryTestArtifacts
             "`digest` STRING," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
 
-    public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`batch_id_in` INT64 NOT NULL," +
             "`batch_id_out` INT64," +
             "`batch_time_in` DATETIME," +
@@ -276,11 +277,12 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
-    public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`batch_time_in` DATETIME NOT NULL," +
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME NOT NULL," +
