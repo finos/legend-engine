@@ -928,9 +928,8 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
-    {
-        final Function<Object, String> normalizer = v ->
+    static Function<Object, String> getNormalizer(String quoteCharacterReplacement, String databaseTimeZone) {
+        return v ->
         {
             if (v == null)
             {
@@ -950,6 +949,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
         };
+    }
+
+    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    {
+        final Function<Object, String> normalizer = getNormalizer(quoteCharacterReplacement, databaseTimeZone);
 
         Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
         while (rowBatchIterator.hasNext())
