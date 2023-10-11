@@ -22,7 +22,6 @@ import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 import java.sql.Connection;
@@ -56,16 +55,16 @@ public class SnowflakeConnectionBuilder
         }
     }
 
-    private static Properties generateJDBCConnectionProperties(SnowflakeConnectionSpecification connectionSpecification)
+    public static Properties generateJDBCConnectionProperties(SnowflakeConnectionSpecification connectionSpecification)
     {
         Properties properties = new Properties();
         // TODO: @akphi - handle quoted identifiers
         // this is a setting users can control when creating the database connection, we probably don't
         // want to do this when the database is configured as part of the system
         boolean quoteIdentifiers = false;
-        String warehouseName = updateSnowflakeIdentifiers(connectionSpecification.warehouseName, quoteIdentifiers);
-        String databaseName = updateSnowflakeIdentifiers(connectionSpecification.databaseName, quoteIdentifiers);
-        properties.put(SNOWFLAKE_ROLE, updateSnowflakeIdentifiers(connectionSpecification.role, quoteIdentifiers));
+        String warehouseName = processIdentifier(connectionSpecification.warehouseName, quoteIdentifiers);
+        String databaseName = processIdentifier(connectionSpecification.databaseName, quoteIdentifiers);
+        properties.put(SNOWFLAKE_ROLE, processIdentifier(connectionSpecification.role, quoteIdentifiers));
 
         properties.put(SNOWFLAKE_ACCOUNT_NAME, connectionSpecification.accountName);
         properties.put(SNOWFLAKE_REGION, connectionSpecification.region);
@@ -95,7 +94,7 @@ public class SnowflakeConnectionBuilder
         Optional.ofNullable(value).ifPresent(x -> properties.put(key, value));
     }
 
-    private static String updateSnowflakeIdentifiers(String identifier, boolean quoteIdentifiers)
+    public static String processIdentifier(String identifier, boolean quoteIdentifiers)
     {
         if (quoteIdentifiers && identifier != null && !(identifier.startsWith("\"") && identifier.endsWith("\"")))
         {
