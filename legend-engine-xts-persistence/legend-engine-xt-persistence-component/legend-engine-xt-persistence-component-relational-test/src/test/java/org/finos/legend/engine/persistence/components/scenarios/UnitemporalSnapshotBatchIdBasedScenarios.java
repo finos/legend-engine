@@ -31,16 +31,22 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
     2) partition : Enabled, Disabled
     3) DataSplit: Enabled, Disabled
     4) partitionValuesByField: Enabled, Disabled
+    5) Versioning: NoVersioning, MaxVersioning
+    5) Deduplication: AllowDups, FailOnDups, FilterDups
 
     Valid Combinations:
-    1) Without Partition, No Data Splits
-    2) Without Partition, With Data Splits -> TBD
-    3) With Partition, No Data Splits
-    4) With Partition, With Data Splits -> TBD
-    5) Without Partition, No Data Splits, Partition Filter
+    1) Without Partition, No Dedup No Versioning
+    2) Without Partition, NoVersion , FailOnDups
+    3) With Partition, No Dedup No Versioning
+    4) With Partition, NoVersion , FilterDups
+    5) With Partition Filter, No Dedup No Versioning
+
+    MaxVersioning, AllowDups
+    MaxVersioning, FailOnDups
+    MaxVersioning, FilterDups
     */
 
-    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -58,7 +64,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return null;
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -77,7 +83,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
     }
 
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)

@@ -38,7 +38,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithoutPartitionNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -56,7 +56,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithNoOpEmptyBatchHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -72,7 +72,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -89,7 +89,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithPartitionNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -105,7 +105,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -121,7 +121,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotWithCleanStagingData()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -160,7 +160,7 @@ public abstract class UnitmemporalSnapshotBatchIdBasedTestCases extends BaseTest
     @Test
     void testUnitemporalSnapshotValidationBatchIdInNotPrimaryKey()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())

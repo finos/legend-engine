@@ -28,21 +28,21 @@ public class UnitemporalSnapshotBatchIdBasedDerivationTest
     @Test
     void testUnitemporalSnapshotWithoutPartitionNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
     void testUnitemporalSnapshotWithPartitionNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
     void testUnitemporalSnapshotWithPartitionFilterNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 }
