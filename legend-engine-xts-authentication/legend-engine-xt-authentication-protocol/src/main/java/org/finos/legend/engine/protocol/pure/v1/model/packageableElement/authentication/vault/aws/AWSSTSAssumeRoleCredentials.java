@@ -40,9 +40,9 @@ public class AWSSTSAssumeRoleCredentials extends AWSCredentials
     public String shortId()
     {
         return "AWSSTSAssumeRoleCredentials" +
-                "--roleArn__" + roleArn +
-                "--roleSessionName__" + roleSessionName +
-                "--awsCredentials__" + awsCredentials.shortId();
+                "--roleArn=" + roleArn +
+                "--roleSessionName=" + roleSessionName +
+                "--awsCredentials=" + awsCredentials.shortId();
     }
 
     @Override

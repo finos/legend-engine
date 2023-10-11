@@ -44,10 +44,10 @@ public class AWSSecretsManagerSecret extends CredentialVaultSecret
     public String shortId()
     {
         return "AWSSecretsManagerSecret" +
-                "--secretId__" + secretId +
-                "--versionId__" + versionId +
-                "--versionStage__" + versionStage +
-                "--awsCredentials__" + awsCredentials.shortId();
+                "--secretId=" + secretId +
+                "--versionId=" + versionId +
+                "--versionStage=" + versionStage +
+                "--awsCredentials=" + awsCredentials.shortId();
     }
 
     @Override

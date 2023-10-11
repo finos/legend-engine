@@ -35,7 +35,7 @@ public class PropertiesFileSecret extends CredentialVaultSecret
     public String shortId()
     {
         return "PropertiesFileSecret" +
-                "--propertyName__" + propertyName;
+                "--propertyName=" + propertyName;
     }
 
     @Override

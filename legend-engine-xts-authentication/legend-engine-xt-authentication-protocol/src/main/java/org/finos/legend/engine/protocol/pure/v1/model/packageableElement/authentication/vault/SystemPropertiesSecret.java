@@ -35,7 +35,7 @@ public class SystemPropertiesSecret extends CredentialVaultSecret
     public String shortId()
     {
         return "SystemPropertiesSecret" +
-                "--systemPropertyName__" + systemPropertyName;
+                "--systemPropertyName=" + systemPropertyName;
     }
 
     @Override

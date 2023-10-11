@@ -203,7 +203,7 @@ public class ConnectionFactory
                     .forEach(builder -> this.processEdge(new FlowNode(builder.getCredentialType()), this.endNode));
         }
 
-        public static String createCredentialBuilderKey(String inputCredentialType, String outputCredentialType)
+        static String createCredentialBuilderKey(String inputCredentialType, String outputCredentialType)
         {
             return inputCredentialType + "__" + outputCredentialType;
         }

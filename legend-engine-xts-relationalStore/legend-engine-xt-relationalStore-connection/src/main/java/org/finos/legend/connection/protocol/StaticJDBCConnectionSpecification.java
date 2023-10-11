@@ -33,8 +33,8 @@ public class StaticJDBCConnectionSpecification extends ConnectionSpecification
     public String shortId()
     {
         return "StaticJDBC" +
-                "--host__" + host +
-                "--port__" + port +
-                "--databaseName__" + databaseName;
+                "--host=" + host +
+                "--port=" + port +
+                "--databaseName=" + databaseName;
     }
 }

@@ -37,8 +37,8 @@ public class AWSStaticCredentials extends AWSCredentials
     public String shortId()
     {
         return "AWSStaticCredentials" +
-                "--accessKeyId__" + accessKeyId.shortId() +
-                "--secretAccessKey__" + secretAccessKey.shortId();
+                "--accessKeyId=" + accessKeyId.shortId() +
+                "--secretAccessKey=" + secretAccessKey.shortId();
     }
 
     @Override

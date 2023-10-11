@@ -35,7 +35,7 @@ public class EnvironmentCredentialVaultSecret extends CredentialVaultSecret
     public String shortId()
     {
         return "EnvironmentCredentialVaultSecret" +
-                "--envVariableName__" + envVariableName;
+                "--envVariableName=" + envVariableName;
     }
 
     @Override

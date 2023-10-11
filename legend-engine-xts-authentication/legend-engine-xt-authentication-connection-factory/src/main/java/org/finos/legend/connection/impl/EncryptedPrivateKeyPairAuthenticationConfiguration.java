@@ -38,8 +38,8 @@ public class EncryptedPrivateKeyPairAuthenticationConfiguration extends Authenti
     public String shortId()
     {
         return "EncryptedPrivateKeyPair" +
-                "_userName__" + userName +
-                "_privateKey__" + privateKey.shortId() +
-                "_passphrase__" + passphrase.shortId();
+                "--userName=" + userName +
+                "--privateKey=" + privateKey.shortId() +
+                "--passphrase=" + passphrase.shortId();
     }
 }

@@ -44,8 +44,8 @@ public class ApiKeyAuthenticationConfiguration extends AuthenticationConfigurati
     public String shortId()
     {
         return "ApiKey" +
-                "--location__" + location +
-                "--keyName__" + keyName +
-                "--value__" + value.shortId();
+                "--location=" + location +
+                "--keyName=" + keyName +
+                "--value=" + value.shortId();
     }
 }
