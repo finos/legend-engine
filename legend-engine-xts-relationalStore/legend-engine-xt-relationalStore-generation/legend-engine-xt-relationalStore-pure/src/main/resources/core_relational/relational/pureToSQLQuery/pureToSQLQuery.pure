@@ -2318,6 +2318,67 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    ^$processedLeftSide(element = ^$collectionSWC(select = $newSelect));
 }
 
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessMatch(f:FunctionExpression[1]):Boolean[1]
+{
+   // Can process 'match' in the context of semi structured mappings (which are not routed).
+   let params = $f.parametersValues->evaluateAndDeactivate();
+   ($params->size() == 2) && (!$params->at(0)->instanceOf(RoutedValueSpecification) || $params->at(0)->instanceOf(NoSetRoutedValueSpecification));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processMatch(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  assert($expression.genericType.rawType->toOne()->instanceOf(PrimitiveType),'Match does not support Non-Primitive return type..! Current return type : '+ $expression.genericType.rawType->toOne()->toString());
+  let leftSide = $expression.parametersValues->at(0);
+  let byPassedLeftSide = $leftSide->deepByPassRouterInfo();
+
+  assert($byPassedLeftSide->cast(@ValueSpecification).multiplicity->isToOne(), 'Match only supports operands with multiplicity [1]..! Current operand : '+ $byPassedLeftSide->cast(@FunctionExpression)->meta::pure::router::printer::asString());
+  let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSide, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+  let processedLeftSide = $leftSideOp.element->cast(@SelectWithCursor);
+  let leftSelect = $processedLeftSide.select;
+
+  let checkCol = if($state.inFilter,|$leftSelect.filteringOperation, |$leftSelect.columns)->toOne();
+  //Currently hardcoding '@type' as a property.
+  let checkColType = ^SemiStructuredPropertyAccess(operand = $checkCol->cast(@SemiStructuredPropertyAccess),property = ^Literal(value = '@type'), returnType = String);
+  let propMapping = $leftSideOp.currentPropertyMapping;
+
+  let functions  = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::function::Function<Any>);
+  let processedFuncs = $functions->map(f|$f->processMatchFunctions($processedLeftSide, $vars, $state, $nodeId, $aggFromMap, $context->shift(), $extensions, $joinType, $propMapping));
+
+  let matchConclusions = $processedFuncs->map(x |  let select = $x.element->cast(@SelectWithCursor).select;
+                                            if($state.inFilter,|$select.filteringOperation, |$select.columns)->toOne();
+                                      );
+  let functionCount = $functions->size();
+  let allFunctionsSubtypes = $functions->size()->range()->map(ind | let functionType = $functions->at($ind)->meta::pure::functions::meta::functionType().parameters->at(0).genericType.rawType->toOne();
+                                                                    assertFalse($functionType->instanceOf(PrimitiveType), 'Match does not support checking on primitive data type..! Currently checking on : ' + $functionType->toString());
+                                                                    if($functionType->isAnyClass(),
+                                                                    | assert($ind == $functionCount-1, 'Any should be used as a default type at the end of match');
+                                                                      [];,
+                                                                    |
+                                                                      list($functionType->cast(@Class<Any>)->meta::pure::functions::meta::allSpecializations())
+                                                                    );
+                                                            );
+
+  let matchConditions = $allFunctionsSubtypes->size()->range()->map(index | ^DynaFunction(name = 'in', parameters = [$checkColType,^LiteralList(values = $allFunctionsSubtypes->at($index).values.name->map(x | ^meta::relational::metamodel::Literal(value =$x)))]));
+  let matchConditionsWithConclusions = $allFunctionsSubtypes->size()->range()->map(index | $matchConditions->at($index)->concatenate($matchConclusions->at($index)));
+
+  let caseParams = if($matchConditions->size() == $functionCount - 1,
+                      |$matchConditionsWithConclusions->concatenate($matchConclusions->at($functionCount - 1)),
+                      |$matchConditionsWithConclusions->concatenate(^meta::relational::metamodel::Literal(value=^SQLNull()))
+                     );
+
+  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation = ^DynaFunction(name = 'case', parameters = $caseParams)),|^$leftSelect(columns = ^DynaFunction(name = 'case', parameters = $caseParams)));
+  ^$processedLeftSide(select =$newSelect);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processMatchFunctions(f:meta::pure::metamodel::function::Function<Any>[1], query:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*],  joinType:JoinType[1], propMapping : PropertyMapping[*]):OperationWithParentPropertyMapping[1]
+{
+  assert($f->functionReturnMultiplicity()->isToOne(),'Match only supports lambdas with multiplicity [1]..! Current lambda : ' + $f->deepByPassRouterInfo()->cast(@meta::pure::metamodel::function::Function<Any>)->meta::pure::router::printer::asString());
+  let expression = $f->cast(@meta::pure::metamodel::function::FunctionDefinition<Any>).expressionSequence;
+  assertSize($expression, 1,'Lambdas  with more than one functionExpressions are not supported yet in Match..! The lambda \'' + $f->deepByPassRouterInfo()->cast(@meta::pure::metamodel::function::Function<Any>)->meta::pure::router::printer::asString() + '\' has ' + $expression->size()->toString() + ' expressions.');
+  processValueSpecificationReturnPropertyMapping($expression->toOne(),$propMapping, $query, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
+}
+
 function meta::relational::functions::pureToSqlQuery::processNot(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions)
@@ -7461,6 +7522,13 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
          second = pair(
             meta::relational::functions::pureToSqlQuery::canProcessAt_FunctionExpression_1__Boolean_1_,
             meta::relational::functions::pureToSqlQuery::processAt_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+         )
+      ),
+      ^Pair<meta::pure::metamodel::function::Function<Any>, Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>(
+         first = meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_,
+         second = pair(
+            meta::relational::functions::pureToSqlQuery::canProcessMatch_FunctionExpression_1__Boolean_1_,
+            meta::relational::functions::pureToSqlQuery::processMatch_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )
       )
    ])
