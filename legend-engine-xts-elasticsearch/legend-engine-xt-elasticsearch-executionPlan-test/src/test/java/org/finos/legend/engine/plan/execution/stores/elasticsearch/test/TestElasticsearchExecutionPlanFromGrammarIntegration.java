@@ -55,7 +55,7 @@ import java.util.ServiceLoader;
 
 public class TestElasticsearchExecutionPlanFromGrammarIntegration
 {
-    private static final String TEST_IMAGE_TAG = "7.8.0";
+    private static final String TEST_IMAGE_TAG = "7.17.7";
     private static PureModel PURE_MODEL;
 
     @BeforeClass

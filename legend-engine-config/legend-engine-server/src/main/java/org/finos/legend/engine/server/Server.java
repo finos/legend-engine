@@ -84,6 +84,8 @@ import org.finos.legend.engine.plan.execution.api.result.ResultManager;
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
+import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder;
@@ -270,12 +272,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         MongoDBStoreExecutorConfiguration mongoDBExecutorConfiguration = MongoDBStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
         MongoDBStoreExecutor mongoDBStoreExecutor = (MongoDBStoreExecutor) new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
 
+        ElasticsearchV7StoreExecutor elasticsearchV7StoreExecutor = (ElasticsearchV7StoreExecutor) new ElasticsearchV7StoreExecutorBuilder().build();
+
         PlanExecutor planExecutor;
         ParallelGraphFetchExecutionExecutorPool parallelGraphFetchExecutionExecutorPool = null;
         if (serverConfiguration.graphFetchExecutionConfiguration != null)
         {
             GraphFetchExecutionConfiguration graphFetchExecutionConfiguration = serverConfiguration.graphFetchExecutionConfiguration;
-            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(graphFetchExecutionConfiguration, relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
             if (graphFetchExecutionConfiguration.canExecuteInParallel())
             {
                 parallelGraphFetchExecutionExecutorPool = new ParallelGraphFetchExecutionExecutorPool(graphFetchExecutionConfiguration.getParallelGraphFetchExecutionConfig(), "thread-pool for parallel graphFetch execution");
@@ -284,7 +288,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         }
         else
         {
-            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
+            planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, elasticsearchV7StoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
         }
 
         // Session Management
