@@ -44,6 +44,7 @@ import java.util.ServiceLoader;
 
 public class ConnectionManagerSelector
 {
+    private static final String TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK = "org.finos.legend.engine.execution.enableNewConnectionFramework";
     private final Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
     private final ConnectionFactory connectionFactory;
     private final List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
@@ -131,28 +132,31 @@ public class ConnectionManagerSelector
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
 
-            // NOTE: @akphi - this is the hacky bit that we add to route to the new connection framework flow
-            if (this.connectionFactory != null && !this.relationalDatabaseConnectionAdapters.isEmpty())
+            if ("true".equals(System.getenv(TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK)))
             {
-                HACKY__RelationalDatabaseConnectionAdapter.ConnectionFactoryMaterial connectionFactoryMaterial = null;
-                for (HACKY__RelationalDatabaseConnectionAdapter adapter : this.relationalDatabaseConnectionAdapters)
+                if (this.connectionFactory != null && !this.relationalDatabaseConnectionAdapters.isEmpty())
                 {
-                    connectionFactoryMaterial = adapter.adapt(relationalDatabaseConnection, this.connectionFactory.getEnvironment());
+                    HACKY__RelationalDatabaseConnectionAdapter.ConnectionFactoryMaterial connectionFactoryMaterial = null;
+                    for (HACKY__RelationalDatabaseConnectionAdapter adapter : this.relationalDatabaseConnectionAdapters)
+                    {
+                        connectionFactoryMaterial = adapter.adapt(relationalDatabaseConnection, this.connectionFactory.getEnvironment());
+                        if (connectionFactoryMaterial != null)
+                        {
+                            break;
+                        }
+                    }
+
                     if (connectionFactoryMaterial != null)
                     {
-                        break;
-                    }
-                }
-
-                if (connectionFactoryMaterial != null)
-                {
-                    try
-                    {
-                        return this.connectionFactory.getConnection(identity, connectionFactoryMaterial.storeInstance, connectionFactoryMaterial.authenticationConfiguration);
-                    }
-                    catch (Exception exception)
-                    {
-                        throw new RuntimeException((exception));
+                        try
+                        {
+                            return this.connectionFactory.getConnection(identity, connectionFactoryMaterial.storeInstance, connectionFactoryMaterial.authenticationConfiguration);
+                        }
+                        catch (Exception exception)
+                        {
+                            // TODO: @akphi @epsstan - should we throw here?
+                            throw new RuntimeException((exception));
+                        }
                     }
                 }
             }
