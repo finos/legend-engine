@@ -18,7 +18,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
@@ -58,9 +58,9 @@ public interface NontemporalSnapshotAbstract extends IngestMode
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                if (maxVersionStrategy.versioningComparator() != VersioningComparator.ALWAYS)
+                if (maxVersionStrategy.versionResolver() != VersionResolver.DIGEST_BASED)
                 {
-                    throw new IllegalStateException("Cannot build NontemporalSnapshot, versioning comparator can only be Always");
+                    throw new IllegalStateException("Cannot build NontemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }
                 return null;
             }

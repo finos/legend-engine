@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import static org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator.GREATER_THAN;
+import static org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver.GREATER_THAN_ACTIVE_VERSION;
 
 public class LogicalPlanUtilsTest extends IngestModeTest
 {
@@ -57,7 +57,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
 
         List<String> primaryKeys = Arrays.asList("id", "name");
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versioningComparator(GREATER_THAN).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
@@ -87,7 +87,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
                 .build();
 
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versioningComparator(GREATER_THAN).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
 
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();

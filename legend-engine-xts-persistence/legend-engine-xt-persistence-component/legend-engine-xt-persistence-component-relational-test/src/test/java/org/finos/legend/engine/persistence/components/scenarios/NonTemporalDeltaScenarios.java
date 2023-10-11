@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import java.util.Optional;
 
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 
 public class NonTemporalDeltaScenarios extends BaseTest
@@ -106,7 +106,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -120,7 +120,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -134,7 +134,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -148,7 +148,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();

@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
 import static org.immutables.value.Value.Immutable;
@@ -39,9 +36,9 @@ public interface AllVersionsStrategyAbstract extends VersioningStrategy
     String versioningField();
 
     @Value.Default
-    default VersioningComparator versioningComparator()
+    default VersionResolver versionResolver()
     {
-        return VersioningComparator.GREATER_THAN;
+        return VersionResolver.DIGEST_BASED;
     }
 
     @Value.Default

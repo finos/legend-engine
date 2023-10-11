@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -341,7 +341,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -394,7 +394,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -447,7 +447,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -500,7 +500,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -605,7 +605,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -661,7 +661,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(false)
                 .build())
             .build();
@@ -717,7 +717,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();
@@ -773,7 +773,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
                 .performVersioning(true)
                 .build())
             .build();

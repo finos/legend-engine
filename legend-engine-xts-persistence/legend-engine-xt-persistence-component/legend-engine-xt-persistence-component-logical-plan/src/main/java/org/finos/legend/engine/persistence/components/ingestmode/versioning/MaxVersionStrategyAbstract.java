@@ -33,9 +33,9 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     String versioningField();
 
     @Value.Default
-    default VersioningComparator versioningComparator()
+    default VersionResolver versionResolver()
     {
-        return VersioningComparator.GREATER_THAN;
+        return VersionResolver.DIGEST_BASED;
     }
 
     @Value.Default
