@@ -31,7 +31,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Vers
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
-import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
@@ -212,7 +211,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersionInUpperCase(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(4, 0, 3, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
@@ -221,7 +220,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersionInUpperCase(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(3, 0, 2, 0, 0);
+        expectedStats = createExpectedStatsMap(4, 0, 2, 0, 0);
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
     }
 
