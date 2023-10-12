@@ -323,7 +323,7 @@ class NontemporalDeltaTest extends BaseTest
         expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStatsList.add(expectedStats1);
         expectedStatsList.add(expectedStats2);
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
     }
 
     @Test

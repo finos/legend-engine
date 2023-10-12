@@ -261,8 +261,7 @@ public abstract class RelationalIngestorAbstract
     public List<IngestorResult> performFullIngestion(RelationalConnection connection, Datasets datasets)
     {
         LOGGER.info("Invoked performFullIngestion method");
-        List<DataSplitRange> dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
-        return performFullIngestion(connection, datasets, dataSplitRanges);
+        return performFullIngestion(connection, datasets, new ArrayList<>());
     }
 
     /*
@@ -421,6 +420,11 @@ public abstract class RelationalIngestorAbstract
 
         // Dedup and Version
         dedupAndVersion();
+        // Find the data split ranges based on the result of dedup and versioning
+        if (dataSplitRanges.isEmpty())
+        {
+            dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
+        }
 
         // Perform Ingestion
         List<IngestorResult> result;

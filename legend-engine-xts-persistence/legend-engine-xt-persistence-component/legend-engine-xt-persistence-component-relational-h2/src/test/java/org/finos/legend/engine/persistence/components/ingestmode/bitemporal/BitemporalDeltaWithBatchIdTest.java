@@ -545,7 +545,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
@@ -561,7 +561,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
@@ -573,7 +573,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -627,7 +627,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
@@ -639,7 +639,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass3.csv";
@@ -648,7 +648,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 ------------------------
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass4.csv";
@@ -657,7 +657,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass5 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
@@ -669,7 +669,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -818,7 +818,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
@@ -834,7 +834,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
@@ -846,7 +846,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -901,7 +901,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
@@ -913,7 +913,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass3.csv";
@@ -922,7 +922,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 ------------------------
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
@@ -931,7 +931,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass5 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
@@ -943,7 +943,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -1154,7 +1154,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
@@ -1168,7 +1168,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
@@ -1180,7 +1180,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(70, 70));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 0, 2, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -1235,7 +1235,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
@@ -1247,7 +1247,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass3.csv";
@@ -1256,7 +1256,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
@@ -1268,7 +1268,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(70, 71));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 0, 2, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -1424,7 +1424,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
@@ -1438,7 +1438,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
@@ -1450,7 +1450,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(5, 100));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 0, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -1509,7 +1509,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
@@ -1521,7 +1521,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass3.csv";
@@ -1530,7 +1530,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 (identical records) ------------------------
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
@@ -1542,6 +1542,6 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(0, 100));
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(2, 0, 0, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 }

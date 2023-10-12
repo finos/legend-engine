@@ -227,12 +227,12 @@ public class BaseTest
         return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), false);
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
     {
-        return executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
+        return executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
             .ingestMode(ingestMode)
@@ -244,6 +244,34 @@ public class BaseTest
             .build();
 
         List<IngestorResult> results = ingestor.performFullIngestionWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
+
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        for (int i = 0; i < results.size(); i++)
+        {
+            Map<StatisticName, Object> actualStats = results.get(i).statisticByName();
+            Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
+            for (String statistic : expectedStats.get(i).keySet())
+            {
+                Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+            }
+        }
+        return results;
+    }
+
+    protected List<IngestorResult> executePlansAndVerifyResultsWithDerivedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .cleanupStagingData(options.cleanupStagingData())
+            .collectStatistics(options.collectStatistics())
+            .enableSchemaEvolution(options.enableSchemaEvolution())
+            .build();
+
+        List<IngestorResult> results = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);

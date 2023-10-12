@@ -312,17 +312,23 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
-        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
-        dataSplitRanges.add(DataSplitRange.of(1, 1));
-        dataSplitRanges.add(DataSplitRange.of(2, 2));
         List<Map<String, Object>> expectedStatsList = new ArrayList<>();
         Map<String, Object> expectedStats1 = createExpectedStatsMap(3, 0, 3, 0, 0);
-        Map<String, Object> expectedStats2 = createExpectedStatsMap(2, 0, 2, 0, 0);
-
+        Map<String, Object> expectedStats2 = createExpectedStatsMap(1, 0, 1, 0, 0);
         expectedStatsList.add(expectedStats1);
         expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, incrementalClock);
 
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges, incrementalClock);
+        // ------------ Perform incremental (append) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/auditing_all_version_filter_dup_filter_existing/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/auditing_all_version_filter_dup_filter_existing/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStatsList = new ArrayList<>();
+        expectedStats1 = createExpectedStatsMap(4, 0, 2, 0, 0);
+        expectedStatsList.add(expectedStats1);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, incrementalClock);
     }
 
     /*
@@ -363,17 +369,24 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
-        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
-        dataSplitRanges.add(DataSplitRange.of(1, 1));
-        dataSplitRanges.add(DataSplitRange.of(2, 2));
         List<Map<String, Object>> expectedStatsList = new ArrayList<>();
         Map<String, Object> expectedStats1 = createExpectedStatsMap(3, 0, 3, 0, 0);
-        Map<String, Object> expectedStats2 = createExpectedStatsMap(2, 0, 2, 0, 0);
-
+        Map<String, Object> expectedStats2 = createExpectedStatsMap(1, 0, 1, 0, 0);
         expectedStatsList.add(expectedStats1);
         expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, incrementalClock);
 
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges, incrementalClock);
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String dataPass2 = basePath + "input/auditing_all_version_filter_dup_no_filter_existing/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/auditing_all_version_filter_dup_no_filter_existing/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStatsList = new ArrayList<>();
+        expectedStats1 = createExpectedStatsMap(4, 0, 3, 0, 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, incrementalClock);
     }
 
     /*

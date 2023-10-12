@@ -333,7 +333,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStatsList.add(expectedStatsSplit1);
         expectedStatsList.add(expectedStatsSplit2);
 
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
 
         // ------------ Perform milestoning Pass2 ------------------------
         String dataPass2 = basePathForInput + "with_data_splits/staging_data_pass2.csv";
@@ -350,7 +350,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStatsList.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         expectedStatsList.add(createExpectedStatsMap(1, 0, 0, 1, 0));
 
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass2, expectedStatsList, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass2, expectedStatsList, dataSplitRanges);
 
         // ------------ Perform milestoning Pass3 - Empty batch ------------------------
         String dataPass3 = basePathForInput + "with_data_splits/staging_data_pass3.csv";
@@ -360,6 +360,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         expectedStatsList = new ArrayList<>();
         expectedStatsList.add(createExpectedStatsMap(0, 0, 0, 0, 0));
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass3, expectedStatsList, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass3, expectedStatsList, dataSplitRanges);
     }
 }
