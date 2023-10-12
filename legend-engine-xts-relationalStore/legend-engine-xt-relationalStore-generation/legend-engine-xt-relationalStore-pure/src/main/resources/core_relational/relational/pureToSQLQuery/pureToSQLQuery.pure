@@ -2332,7 +2332,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let leftSide = $expression.parametersValues->at(0);
   let byPassedLeftSide = $leftSide->deepByPassRouterInfo();
 
-  assert($byPassedLeftSide->cast(@ValueSpecification).multiplicity->isToOne(), 'Match only supports operands with multiplicity [1]..! Current operand : '+ $byPassedLeftSide->cast(@FunctionExpression)->meta::pure::router::printer::asString());
+  assert($byPassedLeftSide->cast(@ValueSpecification).multiplicity->isToOne(), 'Match only supports operands with multiplicity [1]..! Current operand : '+ $byPassedLeftSide->cast(@ValueSpecification)->meta::pure::router::printer::asString());
   let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSide, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
   let processedLeftSide = $leftSideOp.element->cast(@SelectWithCursor);
   let leftSelect = $processedLeftSide.select;
