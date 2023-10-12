@@ -47,6 +47,9 @@
         <module>legend-engine-xts-mongodb</module>
         <module>legend-engine-xts-elasticsearch</module>
 
+        <!-- RelationalAI -->
+        <module>legend-engine-xts-relationalai</module>
+
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
         <module>legend-engine-xts-protobuf</module>
@@ -980,6 +983,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-presto-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalai-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
