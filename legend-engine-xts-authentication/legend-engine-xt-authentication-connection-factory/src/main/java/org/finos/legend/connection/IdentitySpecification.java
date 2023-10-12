@@ -103,7 +103,7 @@ public class IdentitySpecification
         public IdentitySpecification build()
         {
             return new IdentitySpecification(
-                    Objects.requireNonNull(this.name, "Identity specification name is required"),
+                    this.name,
                     this.profiles,
                     this.subject,
                     this.credentials

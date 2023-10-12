@@ -40,7 +40,7 @@ function meta::pure::tds::viewToTDS(view:meta::relational::metamodel::relation::
 }
 
 function
-   {doc.doc = 'Project the specified calculated columns from the provided TDS.  This is similar to extend, but rather than adding the columns it replaces all of the existing ones '}
+   {doc.doc = 'Project the specified columns from the provided TableTDS'}
    meta::pure::tds::project(tds:meta::relational::mapping::TableTDS[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
 {
    $tds->project($columnFunctions);

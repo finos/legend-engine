@@ -6,7 +6,7 @@ This page describes steps required to add support for a new external format.
 
 ### Pure
 
-- Implement [ExternalFormatContract](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure) : External Format Contract defines your format in legend ecosystem and links all its offered features and configurations. It is defined by following fields
+- Implement [ExternalFormatContract](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure) : External Format Contract defines your format in legend ecosystem and links all its offered features and configurations. It is defined by following fields
     - `id` : Provide id for your External Format
     - `contentTypes` : Provide content types for your External Format
     - `externalFormatMetamodel` : Define Metamodel for External Format
@@ -15,13 +15,13 @@ This page describes steps required to add support for a new external format.
     - Everything except id and schema metamodel is optional for defining an external format. You may choose to add features you need with your external format in parts and as you need them. <br> Each external format can choose to implement following features -
         - `externalFormatToPureDescriptor` : Pure Model generation from External Format Schema
             - This is needed when you want to allow users of your external format to generate Pure models from external format schema.
-            - To add support for this you need to implement [ExternalFormatToPureDescriptor](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure). This requires you to -
+            - To add support for this you need to implement [ExternalFormatToPureDescriptor](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure). This requires you to -
                 - Model SchemaToModelConfiguration for your external format
                 - Implement a function which takes in an instance of SchemaSet (holding schema instances of your external format) and modeled configuration and generates packageable elements
                 - Provide a default config for your SchemaToModelConfiguration
         - `externalFormatFromPureDescriptor` : External Format Schema generation from Pure Model
             - This is needed when you want to allow users of your external format to generate external format schema from authored pure models
-            - To add support for this you need to implement [ExternalFormatFromPureDescriptor](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure). This requires you to -
+            - To add support for this you need to implement [ExternalFormatFromPureDescriptor](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure). This requires you to -
                 - Model ModelToSchemaConfiguration for your external format
                 - Implement a function which takes in an instance of ModelUnit and modeled configuration and generates SchemaSet
                 - Provide a default config for your ModelToSchemaConfiguration
@@ -33,15 +33,15 @@ This page describes steps required to add support for a new external format.
             - This is needed when you want to allow users to serialize instances into your external format with custom configurations
             - This is used at plan generation/execution time.
             - To add support for this you need to -
-                - Model subtype of [ExternalFormatExternalizeConfig](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure)
+                - Model subtype of [ExternalFormatExternalizeConfig](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure)
                 - Author algorithm to dynamically generate platform binding requirements (for JAVA see below)
         - `internalizeConfig` : Defines configurations needed to deserialize data aligning with external format into instances.
             - This is needed when you want to allow users to deserialize data aligning with external format into instances to be used with legend ecosystem with custom configurations
             - This is used at plan generation/execution time.
             - To add support for this you need to -
-                - Model [ExternalFormatInternalizeConfig](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure)
+                - Model [ExternalFormatInternalizeConfig](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/binding/externalFormat/externalFormatContract.pure)
                 - Author algorithm to dynamically generate platform binding requirements (for JAVA see below)
-        - `internalizeReturnsChecked` : Defines whether your format returns deserialized instances wrapped in [Checked](../../legend-engine-pure-code-compiled-core/src/main/resources/core/pure/dataQuality/dataQuality.pure) structure or not.
+        - `internalizeReturnsChecked` : Defines whether your format returns deserialized instances wrapped in [Checked](../../legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/dataQuality/dataQuality.pure) structure or not.
             - If your external format support internalize (deserialization) feature then you can choose to return deserialized instances wrapped in checked structure.
             - Returning checked instances allows you to provide record level lineage and defect information to your users.
             - `Default Value`: false
@@ -50,18 +50,18 @@ This page describes steps required to add support for a new external format.
             - This field links serialize tree representation for this source record metamodel and defines structure in which record level lineage information will be presented to the user
 
 
-- Implement [ExternalFormatLegendJavaPlatformBindingDescriptor](../../legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure) : ExternalFormatLegendJavaPlatformBindingDescriptor is a description of algorithms required to integrate your format with JAVA implementation of Legend query engine
+- Implement [ExternalFormatLegendJavaPlatformBindingDescriptor](../../legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure) : ExternalFormatLegendJavaPlatformBindingDescriptor is a description of algorithms required to integrate your format with JAVA implementation of Legend query engine
     - `externalFormatContract` : Links your ExternalFormatContract defined above
     - `enginePlatformDependencies` : Inject Engine Dependencies for your format into JAVA Platform Binding conventions. 
         - These are the java interfaces which your algorithms can use when generating JAVA platform binding code.
         - These dependencies serve as the contract between plan generation and execution.
     - Now you can choose to implement either or both of serialization/deserialization support for your format
         - `externalizeDescriptor` : Description of algorithms required to generate code to support serialization. To add this feature you need to -
-            - Provide instance of [ExternalFormatExternalizeBindingDescriptor](../../legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure)
+            - Provide instance of [ExternalFormatExternalizeBindingDescriptor](../../legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure)
                 - `externalizeGenerator` : Author a function which takes in ExternalFormatExternalizeExecutionNode, Path, GenerationContext, DebugContext and return GeneratedCode. GenerateCode contain entry point and JAVA classes which would be added to the execution plan.
                 - `externalizePreparator` : You may optionally need to provide an implementation to inject some types into TypeInfoSet to support your generations. Based on basic analysis of query certain types are injected into TypeInfoSet for every ExternalFormatContract
         - `internalizeDescriptor` : Description of algorithms required to generate code to support deserialization. To add this feature you need to -
-            - Provide instance of [ExternalFormatInternalizeBindingDescriptor](../../legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure)
+            - Provide instance of [ExternalFormatInternalizeBindingDescriptor](../../legend-engine-xts-java/legend-engine-xt-javaPlatformBinding-pure/src/main/resources/core_java_platform_binding/legendJavaPlatformBinding/binding/descriptor.pure)
                 - `internalizeGenerator` : Author a function which takes in ExternalFormatInternalizeExecutionNode, Path, GenerationContext, DebugContext and return GeneratedCode. GenerateCode contain entry point and JAVA classes which would be added to the execution plan
                 - `internalizePreparator` : You may optionally need to provide an implementation to inject some types into TypeInfoSet to support your generations. Based on basic analysis of query certain types are injected into TypeInfoSet for every ExternalFormatContract
 
@@ -163,7 +163,7 @@ This page describes steps required to add support for a new external format.
             </plugin>
           ```
 
-- Implement [ExternalFormatExtension](../../legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java) : Basic extension required to integrate external format in legend ecosystem
+- Implement [ExternalFormatExtension](../../legend-engine-core/legend-engine-core-language-pure/legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java) : Basic extension required to integrate external format in legend ecosystem
     - Each and every external format need to provide implementation for this interface to integrate the format with legend ecosystem.
     - To implement this interface you need to provide implementation for following 3 functions -
         - `getExternalFormatContract` : Link ExternalFormatContract modeled in PURE
@@ -171,25 +171,25 @@ This page describes steps required to add support for a new external format.
         - `metamodelToText` : Implement algorithm to generate PURE grammar from instances of metamodel classes. You should use transformer/composer defined in previous step.
     - Define service file with your implementation class, so that your implementation is picked via ServiceLoaders
 
-- Implement [ExternalFormatSchemaGenerationExtension](../../legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/transformation/fromModel/ExternalFormatSchemaGenerationExtension.java): Extension required to integrate your format with Legend schema generation capabilities
+- Implement [ExternalFormatSchemaGenerationExtension](../../legend-engine-core/legend-engine-core-language-pure/legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/transformation/fromModel/ExternalFormatSchemaGenerationExtension.java): Extension required to integrate your format with Legend schema generation capabilities
     - Implement this to integrate with Legend's schema generation.
-    - This extends [ExternalFormatExtension](../../legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java)
+    - This extends [ExternalFormatExtension](../../legend-engine-core/legend-engine-core-language-pure/legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java)
     - To implement this interface you need to implement following functionality in addition to those listed above
         - `compileModelToSchemaConfiguration` :  Compiles instances of JAVA classes for ModelToSchemaConfiguration into its metamodel counterpart
             - Author ModelToSchemaConfiguration in JAVA aligning with what you would have implemented in PURE
             - Implement algorithm to translate instances of JAVA classes for ModelToSchemaConfiguration into its metamodel counterpart
     - `Prerequiste` : You need to implement `externalFormatFromPureDescriptor` in PURE contract for your format
 
-- Implement [ExternalFormatModelGenerationExtension](../../legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/transformation/toModel/ExternalFormatModelGenerationExtension.java): Extension required to integrate your format with Legend model generation capabilities
+- Implement [ExternalFormatModelGenerationExtension](../../legend-engine-core/legend-engine-core-language-pure/legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/transformation/toModel/ExternalFormatModelGenerationExtension.java): Extension required to integrate your format with Legend model generation capabilities
     - Implement this to integrate with Legend's model generation.
-    - This extends [ExternalFormatExtension](../../legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java)
+    - This extends [ExternalFormatExtension](../../legend-engine-core/legend-engine-core-language-pure/legend-engine-external-shared-format-model/src/main/java/org/finos/legend/engine/external/shared/format/model/ExternalFormatExtension.java)
     - To implement this interface you need to implement following functionality in addition to those listed above
         - `compileSchemaToModelConfiguration` :  Compiles instances of JAVA classes for SchemaToModelConfiguration into its metamodel counterpart
             - Author SchemaToModelConfiguration in JAVA aligning with what you would have implemented in PURE
             - Implement algorithm to translate instances of JAVA classes for SchemaToModelConfiguration into its metamodel counterpart
     - `Prerequiste` : You need to implement `externalFormatToPureDescriptor` in PURE contract for your format
 
-- Implement [ExternalFormatRuntimeExtension](../../legend-engine-external-shared-format-runtime/src/main/java/org/finos/legend/engine/external/shared/runtime/ExternalFormatRuntimeExtension.java) : Extension to integrate your format with Legend's query execution engine
+- Implement [ExternalFormatRuntimeExtension](../../legend-engine-core/legend-engine-core-executionPlan-execution/legend-engine-external-shared-format-runtime/src/main/java/org/finos/legend/engine/external/shared/runtime/ExternalFormatRuntimeExtension.java) : Extension to integrate your format with Legend's query execution engine
     - Implement this to allow your users to use serialization/deserialization feature with your external format.
     - To implement this interface you need to provide implementation for following functions -
         - `getContentTypes` : Provide contentTypes for your format
@@ -232,7 +232,7 @@ We recommend following module structure as a starting point -
 - legend-engine-xt-{format}-javaPlatformBinding-pure : Module to host pure code for generation of java code to support execution on java engine. Implementation of ExternalFormatLegendJavaPlatformBindingDescriptor is defined here.
 - legend-engine-xt-{format}-model : Module to host implementation of ExternalFormatExtension, ExternalFormatSchemaGenerationExtension, ExternalFormatModelGenerationExtension
 - legend-engine-xt-{format}-runtime : Module to host implementation of ExternalFormatRuntimeExtension
-- legend-engine-xt-{format}-test : Module to run defined tests in maven pipeline
+- legend-engine-xt-{format}-javaPlatformBinding-test : Module to run defined tests in maven pipeline using java platform binding
 
 #### Dependency Graph
 
@@ -243,11 +243,14 @@ graph LR
     Runtime(legend-engine-xt-format-runtime)
     Pure(legend-engine-xt-format-pure)
     PureJava(legend-engine-xt-format-javaPlatformBinding-pure)
+    JavaTest(legend-engine-xt-format-javaPlatformBinding-test)
     
     PureJava --> Pure
     Model --> Pure
     Model --> Shared
     Runtime --> Shared
+    JavaTest --> PureJava
+    JavaTest --> Runtime
 ```
 
 As mentioned these are recommendations at best. Please feel free to diverge from this. Please feel free to explore existing formats to understand the structure more

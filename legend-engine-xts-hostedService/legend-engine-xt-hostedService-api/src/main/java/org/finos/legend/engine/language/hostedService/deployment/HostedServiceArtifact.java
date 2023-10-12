@@ -20,8 +20,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 
 public class HostedServiceArtifact extends FunctionActivatorArtifact
 {
-    public GenerationInfo info;
-    public PureModelContextData serviceData;
 
     public HostedServiceArtifact()
     {
@@ -30,13 +28,12 @@ public class HostedServiceArtifact extends FunctionActivatorArtifact
 
     public HostedServiceArtifact(GenerationInfo info)
     {
-        this.info = info;
+        this.content = new HostedServiceContent(info);
     }
 
     public HostedServiceArtifact(GenerationInfo info, PureModelContextData serviceData)
     {
-        this(info);
-        this.serviceData = serviceData;
+        this.content = new HostedServiceContent(info, serviceData);
     }
 
 

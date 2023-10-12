@@ -56,7 +56,7 @@ activation:                     SNOWFLAKE_APP__ACTIVATION COLON qualifiedName SE
 // ----------------------------------- Deployment ------------------------------------------------------
 deploymentConfig:                      CONFIGURATION qualifiedName
                                             BRACE_OPEN
-                                                (activationConnection | stage)
+                                                activationConnection
                                             BRACE_CLOSE
 ;
 

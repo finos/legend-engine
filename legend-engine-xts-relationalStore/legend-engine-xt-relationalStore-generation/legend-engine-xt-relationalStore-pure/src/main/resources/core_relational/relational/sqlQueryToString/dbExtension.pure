@@ -1001,6 +1001,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   sign,
   sin,
   size,
+  splitPart,
   sqlFalse,
   sqlNull,
   sqlTrue,

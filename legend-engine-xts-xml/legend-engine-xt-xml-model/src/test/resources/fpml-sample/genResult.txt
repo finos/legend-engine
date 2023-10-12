@@ -1,7 +1,7 @@
 >>>test::gen::Account
 Class {meta::pure::profiles::doc.doc = 'A generic account that represents any party\'s account at another party. Parties may be identified by the account at another party.'} test::gen::Account
 [
-  c1_choice: $this.accountBeneficiary->isNotEmpty() || ($this.accountBeneficiary->isEmpty() && $this.servicingParty->isNotEmpty())
+  c1_choice_Account: $this.accountBeneficiary->isNotEmpty() || ($this.accountBeneficiary->isEmpty() && $this.servicingParty->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'An account identifier. For example an Account number.'} accountId: test::gen::AccountId[1..*];
@@ -15,9 +15,9 @@ Class {meta::pure::profiles::doc.doc = 'A generic account that represents any pa
 >>>test::gen::AccountId
 Class {meta::pure::profiles::doc.doc = 'The data type used for account identifiers.'} test::gen::AccountId
 [
-  c1_length: $this.accountIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_AccountId: $this.accountIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_AccountId: $this.value->length() >= 1,
+  c3_length_AccountId: $this.value->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'The identifier scheme used with this accountId. A unique URI to determine the authoritative issuer of these identifiers.'} accountIdScheme: String[0..1];
@@ -27,8 +27,8 @@ Class {meta::pure::profiles::doc.doc = 'The data type used for account identifie
 >>>test::gen::AccountName
 Class {meta::pure::profiles::doc.doc = 'The data type used for the name of the account.'} test::gen::AccountName
 [
-  c1_length: $this.accountNameScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_AccountName: $this.accountNameScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_AccountName: $this.value->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'The identifier scheme used with this accountName. A unique URI to determine the source of the account name.'} accountNameScheme: String[0..1];
@@ -44,8 +44,8 @@ Class {meta::pure::profiles::doc.doc = 'Reference to an account.'} test::gen::Ac
 >>>test::gen::AccountType
 Class {meta::pure::profiles::doc.doc = 'The data type used for account type.'} test::gen::AccountType
 [
-  c1_length: $this.accountTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_AccountType: $this.accountTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_AccountType: $this.value->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'The identifier scheme used with this accountType. A unique URI to determine the the type of account.'} accountTypeScheme: String[0..1];
@@ -66,7 +66,7 @@ Enum {meta::pure::profiles::doc.doc = 'The type of automatic adjustment that a L
 >>>test::gen::ActionType
 Class {meta::pure::profiles::doc.doc = 'The data type used for ESMA action type.'} test::gen::ActionType
 [
-  c1_length: $this.value->length() <= 255
+  c1_length_ActionType: $this.value->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'The identifier scheme used with this actionType. A unique URI to determine the the type of action.'} actionTypeScheme: String[0..1];
@@ -76,9 +76,9 @@ Class {meta::pure::profiles::doc.doc = 'The data type used for ESMA action type.
 >>>test::gen::Address
 Class {meta::pure::profiles::doc.doc = 'A type that represents a physical postal address.'} test::gen::Address
 [
-  c1_length: $this.city->forAll(x: String[1]|$x->length() <= 255),
-  c2_length: $this.state->forAll(x: String[1]|$x->length() <= 255),
-  c3_length: $this.postalCode->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_Address: $this.city->forAll(x: String[1]|$x->length() <= 255),
+  c2_length_Address: $this.state->forAll(x: String[1]|$x->length() <= 255),
+  c3_length_Address: $this.postalCode->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'The set of street and building number information that identifies a postal address within a city.'} streetAddress: test::gen::StreetAddress[0..1];
@@ -100,7 +100,7 @@ Class {meta::pure::profiles::doc.doc = 'A type for defining a date that shall be
 >>>test::gen::AdjustableDate2
 Class {meta::pure::profiles::doc.doc = 'A type that is different from AdjustableDate in two regards. First, date adjustments can be specified with either a dateAdjustments element or a reference to an existing dateAdjustments element. Second, it does not require the specification of date adjustments.'} test::gen::AdjustableDate2
 [
-  c1_choice: ($this.dateAdjustments->isNotEmpty() && $this.dateAdjustmentsReference->isEmpty()) || ($this.dateAdjustments->isEmpty() && $this.dateAdjustmentsReference->isNotEmpty())
+  c1_choice_AdjustableDate2: ($this.dateAdjustments->isNotEmpty() && $this.dateAdjustmentsReference->isEmpty()) || ($this.dateAdjustments->isEmpty() && $this.dateAdjustmentsReference->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A date subject to adjustment.'} unadjustedDate: test::gen::IdentifiedDate[1];
@@ -122,7 +122,7 @@ Class {meta::pure::profiles::doc.doc = 'A type for defining a series of dates th
 >>>test::gen::AdjustableDatesOrRelativeDateOffset
 Class {meta::pure::profiles::doc.doc = 'A type for defining a series of dates, either as a list of adjustable dates, or a as a repeating sequence from a base date'} test::gen::AdjustableDatesOrRelativeDateOffset
 [
-  c1_choice: ($this.adjustableDates->isNotEmpty() && $this.relativeDate->isEmpty()) || ($this.adjustableDates->isEmpty() && $this.relativeDate->isNotEmpty())
+  c1_choice_AdjustableDatesOrRelativeDateOffset: ($this.adjustableDates->isNotEmpty() && $this.relativeDate->isEmpty()) || ($this.adjustableDates->isEmpty() && $this.relativeDate->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A series of adjustable dates'} adjustableDates: test::gen::AdjustableDates[0..1];
@@ -132,7 +132,7 @@ Class {meta::pure::profiles::doc.doc = 'A type for defining a series of dates, e
 >>>test::gen::AdjustableOrAdjustedDate
 Class {meta::pure::profiles::doc.doc = 'A type for defining a date that shall be subject to adjustment if it would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.'} test::gen::AdjustableOrAdjustedDate
 [
-  c1_choice: ($this.unadjustedDate->isNotEmpty() && $this.dateAdjustments->isNotEmpty()) || ($this.unadjustedDate->isEmpty() && ($this.dateAdjustments->isEmpty() && $this.adjustedDate->isNotEmpty()))
+  c1_choice_AdjustableOrAdjustedDate: ($this.unadjustedDate->isNotEmpty() && $this.dateAdjustments->isNotEmpty()) || ($this.unadjustedDate->isEmpty() && ($this.dateAdjustments->isEmpty() && $this.adjustedDate->isNotEmpty()))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A date subject to adjustment.'} unadjustedDate: test::gen::IdentifiedDate[0..1];
@@ -144,7 +144,7 @@ Class {meta::pure::profiles::doc.doc = 'A type for defining a date that shall be
 >>>test::gen::AdjustableOrRelativeDate
 Class {meta::pure::profiles::doc.doc = 'A type giving the choice between defining a date as an explicit date together with applicable adjustments or as relative to some other (anchor) date.'} test::gen::AdjustableOrRelativeDate
 [
-  c1_choice: ($this.adjustableDate->isNotEmpty() && $this.relativeDate->isEmpty()) || ($this.adjustableDate->isEmpty() && $this.relativeDate->isNotEmpty())
+  c1_choice_AdjustableOrRelativeDate: ($this.adjustableDate->isNotEmpty() && $this.relativeDate->isEmpty()) || ($this.adjustableDate->isEmpty() && $this.relativeDate->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A date that shall be subject to adjustment if it would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.'} adjustableDate: test::gen::AdjustableDate[0..1];
@@ -155,7 +155,7 @@ Class {meta::pure::profiles::doc.doc = 'A type giving the choice between definin
 >>>test::gen::AdjustableOrRelativeDates
 Class {meta::pure::profiles::doc.doc = 'A type giving the choice between defining a series of dates as an explicit list of dates together with applicable adjustments or as relative to some other series of (anchor) dates.'} test::gen::AdjustableOrRelativeDates
 [
-  c1_choice: ($this.adjustableDates->isNotEmpty() && $this.relativeDates->isEmpty()) || ($this.adjustableDates->isEmpty() && $this.relativeDates->isNotEmpty())
+  c1_choice_AdjustableOrRelativeDates: ($this.adjustableDates->isNotEmpty() && $this.relativeDates->isEmpty()) || ($this.adjustableDates->isEmpty() && $this.relativeDates->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A series of dates that shall be subject to adjustment if they would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.'} adjustableDates: test::gen::AdjustableDates[0..1];
@@ -166,7 +166,7 @@ Class {meta::pure::profiles::doc.doc = 'A type giving the choice between definin
 >>>test::gen::AdjustableRelativeOrPeriodicDates
 Class test::gen::AdjustableRelativeOrPeriodicDates
 [
-  c1_choice: ($this.adjustableDates->isNotEmpty() && ($this.relativeDateSequence->isEmpty() && $this.periodicDates->isEmpty())) || (($this.adjustableDates->isEmpty() && ($this.relativeDateSequence->isNotEmpty() && $this.periodicDates->isEmpty())) || ($this.adjustableDates->isEmpty() && ($this.relativeDateSequence->isEmpty() && $this.periodicDates->isNotEmpty())))
+  c1_choice_AdjustableRelativeOrPeriodicDates: ($this.adjustableDates->isNotEmpty() && ($this.relativeDateSequence->isEmpty() && $this.periodicDates->isEmpty())) || (($this.adjustableDates->isEmpty() && ($this.relativeDateSequence->isNotEmpty() && $this.periodicDates->isEmpty())) || ($this.adjustableDates->isEmpty() && ($this.relativeDateSequence->isEmpty() && $this.periodicDates->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A series of dates that shall be subject to adjustment if they would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.'} adjustableDates: test::gen::AdjustableDates[0..1];
@@ -178,7 +178,7 @@ Class test::gen::AdjustableRelativeOrPeriodicDates
 >>>test::gen::AdjustableRelativeOrPeriodicDates2
 Class {meta::pure::profiles::doc.doc = 'A type giving the choice between defining a series of dates as an explicit list of dates together with applicable adjustments, or as relative to some other series of (anchor) dates, or as a set of factors to specify periodic occurences.'} test::gen::AdjustableRelativeOrPeriodicDates2
 [
-  c1_choice: ($this.adjustableDates->isNotEmpty() && ($this.relativeDates->isEmpty() && $this.periodicDates->isEmpty())) || (($this.adjustableDates->isEmpty() && ($this.relativeDates->isNotEmpty() && $this.periodicDates->isEmpty())) || ($this.adjustableDates->isEmpty() && ($this.relativeDates->isEmpty() && $this.periodicDates->isNotEmpty())))
+  c1_choice_AdjustableRelativeOrPeriodicDates2: ($this.adjustableDates->isNotEmpty() && ($this.relativeDates->isEmpty() && $this.periodicDates->isEmpty())) || (($this.adjustableDates->isEmpty() && ($this.relativeDates->isNotEmpty() && $this.periodicDates->isEmpty())) || ($this.adjustableDates->isEmpty() && ($this.relativeDates->isEmpty() && $this.periodicDates->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A series of dates that shall be subject to adjustment if they would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.'} adjustableDates: test::gen::AdjustableDates[0..1];
@@ -228,8 +228,8 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a currency amount or a c
 >>>test::gen::AssetClass
 Class test::gen::AssetClass
 [
-  c1_length: $this.assetClassScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_AssetClass: $this.assetClassScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_AssetClass: $this.value->length() <= 255
 ]
 {
   assetClassScheme: String[0..1];
@@ -245,8 +245,8 @@ Class {meta::pure::profiles::doc.doc = 'A type to define automatic exercise of a
 >>>test::gen::AverageDailyTradingVolumeLimit
 Class {meta::pure::profiles::doc.doc = 'To indicate the limitation percentage and limitation period.'} test::gen::AverageDailyTradingVolumeLimit
 [
-  c1_range: $this.limitationPercentage >= 0,
-  c2_range: $this.limitationPercentage <= 1
+  c1_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage >= 0,
+  c2_range_AverageDailyTradingVolumeLimit: $this.limitationPercentage <= 1
 ]
 {
   {meta::pure::profiles::doc.doc = 'Specifies the limitation percentage in Average Daily trading volume.'} limitationPercentage: Decimal[1];
@@ -271,7 +271,7 @@ Enum {meta::pure::profiles::doc.doc = 'The method of calculation to be used when
 >>>test::gen::Beneficiary
 Class {meta::pure::profiles::doc.doc = 'A type defining the beneficiary of the funds.'} test::gen::Beneficiary
 [
-  c1_choice: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
+  c1_choice_Beneficiary: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A set of unique identifiers for a party, eachone identifying the party within a payment system. The assumption is that each party will not have more than one identifier within the same payment system.'} routingIds: test::gen::RoutingIds[0..1];
@@ -308,8 +308,8 @@ Class {meta::pure::profiles::doc.doc = 'Identifies the market sector in which th
 >>>test::gen::BrokerConfirmationType
 Class {meta::pure::profiles::doc.doc = 'Identifies the market sector in which the trade has been arranged.'} test::gen::BrokerConfirmationType
 [
-  c1_length: $this.brokerConfirmationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_BrokerConfirmationType: $this.brokerConfirmationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_BrokerConfirmationType: $this.value->length() <= 255
 ]
 {
   brokerConfirmationTypeScheme: String[0..1];
@@ -333,8 +333,8 @@ Enum {meta::pure::profiles::doc.doc = 'Defines which type of bullion is applicab
 >>>test::gen::BusinessCenter
 Class {meta::pure::profiles::doc.doc = 'A code identifying a business day calendar location. A business day calendar location is drawn from the list identified by the business day calendar location scheme.'} test::gen::BusinessCenter
 [
-  c1_length: $this.businessCenterScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_BusinessCenter: $this.businessCenterScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_BusinessCenter: $this.value->length() <= 255
 ]
 {
   businessCenterScheme: String[0..1];
@@ -373,7 +373,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a range of contiguous bu
 >>>test::gen::BusinessDayAdjustments
 Class {meta::pure::profiles::doc.doc = 'A type defining the business day convention and financial business centers used for adjusting any relevant date if it would otherwise fall on a day that is not a business day in the specified business centers.'} test::gen::BusinessDayAdjustments
 [
-  c1_choice: ($this.businessCentersReference->isNotEmpty() && $this.businessCenters->isEmpty()) || ($this.businessCentersReference->isEmpty() && $this.businessCenters->isNotEmpty())
+  c1_choice_BusinessDayAdjustments: ($this.businessCentersReference->isNotEmpty() && $this.businessCenters->isEmpty()) || ($this.businessCentersReference->isEmpty() && $this.businessCenters->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The convention for adjusting a date if it would otherwise fall on a day that is not a business day.'} businessDayConvention: test::gen::BusinessDayConventionEnum[1];
@@ -404,7 +404,7 @@ Enum {meta::pure::profiles::doc.doc = 'The convention for adjusting any relevant
 >>>test::gen::BusinessUnit
 Class {meta::pure::profiles::doc.doc = 'A type that represents information about a unit within an organization.'} test::gen::BusinessUnit
 [
-  c1_length: $this.name->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_BusinessUnit: $this.name->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'A name used to describe the organization unit'} name: String[0..1];
@@ -423,8 +423,8 @@ Class {meta::pure::profiles::doc.doc = 'Reference to an organizational unit.'} t
 >>>test::gen::BusinessUnitRole
 Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a unit in one or more transactions. Examples include roles such as Trader, Collateral, Confirmation, Settlement, etc. This can be extended to provide custom roles.'} test::gen::BusinessUnitRole
 [
-  c1_length: $this.unitRoleScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_BusinessUnitRole: $this.unitRoleScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_BusinessUnitRole: $this.value->length() <= 255
 ]
 {
   unitRoleScheme: String[0..1];
@@ -441,7 +441,7 @@ Enum test::gen::BuySellEnum
 >>>test::gen::CalculationAgent
 Class {meta::pure::profiles::doc.doc = 'A type defining the ISDA calculation agent responsible for performing duties as defined in the applicable product definitions.'} test::gen::CalculationAgent
 [
-  c1_choice: ($this.calculationAgentPartyReference->isNotEmpty() && $this.calculationAgentParty->isEmpty()) || ($this.calculationAgentPartyReference->isEmpty() && $this.calculationAgentParty->isNotEmpty())
+  c1_choice_CalculationAgent: ($this.calculationAgentPartyReference->isNotEmpty() && $this.calculationAgentParty->isEmpty()) || ($this.calculationAgentPartyReference->isEmpty() && $this.calculationAgentParty->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A pointer style reference to a party identifier defined elsewhere in the document. The party referenced is the ISDA Calculation Agent for the trade. If more than one party is referenced then the parties are assumed to be co-calculation agents, i.e. they have joint responsibility.'} calculationAgentPartyReference: test::gen::PartyReference[*];
@@ -490,9 +490,9 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the list of reference in
 >>>test::gen::CashflowId
 Class {meta::pure::profiles::doc.doc = 'An identifier used to identify a single component cashflow.'} test::gen::CashflowId
 [
-  c1_length: $this.cashflowIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_CashflowId: $this.cashflowIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CashflowId: $this.value->length() >= 1,
+  c3_length_CashflowId: $this.value->length() <= 255
 ]
 {
   cashflowIdScheme: String[0..1];
@@ -502,8 +502,8 @@ Class {meta::pure::profiles::doc.doc = 'An identifier used to identify a single 
 >>>test::gen::CashflowNotional
 Class {meta::pure::profiles::doc.doc = 'The notional/principal value/quantity/volume used to compute the cashflow.'} test::gen::CashflowNotional
 [
-  c1_length: $this.units->forAll(x: String[1]|$x->length() >= 0),
-  c2_choice: ($this.currency->isNotEmpty() && $this.units->isEmpty()) || ($this.currency->isEmpty() && $this.units->isNotEmpty())
+  c1_length_CashflowNotional: $this.units->forAll(x: String[1]|$x->length() >= 0),
+  c2_choice_CashflowNotional: ($this.currency->isNotEmpty() && $this.units->isEmpty()) || ($this.currency->isEmpty() && $this.units->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The currency in which an amount is denominated.'} currency: test::gen::Currency[0..1];
@@ -515,8 +515,8 @@ Class {meta::pure::profiles::doc.doc = 'The notional/principal value/quantity/vo
 >>>test::gen::CashflowType
 Class {meta::pure::profiles::doc.doc = 'A coding scheme used to describe the type or purpose of a cash flow or cash flow component.'} test::gen::CashflowType
 [
-  c1_length: $this.cashflowTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_CashflowType: $this.cashflowTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CashflowType: $this.value->length() <= 255
 ]
 {
   cashflowTypeScheme: String[0..1];
@@ -526,8 +526,8 @@ Class {meta::pure::profiles::doc.doc = 'A coding scheme used to describe the typ
 >>>test::gen::ClearanceSystem
 Class {meta::pure::profiles::doc.doc = 'Unless otherwise specified, the principal clearance system customarily used for settling trades in the relevant underlying.'} test::gen::ClearanceSystem
 [
-  c1_length: $this.clearanceSystemScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ClearanceSystem: $this.clearanceSystemScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ClearanceSystem: $this.value->length() <= 255
 ]
 {
   clearanceSystemScheme: String[0..1];
@@ -647,7 +647,7 @@ Enum {meta::pure::profiles::doc.doc = 'Defines whether conditions precedent have
 >>>test::gen::ContactInformation
 Class {meta::pure::profiles::doc.doc = 'A type that represents how to contact an individual or organization.'} test::gen::ContactInformation
 [
-  c1_length: $this.email->forAll(x: String[1]|$x->length() >= 0)
+  c1_length_ContactInformation: $this.email->forAll(x: String[1]|$x->length() >= 0)
 ]
 {
   {meta::pure::profiles::doc.doc = 'A telephonic contact.'} telephone: test::gen::TelephoneNumber[*];
@@ -658,8 +658,8 @@ Class {meta::pure::profiles::doc.doc = 'A type that represents how to contact an
 >>>test::gen::ContractualDefinitions
 Class {meta::pure::profiles::doc.doc = 'The definitions, such as those published by ISDA, that will define the terms of the trade.'} test::gen::ContractualDefinitions
 [
-  c1_length: $this.contractualDefinitionsScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ContractualDefinitions: $this.contractualDefinitionsScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ContractualDefinitions: $this.value->length() <= 255
 ]
 {
   contractualDefinitionsScheme: String[0..1];
@@ -677,8 +677,8 @@ Class test::gen::ContractualMatrix
 >>>test::gen::ContractualSupplement
 Class {meta::pure::profiles::doc.doc = 'A contractual supplement (such as those published by ISDA) that will apply to the trade.'} test::gen::ContractualSupplement
 [
-  c1_length: $this.contractualSupplementScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ContractualSupplement: $this.contractualSupplementScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ContractualSupplement: $this.value->length() <= 255
 ]
 {
   contractualSupplementScheme: String[0..1];
@@ -695,7 +695,7 @@ Class {meta::pure::profiles::doc.doc = 'A contractual supplement (such as those 
 >>>test::gen::CorrespondentInformation
 Class {meta::pure::profiles::doc.doc = 'A type that describes the information to identify a correspondent bank that will make delivery of the funds on the paying bank\'s behalf in the country where the payment is to be made.'} test::gen::CorrespondentInformation
 [
-  c1_choice: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
+  c1_choice_CorrespondentInformation: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A set of unique identifiers for a party, eachone identifying the party within a payment system. The assumption is that each party will not have more than one identifier within the same payment system.'} routingIds: test::gen::RoutingIds[0..1];
@@ -707,8 +707,8 @@ Class {meta::pure::profiles::doc.doc = 'A type that describes the information to
 >>>test::gen::CountryCode
 Class {meta::pure::profiles::doc.doc = 'The code representation of a country or an area of special sovereignty. By default it is a valid 2 character country code as defined by the ISO standard 3166-1 alpha-2 - Codes for representation of countries http://www.niso.org/standards/resources/3166.html.'} test::gen::CountryCode
 [
-  c1_length: $this.countryScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 0
+  c1_length_CountryCode: $this.countryScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CountryCode: $this.value->length() >= 0
 ]
 {
   countryScheme: String[0..1];
@@ -718,8 +718,8 @@ Class {meta::pure::profiles::doc.doc = 'The code representation of a country or 
 >>>test::gen::CreditRating
 Class {meta::pure::profiles::doc.doc = 'A party\'s credit rating.'} test::gen::CreditRating
 [
-  c1_length: $this.creditRatingScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_CreditRating: $this.creditRatingScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CreditRating: $this.value->length() <= 255
 ]
 {
   creditRatingScheme: String[0..1];
@@ -729,8 +729,8 @@ Class {meta::pure::profiles::doc.doc = 'A party\'s credit rating.'} test::gen::C
 >>>test::gen::CreditSeniority
 Class {meta::pure::profiles::doc.doc = 'The repayment precedence of a debt instrument.'} test::gen::CreditSeniority
 [
-  c1_length: $this.creditSeniorityScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_CreditSeniority: $this.creditSeniorityScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CreditSeniority: $this.value->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'creditSeniorityTradingScheme overrides creditSeniorityScheme when the underlyer defines the reference obligation used in a single name credit default swap trade.'} creditSeniorityScheme: String[0..1];
@@ -748,9 +748,9 @@ Class {meta::pure::profiles::doc.doc = 'The agreement executed between the parti
 >>>test::gen::CreditSupportAgreementIdentifier
 Class test::gen::CreditSupportAgreementIdentifier
 [
-  c1_length: $this.creditSupportAgreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_CreditSupportAgreementIdentifier: $this.creditSupportAgreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CreditSupportAgreementIdentifier: $this.value->length() >= 1,
+  c3_length_CreditSupportAgreementIdentifier: $this.value->length() <= 255
 ]
 {
   creditSupportAgreementIdScheme: String[0..1];
@@ -760,8 +760,8 @@ Class test::gen::CreditSupportAgreementIdentifier
 >>>test::gen::CreditSupportAgreementType
 Class test::gen::CreditSupportAgreementType
 [
-  c1_length: $this.creditSupportAgreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_CreditSupportAgreementType: $this.creditSupportAgreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_CreditSupportAgreementType: $this.value->length() <= 255
 ]
 {
   creditSupportAgreementTypeScheme: String[0..1];
@@ -771,8 +771,8 @@ Class test::gen::CreditSupportAgreementType
 >>>test::gen::Currency
 Class {meta::pure::profiles::doc.doc = 'The code representation of a currency or fund. By default it is a valid currency code as defined by the ISO standard 4217 - Codes for representation of currencies and funds http://www.iso.org/iso/en/prods-services/popstds/currencycodeslist.html.'} test::gen::Currency
 [
-  c1_length: $this.currencyScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_Currency: $this.currencyScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_Currency: $this.value->length() <= 255
 ]
 {
   currencyScheme: String[0..1];
@@ -813,8 +813,8 @@ Class {meta::pure::profiles::doc.doc = 'List of DateTimes'} test::gen::DateTimeL
 >>>test::gen::DayCountFraction
 Class {meta::pure::profiles::doc.doc = 'The specification for how the number of days between two dates is calculated for purposes of calculation of a fixed or floating payment amount and the basis for how many days are assumed to be in a year. Day Count Fraction is an ISDA term. The equivalent AFB (Association Francaise de Banques) term is Calculation Basis.'} test::gen::DayCountFraction
 [
-  c1_length: $this.dayCountFractionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_DayCountFraction: $this.dayCountFractionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_DayCountFraction: $this.value->length() <= 255
 ]
 {
   dayCountFractionScheme: String[0..1];
@@ -1001,8 +1001,8 @@ Enum test::gen::DeliveryTypeEnum
 >>>test::gen::DeterminationMethod
 Class {meta::pure::profiles::doc.doc = 'Coding scheme that specifies the method according to which an amount or a date is determined.'} test::gen::DeterminationMethod
 [
-  c1_length: $this.determinationMethodScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_DeterminationMethod: $this.determinationMethodScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_DeterminationMethod: $this.value->length() <= 255
 ]
 {
   determinationMethodScheme: String[0..1];
@@ -1115,7 +1115,7 @@ Enum {meta::pure::profiles::doc.doc = 'Defines the First Period or the Second Pe
 >>>test::gen::Documentation
 Class {meta::pure::profiles::doc.doc = 'An entity for defining the definitions that govern the document and should include the year and type of definitions referenced, along with any relevant documentation (such as master agreement) and the date it was signed.'} test::gen::Documentation
 [
-  c1_choice: ($this.masterConfirmation->isNotEmpty() && $this.brokerConfirmation->isEmpty()) || ($this.masterConfirmation->isEmpty() && $this.brokerConfirmation->isNotEmpty())
+  c1_choice_Documentation: ($this.masterConfirmation->isNotEmpty() && $this.brokerConfirmation->isEmpty()) || ($this.masterConfirmation->isEmpty() && $this.brokerConfirmation->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The agreement executed between the parties and intended to govern all OTC derivatives transactions between those parties.'} masterAgreement: test::gen::MasterAgreement[0..1];
@@ -1160,9 +1160,9 @@ Class {meta::pure::profiles::doc.doc = 'A special type meant to be used for elem
 >>>test::gen::EntityId
 Class {meta::pure::profiles::doc.doc = 'A legal entity identifier (e.g. RED entity code).'} test::gen::EntityId
 [
-  c1_length: $this.entityIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_EntityId: $this.entityIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_EntityId: $this.value->length() >= 1,
+  c3_length_EntityId: $this.value->length() <= 255
 ]
 {
   entityIdScheme: String[0..1];
@@ -1172,8 +1172,8 @@ Class {meta::pure::profiles::doc.doc = 'A legal entity identifier (e.g. RED enti
 >>>test::gen::EntityName
 Class {meta::pure::profiles::doc.doc = 'The name of the reference entity. A free format string. FpML does not define usage rules for this element.'} test::gen::EntityName
 [
-  c1_length: $this.entityNameScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_EntityName: $this.entityNameScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_EntityName: $this.value->length() <= 255
 ]
 {
   entityNameScheme: String[0..1];
@@ -1235,9 +1235,9 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the exercise period for 
 >>>test::gen::ExchangeId
 Class {meta::pure::profiles::doc.doc = 'A short form unique identifier for an exchange. If the element is not present then the exchange shall be the primary exchange on which the underlying is listed. The term "Exchange" is assumed to have the meaning as defined in the ISDA 2002 Equity Derivatives Definitions.'} test::gen::ExchangeId
 [
-  c1_length: $this.exchangeIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_ExchangeId: $this.exchangeIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ExchangeId: $this.value->length() >= 1,
+  c3_length_ExchangeId: $this.value->length() <= 255
 ]
 {
   exchangeIdScheme: String[0..1];
@@ -1261,7 +1261,7 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of whether an OTC optio
 >>>test::gen::ExerciseFee
 Class {meta::pure::profiles::doc.doc = 'A type defining the fee payable on exercise of an option. This fee may be defined as an amount or a percentage of the notional exercised.'} test::gen::ExerciseFee
 [
-  c1_choice: ($this.feeAmount->isNotEmpty() && $this.feeRate->isEmpty()) || ($this.feeAmount->isEmpty() && $this.feeRate->isNotEmpty())
+  c1_choice_ExerciseFee: ($this.feeAmount->isNotEmpty() && $this.feeRate->isEmpty()) || ($this.feeAmount->isEmpty() && $this.feeRate->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A reference to the party responsible for making the payments defined by this structure.'} payerPartyReference: test::gen::PartyReference[1];
@@ -1277,7 +1277,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the fee payable on exerc
 >>>test::gen::ExerciseFeeSchedule
 Class {meta::pure::profiles::doc.doc = 'A type to define a fee or schedule of fees to be payable on the exercise of an option. This fee may be defined as an amount or a percentage of the notional exercised.'} test::gen::ExerciseFeeSchedule
 [
-  c1_choice: ($this.feeAmountSchedule->isNotEmpty() && $this.feeRateSchedule->isEmpty()) || ($this.feeAmountSchedule->isEmpty() && $this.feeRateSchedule->isNotEmpty())
+  c1_choice_ExerciseFeeSchedule: ($this.feeAmountSchedule->isNotEmpty() && $this.feeRateSchedule->isEmpty()) || ($this.feeAmountSchedule->isEmpty() && $this.feeRateSchedule->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A reference to the party responsible for making the payments defined by this structure.'} payerPartyReference: test::gen::PartyReference[1];
@@ -1301,7 +1301,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining to whom and where notice
 >>>test::gen::ExerciseProcedure
 Class {meta::pure::profiles::doc.doc = 'A type describing how notice of exercise should be given. This can be either manual or automatic.'} test::gen::ExerciseProcedure
 [
-  c1_choice: ($this.manualExercise->isNotEmpty() && $this.automaticExercise->isEmpty()) || ($this.manualExercise->isEmpty() && $this.automaticExercise->isNotEmpty())
+  c1_choice_ExerciseProcedure: ($this.manualExercise->isNotEmpty() && $this.automaticExercise->isEmpty()) || ($this.manualExercise->isEmpty() && $this.automaticExercise->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'Specifies that the notice of exercise must be given by the buyer to the seller or seller\'s agent.'} manualExercise: test::gen::ManualExercise[0..1];
@@ -1314,7 +1314,7 @@ Class {meta::pure::profiles::doc.doc = 'A type describing how notice of exercise
 >>>test::gen::ExerciseProcedureOption
 Class {meta::pure::profiles::doc.doc = 'A type describing how notice of exercise should be given. This can be either manual or automatic.'} test::gen::ExerciseProcedureOption
 [
-  c1_choice: ($this.manualExercise->isNotEmpty() && $this.automaticExercise->isEmpty()) || ($this.manualExercise->isEmpty() && $this.automaticExercise->isNotEmpty())
+  c1_choice_ExerciseProcedureOption: ($this.manualExercise->isNotEmpty() && $this.automaticExercise->isEmpty()) || ($this.manualExercise->isEmpty() && $this.automaticExercise->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'Specifies that the notice of exercise must be given by the buyer to the seller or seller\'s agent.'} manualExercise: test::gen::Empty[0..1];
@@ -1386,8 +1386,8 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the floating rate and de
 >>>test::gen::FloatingRateIndex
 Class {meta::pure::profiles::doc.doc = 'The ISDA Floating Rate Option, i.e. the floating rate index.'} test::gen::FloatingRateIndex
 [
-  c1_length: $this.floatingRateIndexScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_FloatingRateIndex: $this.floatingRateIndexScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_FloatingRateIndex: $this.value->length() <= 255
 ]
 {
   floatingRateIndexScheme: String[0..1];
@@ -1404,7 +1404,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a rate index.'} test::ge
 >>>test::gen::Formula
 Class {meta::pure::profiles::doc.doc = 'A type describing a financial formula, with its description and components.'} test::gen::Formula
 [
-  c1_length: $this.formulaDescription->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_Formula: $this.formulaDescription->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'Text description of the formula'} formulaDescription: String[0..1];
@@ -1415,8 +1415,8 @@ Class {meta::pure::profiles::doc.doc = 'A type describing a financial formula, w
 >>>test::gen::FormulaComponent
 Class {meta::pure::profiles::doc.doc = 'Elements describing the components of the formula. The name attribute points to a value used in the math element. The href attribute points to a numeric value defined elsewhere in the document that is used by the formula component.'} test::gen::FormulaComponent
 [
-  c1_length: $this.componentDescription->length() <= 255,
-  c2_length: $this.name->forAll(x: String[1]|$x->length() >= 0)
+  c1_length_FormulaComponent: $this.componentDescription->length() <= 255,
+  c2_length_FormulaComponent: $this.name->forAll(x: String[1]|$x->length() >= 0)
 ]
 {
   {meta::pure::profiles::doc.doc = 'Text description of the component'} componentDescription: String[1];
@@ -1509,7 +1509,7 @@ Enum {meta::pure::profiles::doc.doc = 'Defines the outcome in the event that the
 >>>test::gen::FxCashSettlement
 Class {meta::pure::profiles::doc.doc = 'A type that is used for describing cash settlement of an option / non deliverable forward. It includes the currency to settle into together with the fixings required to calculate the currency amount.'} test::gen::FxCashSettlement
 [
-  c1_choice: ($this.fixing->isNotEmpty() && $this.rateSourceFixing->isEmpty()) || ($this.fixing->isEmpty() && $this.rateSourceFixing->isNotEmpty())
+  c1_choice_FxCashSettlement: ($this.fixing->isNotEmpty() && $this.rateSourceFixing->isEmpty()) || ($this.fixing->isEmpty() && $this.rateSourceFixing->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The currency in which cash settlement occurs for non-deliverable forwards and cash-settled options (non-deliverable or otherwise).'} settlementCurrency: test::gen::Currency[1];
@@ -1523,7 +1523,7 @@ Class {meta::pure::profiles::doc.doc = 'A type that is used for describing cash 
 >>>test::gen::FxCashSettlementSimple
 Class {meta::pure::profiles::doc.doc = 'A type that is used for describing cash settlement of a variance or volatility swap option. It includes the settlement currency together with the spot currency exchange required to calculate the settlement currency amount.'} test::gen::FxCashSettlementSimple
 [
-  c1_choice: ($this.fixing->isNotEmpty() && $this.rateSourceFixing->isEmpty()) || ($this.fixing->isEmpty() && $this.rateSourceFixing->isNotEmpty())
+  c1_choice_FxCashSettlementSimple: ($this.fixing->isNotEmpty() && $this.rateSourceFixing->isEmpty()) || ($this.fixing->isEmpty() && $this.rateSourceFixing->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The currency in which cash settlement occurs.'} settlementCurrency: test::gen::Currency[1];
@@ -1591,7 +1591,7 @@ Enum {meta::pure::profiles::doc.doc = 'Target specific settlement adjustment met
 >>>test::gen::FxSettlementRateSource
 Class test::gen::FxSettlementRateSource
 [
-  c1_choice: ($this.settlementRateOption->isNotEmpty() && $this.nonstandardSettlementRate->isEmpty()) || ($this.settlementRateOption->isEmpty() && $this.nonstandardSettlementRate->isNotEmpty())
+  c1_choice_FxSettlementRateSource: ($this.settlementRateOption->isNotEmpty() && $this.nonstandardSettlementRate->isEmpty()) || ($this.settlementRateOption->isEmpty() && $this.nonstandardSettlementRate->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'Indicates that an officially defined rate settlement rate option will be the used for the fixing.'} settlementRateOption: test::gen::SettlementRateOption[0..1];
@@ -1656,8 +1656,8 @@ Enum {meta::pure::profiles::doc.doc = 'The type of gas product.'} test::gen::Gas
 >>>test::gen::GoverningLaw
 Class {meta::pure::profiles::doc.doc = 'Identification of the law governing the transaction.'} test::gen::GoverningLaw
 [
-  c1_length: $this.governingLawScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_GoverningLaw: $this.governingLawScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_GoverningLaw: $this.value->length() <= 255
 ]
 {
   governingLawScheme: String[0..1];
@@ -1732,8 +1732,8 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of the consequences of 
 >>>test::gen::IndustryClassification
 Class {meta::pure::profiles::doc.doc = 'A party\'s industry sector classification.'} test::gen::IndustryClassification
 [
-  c1_length: $this.industryClassificationScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_IndustryClassification: $this.industryClassificationScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_IndustryClassification: $this.value->length() <= 255
 ]
 {
   industryClassificationScheme: String[0..1];
@@ -1743,8 +1743,8 @@ Class {meta::pure::profiles::doc.doc = 'A party\'s industry sector classificatio
 >>>test::gen::InformationProvider
 Class test::gen::InformationProvider
 [
-  c1_length: $this.informationProviderScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_InformationProvider: $this.informationProviderScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_InformationProvider: $this.value->length() <= 255
 ]
 {
   informationProviderScheme: String[0..1];
@@ -1754,7 +1754,7 @@ Class test::gen::InformationProvider
 >>>test::gen::InformationSource
 Class {meta::pure::profiles::doc.doc = 'A type defining the source for a piece of information (e.g. a rate refix or an fx fixing).'} test::gen::InformationSource
 [
-  c1_length: $this.rateSourcePageHeading->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_InformationSource: $this.rateSourcePageHeading->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'An information source for obtaining a market rate. For example Bloomberg, Reuters, Telerate etc.'} rateSource: test::gen::InformationProvider[1];
@@ -1765,9 +1765,9 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the source for a piece o
 >>>test::gen::InstrumentId
 Class {meta::pure::profiles::doc.doc = 'A short form unique identifier for a security.'} test::gen::InstrumentId
 [
-  c1_length: $this.instrumentIdScheme->length() >= 1,
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_InstrumentId: $this.instrumentIdScheme->length() >= 1,
+  c2_length_InstrumentId: $this.value->length() >= 1,
+  c3_length_InstrumentId: $this.value->length() <= 255
 ]
 {
   instrumentIdScheme: String[1];
@@ -1783,7 +1783,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the way in which interes
 >>>test::gen::InterestAccrualsMethod
 Class {meta::pure::profiles::doc.doc = 'A type describing the method for accruing interests on dividends. Can be either a fixed rate reference or a floating rate reference.'} test::gen::InterestAccrualsMethod
 [
-  c1_choice: ($this.floatingRateCalculation->isNotEmpty() && $this.fixedRate->isEmpty()) || ($this.floatingRateCalculation->isEmpty() && $this.fixedRate->isNotEmpty())
+  c1_choice_InterestAccrualsMethod: ($this.floatingRateCalculation->isNotEmpty() && $this.fixedRate->isEmpty()) || ($this.floatingRateCalculation->isEmpty() && $this.fixedRate->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The floating rate calculation definitions'} floatingRateCalculation: test::gen::FloatingRateCalculation[0..1];
@@ -1807,7 +1807,7 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of the interest shortfa
 >>>test::gen::IntermediaryInformation
 Class {meta::pure::profiles::doc.doc = 'A type that describes the information to identify an intermediary through which payment will be made by the correspondent bank to the ultimate beneficiary of the funds.'} test::gen::IntermediaryInformation
 [
-  c1_choice: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
+  c1_choice_IntermediaryInformation: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A set of unique identifiers for a party, eachone identifying the party within a payment system. The assumption is that each party will not have more than one identifier within the same payment system.'} routingIds: test::gen::RoutingIds[0..1];
@@ -1820,8 +1820,8 @@ Class {meta::pure::profiles::doc.doc = 'A type that describes the information to
 >>>test::gen::InterpolationMethod
 Class {meta::pure::profiles::doc.doc = 'The type of interpolation used.'} test::gen::InterpolationMethod
 [
-  c1_length: $this.interpolationMethodScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_InterpolationMethod: $this.interpolationMethodScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_InterpolationMethod: $this.value->length() <= 255
 ]
 {
   interpolationMethodScheme: String[0..1];
@@ -1840,9 +1840,9 @@ Enum {meta::pure::profiles::doc.doc = 'Defines applicable periods for interpolat
 >>>test::gen::IssuerId
 Class {meta::pure::profiles::doc.doc = 'The data type used for issuer identifiers.'} test::gen::IssuerId
 [
-  c1_length: $this.issuerIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_IssuerId: $this.issuerIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_IssuerId: $this.value->length() >= 1,
+  c3_length_IssuerId: $this.value->length() <= 255
 ]
 {
   issuerIdScheme: String[0..1];
@@ -1859,8 +1859,8 @@ Class {meta::pure::profiles::doc.doc = 'A complex type for a two part identifier
 >>>test::gen::Language
 Class {meta::pure::profiles::doc.doc = 'The data type used for indicating the language of the resource, described using the ISO 639-2/T Code.'} test::gen::Language
 [
-  c1_length: $this.languageScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_Language: $this.languageScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_Language: $this.value->length() <= 255
 ]
 {
   languageScheme: String[0..1];
@@ -1884,9 +1884,9 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::LegId
 Class {meta::pure::profiles::doc.doc = 'Leg identity.'} test::gen::LegId
 [
-  c1_length: $this.legIdScheme->length() >= 1,
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 60
+  c1_length_LegId: $this.legIdScheme->length() >= 1,
+  c2_length_LegId: $this.value->length() >= 1,
+  c3_length_LegId: $this.value->length() <= 60
 ]
 {
   legIdScheme: String[1];
@@ -1904,7 +1904,7 @@ Class {meta::pure::profiles::doc.doc = 'Version aware identification of a leg.'}
 >>>test::gen::LegalEntity
 Class {meta::pure::profiles::doc.doc = 'A type defining a legal entity.'} test::gen::LegalEntity
 [
-  c1_choice: $this.entityName->isNotEmpty() || ($this.entityName->isEmpty() && $this.entityId->isNotEmpty())
+  c1_choice_LegalEntity: $this.entityName->isNotEmpty() || ($this.entityName->isEmpty() && $this.entityId->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The name of the reference entity. A free format string. FpML does not define usage rules for this element.'} entityName: test::gen::EntityName[0..1];
@@ -2040,8 +2040,8 @@ Enum {meta::pure::profiles::doc.doc = 'A list of standard market rules for the t
 >>>test::gen::MainPublication
 Class {meta::pure::profiles::doc.doc = 'A type to define the main publication source.'} test::gen::MainPublication
 [
-  c1_length: $this.mainPublicationScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MainPublication: $this.mainPublicationScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MainPublication: $this.value->length() <= 255
 ]
 {
   mainPublicationScheme: String[0..1];
@@ -2083,9 +2083,9 @@ Class {meta::pure::profiles::doc.doc = 'An entity for defining the agreement exe
 >>>test::gen::MasterAgreementId
 Class {meta::pure::profiles::doc.doc = 'A master agreement identifier allocated by a party. FpML does not define the domain values associated with this element. Note that the domain values for this element are not strictly an enumerated list.'} test::gen::MasterAgreementId
 [
-  c1_length: $this.masterAgreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_MasterAgreementId: $this.masterAgreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MasterAgreementId: $this.value->length() >= 1,
+  c3_length_MasterAgreementId: $this.value->length() <= 255
 ]
 {
   masterAgreementIdScheme: String[0..1];
@@ -2095,8 +2095,8 @@ Class {meta::pure::profiles::doc.doc = 'A master agreement identifier allocated 
 >>>test::gen::MasterAgreementType
 Class test::gen::MasterAgreementType
 [
-  c1_length: $this.masterAgreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MasterAgreementType: $this.masterAgreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MasterAgreementType: $this.value->length() <= 255
 ]
 {
   masterAgreementTypeScheme: String[0..1];
@@ -2106,8 +2106,8 @@ Class test::gen::MasterAgreementType
 >>>test::gen::MasterAgreementVersion
 Class test::gen::MasterAgreementVersion
 [
-  c1_length: $this.masterAgreementVersionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MasterAgreementVersion: $this.masterAgreementVersionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MasterAgreementVersion: $this.value->length() <= 255
 ]
 {
   masterAgreementVersionScheme: String[0..1];
@@ -2126,8 +2126,8 @@ Class {meta::pure::profiles::doc.doc = 'An entity for defining the master confir
 >>>test::gen::MasterConfirmationAnnexType
 Class test::gen::MasterConfirmationAnnexType
 [
-  c1_length: $this.masterConfirmationAnnexTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MasterConfirmationAnnexType: $this.masterConfirmationAnnexTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MasterConfirmationAnnexType: $this.value->length() <= 255
 ]
 {
   masterConfirmationAnnexTypeScheme: String[0..1];
@@ -2137,8 +2137,8 @@ Class test::gen::MasterConfirmationAnnexType
 >>>test::gen::MasterConfirmationType
 Class test::gen::MasterConfirmationType
 [
-  c1_length: $this.masterConfirmationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MasterConfirmationType: $this.masterConfirmationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MasterConfirmationType: $this.value->length() <= 255
 ]
 {
   masterConfirmationTypeScheme: String[0..1];
@@ -2148,9 +2148,9 @@ Class test::gen::MasterConfirmationType
 >>>test::gen::MatchId
 Class {meta::pure::profiles::doc.doc = 'An identifier used to identify matched cashflows.'} test::gen::MatchId
 [
-  c1_length: $this.matchIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_MatchId: $this.matchIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MatchId: $this.value->length() >= 1,
+  c3_length_MatchId: $this.value->length() <= 255
 ]
 {
   matchIdScheme: String[0..1];
@@ -2165,8 +2165,8 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a mathematical expressio
 >>>test::gen::MatrixTerm
 Class test::gen::MatrixTerm
 [
-  c1_length: $this.matrixTermScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MatrixTerm: $this.matrixTermScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MatrixTerm: $this.value->length() <= 255
 ]
 {
   matrixTermScheme: String[0..1];
@@ -2176,8 +2176,8 @@ Class test::gen::MatrixTerm
 >>>test::gen::MatrixType
 Class test::gen::MatrixType
 [
-  c1_length: $this.matrixTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MatrixType: $this.matrixTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MatrixType: $this.value->length() <= 255
 ]
 {
   matrixTypeScheme: String[0..1];
@@ -2201,8 +2201,8 @@ Enum {meta::pure::profiles::doc.doc = 'Defines how adjustments will be made to t
 >>>test::gen::MimeType
 Class {meta::pure::profiles::doc.doc = 'The type that indicates the type of media used to store the content. MimeType is used to determine the software product(s) that can read the content. MIME types are described in RFC 2046.'} test::gen::MimeType
 [
-  c1_length: $this.mimeTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_MimeType: $this.mimeTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_MimeType: $this.value->length() <= 255
 ]
 {
   mimeTypeScheme: String[0..1];
@@ -2225,9 +2225,9 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::MultipleExercise
 Class {meta::pure::profiles::doc.doc = 'A type defining multiple exercises. As defining in the 2000 ISDA Definitions, Section 12.4. Multiple Exercise, the buyer of the option has the right to exercise all or less than all the unexercised notional amount of the underlying swap on one or more days in the exercise period, but on any such day may not exercise less than the minimum notional amount or more than the maximum notional amount, and if an integral multiple amount is specified, the notional exercised must be equal to or, be an integral multiple of, the integral multiple amount.'} test::gen::MultipleExercise
 [
-  c1_range: $this.maximumNumberOfOptions->forAll(x: Decimal[1]|$x >= 0),
-  c2_choice: ($this.minimumNotionalAmount->isNotEmpty() && $this.minimumNumberOfOptions->isEmpty()) || ($this.minimumNotionalAmount->isEmpty() && $this.minimumNumberOfOptions->isNotEmpty()),
-  c3_choice: ($this.maximumNotionalAmount->isNotEmpty() && $this.maximumNumberOfOptions->isEmpty()) || ($this.maximumNotionalAmount->isEmpty() && $this.maximumNumberOfOptions->isNotEmpty())
+  c1_range_MultipleExercise: $this.maximumNumberOfOptions->forAll(x: Decimal[1]|$x >= 0),
+  c2_choice_MultipleExercise: ($this.minimumNotionalAmount->isNotEmpty() && $this.minimumNumberOfOptions->isEmpty()) || ($this.minimumNotionalAmount->isEmpty() && $this.minimumNumberOfOptions->isNotEmpty()),
+  c3_choice_MultipleExercise: ($this.maximumNotionalAmount->isNotEmpty() && $this.maximumNumberOfOptions->isEmpty()) || ($this.maximumNotionalAmount->isEmpty() && $this.maximumNumberOfOptions->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A pointer style reference to the associated notional schedule defined elsewhere in the document. This element has been made optional as part of its integration in the OptionBaseExtended, because not required for the options on securities.'} notionalReference: test::gen::NotionalReference[*];
@@ -2268,7 +2268,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a currency amount or a c
 >>>test::gen::NonNegativeMoney
 Class {meta::pure::profiles::doc.doc = 'A type defining a non negative money amount.'} test::gen::NonNegativeMoney extends test::gen::MoneyBase
 [
-  c1_range: $this.amount >= 0
+  c1_range_NonNegativeMoney: $this.amount >= 0
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non negative monetary quantity in currency units.'} amount: Decimal[1];
@@ -2283,7 +2283,7 @@ Class {meta::pure::profiles::doc.doc = 'A complex type to specify non negative p
 >>>test::gen::NonNegativeSchedule
 Class {meta::pure::profiles::doc.doc = 'A type defining a schedule of non-negative rates or amounts in terms of an initial value and then a series of step date and value pairs. On each step date the rate or amount changes to the new step value. The series of step date and value pairs are optional. If not specified, this implies that the initial value remains unchanged over time.'} test::gen::NonNegativeSchedule
 [
-  c1_range: $this.initialValue >= 0
+  c1_range_NonNegativeSchedule: $this.initialValue >= 0
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non-negative initial rate or amount, as the case may be. An initial rate of 5% would be represented as 0.05.'} initialValue: Decimal[1];
@@ -2294,7 +2294,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a schedule of non-negati
 >>>test::gen::NonNegativeStep
 Class {meta::pure::profiles::doc.doc = 'A type defining a step date and non-negative step value pair. This step definitions are used to define varying rate or amount schedules, e.g. a notional amortization or a step-up coupon schedule.'} test::gen::NonNegativeStep extends test::gen::StepBase
 [
-  c1_range: $this.stepValue >= 0
+  c1_range_NonNegativeStep: $this.stepValue >= 0
 ]
 {
   {meta::pure::profiles::doc.doc = 'The non-negative rate or amount which becomes effective on the associated stepDate. A rate of 5% would be represented as 0.05.'} stepValue: Decimal[1];
@@ -2394,8 +2394,8 @@ Enum {meta::pure::profiles::doc.doc = 'Specifies the type of the option.'} test:
 >>>test::gen::OrganizationType
 Class {meta::pure::profiles::doc.doc = 'A code that describes what type of role an organization plays, for example a SwapsDealer, a Major Swaps Participant, or Other'} test::gen::OrganizationType
 [
-  c1_length: $this.organizationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 0
+  c1_length_OrganizationType: $this.organizationTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_OrganizationType: $this.value->length() >= 0
 ]
 {
   organizationTypeScheme: String[0..1];
@@ -2405,8 +2405,8 @@ Class {meta::pure::profiles::doc.doc = 'A code that describes what type of role 
 >>>test::gen::OriginatingEvent
 Class test::gen::OriginatingEvent
 [
-  c1_length: $this.originatingEventScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_OriginatingEvent: $this.originatingEventScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_OriginatingEvent: $this.value->length() <= 255
 ]
 {
   originatingEventScheme: String[0..1];
@@ -2425,9 +2425,9 @@ Class {meta::pure::profiles::doc.doc = 'An entity for defining the an agreement 
 >>>test::gen::OtherAgreementId
 Class {meta::pure::profiles::doc.doc = 'A agreement identifier allocated by a party. FpML does not define the domain values associated with this element. Note that the domain values for this element are not strictly an enumerated list.'} test::gen::OtherAgreementId
 [
-  c1_length: $this.agreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_OtherAgreementId: $this.agreementIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_OtherAgreementId: $this.value->length() >= 1,
+  c3_length_OtherAgreementId: $this.value->length() <= 255
 ]
 {
   agreementIdScheme: String[0..1];
@@ -2437,8 +2437,8 @@ Class {meta::pure::profiles::doc.doc = 'A agreement identifier allocated by a pa
 >>>test::gen::OtherAgreementType
 Class test::gen::OtherAgreementType
 [
-  c1_length: $this.agreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_OtherAgreementType: $this.agreementTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_OtherAgreementType: $this.value->length() <= 255
 ]
 {
   agreementTypeScheme: String[0..1];
@@ -2448,8 +2448,8 @@ Class test::gen::OtherAgreementType
 >>>test::gen::OtherAgreementVersion
 Class test::gen::OtherAgreementVersion
 [
-  c1_length: $this.agreementVersionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_OtherAgreementVersion: $this.agreementVersionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_OtherAgreementVersion: $this.value->length() <= 255
 ]
 {
   agreementVersionScheme: String[0..1];
@@ -2459,7 +2459,7 @@ Class test::gen::OtherAgreementVersion
 >>>test::gen::PartialExercise
 Class {meta::pure::profiles::doc.doc = 'A type defining partial exercise. As defined in the 2000 ISDA Definitions, Section 12.3 Partial Exercise, the buyer of the option may exercise all or less than all the notional amount of the underlying swap but may not be less than the minimum notional amount (if specified) and must be an integral multiple of the integral multiple amount if specified.'} test::gen::PartialExercise
 [
-  c1_choice: ($this.minimumNotionalAmount->isNotEmpty() && $this.minimumNumberOfOptions->isEmpty()) || ($this.minimumNotionalAmount->isEmpty() && $this.minimumNumberOfOptions->isNotEmpty())
+  c1_choice_PartialExercise: ($this.minimumNotionalAmount->isNotEmpty() && $this.minimumNumberOfOptions->isEmpty()) || ($this.minimumNotionalAmount->isEmpty() && $this.minimumNumberOfOptions->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'A pointer style reference to the associated notional schedule defined elsewhere in the document. This element has been made optional as part of its integration in the OptionBaseExtended, because not required for the options on securities.'} notionalReference: test::gen::NotionalReference[*];
@@ -2471,7 +2471,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining partial exercise. As def
 >>>test::gen::Party
 Class {meta::pure::profiles::doc.doc = 'A type defining a legal entity or a subdivision of a legal entity. Parties can perform multiple roles in a trade lifecycle. For example, the principal parties obligated to make payments from time to time during the term of the trade, but may include other parties involved in, or incidental to, the trade, such as parties acting in the role of novation transferor/transferee, broker, calculation agent, etc. In FpML roles are defined in multiple places within a document.'} test::gen::Party
 [
-  c1_choice: ($this.partyId->isNotEmpty() && ($this.groupType->isEmpty() && $this.partyReference->isEmpty())) || ($this.partyId->isEmpty() && ($this.partyName->isEmpty() && ($this.classification->isEmpty() && ($this.creditRating->isEmpty() && ($this.country->isEmpty() && ($this.region->isEmpty() && ($this.jurisdiction->isEmpty() && ($this.organizationType->isEmpty() && ($this.contactInfo->isEmpty() && ($this.businessUnit->isEmpty() && ($this.person->isEmpty() && ($this.groupType->isNotEmpty() && $this.partyReference->isNotEmpty()))))))))))))
+  c1_choice_Party: ($this.partyId->isNotEmpty() && ($this.groupType->isEmpty() && $this.partyReference->isEmpty())) || ($this.partyId->isEmpty() && ($this.partyName->isEmpty() && ($this.classification->isEmpty() && ($this.creditRating->isEmpty() && ($this.country->isEmpty() && ($this.region->isEmpty() && ($this.jurisdiction->isEmpty() && ($this.organizationType->isEmpty() && ($this.contactInfo->isEmpty() && ($this.businessUnit->isEmpty() && ($this.person->isEmpty() && ($this.groupType->isNotEmpty() && $this.partyReference->isNotEmpty()))))))))))))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A party identifier, e.g. a S.W.I.F.T. bank identifier code (BIC).'} partyId: test::gen::PartyId[*];
@@ -2493,8 +2493,8 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a legal entity or a subd
 >>>test::gen::PartyGroupType
 Class {meta::pure::profiles::doc.doc = 'The data type used for party group classification.'} test::gen::PartyGroupType
 [
-  c1_length: $this.partyGroupTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PartyGroupType: $this.partyGroupTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PartyGroupType: $this.value->length() <= 255
 ]
 {
   partyGroupTypeScheme: String[0..1];
@@ -2504,9 +2504,9 @@ Class {meta::pure::profiles::doc.doc = 'The data type used for party group class
 >>>test::gen::PartyId
 Class {meta::pure::profiles::doc.doc = 'The data type used for party identifiers.'} test::gen::PartyId
 [
-  c1_length: $this.partyIdScheme->length() >= 1,
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_PartyId: $this.partyIdScheme->length() >= 1,
+  c2_length_PartyId: $this.value->length() >= 1,
+  c3_length_PartyId: $this.value->length() <= 255
 ]
 {
   partyIdScheme: String[1];
@@ -2516,8 +2516,8 @@ Class {meta::pure::profiles::doc.doc = 'The data type used for party identifiers
 >>>test::gen::PartyName
 Class {meta::pure::profiles::doc.doc = 'The data type used for the legal name of an organization.'} test::gen::PartyName
 [
-  c1_length: $this.partyNameScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PartyName: $this.partyNameScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PartyName: $this.value->length() <= 255
 ]
 {
   partyNameScheme: String[0..1];
@@ -2533,8 +2533,8 @@ Class {meta::pure::profiles::doc.doc = 'Reference to a party.'} test::gen::Party
 >>>test::gen::PartyRole
 Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a party in one or more transactions. Examples include roles such as guarantor, custodian, confirmation service provider, etc. This can be extended to provide custom roles.'} test::gen::PartyRole
 [
-  c1_length: $this.partyRoleScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PartyRole: $this.partyRoleScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PartyRole: $this.value->length() <= 255
 ]
 {
   partyRoleScheme: String[0..1];
@@ -2544,8 +2544,8 @@ Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a par
 >>>test::gen::PartyRoleType
 Class {meta::pure::profiles::doc.doc = 'A type refining the role a role played by a party in one or more transactions. Examples include "AllPositions" and "SomePositions" for Guarantor. This can be extended to provide custom types.'} test::gen::PartyRoleType
 [
-  c1_length: $this.partyRoleTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PartyRoleType: $this.partyRoleTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PartyRoleType: $this.value->length() <= 255
 ]
 {
   partyRoleTypeScheme: String[0..1];
@@ -2637,8 +2637,8 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::PaymentType
 Class test::gen::PaymentType
 [
-  c1_length: $this.paymentTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PaymentType: $this.paymentTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PaymentType: $this.value->length() <= 255
 ]
 {
   paymentTypeScheme: String[0..1];
@@ -2703,13 +2703,13 @@ Class test::gen::PeriodicDates
 >>>test::gen::Person
 Class {meta::pure::profiles::doc.doc = 'A type that represents information about a person connected with a trade or business process.'} test::gen::Person
 [
-  c1_length: $this.honorific->forAll(x: String[1]|$x->length() >= 0),
-  c2_length: $this.firstName->length() >= 0,
-  c3_length: $this.middleName->forAll(x: String[1]|$x->length() >= 0),
-  c4_length: $this.initial->forAll(x: String[1]|$x->length() == 1),
-  c5_length: $this.surname->length() >= 0,
-  c6_length: $this.suffix->forAll(x: String[1]|$x->length() >= 0),
-  c7_choice: ($this.middleName->isNotEmpty() && $this.initial->isEmpty()) || ($this.middleName->isEmpty() && $this.initial->isNotEmpty())
+  c1_length_Person: $this.honorific->forAll(x: String[1]|$x->length() >= 0),
+  c2_length_Person: $this.firstName->length() >= 0,
+  c3_length_Person: $this.middleName->forAll(x: String[1]|$x->length() >= 0),
+  c4_length_Person: $this.initial->forAll(x: String[1]|$x->length() == 1),
+  c5_length_Person: $this.surname->length() >= 0,
+  c6_length_Person: $this.suffix->forAll(x: String[1]|$x->length() >= 0),
+  c7_choice_Person: ($this.middleName->isNotEmpty() && $this.initial->isEmpty()) || ($this.middleName->isEmpty() && $this.initial->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'An honorific title, such as Mr., Ms., Dr. etc.'} honorific: String[0..1];
@@ -2729,9 +2729,9 @@ Class {meta::pure::profiles::doc.doc = 'A type that represents information about
 >>>test::gen::PersonId
 Class {meta::pure::profiles::doc.doc = 'An identifier used to identify an individual person.'} test::gen::PersonId
 [
-  c1_length: $this.personIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_PersonId: $this.personIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PersonId: $this.value->length() >= 1,
+  c3_length_PersonId: $this.value->length() <= 255
 ]
 {
   personIdScheme: String[0..1];
@@ -2747,8 +2747,8 @@ Class {meta::pure::profiles::doc.doc = 'Reference to an individual.'} test::gen:
 >>>test::gen::PersonRole
 Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a person in one or more transactions. Examples include roles such as Trader, Broker, MiddleOffice, Legal, etc. This can be extended to provide custom roles.'} test::gen::PersonRole
 [
-  c1_length: $this.personRoleScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_PersonRole: $this.personRoleScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_PersonRole: $this.value->length() <= 255
 ]
 {
   personRoleScheme: String[0..1];
@@ -2758,7 +2758,7 @@ Class {meta::pure::profiles::doc.doc = 'A type describing a role played by a per
 >>>test::gen::PositiveMoney
 Class {meta::pure::profiles::doc.doc = 'A type defining a positive money amount'} test::gen::PositiveMoney extends test::gen::MoneyBase
 [
-  c1_range: $this.amount > 0
+  c1_range_PositiveMoney: $this.amount > 0
 ]
 {
   {meta::pure::profiles::doc.doc = 'The positive monetary quantity in currency units.'} amount: Decimal[1];
@@ -2800,7 +2800,7 @@ Enum {meta::pure::profiles::doc.doc = 'The mode of expression of a price.'} test
 >>>test::gen::PricingStructure
 Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::doc.doc = 'An abstract pricing structure base type. Used as a base for structures such as yield curves and volatility matrices.'} test::gen::PricingStructure
 [
-  c1_length: $this.name->forAll(x: String[1]|$x->length() >= 0)
+  c1_length_PricingStructure: $this.name->forAll(x: String[1]|$x->length() >= 0)
 ]
 {
   {meta::pure::profiles::doc.doc = 'The name of the structure, e.g "USDLIBOR-3M EOD Curve".'} name: String[0..1];
@@ -2837,9 +2837,9 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::ProductId
 Class test::gen::ProductId
 [
-  c1_length: $this.productIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 1023
+  c1_length_ProductId: $this.productIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ProductId: $this.value->length() >= 1,
+  c3_length_ProductId: $this.value->length() <= 1023
 ]
 {
   productIdScheme: String[0..1];
@@ -2855,9 +2855,9 @@ Class {meta::pure::profiles::doc.doc = 'Reference to a full FpML product.'} test
 >>>test::gen::ProductType
 Class test::gen::ProductType
 [
-  c1_length: $this.productTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 1023
+  c1_length_ProductType: $this.productTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ProductType: $this.value->length() >= 1,
+  c3_length_ProductType: $this.value->length() <= 1023
 ]
 {
   productTypeScheme: String[0..1];
@@ -2948,8 +2948,8 @@ Class {meta::pure::profiles::doc.doc = 'Reference to any rate (floating, inflati
 >>>test::gen::RateSourcePage
 Class test::gen::RateSourcePage
 [
-  c1_length: $this.rateSourcePageScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_RateSourcePage: $this.rateSourcePageScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_RateSourcePage: $this.value->length() <= 255
 ]
 {
   rateSourcePageScheme: String[0..1];
@@ -2979,8 +2979,8 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> {meta::pure::profiles::do
 >>>test::gen::ReferenceAmount
 Class {meta::pure::profiles::doc.doc = 'Specifies the reference amount using a scheme.'} test::gen::ReferenceAmount
 [
-  c1_length: $this.referenceAmountScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ReferenceAmount: $this.referenceAmountScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ReferenceAmount: $this.value->length() <= 255
 ]
 {
   referenceAmountScheme: String[0..1];
@@ -2990,7 +2990,7 @@ Class {meta::pure::profiles::doc.doc = 'Specifies the reference amount using a s
 >>>test::gen::ReferenceBank
 Class {meta::pure::profiles::doc.doc = 'A type to describe an institution (party) identified by means of a coding scheme and an optional name.'} test::gen::ReferenceBank
 [
-  c1_length: $this.referenceBankName->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_ReferenceBank: $this.referenceBankName->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'An institution (party) identifier, e.g. a bank identifier code (BIC).'} referenceBankId: test::gen::ReferenceBankId[1];
@@ -3000,9 +3000,9 @@ Class {meta::pure::profiles::doc.doc = 'A type to describe an institution (party
 >>>test::gen::ReferenceBankId
 Class test::gen::ReferenceBankId
 [
-  c1_length: $this.referenceBankIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_ReferenceBankId: $this.referenceBankIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ReferenceBankId: $this.value->length() >= 1,
+  c3_length_ReferenceBankId: $this.value->length() <= 255
 ]
 {
   referenceBankIdScheme: String[0..1];
@@ -3012,8 +3012,8 @@ Class test::gen::ReferenceBankId
 >>>test::gen::Region
 Class {meta::pure::profiles::doc.doc = 'A code that describes the world region of a counterparty. For example, NorthAmerica, Europe, Asia.'} test::gen::Region
 [
-  c1_length: $this.regionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_Region: $this.regionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_Region: $this.value->length() <= 255
 ]
 {
   regionScheme: String[0..1];
@@ -3056,7 +3056,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining a date (referred to as t
 >>>test::gen::RelativeDateSequence
 Class {meta::pure::profiles::doc.doc = 'A type describing a date when this date is defined in reference to another date through one or several date offsets.'} test::gen::RelativeDateSequence
 [
-  c1_choice: ($this.businessCentersReference->isNotEmpty() && $this.businessCenters->isEmpty()) || ($this.businessCentersReference->isEmpty() && $this.businessCenters->isNotEmpty())
+  c1_choice_RelativeDateSequence: ($this.businessCentersReference->isNotEmpty() && $this.businessCenters->isEmpty()) || ($this.businessCentersReference->isEmpty() && $this.businessCenters->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'Specifies the anchor as an href attribute. The href attribute value is a pointer style reference to the element or component elsewhere in the document where the anchor date is defined.'} dateRelativeTo: test::gen::DateReference[1];
@@ -3082,8 +3082,8 @@ Enum {meta::pure::profiles::doc.doc = 'A duration code for a Repo (or Securities
 >>>test::gen::ReportingRegimeName
 Class {meta::pure::profiles::doc.doc = 'An identifier of an reporting regime or format used for regulatory reporting, for example DoddFrankAct, MiFID, HongKongOTCDRepository, etc.'} test::gen::ReportingRegimeName
 [
-  c1_length: $this.reportingRegimeNameScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ReportingRegimeName: $this.reportingRegimeNameScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ReportingRegimeName: $this.value->length() <= 255
 ]
 {
   reportingRegimeNameScheme: String[0..1];
@@ -3093,8 +3093,8 @@ Class {meta::pure::profiles::doc.doc = 'An identifier of an reporting regime or 
 >>>test::gen::RequestedAction
 Class test::gen::RequestedAction
 [
-  c1_length: $this.requestedActionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_RequestedAction: $this.requestedActionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_RequestedAction: $this.value->length() <= 255
 ]
 {
   requestedActionScheme: String[0..1];
@@ -3124,11 +3124,11 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of whether resets occur
 >>>test::gen::Resource
 Class {meta::pure::profiles::doc.doc = 'Describes the resource that contains the media representation of a business event (i.e used for stating the Publicly Available Information). For example, can describe a file or a URL that represents the event. This type is an extended version of a type defined by RIXML (www.rixml.org).'} test::gen::Resource
 [
-  c1_length: $this.name->forAll(x: String[1]|$x->length() >= 0),
-  c2_length: $this.comments->forAll(x: String[1]|$x->length() <= 255),
-  c3_length: $this.string->forAll(x: String[1]|$x->length() <= 255),
-  c4_length: $this.url->forAll(x: String[1]|$x->length() >= 1),
-  c5_choice: ($this.string->isNotEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isEmpty() && $this.url->isEmpty()))) || (($this.string->isEmpty() && ($this.hexadecimalBinary->isNotEmpty() && ($this.base64Binary->isEmpty() && $this.url->isEmpty()))) || (($this.string->isEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isNotEmpty() && $this.url->isEmpty()))) || ($this.string->isEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isEmpty() && $this.url->isNotEmpty())))))
+  c1_length_Resource: $this.name->forAll(x: String[1]|$x->length() >= 0),
+  c2_length_Resource: $this.comments->forAll(x: String[1]|$x->length() <= 255),
+  c3_length_Resource: $this.string->forAll(x: String[1]|$x->length() <= 255),
+  c4_length_Resource: $this.url->forAll(x: String[1]|$x->length() >= 1),
+  c5_choice_Resource: ($this.string->isNotEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isEmpty() && $this.url->isEmpty()))) || (($this.string->isEmpty() && ($this.hexadecimalBinary->isNotEmpty() && ($this.base64Binary->isEmpty() && $this.url->isEmpty()))) || (($this.string->isEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isNotEmpty() && $this.url->isEmpty()))) || ($this.string->isEmpty() && ($this.hexadecimalBinary->isEmpty() && ($this.base64Binary->isEmpty() && $this.url->isNotEmpty())))))
 ]
 {
   {meta::pure::profiles::doc.doc = 'The unique identifier of the resource within the event.'} resourceId: test::gen::ResourceId[1];
@@ -3148,9 +3148,9 @@ Class {meta::pure::profiles::doc.doc = 'Describes the resource that contains the
 >>>test::gen::ResourceId
 Class {meta::pure::profiles::doc.doc = 'The data type used for resource identifiers.'} test::gen::ResourceId
 [
-  c1_length: $this.resourceIdScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_ResourceId: $this.resourceIdScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ResourceId: $this.value->length() >= 1,
+  c3_length_ResourceId: $this.value->length() <= 255
 ]
 {
   resourceIdScheme: String[0..1];
@@ -3167,8 +3167,8 @@ Class {meta::pure::profiles::doc.doc = 'The type that indicates the length of th
 >>>test::gen::ResourceType
 Class {meta::pure::profiles::doc.doc = 'The data type used for describing the type or purpose of a resource, e.g. "Confirmation".'} test::gen::ResourceType
 [
-  c1_length: $this.resourceTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_ResourceType: $this.resourceTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_ResourceType: $this.value->length() <= 255
 ]
 {
   resourceTypeScheme: String[0..1];
@@ -3258,7 +3258,7 @@ Enum {meta::pure::profiles::doc.doc = 'The method of rounding a fractional numbe
 >>>test::gen::Routing
 Class {meta::pure::profiles::doc.doc = 'A type that provides three alternative ways of identifying a party involved in the routing of a payment. The identification may use payment system identifiers only; actual name, address and other reference information; or a combination of both.'} test::gen::Routing
 [
-  c1_choice: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
+  c1_choice_Routing: ($this.routingIds->isNotEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || (($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isNotEmpty() && $this.routingIdsAndExplicitDetails->isEmpty())) || ($this.routingIds->isEmpty() && ($this.routingExplicitDetails->isEmpty() && $this.routingIdsAndExplicitDetails->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'A set of unique identifiers for a party, eachone identifying the party within a payment system. The assumption is that each party will not have more than one identifier within the same payment system.'} routingIds: test::gen::RoutingIds[0..1];
@@ -3269,9 +3269,9 @@ Class {meta::pure::profiles::doc.doc = 'A type that provides three alternative w
 >>>test::gen::RoutingExplicitDetails
 Class {meta::pure::profiles::doc.doc = 'A type that models name, address and supplementary textual information for the purposes of identifying a party involved in the routing of a payment.'} test::gen::RoutingExplicitDetails
 [
-  c1_length: $this.routingName->length() <= 255,
-  c2_length: $this.routingAccountNumber->forAll(x: String[1]|$x->length() <= 255),
-  c3_length: $this.routingReferenceText->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_RoutingExplicitDetails: $this.routingName->length() <= 255,
+  c2_length_RoutingExplicitDetails: $this.routingAccountNumber->forAll(x: String[1]|$x->length() <= 255),
+  c3_length_RoutingExplicitDetails: $this.routingReferenceText->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'A real name that is used to identify a party involved in the routing of a payment.'} routingName: String[1];
@@ -3283,8 +3283,8 @@ Class {meta::pure::profiles::doc.doc = 'A type that models name, address and sup
 >>>test::gen::RoutingId
 Class test::gen::RoutingId
 [
-  c1_length: $this.routingIdCodeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_RoutingId: $this.routingIdCodeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_RoutingId: $this.value->length() <= 255
 ]
 {
   routingIdCodeScheme: String[0..1];
@@ -3300,9 +3300,9 @@ Class {meta::pure::profiles::doc.doc = 'A type that provides for identifying a p
 >>>test::gen::RoutingIdsAndExplicitDetails
 Class {meta::pure::profiles::doc.doc = 'A type that provides a combination of payment system identification codes with physical postal address details, for the purposes of identifying a party involved in the routing of a payment.'} test::gen::RoutingIdsAndExplicitDetails
 [
-  c1_length: $this.routingName->length() <= 255,
-  c2_length: $this.routingAccountNumber->forAll(x: String[1]|$x->length() <= 255),
-  c3_length: $this.routingReferenceText->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_RoutingIdsAndExplicitDetails: $this.routingName->length() <= 255,
+  c2_length_RoutingIdsAndExplicitDetails: $this.routingAccountNumber->forAll(x: String[1]|$x->length() <= 255),
+  c3_length_RoutingIdsAndExplicitDetails: $this.routingReferenceText->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'A set of unique identifiers for a party, eachone identifying the party within a payment system. The assumption is that each party will not have more than one identifier within the same payment system.'} routingIds: test::gen::RoutingIds[1..*];
@@ -3329,7 +3329,7 @@ Class {meta::pure::profiles::doc.doc = 'Reference to a schedule of rates or amou
 >>>test::gen::SettlementInformation
 Class {meta::pure::profiles::doc.doc = 'A type that represents the choice of methods for settling a potential currency payment resulting from a trade: by means of a standard settlement instruction, by netting it out with other payments, or with an explicit settlement instruction.'} test::gen::SettlementInformation
 [
-  c1_choice: ($this.standardSettlementStyle->isNotEmpty() && $this.settlementInstruction->isEmpty()) || ($this.standardSettlementStyle->isEmpty() && $this.settlementInstruction->isNotEmpty())
+  c1_choice_SettlementInformation: ($this.standardSettlementStyle->isNotEmpty() && $this.settlementInstruction->isEmpty()) || ($this.standardSettlementStyle->isEmpty() && $this.settlementInstruction->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'An optional element used to describe how a trade will settle. This defines a scheme and is used for identifying trades that are identified as settling standard and/or flagged for settlement netting.'} standardSettlementStyle: test::gen::StandardSettlementStyleEnum[0..1];
@@ -3351,8 +3351,8 @@ Class {meta::pure::profiles::doc.doc = 'A type that models a complete instructio
 >>>test::gen::SettlementMethod
 Class test::gen::SettlementMethod
 [
-  c1_length: $this.settlementMethodScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SettlementMethod: $this.settlementMethodScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SettlementMethod: $this.value->length() <= 255
 ]
 {
   settlementMethodScheme: String[0..1];
@@ -3371,8 +3371,8 @@ Enum {meta::pure::profiles::doc.doc = 'Defines the Settlement Period Duration fo
 >>>test::gen::SettlementPriceDefaultElection
 Class {meta::pure::profiles::doc.doc = 'Coding scheme that specifies the settlement price default election.'} test::gen::SettlementPriceDefaultElection
 [
-  c1_length: $this.settlementPriceDefaultElectionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SettlementPriceDefaultElection: $this.settlementPriceDefaultElectionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SettlementPriceDefaultElection: $this.value->length() <= 255
 ]
 {
   settlementPriceDefaultElectionScheme: String[0..1];
@@ -3382,8 +3382,8 @@ Class {meta::pure::profiles::doc.doc = 'Coding scheme that specifies the settlem
 >>>test::gen::SettlementPriceSource
 Class {meta::pure::profiles::doc.doc = 'The source from which the settlement price is to be obtained, e.g. a Reuters page, Prezzo di Riferimento, etc.'} test::gen::SettlementPriceSource
 [
-  c1_length: $this.settlementPriceSourceScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SettlementPriceSource: $this.settlementPriceSourceScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SettlementPriceSource: $this.value->length() <= 255
 ]
 {
   settlementPriceSourceScheme: String[0..1];
@@ -3393,8 +3393,8 @@ Class {meta::pure::profiles::doc.doc = 'The source from which the settlement pri
 >>>test::gen::SettlementRateOption
 Class {meta::pure::profiles::doc.doc = 'A type defining the settlement rate options through a scheme reflecting the terms of the Annex A to the 1998 FX and Currency Option Definitions.'} test::gen::SettlementRateOption
 [
-  c1_length: $this.settlementRateOptionScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SettlementRateOption: $this.settlementRateOptionScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SettlementRateOption: $this.value->length() <= 255
 ]
 {
   settlementRateOptionScheme: String[0..1];
@@ -3404,7 +3404,7 @@ Class {meta::pure::profiles::doc.doc = 'A type defining the settlement rate opti
 >>>test::gen::SettlementRateSource
 Class {meta::pure::profiles::doc.doc = 'A type describing the method for obtaining a settlement rate.'} test::gen::SettlementRateSource
 [
-  c1_choice: ($this.informationSource->isNotEmpty() && $this.cashSettlementReferenceBanks->isEmpty()) || ($this.informationSource->isEmpty() && $this.cashSettlementReferenceBanks->isNotEmpty())
+  c1_choice_SettlementRateSource: ($this.informationSource->isNotEmpty() && $this.cashSettlementReferenceBanks->isEmpty()) || ($this.informationSource->isEmpty() && $this.cashSettlementReferenceBanks->isNotEmpty())
 ]
 {
   {meta::pure::profiles::doc.doc = 'The information source where a published or displayed market rate will be obtained, e.g. Telerate Page 3750.'} informationSource: test::gen::InformationSource[0..1];
@@ -3502,8 +3502,8 @@ Class {meta::pure::profiles::doc.doc = 'Provides a reference to a spread schedul
 >>>test::gen::SpreadScheduleType
 Class {meta::pure::profiles::doc.doc = 'Defines a Spread Type Scheme to identify a long or short spread value.'} test::gen::SpreadScheduleType
 [
-  c1_length: $this.spreadScheduleTypeScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SpreadScheduleType: $this.spreadScheduleTypeScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SpreadScheduleType: $this.value->length() <= 255
 ]
 {
   spreadScheduleTypeScheme: String[0..1];
@@ -3541,7 +3541,7 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of whether a percentage
 >>>test::gen::StreetAddress
 Class {meta::pure::profiles::doc.doc = 'A type that describes the set of street and building number information that identifies a postal address within a city.'} test::gen::StreetAddress
 [
-  c1_length: $this.streetLine->forAll(x: String[1]|$x->length() <= 255)
+  c1_length_StreetAddress: $this.streetLine->forAll(x: String[1]|$x->length() <= 255)
 ]
 {
   {meta::pure::profiles::doc.doc = 'An individual line of street and building number information, forming part of a postal address.'} streetLine: String[1..*];
@@ -3601,7 +3601,7 @@ Enum {meta::pure::profiles::doc.doc = 'Element to define how to deal with a none
 >>>test::gen::StubValue
 Class {meta::pure::profiles::doc.doc = 'A type defining how a stub calculation period amount is calculated. A single floating rate tenor different to that used for the regular part of the calculation periods schedule may be specified, or two floating rate tenors many be specified. If two floating rate tenors are specified then Linear Interpolation (in accordance with the 2000 ISDA Definitions, Section 8.3 Interpolation) is assumed to apply. Alternatively, an actual known stub rate or stub amount may be specified.'} test::gen::StubValue
 [
-  c1_choice: ($this.floatingRate->isNotEmpty() && ($this.stubRate->isEmpty() && $this.stubAmount->isEmpty())) || (($this.floatingRate->isEmpty() && ($this.stubRate->isNotEmpty() && $this.stubAmount->isEmpty())) || ($this.floatingRate->isEmpty() && ($this.stubRate->isEmpty() && $this.stubAmount->isNotEmpty())))
+  c1_choice_StubValue: ($this.floatingRate->isNotEmpty() && ($this.stubRate->isEmpty() && $this.stubAmount->isEmpty())) || (($this.floatingRate->isEmpty() && ($this.stubRate->isNotEmpty() && $this.stubAmount->isEmpty())) || ($this.floatingRate->isEmpty() && ($this.stubRate->isEmpty() && $this.stubAmount->isNotEmpty())))
 ]
 {
   {meta::pure::profiles::doc.doc = 'The rates to be applied to the initial or final stub may be the linear interpolation of two different rates. While the majority of the time, the rate indices will be the same as that specified in the stream and only the tenor itself will be different, it is possible to specift two different rates. For example, a 2 month stub period may use the linear interpolation of a 1 month and 3 month rate. The different rates would be specified in this component. Note that a maximum of two rates can be specified. If a stub period uses the same floating rate index, including tenor, as the regular calculation periods then this should not be specified again within this component, i.e. the stub calculation period amount component may not need to be specified even if there is an initial or final stub period. If a stub period uses a different floating rate index compared to the regular calculation periods then this should be specified within this component. If specified here, they are likely to have id attributes, allowing them to be referenced from within the cashflows component.'} floatingRate: test::gen::StubFloatingRate[0..2];
@@ -3612,8 +3612,8 @@ Class {meta::pure::profiles::doc.doc = 'A type defining how a stub calculation p
 >>>test::gen::SupervisoryBody
 Class {meta::pure::profiles::doc.doc = 'An identifier of an organization that supervises or regulates trading activity, e.g. CFTC, SEC, FSA, ODRF, etc.'} test::gen::SupervisoryBody
 [
-  c1_length: $this.supervisoryBodyScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_SupervisoryBody: $this.supervisoryBodyScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_SupervisoryBody: $this.value->length() <= 255
 ]
 {
   supervisoryBodyScheme: String[0..1];
@@ -3630,7 +3630,7 @@ Class test::gen::SwaptionPhysicalSettlement
 >>>test::gen::TelephoneNumber
 Class {meta::pure::profiles::doc.doc = 'A type that represents a telephonic contact.'} test::gen::TelephoneNumber
 [
-  c1_length: $this.number->length() <= 255
+  c1_length_TelephoneNumber: $this.number->length() <= 255
 ]
 {
   {meta::pure::profiles::doc.doc = 'The type of telephone number (work, personal, mobile).'} type: test::gen::TelephoneTypeEnum[0..1];
@@ -3661,8 +3661,8 @@ Enum {meta::pure::profiles::doc.doc = 'Defines points in the day when equity opt
 >>>test::gen::TimezoneLocation
 Class {meta::pure::profiles::doc.doc = 'A geophraphic location for the purposes of defining a prevailing time according to the tz database.'} test::gen::TimezoneLocation
 [
-  c1_length: $this.timezoneLocationScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_TimezoneLocation: $this.timezoneLocationScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_TimezoneLocation: $this.value->length() <= 255
 ]
 {
   timezoneLocationScheme: String[0..1];
@@ -3679,9 +3679,9 @@ Enum {meta::pure::profiles::doc.doc = 'The specification of, for American-style 
 >>>test::gen::TradeId
 Class {meta::pure::profiles::doc.doc = 'A trade reference identifier allocated by a party. FpML does not define the domain values associated with this element. Note that the domain values for this element are not strictly an enumerated list.'} test::gen::TradeId
 [
-  c1_length: $this.tradeIdScheme->length() >= 1,
-  c2_length: $this.value->length() >= 1,
-  c3_length: $this.value->length() <= 255
+  c1_length_TradeId: $this.tradeIdScheme->length() >= 1,
+  c2_length_TradeId: $this.value->length() >= 1,
+  c3_length_TradeId: $this.value->length() <= 255
 ]
 {
   tradeIdScheme: String[1];
@@ -3725,8 +3725,8 @@ Class {meta::pure::profiles::doc.doc = 'A type describing interest payments asso
 >>>test::gen::Unit
 Class {meta::pure::profiles::doc.doc = 'A type used to record information about a unit, subdivision, desk, or other similar business entity.'} test::gen::Unit
 [
-  c1_length: $this.unitScheme->forAll(x: String[1]|$x->length() >= 1),
-  c2_length: $this.value->length() <= 255
+  c1_length_Unit: $this.unitScheme->forAll(x: String[1]|$x->length() >= 1),
+  c2_length_Unit: $this.value->length() <= 255
 ]
 {
   unitScheme: String[0..1];

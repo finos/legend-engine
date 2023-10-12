@@ -203,12 +203,23 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    assertEquals('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $db2Sql);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSplitPart():Boolean[1]
+{
+   let sql = toSQLString({|Person.all()
+    ->project([
+      col(p|splitPart($p.firstName, '|', 0), 'splitBar')
+    ])->project([
+      col(row:TDSRow[1] | splitPart($row.getString('splitBar'), ',', 1), 'splitComma')
+    ])}, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma" from personTable as "root"', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringAscii():Boolean[1]
 {
    let sql = toSQLString(|Person.all()->project(p|ascii($p.firstName), 'ascii'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select ascii("root".FIRSTNAME) as "ascii" from personTable as "root"', $sql);
 }
-
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringChar():Boolean[1]
 {
@@ -599,15 +610,48 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
     assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double precision) as "float" from tradeTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::testHashFunctions():Boolean[1]
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringForTDSStringJoin():Boolean[1]
 {
     let result = toSQLString(
      |Person.all()
         ->project([
+          col(p|$p.firstName, 'firstName'),
+          col(p|$p.lastName, 'lastName')
+        ])
+        ->extend([
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')]), 'name1'),
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')], '|'), 'name2'),
+          col(row:TDSRow[1]|joinStrings([$row.getString('firstName'), ' ', $row.getString('lastName')], '[', ',', ']'), 'name3'),
+          col(row:TDSRow[1]|joinStrings(['myValue', $row.getString('firstName'), ' ', $row.getString('lastName')], '[', ',', ']'), 'name4')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'\', \'\', \'\') as "name1", concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'|\') as "name2", '
+      +'concat("root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name3", concat(\'myValue\', "root".FIRSTNAME, \' \', "root".LASTNAME, \'[\', \',\', \']\') as "name4" from personTable as "root"', $result);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlstring::testHashFunctions():Boolean[1]
+{
+    let result = toSQLString(
+     |Person.all()
+        ->project([
+          col(p|$p.firstName, 'firstName'),
+          col(p|$p.lastName, 'lastName'),
           col(p|$p.firstName->hash(HashType.MD5), 'md5'),
           col(p|$p.firstName->hash(HashType.SHA1), 'sha1'),
           col(p|$p.firstName->hash(HashType.SHA256), 'sha256')
-        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+        ])
+        ->project([
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.MD5)}, 'tds_md5'),
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.SHA1)}, 'tds_sha1'),
+           col({row:TDSRow[1]|$row.getString('firstName')->hash(HashType.SHA256)}, 'tds_sha256'),
+           col({row:TDSRow[1]|hash(($row.getString('firstName') + $row.getString('lastName')), HashType.MD5)}, 'tds_concat_md5'),
+           col({row:TDSRow[1]|hash(joinStrings([$row.getString('firstName'), $row.getString('lastName')]), HashType.MD5)}, 'tds_joinstrings_md5'),
+           col({row:TDSRow[1]|[$row.getString('firstName'), $row.getString('lastName')]->joinStrings('|')->hash(HashType.MD5)}, 'tds_digest')
+        ])
+        , simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-    assertNotEmpty($result);
+    assertEquals('select rawtohex(hash(\'MD5\', "root".FIRSTNAME)) as "tds_md5", rawtohex(hash(\'SHA-1\', "root".FIRSTNAME)) as "tds_sha1", rawtohex(hash(\'SHA-256\', "root".FIRSTNAME)) as "tds_sha256", ' 
+          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME))) as "tds_concat_md5", rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'\', \'\', \'\'))) as "tds_joinstrings_md5", ' 
+          + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'|\'))) as "tds_digest" from personTable as "root"', $result);
+
 }

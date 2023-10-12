@@ -1,0 +1,85 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::xml::executionPlan::test::*;
+import meta::external::format::xml::executionPlan::test::types::*;
+import meta::external::format::xml::functions::*;
+
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::functions::*;
+
+import meta::legend::*;
+
+import meta::pure::dataQuality::*;
+import meta::pure::model::unit::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::test::types::testAllTypes(): Boolean[1]
+{
+  let tree = #{AllTypes{string,optionalString,repeatedString,integer,optionalInteger,repeatedInteger,float,optionalFloat,repeatedFloat,decimal,optionalDecimal,repeatedDecimal,boolean,optionalBoolean,repeatedBoolean,date,optionalDate,repeatedDate,strictDate,optionalStrictDate,repeatedStrictDate,dateTime,optionalDateTime,repeatedDateTime,enum,optionalEnum,repeatedEnum}}#;
+  let query  = {data:String[1] | AllTypes->fromXml($data)->checked()->serialize($tree)};
+
+  let input  = readFile('/core_external_format_xml/executionPlan/tests/resources/allTypes1.xml')->toOne();
+  let result = executeLegendQuery($query, pair('data', $input), xsdExtensions());
+
+  assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[],"source":{"number":1,"record":"<allTypes><string>String</string><optionalString>OptionalString</optionalString><repeatedString>RepeatedString1</repeatedString><repeatedString>RepeatedString2</repeatedString><integer>1</integer><optionalInteger>2</optionalInteger><repeatedInteger>1</repeatedInteger><repeatedInteger>2</repeatedInteger><float>1.0</float><optionalFloat>2.5</optionalFloat><repeatedFloat>1.1</repeatedFloat><repeatedFloat>2.2</repeatedFloat><decimal>1.23456789</decimal><optionalDecimal>2.3596784236</optionalDecimal><repeatedDecimal>1.2359361818</repeatedDecimal><repeatedDecimal>12.15456123618</repeatedDecimal><boolean>true</boolean><optionalBoolean>false</optionalBoolean><repeatedBoolean>true</repeatedBoolean><repeatedBoolean>false</repeatedBoolean><date>2022-12-12</date><optionalDate>2022-12-12T01:00:05</optionalDate><repeatedDate>2022-12-12</repeatedDate><repeatedDate>2023-12-12T12:00:00</repeatedDate><strictDate>2022-12-12</strictDate><optionalStrictDate>2019-12-12</optionalStrictDate><repeatedStrictDate>2022-12-12</repeatedStrictDate><repeatedStrictDate>2020-12-12</repeatedStrictDate><dateTime>2023-12-12T12:00:00</dateTime><optionalDateTime>2020-12-12T12:00:00</optionalDateTime><repeatedDateTime>2020-12-12T12:00:00</repeatedDateTime><repeatedDateTime>2020-12-12T12:00:00</repeatedDateTime><enum>MALE</enum><optionalEnum>meta::external::format::xml::executionPlan::test::types::Gender.FEMALE</optionalEnum><repeatedEnum>MALE</repeatedEnum><repeatedEnum>meta::external::format::xml::executionPlan::test::types::Gender.OTHER</repeatedEnum></allTypes>"},"value":{"string":"String","optionalString":"OptionalString","repeatedString":["RepeatedString1","RepeatedString2"],"integer":1,"optionalInteger":2,"repeatedInteger":[1,2],"float":1.0,"optionalFloat":2.5,"repeatedFloat":[1.1,2.2],"decimal":1.23456789,"optionalDecimal":2.3596784236,"repeatedDecimal":[1.2359361818,12.15456123618],"boolean":true,"optionalBoolean":false,"repeatedBoolean":[true,false],"date":"2022-12-12T00:00:00.000","optionalDate":"2022-12-12T01:00:05.000","repeatedDate":["2022-12-12T00:00:00.000","2023-12-12T12:00:00.000"],"strictDate":"2022-12-12","optionalStrictDate":"2019-12-12","repeatedStrictDate":["2022-12-12","2020-12-12"],"dateTime":"2023-12-12T12:00:00.000","optionalDateTime":"2020-12-12T12:00:00.000","repeatedDateTime":["2020-12-12T12:00:00.000","2020-12-12T12:00:00.000"],"enum":"MALE","optionalEnum":"FEMALE","repeatedEnum":["MALE","OTHER"]}},{"defects":[],"source":{"number":2,"record":"<allTypes><string>String</string><integer>1</integer><float>1.0</float><decimal>1.23456789</decimal><boolean>true</boolean><date>2022-12-12</date><strictDate>2022-12-12</strictDate><dateTime>2023-12-12T12:00:00</dateTime><enum>MALE</enum></allTypes>"},"value":{"string":"String","optionalString":null,"repeatedString":[],"integer":1,"optionalInteger":null,"repeatedInteger":[],"float":1.0,"optionalFloat":null,"repeatedFloat":[],"decimal":1.23456789,"optionalDecimal":null,"repeatedDecimal":[],"boolean":true,"optionalBoolean":null,"repeatedBoolean":[],"date":"2022-12-12T00:00:00.000","optionalDate":null,"repeatedDate":[],"strictDate":"2022-12-12","optionalStrictDate":null,"repeatedStrictDate":[],"dateTime":"2023-12-12T12:00:00.000","optionalDateTime":null,"repeatedDateTime":[],"enum":"MALE","optionalEnum":null,"repeatedEnum":[]}}]}', $result);
+}
+
+###Pure
+import meta::pure::unit::*;
+import meta::external::format::xml::executionPlan::test::types::*;
+
+Class meta::external::format::xml::executionPlan::test::types::AllTypes
+{
+  string          : String[1];
+  optionalString  : String[0..1];
+  repeatedString  : String[*];
+
+  integer         : Integer[1];
+  optionalInteger : Integer[0..1];
+  repeatedInteger : Integer[*];
+
+  float           : Float[1];
+  optionalFloat   : Float[0..1];
+  repeatedFloat   : Float[*];
+
+  decimal         : Decimal[1];
+  optionalDecimal : Decimal[0..1];
+  repeatedDecimal : Decimal[*];
+
+  boolean         : Boolean[1];
+  optionalBoolean : Boolean[0..1];
+  repeatedBoolean : Boolean[*];
+
+  date            : Date[1];
+  optionalDate    : Date[0..1];
+  repeatedDate    : Date[*];
+
+  strictDate         : StrictDate[1];
+  optionalStrictDate : StrictDate[0..1];
+  repeatedStrictDate : StrictDate[*];
+
+  dateTime           : DateTime[1];
+  optionalDateTime   : DateTime[0..1];
+  repeatedDateTime   : DateTime[*];
+
+  enum               : Gender[1];
+  optionalEnum       : Gender[0..1];
+  repeatedEnum       : Gender[*];
+}
+
+Enum meta::external::format::xml::executionPlan::test::types::Gender
+{
+  MALE, FEMALE, OTHER
+}

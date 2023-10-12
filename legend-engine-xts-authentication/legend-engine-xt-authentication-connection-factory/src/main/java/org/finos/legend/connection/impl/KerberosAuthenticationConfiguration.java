@@ -20,6 +20,11 @@ public class KerberosAuthenticationConfiguration extends AuthenticationConfigura
 {
     public KerberosAuthenticationConfiguration()
     {
+    }
 
+    @Override
+    public String shortId()
+    {
+        return "Kerberos";
     }
 }

@@ -19,13 +19,13 @@
     <parent>
         <artifactId>legend-engine-xt-relationalStore-execution</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.30.1-SNAPSHOT</version>
+        <version>4.30.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-api</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Connection API</name>
+    <name>Legend Engine - XT - Relational Store - Execution Plan - Connection API</name>
 
     <dependencies>
         <dependency>

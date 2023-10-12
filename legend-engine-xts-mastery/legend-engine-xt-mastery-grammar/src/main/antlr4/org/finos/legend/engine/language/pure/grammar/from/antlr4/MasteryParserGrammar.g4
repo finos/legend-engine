@@ -275,6 +275,7 @@ resolutionQueries:                          RESOLUTION_QUERIES COLON
 resolutionQuery:                            BRACE_OPEN
                                             (queryExpressions
                                              | resolutionQueryKeyType
+                                             | resolutionQueryOptional
                                              | resolutionQueryPrecedence
                                             )*
                                             BRACE_CLOSE
@@ -294,6 +295,8 @@ resolutionQueryKeyType:                  RESOLUTION_QUERY_KEY_TYPE COLON (
                                             | RESOLUTION_QUERY_KEY_TYPE_OPTIONAL
                                             )
                                             SEMI_COLON
+;
+resolutionQueryOptional:                 RESOLUTION_QUERY_OPTIONAL COLON boolean_value SEMI_COLON
 ;
 resolutionQueryPrecedence:               PRECEDENCE COLON INTEGER SEMI_COLON
 ;

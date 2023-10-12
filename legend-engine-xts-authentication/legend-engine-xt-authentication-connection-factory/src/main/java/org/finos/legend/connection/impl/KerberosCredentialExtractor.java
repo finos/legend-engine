@@ -14,9 +14,23 @@
 
 package org.finos.legend.connection.impl;
 
-import org.finos.legend.connection.CredentialExtractor;
+import org.finos.legend.connection.CredentialBuilder;
+import org.finos.legend.connection.LegendEnvironment;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
-public class KerberosCredentialExtractor extends CredentialExtractor<KerberosAuthenticationConfiguration, LegendKerberosCredential>
+import java.util.Optional;
+
+public class KerberosCredentialExtractor extends CredentialBuilder<KerberosAuthenticationConfiguration, LegendKerberosCredential, LegendKerberosCredential>
 {
+    @Override
+    public LegendKerberosCredential makeCredential(Identity identity, KerberosAuthenticationConfiguration authenticationConfiguration, LegendKerberosCredential credential, LegendEnvironment environment) throws Exception
+    {
+        Optional<LegendKerberosCredential> credentialOptional = identity.getCredential(LegendKerberosCredential.class);
+        if (!credentialOptional.isPresent())
+        {
+            throw new RuntimeException(String.format("Can't extract credential of type '%s' from the specified identity", LegendKerberosCredential.class.getSimpleName()));
+        }
+        return credentialOptional.get();
+    }
 }

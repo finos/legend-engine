@@ -107,7 +107,7 @@ public class RelationalExecutor
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
         this.flowProviderHolder = flowProviderHolder;
-        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder);
+        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder, relationalExecutionConfiguration.getConnectionFactory(), relationalExecutionConfiguration.getRelationalDatabaseConnectionAdapters(), false);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
         this.resultInterpreterExtensions = Iterate.addAllTo(ResultInterpreterExtensionLoader.extensions(), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
     }

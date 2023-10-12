@@ -18,8 +18,6 @@
 import meta::pure::extension::*;
 import meta::pure::router::preeval::*;
 import meta::pure::router::preeval::tests::*;
-import meta::external::format::shared::binding::*;
-import meta::external::format::shared::functions::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 import meta::protocols::pure::vX_X_X::transformation::toPureGrammar::*;

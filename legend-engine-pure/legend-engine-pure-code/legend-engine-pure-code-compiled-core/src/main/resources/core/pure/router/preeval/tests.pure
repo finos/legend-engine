@@ -15,8 +15,6 @@
 // Press F9 to execute the 'go' function...
 // Press F10 to run the full test suite
 
-import meta::external::format::shared::binding::*;
-import meta::external::format::shared::functions::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::*;
@@ -1493,6 +1491,14 @@ function <<test.Test>> meta::pure::router::preeval::tests::testLambdaParamOverri
 
   let expected = { | {val:Integer[1]| $val};};
 
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testSchemaStateUnfurl():Boolean[1]
+{
+  let state = ^meta::pure::tds::schema::SchemaState(columns=[^meta::pure::tds::TDSColumn(name='column1'), ^meta::pure::tds::TDSColumn(name='column2')]);
+  let input = {|$state.columns.name};
+  let expected = {|['column1', 'column2']};
   assertRoundTrip($input, $expected);
 }
 
