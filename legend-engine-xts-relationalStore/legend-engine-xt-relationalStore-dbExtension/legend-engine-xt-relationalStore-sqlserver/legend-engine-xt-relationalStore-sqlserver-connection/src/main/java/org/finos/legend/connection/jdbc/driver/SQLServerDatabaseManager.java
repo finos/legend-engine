@@ -15,28 +15,29 @@
 package org.finos.legend.connection.jdbc.driver;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.connection.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
 import java.util.List;
 import java.util.Properties;
 
-public class H2_JDBCConnectionDriver implements JDBCConnectionDriver
+public class SQLServerDatabaseManager implements DatabaseManager
 {
     @Override
     public List<String> getIds()
     {
-        return Lists.mutable.with(DatabaseType.H2.name());
+        return Lists.mutable.with("SQLServer", DatabaseType.SqlServer.name());
     }
 
     @Override
     public String getDriver()
     {
-        return "org.h2.Driver";
+        return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    public String buildURL(String host, int port, String databaseName, Properties properties)
     {
-        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
+        return String.format("jdbc:sqlserver://%s:%s;databaseName=%s", host, port, databaseName);
     }
 }

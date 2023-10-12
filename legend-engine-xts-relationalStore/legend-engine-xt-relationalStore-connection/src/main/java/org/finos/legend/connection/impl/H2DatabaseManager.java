@@ -12,31 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseManager;
+import org.finos.legend.connection.DatabaseType;
 
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServer_JDBCConnectionDriver implements JDBCConnectionDriver
+public class H2DatabaseManager implements DatabaseManager
 {
     @Override
     public List<String> getIds()
     {
-        return Lists.mutable.with("SQLServer", DatabaseType.SqlServer.name());
+        return Lists.mutable.with(DatabaseType.H2.name());
     }
 
     @Override
     public String getDriver()
     {
-        return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        return "org.h2.Driver";
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    public String buildURL(String host, int port, String databaseName, Properties properties)
     {
-        return String.format("jdbc:sqlserver://%s:%s;databaseName=%s", host, port, databaseName);
+        return String.format("jdbc:h2:tcp://%s:%s/mem:%s", host, port, databaseName);
     }
 }

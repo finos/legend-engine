@@ -1,1 +1,1 @@
-org.finos.legend.connection.jdbc.StaticJDBCConnectionBuilder$WithPlaintextUsernamePassword
+org.finos.legend.connection.impl.StaticJDBCConnectionBuilder$WithPlaintextUsernamePassword

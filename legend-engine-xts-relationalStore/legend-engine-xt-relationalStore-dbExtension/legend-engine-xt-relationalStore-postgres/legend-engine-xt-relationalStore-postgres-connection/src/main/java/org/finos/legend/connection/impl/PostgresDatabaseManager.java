@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseManager;
 
 import java.util.List;
 import java.util.Properties;
 
-public class PostgreSQL_JDBCConnectionDriver implements JDBCConnectionDriver
+public class PostgresDatabaseManager implements DatabaseManager
 {
     @Override
     public List<String> getIds()
@@ -35,7 +36,7 @@ public class PostgreSQL_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    public String buildURL(String host, int port, String databaseName, Properties properties)
     {
         return String.format("jdbc:postgresql://%s:%s/%s", host, port, databaseName);
     }

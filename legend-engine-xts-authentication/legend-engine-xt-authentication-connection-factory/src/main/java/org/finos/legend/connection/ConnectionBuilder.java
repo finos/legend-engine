@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -23,7 +24,7 @@ import java.util.Objects;
 
 public abstract class ConnectionBuilder<CONNECTION, CRED extends Credential, SPEC extends ConnectionSpecification>
 {
-    public abstract CONNECTION getConnection(StoreInstance storeInstance, CRED credential) throws Exception;
+    protected abstract CONNECTION getConnection(SPEC connectionSpecification, Authenticator<CRED> authenticator, Identity identity) throws Exception;
 
     public Class<? extends Credential> getCredentialType()
     {
@@ -35,16 +36,25 @@ public abstract class ConnectionBuilder<CONNECTION, CRED extends Credential, SPE
         return (Class<? extends ConnectionSpecification>) actualTypeArguments()[2];
     }
 
-    private Type[] actualTypeArguments()
+    protected Type[] actualTypeArguments()
     {
         Type genericSuperClass = this.getClass().getGenericSuperclass();
         ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
         return parameterizedType.getActualTypeArguments();
     }
 
-    protected SPEC getCompatibleConnectionSpecification(StoreInstance storeInstance)
+    public Authenticator<CRED> getAuthenticatorCompatible(Authenticator authenticator)
     {
-        return (SPEC) storeInstance.getConnectionSpecification(this.getConnectionSpecificationType());
+        if (!this.getCredentialType().equals(authenticator.getTargetCredentialType()))
+        {
+            throw new RuntimeException(String.format("Authenticator target credential type is expected to be '%s' (found: %s)", this.getCredentialType().getSimpleName(), authenticator.getTargetCredentialType().getSimpleName()));
+        }
+        return (Authenticator<CRED>) authenticator;
+    }
+
+    public ConnectionManager getConnectionManager()
+    {
+        return null;
     }
 
     public static class Key

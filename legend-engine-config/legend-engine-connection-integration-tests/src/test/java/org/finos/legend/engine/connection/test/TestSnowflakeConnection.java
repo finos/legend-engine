@@ -16,6 +16,7 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
@@ -82,8 +83,8 @@ public class TestSnowflakeConnection
             return new StoreInstance.Builder(this.environment)
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
                     .withStoreSupportIdentifier("Snowflake")
-                    .withAuthenticationMechanisms(
-                            AuthenticationMechanismType.KEY_PAIR
+                    .withAuthenticationMechanismConfigurations(
+                            new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).build()
                     )
                     .withConnectionSpecification(connectionSpecification)
                     .build();

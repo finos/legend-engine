@@ -22,5 +22,7 @@ public abstract class AWSCredentials
 {
     public SourceInformation sourceInformation;
 
+    public abstract String shortId();
+
     public abstract <T> T accept(AWSCredentialsVisitor<T> visitor);
 }
