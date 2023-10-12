@@ -35,6 +35,11 @@ public class ResultNormalizer
 
     public static Object normalizeToSql(Object o, String databaseTimeZone)
     {
+       return normalizeToSql(o, databaseTimeZone, true);
+    }
+
+    public static Object normalizeToSql(Object o, String databaseTimeZone, Boolean normalizeWithTimeZone)
+    {
         if (o == null)
         {
             return "null";
@@ -53,15 +58,16 @@ public class ResultNormalizer
         if (o instanceof PureDate)
         {
             PureDate pureDate = (PureDate) o;
+            String timeZoneString = normalizeWithTimeZone ? "[" + databaseTimeZone + "]" : "";
             if (pureDate.hasSubsecond())
             {
-                return pureDate.format("[" + databaseTimeZone + "]yyyy-MM-dd HH:mm:ss.SSSSSS");
+                return pureDate.format(timeZoneString + "yyyy-MM-dd HH:mm:ss.SSSSSS");
             }
             if (pureDate.hasSecond())
             {
-                return pureDate.format("[" + databaseTimeZone + "]yyyy-MM-dd HH:mm:ss");
+                return pureDate.format(timeZoneString + "yyyy-MM-dd HH:mm:ss");
             }
-            return pureDate.format("[" + databaseTimeZone + "]yyyy-MM-dd");
+            return pureDate.format(timeZoneString + "yyyy-MM-dd");
         }
 
         if (o instanceof EngineDate)
