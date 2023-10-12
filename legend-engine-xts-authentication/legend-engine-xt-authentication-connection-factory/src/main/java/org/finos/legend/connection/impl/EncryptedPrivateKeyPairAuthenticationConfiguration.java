@@ -33,4 +33,13 @@ public class EncryptedPrivateKeyPairAuthenticationConfiguration extends Authenti
         this.privateKey = privateKey;
         this.passphrase = passphrase;
     }
+
+    @Override
+    public String shortId()
+    {
+        return "EncryptedPrivateKeyPair" +
+                "--userName=" + userName +
+                "--privateKey=" + privateKey.shortId() +
+                "--passphrase=" + passphrase.shortId();
+    }
 }

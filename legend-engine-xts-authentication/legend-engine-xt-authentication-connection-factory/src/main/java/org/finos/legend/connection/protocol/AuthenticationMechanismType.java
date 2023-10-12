@@ -18,50 +18,20 @@ import org.finos.legend.connection.impl.ApiKeyAuthenticationConfiguration;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.impl.KerberosAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 public enum AuthenticationMechanismType implements AuthenticationMechanism
 {
-    USER_PASSWORD("UsernamePassword")
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return UserPasswordAuthenticationConfiguration.class;
-                }
-            },
-
-    API_KEY("APIKey")
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return ApiKeyAuthenticationConfiguration.class;
-                }
-            },
-
-    KEY_PAIR("KeyPair")
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return EncryptedPrivateKeyPairAuthenticationConfiguration.class;
-                }
-            },
-
-    KERBEROS("Kerberos")
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return KerberosAuthenticationConfiguration.class;
-                }
-
-                @Override
-                public AuthenticationConfiguration generateConfiguration()
-                {
-                    return new KerberosAuthenticationConfiguration();
-                }
-            };
+    USER_PASSWORD("UsernamePassword"),
+    API_KEY("APIKey"),
+    KEY_PAIR("KeyPair"),
+    KERBEROS("Kerberos"),
+    OAUTH("OAuth");
 
     private final String label;
 

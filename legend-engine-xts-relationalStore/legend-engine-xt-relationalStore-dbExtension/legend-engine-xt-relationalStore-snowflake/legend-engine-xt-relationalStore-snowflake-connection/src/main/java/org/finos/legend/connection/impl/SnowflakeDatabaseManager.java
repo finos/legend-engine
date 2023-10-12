@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc.driver;
+package org.finos.legend.connection.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.SnowflakeAccountType;
+import org.finos.legend.connection.DatabaseManager;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.util.List;
 import java.util.Properties;
 
-public class Snowflake_JDBCConnectionDriver implements JDBCConnectionDriver
+public class SnowflakeDatabaseManager implements DatabaseManager
 {
     private static final String PRIVATELINK_SNOWFLAKECOMPUTING_COM = ".privatelink.snowflakecomputing.com";
     private static final String SNOWFLAKECOMPUTING_COM = ".snowflakecomputing.com";
@@ -57,18 +58,18 @@ public class Snowflake_JDBCConnectionDriver implements JDBCConnectionDriver
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties)
+    public String buildURL(String host, int port, String databaseName, Properties properties)
     {
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SNOWFLAKE_ACCOUNT_NAME) != null, () -> SNOWFLAKE_ACCOUNT_NAME + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SNOWFLAKE_REGION) != null, () -> SNOWFLAKE_REGION + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SNOWFLAKE_WAREHOUSE_NAME) != null, () -> SNOWFLAKE_WAREHOUSE_NAME + " is not set");
+        Assert.assertTrue(properties.getProperty(SNOWFLAKE_ACCOUNT_NAME) != null, () -> SNOWFLAKE_ACCOUNT_NAME + " is not set");
+        Assert.assertTrue(properties.getProperty(SNOWFLAKE_REGION) != null, () -> SNOWFLAKE_REGION + " is not set");
+        Assert.assertTrue(properties.getProperty(SNOWFLAKE_WAREHOUSE_NAME) != null, () -> SNOWFLAKE_WAREHOUSE_NAME + " is not set");
 
-        String accountName = extraUserDataSourceProperties.getProperty(SNOWFLAKE_ACCOUNT_NAME);
-        String region = extraUserDataSourceProperties.getProperty(SNOWFLAKE_REGION);
-        String cloudType = extraUserDataSourceProperties.getProperty(SNOWFLAKE_CLOUD_TYPE);
-        String organisation = extraUserDataSourceProperties.getProperty(SNOWFLAKE_ORGANIZATION_NAME);
+        String accountName = properties.getProperty(SNOWFLAKE_ACCOUNT_NAME);
+        String region = properties.getProperty(SNOWFLAKE_REGION);
+        String cloudType = properties.getProperty(SNOWFLAKE_CLOUD_TYPE);
+        String organisation = properties.getProperty(SNOWFLAKE_ORGANIZATION_NAME);
 
-        String accountTypeName = extraUserDataSourceProperties.getProperty(SNOWFLAKE_ACCOUNT_TYPE_NAME);
+        String accountTypeName = properties.getProperty(SNOWFLAKE_ACCOUNT_TYPE_NAME);
         SnowflakeAccountType accountType = accountTypeName != null ? SnowflakeAccountType.valueOf(accountTypeName) : null;
 
 

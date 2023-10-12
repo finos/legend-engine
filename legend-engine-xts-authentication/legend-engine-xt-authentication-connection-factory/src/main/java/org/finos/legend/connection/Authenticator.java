@@ -17,30 +17,37 @@ package org.finos.legend.connection;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
 import java.util.Optional;
 
-public class Authenticator
+public class Authenticator<CRED extends Credential>
 {
     private final StoreInstance storeInstance;
+    private final AuthenticationMechanism authenticationMechanism;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final Class<? extends Credential> sourceCredentialType;
+    private final Class<? extends Credential> targetCredentialType;
     private final ImmutableList<CredentialBuilder> credentialBuilders;
     private final ConnectionBuilder connectionBuilder;
+    private final LegendEnvironment environment;
 
-    public Authenticator(StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder)
+    public Authenticator(StoreInstance storeInstance, AuthenticationMechanism authenticationMechanism, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, Class<? extends Credential> targetCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder, LegendEnvironment environment)
     {
         this.storeInstance = storeInstance;
+        this.authenticationMechanism = authenticationMechanism;
         this.authenticationConfiguration = authenticationConfiguration;
         this.sourceCredentialType = sourceCredentialType;
+        this.targetCredentialType = targetCredentialType;
         this.credentialBuilders = Lists.immutable.withAll(credentialBuilders);
         this.connectionBuilder = connectionBuilder;
+        this.environment = environment;
     }
 
-    public Credential makeCredential(Identity identity, LegendEnvironment environment) throws Exception
+    public CRED makeCredential(Identity identity) throws Exception
     {
         Credential credential = null;
         // no need to resolve the source credential if the flow starts with generic `Credential` node
@@ -58,14 +65,23 @@ public class Authenticator
         }
         for (CredentialBuilder credentialBuilder : this.credentialBuilders)
         {
-            credential = credentialBuilder.makeCredential(identity, this.authenticationConfiguration, credential, environment);
+            credential = credentialBuilder.makeCredential(identity, this.authenticationConfiguration, credential, this.environment);
         }
-        return credential;
+        if (!this.targetCredentialType.equals(credential.getClass()))
+        {
+            throw new RuntimeException(String.format("Generated credential type is expected to be '%s' (found: %s)", this.targetCredentialType.getSimpleName(), credential.getClass().getSimpleName()));
+        }
+        return (CRED) credential;
     }
 
-    public ConnectionBuilder getConnectionBuilder()
+    public AuthenticationMechanism getAuthenticationMechanism()
     {
-        return connectionBuilder;
+        return authenticationMechanism;
+    }
+
+    public AuthenticationConfiguration getAuthenticationConfiguration()
+    {
+        return authenticationConfiguration;
     }
 
     public StoreInstance getStoreInstance()
@@ -78,8 +94,19 @@ public class Authenticator
         return sourceCredentialType;
     }
 
+
+    public Class<? extends Credential> getTargetCredentialType()
+    {
+        return targetCredentialType;
+    }
+
     public ImmutableList<CredentialBuilder> getCredentialBuilders()
     {
         return credentialBuilders;
+    }
+
+    public ConnectionBuilder getConnectionBuilder()
+    {
+        return connectionBuilder;
     }
 }

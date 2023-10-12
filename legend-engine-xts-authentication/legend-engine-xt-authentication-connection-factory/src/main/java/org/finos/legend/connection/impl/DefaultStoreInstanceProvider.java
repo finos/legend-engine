@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.impl;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
+import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.connection.StoreInstanceProvider;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 public class DefaultStoreInstanceProvider implements StoreInstanceProvider
 {
@@ -71,18 +72,13 @@ public class DefaultStoreInstanceProvider implements StoreInstanceProvider
         {
             if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
             {
-                throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
+                throw new RuntimeException(String.format("Found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
             }
             this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
         }
 
         public DefaultStoreInstanceProvider build()
         {
-            for (ConnectionManager connectionManager : ServiceLoader.load(ConnectionManager.class))
-            {
-                connectionManager.initialize();
-            }
-
             return new DefaultStoreInstanceProvider(this.storeInstancesIndex);
         }
     }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.jdbc;
+package org.finos.legend.connection.protocol;
 
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 
@@ -27,5 +27,14 @@ public class StaticJDBCConnectionSpecification extends ConnectionSpecification
         this.host = host;
         this.port = port;
         this.databaseName = databaseName;
+    }
+
+    @Override
+    public String shortId()
+    {
+        return "StaticJDBC" +
+                "--host=" + host +
+                "--port=" + port +
+                "--databaseName=" + databaseName;
     }
 }

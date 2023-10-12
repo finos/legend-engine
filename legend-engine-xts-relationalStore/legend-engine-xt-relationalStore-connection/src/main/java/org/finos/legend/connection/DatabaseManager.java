@@ -15,8 +15,13 @@
 package org.finos.legend.connection;
 
 import java.util.List;
+import java.util.Properties;
 
-public interface ConnectionBuilderProvider
+public interface DatabaseManager
 {
-    List<ConnectionBuilder> getBuilders();
+    List<String> getIds();
+
+    String getDriver();
+
+    String buildURL(String host, int port, String databaseName, Properties properties);
 }

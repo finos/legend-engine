@@ -15,13 +15,14 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,8 +40,12 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_A()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X,
-                        TestAuthenticationMechanismType.Y
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build(),
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.Y)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -52,50 +57,44 @@ public class ConnectionFactoryTest
         Exception exception;
 
         // error: store not found
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "unknown", new AuthenticationConfiguration_X()));
         });
-        Assert.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
+        Assertions.assertEquals("Can't find store instance with identifier 'unknown'", exception.getMessage());
 
         // error: unsupported authentication mechanism
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
+        {
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", TestAuthenticationMechanismType.Z));
+        });
+        Assertions.assertEquals("Store 'test' does not support authentication mechanism 'Z'. Supported mechanism(s):\n" +
+                "- X\n" +
+                "- Y", exception.getMessage());
+
+        // error: authentication mechanism does not come with a default config generator
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
+        {
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", TestAuthenticationMechanismType.X));
+        });
+        Assertions.assertEquals("Can't auto-generate authentication configuration for store 'test' with authentication mechanism 'X'. Please provide a configuration of one of the following type(s):\n" +
+                "- AuthenticationConfiguration_X", exception.getMessage());
+
+        // error: unsupported authentication configuration
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
         });
-        Assert.assertEquals("Can't get authenticator: authentication mechanism 'Z' is not supported by store 'test'. Supported mechanism(s):\n- X (config: AuthenticationConfiguration_X)\n- Y (config: AuthenticationConfiguration_Y)", exception.getMessage());
+        Assertions.assertEquals("Store 'test' does not accept authentication configuration type 'AuthenticationConfiguration_Z'. Supported configuration type(s):\n" +
+                "- AuthenticationConfiguration_X\n" +
+                "- AuthenticationConfiguration_Y", exception.getMessage());
 
         // error: unresolvable authentication flow
-        exception = Assert.assertThrows(RuntimeException.class, () ->
+        exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
         });
-        Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism 'Y' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
-
-        // alternate error message when authentication mechanisms are not properly registered
-        TestEnv env2 = TestEnv.create(
-                Lists.mutable.with(),
-                Lists.mutable.with(),
-                Lists.mutable.empty(),
-                Lists.mutable.with(
-                        TestAuthenticationMechanismType.X,
-                        TestAuthenticationMechanismType.Y
-                )
-        ).newStore("test", Lists.mutable.empty());
-
-        // error: unsupported authentication mechanism
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env2.connectionFactory.getConnection(identity, env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Z()));
-        });
-        Assert.assertEquals("Can't get authenticator: authentication mechanism with configuration 'AuthenticationConfiguration_Z' is not supported by store 'test'. Supported mechanism(s):\n- X (config: AuthenticationConfiguration_X)\n- Y (config: AuthenticationConfiguration_Y)", exception.getMessage());
-
-        // error: unresolvable authentication flow
-        exception = Assert.assertThrows(RuntimeException.class, () ->
-        {
-            env2.connectionFactory.getConnection(identity, env2.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_Y()));
-        });
-        Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism with configuration 'AuthenticationConfiguration_Y' (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
     /**
@@ -114,8 +113,12 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_B()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X,
-                        TestAuthenticationMechanismType.Y
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build(),
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.Y)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -143,7 +146,9 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_B()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -170,7 +175,9 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_C()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -199,7 +206,9 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_C()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -225,9 +234,16 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_B()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X,
-                        TestAuthenticationMechanismType.Y,
-                        TestAuthenticationMechanismType.Z
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build(),
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.Y)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
+                                .withDefaultAuthenticationConfigurationGenerator(AuthenticationConfiguration_Y::new)
+                                .build(),
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.Z)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_Z.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -240,11 +256,14 @@ public class ConnectionFactoryTest
         ), ConnectionBuilder_B.class);
 
         // error: unresolvable authentication flow
-        Exception exception = Assert.assertThrows(RuntimeException.class, () ->
+        Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getAuthenticator(new Identity("test"), "test");
         });
-        Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using auto-generated authentication configuration. Try specifying an authentication mechanism by providing a configuration of one of the following types:\n- AuthenticationConfiguration_X (mechanism: X)\n- AuthenticationConfiguration_Z (mechanism: Z)", exception.getMessage());
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity. Try specifying an authentication mechanism or authentication configuration. Supported configuration type(s):\n" +
+                "- AuthenticationConfiguration_X (X)\n" +
+                "- AuthenticationConfiguration_Y (Y)\n" +
+                "- AuthenticationConfiguration_Z (Z)", exception.getMessage());
     }
 
     /**
@@ -261,7 +280,9 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_A()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -280,7 +301,9 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_A()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
@@ -305,23 +328,25 @@ public class ConnectionFactoryTest
                         new ConnectionBuilder_A()
                 ),
                 Lists.mutable.with(
-                        TestAuthenticationMechanismType.X
+                        new AuthenticationMechanismConfiguration.Builder(TestAuthenticationMechanismType.X)
+                                .withAuthenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
         ).newStore("test", Lists.mutable.empty());
 
         Identity identity = new Identity("test", new Credential_A());
-        Exception exception = Assert.assertThrows(RuntimeException.class, () ->
+        Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
             env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test", new AuthenticationConfiguration_X()));
         });
-        Assert.assertEquals("Can't get authenticator: no authentication flow for store 'test' can be resolved for the specified identity using authentication mechanism 'X' (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
+        Assertions.assertEquals("No authentication flow for store 'test' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_X, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
 
-    private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
+    private void assertAuthenticator(Identity identity, ConnectionFactory connectionFactory, Authenticator<?> authenticator, Class<? extends Credential> sourceCredentialType, List<String> credentialBuilders, Class<? extends ConnectionBuilder> connectionBuilderType) throws Exception
     {
-        Assert.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
-        Assert.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
-        Assert.assertArrayEquals(credentialBuilders.toArray(), authenticator.getCredentialBuilders().stream().map(builder -> String.format("%s->%s [%s]", builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName(), builder.getAuthenticationConfigurationType().getSimpleName())).toArray());
+        Assertions.assertEquals(sourceCredentialType, authenticator.getSourceCredentialType());
+        Assertions.assertEquals(connectionBuilderType, authenticator.getConnectionBuilder().getClass());
+        Assertions.assertArrayEquals(credentialBuilders.toArray(), authenticator.getCredentialBuilders().stream().map(builder -> String.format("%s->%s [%s]", builder.getInputCredentialType().getSimpleName(), builder.getOutputCredentialType().getSimpleName(), builder.getAuthenticationConfigurationType().getSimpleName())).toArray());
         connectionFactory.getConnection(identity, authenticator);
     }
 
@@ -331,14 +356,13 @@ public class ConnectionFactoryTest
         final InstrumentedStoreInstanceProvider storeInstanceProvider;
         final ConnectionFactory connectionFactory;
 
-        private TestEnv(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        private TestEnv(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
             this.environment = new LegendEnvironment.Builder()
                     .withStoreSupport(new StoreSupport.Builder()
                             .withIdentifier("test")
-                            .withAuthenticationMechanisms(supportedAuthenticationMechanisms)
+                            .withAuthenticationMechanismConfigurations(authenticationMechanismConfigurations)
                             .build())
-                    .withAuthenticationMechanisms(authenticationMechanisms)
                     .build();
             this.storeInstanceProvider = new InstrumentedStoreInstanceProvider();
             this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
@@ -347,12 +371,12 @@ public class ConnectionFactoryTest
                     .build();
         }
 
-        TestEnv newStore(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
+        TestEnv newStore(String identifier, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
             this.storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment)
                     .withIdentifier(identifier)
                     .withStoreSupportIdentifier("test")
-                    .withAuthenticationMechanisms(authenticationMechanisms)
+                    .withAuthenticationMechanismConfigurations(authenticationMechanismConfigurations)
                     .withConnectionSpecification(new TestConnectionSpecification())
                     .build());
             return this;
@@ -360,21 +384,12 @@ public class ConnectionFactoryTest
 
         static TestEnv create()
         {
-            return new TestEnv(Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty());
+            return new TestEnv(Lists.mutable.empty(), Lists.mutable.empty(), Lists.mutable.empty());
         }
 
-        static TestEnv create(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
+        static TestEnv create(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
-            return new TestEnv(credentialBuilders, connectionBuilders, authenticationMechanisms, supportedAuthenticationMechanisms);
-        }
-
-        static TestEnv create(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> supportedAuthenticationMechanisms)
-        {
-            return new TestEnv(credentialBuilders, connectionBuilders, Lists.mutable.with(
-                    TestAuthenticationMechanismType.X,
-                    TestAuthenticationMechanismType.Y,
-                    TestAuthenticationMechanismType.Z
-            ), supportedAuthenticationMechanisms);
+            return new TestEnv(credentialBuilders, connectionBuilders, authenticationMechanismConfigurations);
         }
     }
 
@@ -396,48 +411,36 @@ public class ConnectionFactoryTest
 
     private static class AuthenticationConfiguration_X extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class AuthenticationConfiguration_Y extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class AuthenticationConfiguration_Z extends AuthenticationConfiguration
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private enum TestAuthenticationMechanismType implements AuthenticationMechanism
     {
-        X
-                {
-                    @Override
-                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                    {
-                        return AuthenticationConfiguration_X.class;
-                    }
-                },
-        Y
-                {
-                    @Override
-                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                    {
-                        return AuthenticationConfiguration_Y.class;
-                    }
-
-                    @Override
-                    public AuthenticationConfiguration generateConfiguration()
-                    {
-                        return new AuthenticationConfiguration_Y();
-                    }
-                },
-        Z
-                {
-                    @Override
-                    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                    {
-                        return AuthenticationConfiguration_Z.class;
-                    }
-                };
+        X,
+        Y,
+        Z;
 
         @Override
         public String getLabel()
@@ -517,34 +520,65 @@ public class ConnectionFactoryTest
 
     // -------------------------- Connection -------------------------------
 
+    private static class TestConnectionManager implements ConnectionManager
+    {
+        @Override
+        public void initialize(LegendEnvironment environment)
+        {
+        }
+    }
+
     private static class TestConnectionSpecification extends ConnectionSpecification
     {
+        @Override
+        public String shortId()
+        {
+            return null;
+        }
     }
 
     private static class ConnectionBuilder_A extends ConnectionBuilder<Object, Credential_A, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_A credential) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_A> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 
     private static class ConnectionBuilder_B extends ConnectionBuilder<Object, Credential_B, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_B credential) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_B> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 
     private static class ConnectionBuilder_C extends ConnectionBuilder<Object, Credential_C, TestConnectionSpecification>
     {
         @Override
-        public Object getConnection(StoreInstance storeInstance, Credential_C credential) throws Exception
+        public Object getConnection(TestConnectionSpecification connectionSpecification, Authenticator<Credential_C> authenticator, Identity identity) throws Exception
         {
             return null;
+        }
+
+        @Override
+        public ConnectionManager getConnectionManager()
+        {
+            return new TestConnectionManager();
         }
     }
 }
