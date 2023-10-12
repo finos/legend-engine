@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
@@ -23,6 +24,9 @@ import org.finos.legend.engine.persistence.components.testcases.ingestmode.unite
 import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
+import java.util.Map;
+
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.maxDupsErrorCheckSql;
 
 public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDateTimeBasedTestCases
 {
@@ -34,11 +38,13 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     String rowsTerminated = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00.000000')))) as \"rowsTerminated\"";
 
     @Override
-    public void verifyUnitemporalSnapshotWithoutPartitionNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithoutPartitionNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
@@ -56,6 +62,45 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+        Assertions.assertTrue(deduplicationAndVersioningSql.isEmpty());
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalSnapshotWithoutPartitionFailOnDupsMaxVersion(GeneratorResult operations) {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
+                "SET sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
+                "WHERE (sink.\"batch_time_out\" = '9999-12-31 23:59:59') " +
+                "AND (NOT (EXISTS " +
+                "(SELECT * FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\"))))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_time_in\", \"batch_time_out\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
+                "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_out\" = '9999-12-31 23:59:59')))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithFilterDupsAndMaxVersion, deduplicationAndVersioningSql.get(1));
+
+        Assertions.assertEquals(AnsiTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -110,7 +155,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -140,7 +185,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     }
 
     @Override
-    public void verifyUnitemporalSnapshotWithPartitionFiltersNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

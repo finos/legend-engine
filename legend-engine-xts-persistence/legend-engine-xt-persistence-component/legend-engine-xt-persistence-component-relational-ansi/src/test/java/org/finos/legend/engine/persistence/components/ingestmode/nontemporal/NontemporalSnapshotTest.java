@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
-import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
 
 public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 {
@@ -103,8 +102,6 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00.000000' " +
                 "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage)";
 
-        String maxDupsErrorCheckSql = "SELECT MAX(stage.\"legend_persistence_count\") as \"MAX_DUPLICATES\" FROM " +
-                "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
         String maxDataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
                 "(SELECT COUNT(DISTINCT(\"amount\")) as \"legend_persistence_distinct_rows\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" " +
                 "as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";

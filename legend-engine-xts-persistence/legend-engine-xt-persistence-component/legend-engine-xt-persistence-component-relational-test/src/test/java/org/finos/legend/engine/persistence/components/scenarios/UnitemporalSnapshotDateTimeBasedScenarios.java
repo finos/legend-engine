@@ -16,7 +16,9 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
 import java.util.Arrays;
 
@@ -31,7 +33,7 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
     3) DataSplit: Enabled, Disabled
     4) partitionValuesByField: Enabled, Disabled
     5) Versioning: NoVersioning, MaxVersioning
-    5) Deduplication: AllowDups, FailOnDups, FilterDups
+    6) Deduplication: AllowDups, FailOnDups, FilterDups
 
     Valid Combinations:
     1) Without Partition, No Dedup No Versioning
@@ -52,9 +54,18 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__WITH_DATA_SPLITS()
+    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUPS_MAX_VERSION()
     {
-        return null;
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(TransactionDateTime.builder()
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .build();
+        return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     public TestScenario DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION()
