@@ -93,7 +93,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::omdbComm
     Title = $title, 
     Director = $director,
     MPAA = $MPAA, 
-    ReleaseDate = format('%t{yyyy-MM-dd hh:mm:ssa}', $releaseDate), 
+    ReleaseDate = format('%t{yyyy-MM-dd hh:mm:ss.SSSa}', $releaseDate), 
     ReleaseDateRaw = $releaseDate,
     Budget = $budget, 
     Revenue = $revenue, 
@@ -106,47 +106,47 @@ function meta::external::store::elasticsearch::executionTest::testCase::omdbComm
 {
   // at the moment,dates are hard to distinguish between StrictDate or DateTime, hence we are testing using DateTime for now
   let records = [
-    omdbCommonIndexRecord('Iron Man',                              'Jon Favreau',    'PG-13', %2008-05-02T00:00:00, 140, 585.8, 
+    omdbCommonIndexRecord('Iron Man',                              'Jon Favreau',    'PG-13', %2008-05-02T00:00:00.100, 140, 585.8, 
           'Tells the story of Tony Stark, a billionaire industrialist and genius inventor who is kidnapped and forced to build a devastating weapon',
           'Robert Downey Jr.'
           ),
-    omdbCommonIndexRecord('Iron Man 2',                            'Jon Favreau',    'PG-13', %2010-04-26T00:00:00, 170, 623.9, 
+    omdbCommonIndexRecord('Iron Man 2',                            'Jon Favreau',    'PG-13', %2010-04-26T00:00:00.200, 170, 623.9, 
           'With the world now aware of his identity as Iron Man, Tony Stark must contend with both his declining health and a vengeful mad man with ties to his father\'s legacy.',
           'Robert Downey Jr.'
           ),
-    omdbCommonIndexRecord('The Imitation Game',                    'Morten Tyldum',  'PG-13', %2014-08-29T00:00:00,  14, 233.5,
+    omdbCommonIndexRecord('The Imitation Game',                    'Morten Tyldum',  'PG-13', %2014-08-29T00:00:00.300,  14, 233.5,
           'In 1951, two policemen, Nock and Staehl, investigate the mathematician Alan Turing after an apparent break-in at his home',
           'Benedict Cumberbatch'
           ),
-    omdbCommonIndexRecord('The Bourne Identity',                   'Doug Liman',     'PG-13', %2002-06-06T00:00:00,  60, 214.0,
+    omdbCommonIndexRecord('The Bourne Identity',                   'Doug Liman',     'PG-13', %2002-06-06T00:00:00.400,  60, 214.0,
           'Jason Bourne, a man suffering from psychogenic amnesia attempting to discover his identity amidst a clandestine conspiracy within the CIA',
           'Matt Damon'
           ),
-    omdbCommonIndexRecord('American Gangster',                     'Ridley Scott',       'R', %2007-10-19T00:00:00, 100, 266.5,
+    omdbCommonIndexRecord('American Gangster',                     'Ridley Scott',       'R', %2007-10-19T00:00:00.500, 100, 266.5,
           [],
           'Denzel Washington'
           ),
-    omdbCommonIndexRecord('Sherlock Holmes: A Game of Shadows',    'Guy Ritchie',         [], %2011-12-16T00:00:00, 125, 543.8,
+    omdbCommonIndexRecord('Sherlock Holmes: A Game of Shadows',    'Guy Ritchie',         [], %2011-12-16T00:00:00.600, 125, 543.8,
           'Sherlock Holmes is investigating a seemingly unrelated series of crimes around Europe, believing them all connected to Professor Moriarty',
           'Robert Downey Jr.'
           ),
-    omdbCommonIndexRecord('Ghostbusters',                          'Ivan Reitman',      'PG', %1984-06-08T00:00:00,  25, 295.2,
+    omdbCommonIndexRecord('Ghostbusters',                          'Ivan Reitman',      'PG', %1984-06-08T00:00:00.700,  25, 295.2,
           'Three parapsychologists forced out of their university funding set up shop as a unique ghost removal service in New York City, attracting frightened yet skeptical customers.',
           'Bill Murray'
           ),
-    omdbCommonIndexRecord('The Hitchhiker\'s Guide to the Galaxy', 'Garth Jennings',      [], %2005-04-28T00:00:00,  45, 104.5,
+    omdbCommonIndexRecord('The Hitchhiker\'s Guide to the Galaxy', 'Garth Jennings',      [], %2005-04-28T00:00:00.800,  45, 104.5,
           'Mere seconds before the Earth is to be demolished by an alien construction crew, journeyman Arthur Dent is swept off the planet by his friend Ford Prefect, a researcher penning a new edition of "The Hitchhiker\'s Guide to the Galaxy."',
           'Martin Freeman'
           ),
-    omdbCommonIndexRecord('Inspector Gadget',                      'David Kellogg',       [], %1999-07-23T00:00:00,  75, 134.4,
+    omdbCommonIndexRecord('Inspector Gadget',                      'David Kellogg',       [], %1999-07-23T00:00:00.900,  75, 134.4,
           'A security guard\'s dreams come true when he is selected to be transformed into a cybernetic police officer.',
           'Don Adams'
           ),
-    omdbCommonIndexRecord('The Great Gatsby',                      'Baz Luhrmann',        [], %2013-05-01T00:00:00, 105, 353.6,
+    omdbCommonIndexRecord('The Great Gatsby',                      'Baz Luhrmann',        [], %2013-05-01T00:00:00.000, 105, 353.6,
           'The film follows the life and times of millionaire Jay Gatsby and his neighbor Nick Carraway, who recounts his encounter with Gatsby at the height of the Roaring Twenties on Long Island in New York.',
           'Leonardo DiCaprio'
           ),
-    omdbCommonIndexRecord('Garfield 2',                            'Tim Hill',            [], %2006-06-16T00:00:00,  60, 143.3,
+    omdbCommonIndexRecord('Garfield 2',                            'Tim Hill',            [], %2006-06-16T00:00:01.000,  60, 143.3,
           'Garfield follows Jon to England and receives the royal treatment after he is mistaken for the heir to a grand castle.',
           'Bill Murray'
           )
@@ -242,6 +242,8 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::run
 
 function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): TabularDataSet[1]
 {
+  // $f->printFunctionDefinition(' ')->println();
+
   let resultJson = meta::legend::execute(
       $f,
       $vars,
@@ -277,13 +279,13 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
       [ $expected.columns.name->joinStrings('[', ', ', ']'), $actual.columns.name->joinStrings('[', ', ', ']') ]
   );
 
-  // println($expected.rows.values);
-  // println($actual.rows.values);
-
   assertEquals($expected.rows->size(), $actual.rows->size(),       
       'Number of rows are different.  Expected  %d, got %d', 
       [ $expected.rows->size(), $actual.rows->size() ]
   );
+
+  // println($expected.rows.values);
+  // println($actual.rows.values);
 
   let zipped = if ($description->contains('sort('),
     | $expected.rows->map(r | $expected.columns.name->map(c | $r.get($c)))
@@ -292,13 +294,17 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
         ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns.name->map(c | $r.get($c)))) 
   );
 
+  //  $zipped->map(p | $p.first->toString() + ' == ' + $p.second->toString())->println();
+
   $zipped->forAll(x | assert(comparePrimitives($x.first, $x.second)));
 }
 
 function <<access.private>> meta::external::store::elasticsearch::executionTest::testCase::comparePrimitives(firstInstance: Any[1], secondInstance: Any[1]): Boolean[1]
 {
    $firstInstance->match([ n: Number[1] | assertEqWithinTolerance($n, $secondInstance->cast(@Number), 0.0001),
-                           a: Any[1]    | assertEquals($a, $secondInstance)]);
+                           e: Enum[1]   | assertEquals($e, extractEnumValue($e->type()->cast(@Enumeration<Any>), $secondInstance->cast(@String))),
+                           a: Any[1]    | assertEquals($a, $secondInstance)
+                        ]);
 }
 
 function meta::external::store::elasticsearch::executionTest::testCase::asZeroOne<T>(var: T[0..1]): T[0..1]

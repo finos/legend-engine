@@ -74,7 +74,9 @@ public class ElasticsearchCommands
         ElasticsearchContainer container = new ElasticsearchContainer(image);
 
         long start = System.currentTimeMillis();
-        container.withPassword(getPassword()).start();
+        container.withPassword(getPassword())
+                .withEnv("xpack.security.enabled", "false")
+                .start();
         LOGGER.info("ES Test cluster for version {} running on {}.  Took {}ms to start.", imageTag, container.getHttpHostAddress(), System.currentTimeMillis() - start);
         return container;
     }
@@ -120,6 +122,7 @@ public class ElasticsearchCommands
             switch (imageTag.charAt(0))
             {
                 case '7':
+                case '8':
                     return requestV7(url, json);
                 default:
                     throw new RuntimeException("Version not supported yet: " + imageTag);

@@ -500,60 +500,19 @@ function meta::pure::router::routing::processColumnSpecification(v:ValueSpecific
 function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
    let routedFe  = ^$state(value=$fe)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
-   let params    = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(p|$p->byPassRouterInfo()->match([r:FunctionRoutedValueSpecification[1]|$r.originalFunction;, v:ValueSpecification[1]|$v]))->cast(@ValueSpecification);
-   let newParams = $params->map(p|if($p->instanceOf(SimpleFunctionExpression),| $p->processColumnSpecification($state, $executionContext, $vars, $inScopeVars, $extensions, $debug).value->cast(@ValueSpecification),| $p));
-   let nfe       = ^$fe(parametersValues=$newParams); 
-   
-   // In plan generation flow, not always all variables will be present in inScopeVars as they could be function params (known only at runtime)
-   // Hence, reactivating with empty lists in such situations (as the expression of lambda is not expected to be reactivated)
-   $nfe->reactivateWithDummyValuesForOpenVariables($inScopeVars)->evaluateAndDeactivate();
+   let parametersValues = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(x | $x->byPassRouterInfo()->match([
+      i: InstanceValue[1] | $i.values->match([
+        // workaround a compile execution behavior that check for open variables and cause expressions to fail reactivation (does not happen on interpreted)
+        l: LambdaFunction<Any>[1] | ^$i(values = ^$l(openVariables = [])),
+        a: Any[*] | $i
+      ]),
+      a: ValueSpecification[*] | $a
+    ]))->cast(@ValueSpecification);
+
+   let nfe = ^$fe(parametersValues = $parametersValues);
+   let colSpec = $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>)->toOne();
 }
 
-function  meta::pure::router::routing::reactivateWithDummyValuesForOpenVariables(vs:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1]) : Any[*]
-{
-   let lambdas = $vs->extractLambdasFromVS();
-   let newInScopeVars = $lambdas->fold( {l, vars | $vars->meta::pure::router::routing::addDummyValuesforOpenVariables($l)}, $inScopeVars) ;
-   $vs->reactivate($newInScopeVars);    
-} 
-
-function  meta::pure::router::routing::addDummyValuesforOpenVariables( inScopeVars : Map<String, List<Any>>[1], l :LambdaFunction<Any>[1] ) : Map<String, List<Any>>[1]
-{
-  $l.openVariables->fold({v, vars| if($vars->get($v)->isEmpty(), |  $vars-> meta::pure::functions::collection::put($v, list([])); , | $vars) }, $inScopeVars);
-}
-
-function meta::pure::router::routing::extractLambdasFromAny(a:Any[1]): LambdaFunction<Any>[*]
-{
-  $a->match([
-      f:Function<Any>[1]          | $f->extractLambdasFromFunction();,
-      vs: ValueSpecification[1]   | $vs->extractLambdasFromVS();,
-      other: Any[1]               | []
-  ]);
-}
-
-function  meta::pure::router::routing::extractLambdasFromVS(vs:ValueSpecification[1]):LambdaFunction<Any>[*]
-{
-  $vs->match([
-         e:ExtendedRoutedValueSpecification[1]  | $e.value->evaluateAndDeactivate()->extractLambdasFromVS() ,
-         f:FunctionRoutedValueSpecification[1]  | $f.value->evaluateAndDeactivate()->extractLambdasFromVS(),
-         r:NoSetRoutedValueSpecification[1]     | $r.value->evaluateAndDeactivate()->extractLambdasFromVS(),
-         fe:FunctionExpression[1]               | $fe.func->evaluateAndDeactivate()->extractLambdasFromFunction()->concatenate($fe.parametersValues->evaluateAndDeactivate()->map(p| $p->extractLambdasFromVS())),
-         i:InstanceValue[1]                     | $i.values->evaluateAndDeactivate()->map(v|$v->extractLambdasFromAny()),
-         va:VariableExpression[1]               | [],
-         vs:ValueSpecification[1]               | []
-      ]);
-}
-
-function  meta::pure::router::routing::extractLambdasFromFunction(f:Function<Any>[1]): LambdaFunction<Any>[*]
-{
-  $f->match([
-    p:Property<Nil,Any|*>[1]                         | [],
-    nf:NativeFunction<Any>[1]                        | [],
-    l: LambdaFunction<Any>[1]                        | $l,
-    qp:QualifiedProperty<Any>[1]                     | $qp.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->extractLambdasFromVS());,
-    cfd:ConcreteFunctionDefinition<Any>[1]           | $cfd.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->extractLambdasFromVS());,
-    f:Function<Any>[1]                               | []
-  ]);
-}
 
 function meta::pure::router::routing::processAggregationFunctionExpression(aggFuncExpr:FunctionExpression[1], routed:ExtendedRoutedValueSpecification[*], v:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
@@ -679,6 +638,9 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,
     groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_,
     distinct_TabularDataSet_1__TabularDataSet_1_,
+    month_Date_1__Month_1_,
+    quarter_Date_1__Quarter_1_,
+    dayOfWeek_Date_1__DayOfWeek_1_,
     mostRecentDayOfWeek_DayOfWeek_1__Date_1_,
     mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_,
     previousDayOfWeek_DayOfWeek_1__Date_1_,
