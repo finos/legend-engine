@@ -25,6 +25,8 @@ import java.sql.SQLException;
 
 public class RelationalResultToPureTDSToObjectSerializer extends RelationalResultToPureFormatSerializer
 {
+    private final ValueTransformer valueTransformer = new ValueTransformer();
+
     public RelationalResultToPureTDSToObjectSerializer(RelationalResult relationalResult)
     {
         super(relationalResult, b_array_open, b_array_close);
@@ -45,13 +47,13 @@ public class RelationalResultToPureTDSToObjectSerializer extends RelationalResul
         {
             objectMapper.writeValue(outputStream, ((TDSBuilder) relationalResult.builder).columns.get(i - 1).name);
             outputStream.write(b_colon);
-            objectMapper.writeValue(outputStream, transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
+            objectMapper.writeValue(outputStream, valueTransformer.transformRelationalValue(relationalResult.getValue(i), transformers.get(i - 1)));
             outputStream.write(b_comma);
         }
 
         objectMapper.writeValue(outputStream, ((TDSBuilder) relationalResult.builder).columns.get(relationalResult.columnCount - 1).name);
         outputStream.write(b_colon);
-        objectMapper.writeValue(outputStream, transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount)));
+        objectMapper.writeValue(outputStream, valueTransformer.transformRelationalValue(relationalResult.getValue(relationalResult.columnCount), transformers.get(relationalResult.columnCount - 1)));
 
         outputStream.write(object_end);
     }
