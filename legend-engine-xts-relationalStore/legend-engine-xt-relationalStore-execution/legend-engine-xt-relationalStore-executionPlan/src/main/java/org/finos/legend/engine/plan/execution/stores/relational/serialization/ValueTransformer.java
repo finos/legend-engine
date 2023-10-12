@@ -30,7 +30,7 @@ class ValueTransformer
 
     }
 
-    protected Object transformWrappedRelationalValue(Object relationalValue, Function<Object, ?> transformer)
+    protected String transformWrappedRelationalValueForJSON(Object relationalValue, Function<Object, String> transformer)
     {
         if (relationalValue instanceof Timestamp)
         {
