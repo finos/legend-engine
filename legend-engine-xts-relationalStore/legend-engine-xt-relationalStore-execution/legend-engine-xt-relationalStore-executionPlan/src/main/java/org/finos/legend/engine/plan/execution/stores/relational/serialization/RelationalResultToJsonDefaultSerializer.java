@@ -131,10 +131,10 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         {
             Object value = relationalResult.getValue(i);
 
-            outputStream.write(((String) transformer.transformWrappedRelationalValue(value, relationalResult.getTransformers().get(i - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
+            outputStream.write((transformer.transformWrappedRelationalValueForJSON(value, relationalResult.getTransformers().get(i - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
             outputStream.write(b_comma);
         }
-        outputStream.write(((String) transformer.transformWrappedRelationalValue(relationalResult.getValue(relationalResult.columnCount), relationalResult.getTransformers().get(relationalResult.columnCount - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
+        outputStream.write((transformer.transformWrappedRelationalValueForJSON(relationalResult.getValue(relationalResult.columnCount), relationalResult.getTransformers().get(relationalResult.columnCount - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
         outputStream.write(b_end);
     }
 

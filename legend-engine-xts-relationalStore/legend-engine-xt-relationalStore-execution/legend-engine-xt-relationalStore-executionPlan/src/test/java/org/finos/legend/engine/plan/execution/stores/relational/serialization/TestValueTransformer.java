@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
+import java.util.function.Function;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,14 +31,14 @@ public class TestValueTransformer
         Date date = new Date(1696532242123L);
 
 
-        org.eclipse.collections.api.block.function.Function<Object, Object> transform = value -> value + "Transformed";
+        Function<Object, String> transform = value -> value + "Transformed";
         Assert.assertEquals("2023-10-05T18:57:22.123000000+0000", valueTransformer.transformRelationalValue(time, transform));
         Assert.assertEquals("2023-10-05", valueTransformer.transformRelationalValue(date, transform));
         Assert.assertEquals("otherTransformed", valueTransformer.transformRelationalValue("other", transform));
 
-        Assert.assertEquals("\"2023-10-05T18:57:22.123000000+0000\"", valueTransformer.transformWrappedRelationalValue(time, transform));
-        Assert.assertEquals("\"2023-10-05\"", valueTransformer.transformWrappedRelationalValue(date, transform));
-        Assert.assertEquals("otherTransformed", valueTransformer.transformWrappedRelationalValue("other", transform));
+        Assert.assertEquals("\"2023-10-05T18:57:22.123000000+0000\"", valueTransformer.transformWrappedRelationalValueForJSON(time, transform));
+        Assert.assertEquals("\"2023-10-05\"", valueTransformer.transformWrappedRelationalValueForJSON(date, transform));
+        Assert.assertEquals("otherTransformed", valueTransformer.transformWrappedRelationalValueForJSON("other", transform));
 
     }
 
