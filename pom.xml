@@ -184,6 +184,7 @@
         <log4j.version>1.2.17</log4j.version>
         <logback-contrib.version>0.1.5</logback-contrib.version>
         <logback.version>1.2.3</logback.version>
+        <minio.version>8.5.5</minio.version>
         <mockito-core.version>4.4.0</mockito-core.version>
         <mongodb.version>3.12.8</mongodb.version>
         <opencsv.version>4.6</opencsv.version>
@@ -2921,6 +2922,17 @@
                 <groupId>com.github.docker-java</groupId>
                 <artifactId>docker-java-api</artifactId>
                 <version>3.3.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jetbrains</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- Test Containers -->
 

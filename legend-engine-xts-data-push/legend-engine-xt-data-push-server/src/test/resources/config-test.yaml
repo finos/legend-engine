@@ -43,8 +43,13 @@ logging:
     - type: console
       logFormat: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%thread] %c - %m%n"
 
+pac4j:
+  callbackPrefix: /api/pac4j
+  clients:
+    - org.pac4j.core.client.direct.AnonymousClient: {}
+
 swagger:
   resourcePackage: org.finos.legend.engine.datapush.server.resources
-  title: Legend Data Push
+  title: Legend Data Push (Test)
   version: local-snapshot
   schemes: []

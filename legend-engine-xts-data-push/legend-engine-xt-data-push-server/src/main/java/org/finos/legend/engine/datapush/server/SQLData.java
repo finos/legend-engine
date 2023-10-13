@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.engine.datapush.server;
 
 import java.util.List;
 
-public interface StoreInstanceProvider
+public class SQLData extends Data
 {
-    StoreInstance lookup(String identifier);
-
-    List<StoreInstance> getAll();
+    public List<String> statements;
 }

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.engine.datapush.server;
+
+import org.finos.legend.connection.StoreInstance;
 
 import java.util.List;
 
-public interface StoreInstanceProvider
+public class StoreCatalog
 {
-    StoreInstance lookup(String identifier);
-
-    List<StoreInstance> getAll();
+    public List<StoreInstance> stores;
 }

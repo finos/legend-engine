@@ -14,6 +14,13 @@
 
 package org.finos.legend.engine.datapush.server;
 
-public class ConnectionFactoryConfiguration
+import org.finos.legend.engine.shared.core.identity.Identity;
+
+import java.net.URISyntaxException;
+
+public interface DataStager
 {
+    String write(Identity identity, Data data);
+
+    Data read(Identity identity, String stagingRef);
 }
