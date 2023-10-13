@@ -448,7 +448,7 @@ public class AnsiTestArtifacts
 
     public static String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
     public static String expectedTempStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
-
+    public static String expectedTempStagingCleanupQueryInUpperCase = "DELETE FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage";
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\" CASCADE";
 
     public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata " +
@@ -504,6 +504,22 @@ public class AnsiTestArtifacts
         "\"mydb\".\"staging\" as stage GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\") as stage) as stage " +
         "WHERE stage.\"legend_persistence_rank\" = 1)";
 
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+            "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",DENSE_RANK() " +
+            "OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" DESC) as \"legend_persistence_rank\" " +
+            "FROM \"mydb\".\"staging\" as stage) as stage WHERE stage.\"legend_persistence_rank\" = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO " +
+            "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
+            "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"LEGEND_PERSISTENCE_COUNT\") " +
+            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"LEGEND_PERSISTENCE_COUNT\" as \"LEGEND_PERSISTENCE_COUNT\" FROM " +
+            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"LEGEND_PERSISTENCE_COUNT\" as \"LEGEND_PERSISTENCE_COUNT\",DENSE_RANK() " +
+            "OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"BIZ_DATE\" DESC) as \"LEGEND_PERSISTENCE_RANK\" " +
+            "FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",COUNT(*) as \"LEGEND_PERSISTENCE_COUNT\" FROM \"MYDB\".\"STAGING\" as stage " +
+            "GROUP BY stage.\"ID\", stage.\"NAME\", stage.\"AMOUNT\", stage.\"BIZ_DATE\", stage.\"DIGEST\") as stage) as stage WHERE stage.\"LEGEND_PERSISTENCE_RANK\" = 1)";
+
     public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
         "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"legend_persistence_count\", \"data_split\") " +
         "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" ASC) as \"data_split\" " +
@@ -516,5 +532,10 @@ public class AnsiTestArtifacts
     public static String dataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
         "(SELECT COUNT(DISTINCT(\"digest\")) as \"legend_persistence_distinct_rows\" FROM " +
         "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
+
+    public static String dataErrorCheckSqlUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" " +
+            "FROM (SELECT COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_DISTINCT_ROWS\" FROM " +
+            "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\") as stage";
+
 
 }

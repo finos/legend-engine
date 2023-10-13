@@ -16,8 +16,11 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
 import java.util.Arrays;
 
@@ -36,9 +39,9 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
 
     Valid Combinations:
     1) Without Partition, No Dedup No Versioning
-    2) Without Partition, MaxVersioning, AllowDups
+    2) Without Partition, MaxVersioning, Allow Dups
+    2) Without Partition, MaxVersioning, Filter Dups
     3) With Partition, No Dedup No Versioning
-    4) With Partition, MaxVersioning, AllowDups
     5) With Partition Filter, No Dedup No Versioning
     */
 
@@ -57,9 +60,38 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__WITH_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_ALLOW_DUPS()
     {
-        return null;
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .deduplicationStrategy(AllowDuplicates.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
+    }
+
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_FILTER_DUPS()
+    {
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").build())
+                .emptyDatasetHandling(DeleteTargetData.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION()
@@ -76,12 +108,6 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
-
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__WITH_DATA_SPLITS()
-    {
-        return null;
-    }
-
 
     public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION()
     {
