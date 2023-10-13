@@ -41,7 +41,6 @@ import org.finos.legend.authentication.intermediationrule.impl.EncryptedPrivateK
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-<<<<<<< HEAD
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
