@@ -41,6 +41,12 @@ public class DefaultStoreInstanceProvider implements StoreInstanceProvider
         return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
     }
 
+    @Override
+    public List<StoreInstance> getAll()
+    {
+        return Lists.mutable.withAll(storeInstancesIndex.valuesView());
+    }
+
     public static class Builder
     {
         private final Map<String, StoreInstance> storeInstancesIndex = new HashMap<>();

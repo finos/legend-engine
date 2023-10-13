@@ -14,10 +14,12 @@
 
 package org.finos.legend.connection.impl;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreInstanceProvider;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,5 +43,11 @@ public class InstrumentedStoreInstanceProvider implements StoreInstanceProvider
     public StoreInstance lookup(String identifier)
     {
         return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
+    }
+
+    @Override
+    public List<StoreInstance> getAll()
+    {
+        return Lists.mutable.withAll(storeInstancesIndex.values());
     }
 }

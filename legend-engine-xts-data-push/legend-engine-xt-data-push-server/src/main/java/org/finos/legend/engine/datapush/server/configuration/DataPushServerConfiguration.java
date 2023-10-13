@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server.config;
+package org.finos.legend.engine.datapush.server.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.datapush.server.ConnectionFactoryConfiguration;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 
 public class DataPushServerConfiguration extends BaseServerConfiguration

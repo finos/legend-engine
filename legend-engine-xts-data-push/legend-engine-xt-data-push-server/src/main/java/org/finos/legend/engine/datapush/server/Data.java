@@ -12,13 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.engine.datapush.server;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public interface StoreInstanceProvider
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CSVData.class, name = "csv"),
+        @JsonSubTypes.Type(value = SQLData.class, name = "sql")
+})
+public class Data
 {
-    StoreInstance lookup(String identifier);
-
-    List<StoreInstance> getAll();
+    // TODO: @akphi - this probably should include the store-instance
 }

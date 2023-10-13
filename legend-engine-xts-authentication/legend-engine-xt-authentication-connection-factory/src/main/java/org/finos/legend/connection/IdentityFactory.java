@@ -41,11 +41,11 @@ public class IdentityFactory
         // TODO: @akphi - should we restrict here that we can only either specify the subject/profiles?
         if (identitySpecification.getSubject() != null)
         {
-            credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
+            return DEFAULT.makeIdentity(identitySpecification.getSubject());
         }
         if (!identitySpecification.getProfiles().isEmpty())
         {
-            credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
+            return DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles()));
         }
         if (credentials.isEmpty())
         {
