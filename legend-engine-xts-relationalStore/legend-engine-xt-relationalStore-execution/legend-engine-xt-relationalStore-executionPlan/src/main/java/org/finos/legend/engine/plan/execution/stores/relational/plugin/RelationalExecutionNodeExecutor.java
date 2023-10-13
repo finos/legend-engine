@@ -66,7 +66,6 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
@@ -130,7 +129,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
@@ -894,7 +892,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
             {
-                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone, threadExecutionState, profiles);
+                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, threadExecutionState, profiles);
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
@@ -930,9 +928,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         }
     }
 
-    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    static Function<Object, String> getNormalizer(String quoteCharacterReplacement, String databaseTimeZone)
     {
-        final Function<Object, String> normalizer = v ->
+        return v ->
         {
             if (v == null)
             {
@@ -942,8 +940,21 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
+            if (v instanceof String)
+            {
+                if (quoteCharacterReplacement != null)
+                {
+                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
+                }
+                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            }
             return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
         };
+    }
+
+    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    {
+        final Function<Object, String> normalizer = getNormalizer(quoteCharacterReplacement, databaseTimeZone);
 
         Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
         while (rowBatchIterator.hasNext())
@@ -1898,7 +1909,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
-                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, databaseTimeZone, this.executionState, this.profiles);
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {
