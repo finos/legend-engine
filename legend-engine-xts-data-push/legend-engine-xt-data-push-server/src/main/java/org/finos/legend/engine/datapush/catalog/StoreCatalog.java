@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server;
+package org.finos.legend.engine.datapush.catalog;
 
-public class CSVData extends Data
+import org.finos.legend.connection.StoreInstance;
+
+import java.util.List;
+
+public class StoreCatalog
 {
-    public String value;
+    public List<StoreInstance> stores;
 }

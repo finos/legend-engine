@@ -18,61 +18,55 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.finos.legend.connection.*;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.datapush.data.Data;
 import org.finos.legend.engine.datapush.DataPusher;
-import org.finos.legend.engine.datapush.DataPusherProvider;
-import org.finos.legend.engine.datapush.data.CSVData;
+import org.finos.legend.engine.datapush.DataStager;
 import org.finos.legend.engine.server.support.server.resources.BaseResource;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/data-push")
-@Api("Data Push")
+@Path("/debug")
+@Api("Debug")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class DataPushResource extends BaseResource
+public class DebugResource extends BaseResource
 {
     private final LegendEnvironment environment;
     private final IdentityFactory identityFactory;
     private final StoreInstanceProvider storeInstanceProvider;
     private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
     private final ConnectionFactory connectionFactory;
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataPushResource.class);
-    private final DataPusherProvider dataPusherProvider;
+    private final DataStager dataStager;
+    private final DataPusher dataPusher;
 
-    public DataPushResource(LegendEnvironment environment, IdentityFactory identityFactory,
-                            StoreInstanceProvider storeInstanceProvider,
-                            AuthenticationConfigurationProvider authenticationConfigurationProvider,
-                            ConnectionFactory connectionFactory,
-                            DataPusherProvider dataPusherProvider
-                            )
+    public DebugResource(LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataStager dataStager, DataPusher dataPusher)
     {
         this.environment = environment;
         this.identityFactory = identityFactory;
         this.storeInstanceProvider = storeInstanceProvider;
         this.authenticationConfigurationProvider = authenticationConfigurationProvider;
         this.connectionFactory = connectionFactory;
-        this.dataPusherProvider = dataPusherProvider;
+        this.dataStager = dataStager;
+        this.dataPusher = dataPusher;
     }
 
-    @Path("/push/{connectionRef}/{dataRef}")
+    @Path("/getStagedData")
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("DEBUG: Get staged data")
     @Consumes(MediaType.TEXT_PLAIN)
-    @ApiOperation("Push data")
-    public Response pushData(
-            @PathParam("connectionRef") String connectionRef,
-            @PathParam("dataRef") String dataRef,
-            String rawData,
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response stageData(
+            String stagingRef,
             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
     {
@@ -80,33 +74,21 @@ public class DataPushResource extends BaseResource
                 new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
         );
 
-        CSVData csvData = new CSVData();
-        csvData.name = dataRef;
-        csvData.value = rawData;
-
         return executeWithLogging(
-                "pushing data to connection " + connectionRef,
-                () ->
-                {
-                    this.pushCSVData(identity, connectionRef, csvData);
-                    return Response.noContent().build();
-                }
+                "getting staged data\"",
+                () -> Response.ok().entity(this.getStagedData(identity, stagingRef)).build()
         );
     }
 
-    private void pushCSVData(Identity identity, String connectionInstanceRef, CSVData csvData)
+    private Data getStagedData(Identity identity, String stagingRef)
     {
         try
         {
-            StoreInstance connectionInstance = this.storeInstanceProvider.lookup(connectionInstanceRef);
-            AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
-            DataPusher dataPusher = this.dataPusherProvider.getDataPusher(connectionInstance);
-            dataPusher.configure(this.connectionFactory);
-            dataPusher.writeCSV(identity, connectionInstance, authenticationConfiguration, csvData);
+            // TODO: @akphi - do we need to check for the identity here?
+            return this.dataStager.read(identity, stagingRef);
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

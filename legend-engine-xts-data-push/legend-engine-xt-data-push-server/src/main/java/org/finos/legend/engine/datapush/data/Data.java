@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server;
+package org.finos.legend.engine.datapush.data;
 
-import org.finos.legend.engine.shared.core.identity.Identity;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.net.URISyntaxException;
-
-public interface DataStager
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CSVData.class, name = "csv"),
+})
+public class Data
 {
-    String write(Identity identity, Data data);
-
-    Data read(Identity identity, String stagingRef);
+    // TODO: @akphi - this probably should include the store-instance
 }

@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server;
+package org.finos.legend.engine.datapush;
 
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.datapush.data.CSVData;
+import org.finos.legend.engine.datapush.data.Data;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 public abstract class DataPusher
 {
-    protected final ConnectionFactory connectionFactory;
-
-    public DataPusher(ConnectionFactory connectionFactory)
+    protected ConnectionFactory connectionFactory;
+    public void configure(ConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
     }
 
-    public abstract void write(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration, Data data) throws Exception;
+    public abstract void writeCSV(Identity identity, StoreInstance connectionInstance, AuthenticationConfiguration authenticationConfiguration, CSVData csvData) throws Exception;
 }

@@ -17,15 +17,10 @@ package org.finos.legend.engine.datapush.server.resources;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.finos.legend.connection.AuthenticationConfigurationProvider;
-import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.engine.datapush.server.DataPusher;
-import org.finos.legend.engine.datapush.server.DataStager;
-import org.finos.legend.engine.datapush.server.StoreCatalog;
+import org.finos.legend.engine.datapush.catalog.StoreCatalog;
 import org.finos.legend.engine.server.support.server.resources.BaseResource;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -62,10 +57,11 @@ public class RegistryResource extends BaseResource
             @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
     {
-        return executeWithLogging(
+        return null;
+     /*   return executeWithLogging(
                 "fetching store catalog\"",
                 () -> Response.ok().entity(this.getStores()).build()
-        );
+        );*/
     }
 
     @Path("/store/{storeInstanceRef}")

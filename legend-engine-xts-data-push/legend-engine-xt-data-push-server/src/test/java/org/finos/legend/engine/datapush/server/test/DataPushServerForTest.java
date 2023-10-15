@@ -32,8 +32,8 @@ import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.datapush.server.DataPushServer;
-import org.finos.legend.engine.datapush.server.DataPusher;
-import org.finos.legend.engine.datapush.server.DataStager;
+import org.finos.legend.engine.datapush.DataPusher;
+import org.finos.legend.engine.datapush.DataStager;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.server.support.server.BaseServer;
 
