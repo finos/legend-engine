@@ -341,19 +341,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::convertToDateH2(params:String[*]):String[1]
 {
-
       assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
       let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| let normalizedFormat = $params->at(1)->normalizeH2DateFormat();
                                                                      assert(dateFormatsH2()->contains($normalizedFormat->replace('\'', '')), $normalizedFormat +' not supported ');
                                                                      $normalizedFormat;
                                                                      );
+      let toConvert = if ( $params->size() == 1, |'substring(' + $params->at(0) + ', 0, 10)', |$params->at(0));
+
       // FIXME: we currently allow MMMyyyy as a dateformat which requires the following hack similar to IQ
       if($dateFormat == '\'MMMyyyy\'',
       | 'cast( parseDateTime(concat(\'01\', %s), \'%s\') as date)'->format([
-          $params->at(0), 
+          $toConvert,
           joinStrings(['dd', $dateFormat->replace('\'', '')])
         ]),
-      | 'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)'
+      | 'cast( parseDateTime(%s,%s) as date)'->format([$toConvert, $dateFormat])
       );
       
 }
