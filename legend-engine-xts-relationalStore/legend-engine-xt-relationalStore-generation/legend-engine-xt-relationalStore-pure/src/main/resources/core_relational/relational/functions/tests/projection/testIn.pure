@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
@@ -186,7 +187,11 @@ function <<test.Test>> meta::relational::tests::projection::filter::in::testInWi
    assertSize($result.values.rows, 1);
    println($result.values.rows.values);
    assertSameElements([false, '4'], $result.values.rows.values);
-   assertEquals('select "root".ID as "id", case when "root".active = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', $result->sqlRemoveFormatting());
+   assertEqualsH2Compatible(
+    'select "root".ID as "id", case when "root".active = \'Y\' then \'true\' else \'false\' end as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', 
+    'select "root".ID as "id", cast(case when "root".active = \'Y\' then \'true\' else \'false\' end as boolean) as "active" from interactionTable as "root" where (case when "root".active = \'Y\' then \'true\' else \'false\' end in (\'false\', \'something\') and "root".ID = 4)', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testQualifierWithInThroughJoin():Boolean[1]

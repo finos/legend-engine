@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -207,8 +208,11 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDateLiteral(
    assertEquals('Peter|2016-08-10,John|2016-08-10,John|2016-08-10,Anthony|2016-08-10,Fabrice|2016-08-10,Oliver|2016-08-10,David|2016-08-10',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
    
-   assertEquals('select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+   assertEqualsH2Compatible(
+    'select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"', 
+    'select "root".FIRSTNAME as "firstName", DATE\'2016-08-10\' as "dateLiteral" from personTable as "root"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNoopFunctions():Boolean[1]
@@ -444,5 +448,5 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendsWithI
       simpleRelationalMapping, 
       testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", \'2021-01-01\' as "dt", ("root".AGE is not null and "root".AGE > 50) as "ageGreaterThan50", "root".FIRSTNAME in (\'Peter\') as "stringExtends1", "root".FIRSTNAME in (\'Peter\', \'John\') as "stringExtends2", "root".AGE in (22, 23) as "numberExtends", \'2021-01-01\' in (\'2021-01-01\', \'2021-01-02\') as "dateExtends", ("root".AGE is not null and "root".AGE > 50) in (true, false) as "booleanExtends" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", DATE\'2021-01-01\' as "dt", ("root".AGE is not null and "root".AGE > 50) as "ageGreaterThan50", "root".FIRSTNAME in (\'Peter\') as "stringExtends1", "root".FIRSTNAME in (\'Peter\', \'John\') as "stringExtends2", "root".AGE in (22, 23) as "numberExtends", DATE\'2021-01-01\' in (DATE\'2021-01-01\', DATE\'2021-01-02\') as "dateExtends", ("root".AGE is not null and "root".AGE > 50) in (true, false) as "booleanExtends" from personTable as "root"', $result->sqlRemoveFormatting());
 }

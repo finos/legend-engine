@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::sqlstring::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
@@ -247,7 +248,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sin::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSinResult  > 0.9)->project([s | $s.floatSinResult], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.9738476308781951], $result.values->at(0).rows.values);
-    assertEquals('select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > 0.9',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > 0.9',
+      'select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > CAST(0.9 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::cos::testProject():Boolean[1]
@@ -331,7 +336,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan2::tes
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATan2Result  > 0.8)->project([s | $s.floatATan2Result], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8329812666744317], $result.values->at(0).rows.values);
-    assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > 0.8',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > 0.8',
+      'select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > CAST(0.8 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sqrt::testProject():Boolean[1]
@@ -535,7 +544,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::pow::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.powerResult < 1.4)->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.3310000000000004], $result.values->at(0).rows.values);
-    assertEquals('select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < 1.4',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < 1.4',
+      'select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < CAST(1.4 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::exp::testProject():Boolean[1]
@@ -563,7 +576,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::log::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.logResult < 0.1)->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.09531017980432493], $result.values->at(0).rows.values);
-    assertEquals('select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < 0.1',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < 0.1',
+      'select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < CAST(0.1 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::testProject():Boolean[1]

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::query::filter::equal::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
@@ -142,7 +143,11 @@ function <<test.Test>> meta::relational::tests::query::filter::greaterThan::test
    let result = execute(|Account.all()->filter(a|$a.createDate > %2013-12-01), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertSameElements(%2013-12-02, $result.values->at(0).createDate);
-   assertEquals('select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where "root".createDate > \'2013-12-01\'', $result->sqlRemoveFormatting());
+   assertEqualsH2Compatible(
+    'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where "root".createDate > \'2013-12-01\'', 
+    'select "root".ID as "pk_0", "root".name as "name", "root".createDate as "createDate" from accountTable as "root" where "root".createDate > DATE\'2013-12-01\'', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::greaterThanEqual::testGreaterThanEqual():Boolean[1]
@@ -174,7 +179,11 @@ function <<test.Test>> meta::relational::tests::query::filter::lessThan::testLes
    let result = execute(|Trade.all()->filter(t|(((($t.quantity - 5) * -3.0) + 4) / 2) > -45), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertEquals([25.0, 11.0, 23.0, 32.0, 27.0, 22.0, 5.0], $result.values->map(t|$t.quantity));
-   assertEquals('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ((1.0 * ((("root".quantity - 5) * -3.0) + 4)) / 2) > -45', $result->sqlRemoveFormatting());
+   assertEqualsH2Compatible(
+    'select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ((1.0 * ((("root".quantity - 5) * -3.0) + 4)) / 2) > -45', 
+    'select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) where ((1.0 * ((("root".quantity - 5) * -CAST(3.0 AS FLOAT)) + 4)) / 2) > -45', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 

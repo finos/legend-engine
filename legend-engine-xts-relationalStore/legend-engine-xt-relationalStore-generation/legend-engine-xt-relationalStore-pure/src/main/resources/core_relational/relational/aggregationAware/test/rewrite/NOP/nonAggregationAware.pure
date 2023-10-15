@@ -1,3 +1,5 @@
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::pure::router::printer::*;
 import meta::pure::extension::*;
@@ -16,7 +18,11 @@ function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsN
    let result = execute($query, $mapping, $runtime, relationalExtensions());
    
    assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
-   assertSameSQL('select "root".id as "pk_0", "root".sales_date as "pk_1", "root".is_cancelled_flag as "pk_2", "root".product_id as "pk_3", "root".revenue as "pk_4", "root".emp_id as "pk_5", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "isCancelled", "root".discount as "discount" from base_view.SalesTable as "root"', $result);
+   assertEqualsH2Compatible(
+    'select "root".id as "pk_0", "root".sales_date as "pk_1", "root".is_cancelled_flag as "pk_2", "root".product_id as "pk_3", "root".revenue as "pk_4", "root".emp_id as "pk_5", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "isCancelled", "root".discount as "discount" from base_view.SalesTable as "root"', 
+    'select "root".id as "pk_0", "root".sales_date as "pk_1", "root".is_cancelled_flag as "pk_2", "root".product_id as "pk_3", "root".revenue as "pk_4", "root".emp_id as "pk_5", cast(case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as boolean) as "isCancelled", "root".discount as "discount" from base_view.SalesTable as "root"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteFilter():Boolean[1]
@@ -64,7 +70,11 @@ function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsN
    let result = execute($query, $mapping, $runtime, relationalExtensions());
    
    assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
-   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+   assertEqualsH2Compatible(
+    'select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    'select "product_0".prod_id as "Product ID", cast(case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as boolean) as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteProjectColMulti():Boolean[1]
@@ -76,7 +86,11 @@ function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsN
    let result = execute($query, $mapping, $runtime, relationalExtensions());
    
    assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
-   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+   assertEqualsH2Compatible(
+    'select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    'select "product_0".prod_id as "Product ID", cast(case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as boolean) as "Is Cancelled" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteTDSOperation():Boolean[1]
@@ -92,7 +106,11 @@ function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsN
    let result = execute($query, $mapping, $runtime, relationalExtensions());
    
    assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
-   assertSameSQL('select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", ("product_0".prod_id + 2) as "Product ID Added 2" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', $result);
+   assertEqualsH2Compatible(
+    'select "product_0".prod_id as "Product ID", case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", ("product_0".prod_id + 2) as "Product ID Added 2" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    'select "product_0".prod_id as "Product ID", cast(case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as boolean) as "Is Cancelled", ("product_0".prod_id + 2) as "Product ID Added 2" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id)', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsNOP::nonAggregationAware::testRewriteTDSGroupBy():Boolean[1]
@@ -108,5 +126,9 @@ function <<test.Test>> meta::relational::tests::aggregationAware::testRewriteAsN
    let result = execute($query, $mapping, $runtime, relationalExtensions());
    
    assertEmpty($result.activities->filter(s|$s->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareActivity)));
-   assertSameSQL('select case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", max("product_0".prod_id) as "Max Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) group by "Is Cancelled"', $result);
+   assertEqualsH2Compatible(
+    'select case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as "Is Cancelled", max("product_0".prod_id) as "Max Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) group by "Is Cancelled"', 
+    'select cast(case when "root".is_cancelled_flag = \'Y\' then \'true\' else \'false\' end as boolean) as "Is Cancelled", max("product_0".prod_id) as "Max Product ID" from base_view.SalesTable as "root" left outer join base_view.Product as "product_0" on ("root".product_id = "product_0".prod_id) group by "Is Cancelled"', 
+    $result->sqlRemoveFormatting()
+   );
 }

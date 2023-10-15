@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
@@ -207,8 +208,11 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDateLiteral
    assertEquals('Peter|2016-08-10,John|2016-08-10,John|2016-08-10,Anthony|2016-08-10,Fabrice|2016-08-10,Oliver|2016-08-10,David|2016-08-10',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
    
-   assertEquals('select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+   assertEqualsH2Compatible(
+    'select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"', 
+    'select "root".FIRSTNAME as "firstName", DATE\'2016-08-10\' as "dateLiteral" from personTable as "root"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -294,8 +298,11 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testHourFunctio
    assertEquals('Peter|8,John|8,John|8,Anthony|8,Fabrice|8,Oliver|8,David|8',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
    
-   assertEquals('select "root".FIRSTNAME as "firstName", hour(\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+   assertEqualsH2Compatible(
+    'select "root".FIRSTNAME as "firstName", hour(\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"', 
+    'select "root".FIRSTNAME as "firstName", hour(TIMESTAMP\'2016-08-10 08:55:00.0\') as "hour" from personTable as "root"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnumFromOpenVariable():Boolean[1]

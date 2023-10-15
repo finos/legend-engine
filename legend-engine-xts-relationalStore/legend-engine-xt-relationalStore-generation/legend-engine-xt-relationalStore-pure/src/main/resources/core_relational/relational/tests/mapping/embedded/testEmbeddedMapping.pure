@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::mapping::embedded::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::runtime::*;
@@ -131,7 +132,11 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testGroupByEm
                                   )->sort('Firm Name'), testMappingEmbedded, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    
    assertEquals('Firm Name,Count\n' + 'Firm A,0.0\n' + 'Firm X,1.0\n', $result.values->toOne()->toCSV());
-   assertEquals('select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then 1.0 else 0.0 end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', $result->sqlRemoveFormatting());
+   assertEqualsH2Compatible(
+    'select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then 1.0 else 0.0 end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', 
+    'select "root".FIRM_LEGALNAME as "Firm Name", sum(case when ("root".PERSON_ADDRESS_NAME is not null and "root".PERSON_ADDRESS_NAME like \'1%\') then CAST(1.0 AS FLOAT) else CAST(0.0 AS FLOAT) end) as "Count" from PERSON_FIRM_DENORM as "root" group by "Firm Name" order by "Firm Name"', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::testProjectToEmbedded():Boolean[1]

@@ -13,6 +13,8 @@
 // limitations under the License.
 
 ###Pure
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::csv::*;
 import meta::pure::runtime::*;
@@ -77,7 +79,11 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
                        'ProductName3,2020-01-11\n';
    let actualValue = $result.values->toCSV();
    assertSameElements($expectedValue, $actualValue);
-   assertSameSQL('select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > \'2020-01-02\' and "root".calendar_date < \'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',$result);
+   assertEqualsH2Compatible(
+    'select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > \'2020-01-02\' and "root".calendar_date < \'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',
+    'select "root".name as "name", "calendartable_0".calendar_date as "date" from (select "root".calendar_date from CalendarTable as "root" where ("root".calendar_date > DATE\'2020-01-02\' and "root".calendar_date < DATE\'2020-01-15\')) as "calendartable_0" left outer join ProductTable as "root" on ("root".from_z <= "calendartable_0".calendar_date and "root".thru_z > "calendartable_0".calendar_date) where "root".name = \'ProductName3\'',
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::temporalDateProjectionQuery::testProcessingTemporalQueryWithInnerQueryWithQualifiedProperty():Boolean[1]
