@@ -83,6 +83,10 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-protocol</artifactId>
+        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>

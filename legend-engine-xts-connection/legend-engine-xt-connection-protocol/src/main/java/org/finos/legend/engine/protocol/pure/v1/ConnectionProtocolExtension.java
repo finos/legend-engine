@@ -39,7 +39,7 @@ public class ConnectionProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(
                 // Packageable Element
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
-                        .withSubtype(ConnectionDemo.class, "ConnectionDemo")
+                        .withSubtype(ConnectionDemo.class, "connectionDemo")
                         .build(),
                 // Authentication
                 ProtocolSubTypeInfo.newBuilder(AuthenticationConfiguration.class)

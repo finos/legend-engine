@@ -18,7 +18,7 @@ import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;

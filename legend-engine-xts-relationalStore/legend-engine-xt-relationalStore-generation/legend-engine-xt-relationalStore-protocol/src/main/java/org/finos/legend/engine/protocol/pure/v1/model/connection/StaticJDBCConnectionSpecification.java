@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection.protocol;
+package org.finos.legend.engine.protocol.pure.v1.model.connection;
 
 import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
 

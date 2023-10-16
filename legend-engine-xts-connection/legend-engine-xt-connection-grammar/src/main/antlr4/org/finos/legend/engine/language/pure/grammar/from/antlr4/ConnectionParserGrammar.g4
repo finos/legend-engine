@@ -26,7 +26,7 @@ connectionDemoElement:              CONNECTION_DEMO qualifiedName
                                             )*
                                         BRACE_CLOSE
 ;
-rawValue:                           RAW_VALUE ISLAND_OPEN (rawValueContent)*
+rawValue:                           RAW_VALUE COLON ISLAND_OPEN (rawValueContent)* SEMI_COLON
 ;
 rawValueContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;

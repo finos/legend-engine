@@ -32,7 +32,7 @@ import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.impl.JDBCConnectionManager;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;

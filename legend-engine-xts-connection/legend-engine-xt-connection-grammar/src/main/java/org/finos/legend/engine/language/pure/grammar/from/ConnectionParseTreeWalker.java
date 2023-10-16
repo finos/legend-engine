@@ -58,11 +58,6 @@ public class ConnectionParseTreeWalker
             }
             String rawValueText = connectionDemoText.length() > 0 ? connectionDemoText.substring(0, connectionDemoText.length() - 2) : connectionDemoText.toString();
             // prepare island grammar walker source information
-            int startLine = rawValueContext.ISLAND_OPEN().getSymbol().getLine();
-            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
-            // only add current walker source information column offset if this is the first line
-            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + rawValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + rawValueContext.ISLAND_OPEN().getText().length();
-            ParseTreeWalkerSourceInformation embeddedRuntimeWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
             connectionDemo = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, ConnectionDemo.class);
         }
         catch (Exception e)

@@ -17,7 +17,7 @@ package org.finos.legend.engine.datapush.server.test;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
