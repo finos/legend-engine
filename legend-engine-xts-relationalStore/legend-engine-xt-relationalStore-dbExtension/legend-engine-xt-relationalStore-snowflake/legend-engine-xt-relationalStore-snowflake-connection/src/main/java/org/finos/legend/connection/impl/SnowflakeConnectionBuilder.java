@@ -19,7 +19,7 @@ import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;

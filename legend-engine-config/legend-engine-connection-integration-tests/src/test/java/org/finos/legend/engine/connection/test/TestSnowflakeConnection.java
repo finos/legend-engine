@@ -17,11 +17,11 @@ package org.finos.legend.engine.connection.test;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -80,9 +80,8 @@ public class TestSnowflakeConnection
             connectionSpecification.region = "us-east-2";
             connectionSpecification.cloudType = "aws";
             connectionSpecification.role = "SUMMIT_DEV";
-            return new StoreInstance.Builder(this.environment)
+            return new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                    .withStoreSupportIdentifier("Snowflake")
                     .withAuthenticationMechanismConfigurations(
                             new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).build()
                     )

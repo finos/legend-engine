@@ -14,14 +14,13 @@
 
 package org.finos.legend.engine.datapush.server.test;
 
-import org.apache.http.client.HttpResponseException;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.connection.AuthenticationMechanismType;
+import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.junit.After;
 import org.junit.Assume;
@@ -73,9 +72,8 @@ public class TestDataPushServer extends AbstractDataPushServerResourceTest
                 this.postgresContainer.getPort(),
                 this.postgresContainer.getDatabaseName()
         );
-        application.getStoreInstanceProvider().injectStoreInstance(new StoreInstance.Builder(application.getEnvironment())
+        application.getStoreInstanceProvider().injectStoreInstance(new StoreInstance.Builder(application.getEnvironment().getStoreSupport("Postgres"))
                 .withIdentifier("test-store")
-                .withStoreSupportIdentifier("Postgres")
                 .withAuthenticationMechanismConfigurations(
                         new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).build()
                 )

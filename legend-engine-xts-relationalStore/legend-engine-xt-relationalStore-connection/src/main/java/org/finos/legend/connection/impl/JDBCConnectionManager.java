@@ -25,8 +25,8 @@ import org.finos.legend.connection.Database;
 import org.finos.legend.connection.DatabaseManager;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 

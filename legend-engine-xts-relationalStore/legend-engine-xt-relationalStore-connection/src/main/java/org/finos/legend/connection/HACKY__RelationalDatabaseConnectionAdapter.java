@@ -14,7 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 

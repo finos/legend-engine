@@ -18,6 +18,7 @@ import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.AuthenticationConfigurationProvider;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
@@ -28,13 +29,12 @@ import org.finos.legend.connection.impl.InstrumentedAuthenticationConfigurationP
 import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.datapush.server.DataPushServer;
 import org.finos.legend.engine.datapush.server.DataPusher;
 import org.finos.legend.engine.datapush.server.DataStager;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.server.support.server.BaseServer;
 
 public class DataPushServerForTest extends DataPushServer

@@ -17,7 +17,8 @@ package org.finos.legend.connection.impl;
 import org.finos.legend.connection.HACKY__RelationalDatabaseConnectionAdapter;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -56,9 +57,8 @@ public class HACKY__SnowflakeConnectionAdapter
                 connectionSpecification.accountType = datasourceSpecification.accountType;
                 connectionSpecification.role = datasourceSpecification.role;
 
-                StoreInstance storeInstance = new StoreInstance.Builder(environment)
+                StoreInstance storeInstance = new StoreInstance.Builder(environment.getStoreSupport("Snowflake"))
                         .withIdentifier("adapted-store")
-                        .withStoreSupportIdentifier("Snowflake")
                         .withConnectionSpecification(connectionSpecification)
                         .build();
 

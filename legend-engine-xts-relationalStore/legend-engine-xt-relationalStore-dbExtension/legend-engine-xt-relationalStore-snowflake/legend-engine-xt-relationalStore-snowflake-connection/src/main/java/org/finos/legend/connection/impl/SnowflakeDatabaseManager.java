@@ -15,9 +15,8 @@
 package org.finos.legend.connection.impl;
 
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.SnowflakeAccountType;
 import org.finos.legend.connection.DatabaseManager;
+import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 import java.util.List;
@@ -103,5 +102,11 @@ public class SnowflakeDatabaseManager implements DatabaseManager
     public void buildMultiTenantHostname(String accountName, String region, StringBuilder url)
     {
         url.append(accountName).append(".").append(region);
+    }
+
+    public static enum SnowflakeAccountType
+    {
+        VPS,
+        MultiTenant
     }
 }

@@ -24,7 +24,7 @@ import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.datapush.server.Data;
 import org.finos.legend.engine.datapush.server.DataPusher;
 import org.finos.legend.engine.datapush.server.DataStager;

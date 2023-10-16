@@ -17,6 +17,7 @@ package org.finos.legend.engine.connection.test;
 import net.bytebuddy.asm.Advice;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
@@ -30,12 +31,11 @@ import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.impl.JDBCConnectionManager;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.jupiter.api.AfterEach;
@@ -89,9 +89,8 @@ public class TestJDBCConnectionManager
                 this.postgresContainer.getPort(),
                 this.postgresContainer.getDatabaseName()
         );
-        this.storeInstance = new StoreInstance.Builder(this.environment)
+        this.storeInstance = new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
                 .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                .withStoreSupportIdentifier("Postgres")
                 .withConnectionSpecification(connectionSpecification)
                 .build();
     }

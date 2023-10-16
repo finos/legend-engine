@@ -19,6 +19,7 @@ import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.AuthenticationConfigurationProvider;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
@@ -26,21 +27,20 @@ import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.impl.InstrumentedAuthenticationConfigurationProvider;
 import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.impl.JDBCDataPusher;
 import org.finos.legend.engine.datapush.server.impl.S3DataStager;
+import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -108,9 +108,8 @@ public class DataPushServer extends BaseDataPushServer
     {
         InstrumentedStoreInstanceProvider instrumentedStoreInstanceProvider = new InstrumentedStoreInstanceProvider();
 
-        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment)
+        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
                 .withIdentifier("test-postgres")
-                .withStoreSupportIdentifier("Postgres")
                 .withConnectionSpecification(new StaticJDBCConnectionSpecification(
                         "localhost",
                         5432,
@@ -126,9 +125,8 @@ public class DataPushServer extends BaseDataPushServer
         snowflakeConnectionSpecification.region = "us-east-2";
         snowflakeConnectionSpecification.cloudType = "aws";
         snowflakeConnectionSpecification.role = "SUMMIT_DEV";
-        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment)
+        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
                 .withIdentifier("test-snowflake")
-                .withStoreSupportIdentifier("Snowflake")
                 .withConnectionSpecification(snowflakeConnectionSpecification)
                 .build()
         );

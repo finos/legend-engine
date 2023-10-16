@@ -16,7 +16,7 @@ package org.finos.legend.engine.datapush.server;
 
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 public abstract class DataPusher

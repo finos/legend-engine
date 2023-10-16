@@ -17,13 +17,13 @@ package org.finos.legend.engine.connection.test;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -78,9 +78,8 @@ public class TestPostgresConnection
                     this.postgresContainer.getPort(),
                     this.postgresContainer.getDatabaseName()
             );
-            return new StoreInstance.Builder(this.environment)
+            return new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                    .withStoreSupportIdentifier("Postgres")
                     .withAuthenticationMechanismConfigurations(
                             new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).build()
                     )
