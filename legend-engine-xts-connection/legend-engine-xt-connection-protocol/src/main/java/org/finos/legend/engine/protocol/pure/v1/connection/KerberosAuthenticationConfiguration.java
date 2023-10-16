@@ -18,6 +18,7 @@ public class KerberosAuthenticationConfiguration extends AuthenticationConfigura
 {
     public KerberosAuthenticationConfiguration()
     {
+        // authentication
     }
 
     @Override

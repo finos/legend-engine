@@ -24,6 +24,7 @@ public class EncryptedPrivateKeyPairAuthenticationConfiguration extends Authenti
 
     public EncryptedPrivateKeyPairAuthenticationConfiguration()
     {
+        // jackson
     }
 
     public EncryptedPrivateKeyPairAuthenticationConfiguration(String userName, CredentialVaultSecret privateKey, CredentialVaultSecret passphrase)

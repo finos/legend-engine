@@ -23,6 +23,7 @@ public class UserPasswordAuthenticationConfiguration extends AuthenticationConfi
 
     public UserPasswordAuthenticationConfiguration()
     {
+        // jackson
     }
 
     public UserPasswordAuthenticationConfiguration(String username, CredentialVaultSecret password)

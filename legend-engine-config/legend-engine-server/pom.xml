@@ -263,7 +263,16 @@
             <scope>runtime</scope>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-compiler</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-grammar</artifactId>

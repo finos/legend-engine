@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -28,7 +31,7 @@ import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
-public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExtension
+public class ConnectionGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
@@ -65,7 +68,12 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         String value;
         try
         {
-            value = PureProtocolObjectMapperFactory.getNewObjectMapper().writeValueAsString(element);
+            // This is very super hacky!
+            element.sourceInformation = null;
+            ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            value = objectMapper.writeValueAsString(element);
         }
         catch (Exception e)
         {
@@ -74,7 +82,9 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
 
         return "ConnectionDemo " + PureGrammarComposerUtility.convertPath(element.getPath()) + "\n" +
                 "{\n" +
-                (getTabString() + "rawValue: #{" + value + "}#;\n") +
+                (getTabString() + "rawValue: #{\n" +
+                        value + "\n" +
+                        getTabString() + "}#;\n") +
                 "}";
     }
 }

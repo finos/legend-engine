@@ -22,6 +22,11 @@ public class StaticJDBCConnectionSpecification extends ConnectionSpecification
     public int port;
     public String databaseName;
 
+    public StaticJDBCConnectionSpecification()
+    {
+        // jackson
+    }
+
     public StaticJDBCConnectionSpecification(String host, int port, String databaseName)
     {
         this.host = host;
