@@ -58,8 +58,11 @@ import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
+import org.finos.legend.engine.api.analytics.BindingAnalytics;
+import org.finos.legend.engine.api.analytics.ClassAnalytics;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
 import org.finos.legend.engine.api.analytics.DiagramAnalytics;
+import org.finos.legend.engine.api.analytics.FunctionAnalytics;
 import org.finos.legend.engine.api.analytics.LineageAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
@@ -403,6 +406,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Analytics
         List<EntitlementServiceExtension> entitlementServiceExtensions = EntitlementServiceExtensionLoader.extensions();
         environment.jersey().register(new MappingAnalytics(modelManager));
+        environment.jersey().register(new ClassAnalytics(modelManager));
+        environment.jersey().register(new FunctionAnalytics(modelManager));
+        environment.jersey().register(new BindingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
         environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));

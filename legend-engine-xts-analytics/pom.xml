@@ -31,6 +31,9 @@
     <modules>
         <module>legend-engine-xts-analytics-lineage</module>
         <module>legend-engine-xts-analytics-mapping</module>
+        <module>legend-engine-xts-analytics-class</module>
+        <module>legend-engine-xts-analytics-function</module>
+        <module>legend-engine-xts-analytics-binding</module>
         <module>legend-engine-xts-analytics-search</module>
         <module>legend-engine-xts-analytics-store</module>
     </modules>

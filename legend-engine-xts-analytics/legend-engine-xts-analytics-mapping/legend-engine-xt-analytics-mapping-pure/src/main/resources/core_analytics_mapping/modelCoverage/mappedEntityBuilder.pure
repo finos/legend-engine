@@ -232,7 +232,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildEntity
    ^MappedEntity(
       path = $path,
       properties = $properties->removeDuplicatesBy(x | $x.name),
-      info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity), | [])
+      info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $class->elementToPath()), | [])
    );
 }
 

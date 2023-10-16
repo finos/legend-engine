@@ -26,6 +26,11 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult
   elementDocs: DataSpaceModelDocumentationEntry[*];
 }
 
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResult
+{
+  executionContexts: DataSpaceExecutionContextAnalysisResult[*];
+}
+
 function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*]): DataSpaceAnalysisResult[1]
 {
   ^DataSpaceAnalysisResult
@@ -33,6 +38,14 @@ function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace
     diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
     executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes),
     elementDocs = getModelsDoc($dataSpace)
+  );
+}
+
+function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceCoverage(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*]): DataSpaceCoverageAnalysisResult[1]
+{
+  ^DataSpaceCoverageAnalysisResult
+  (
+    executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes)
   );
 }
 
@@ -51,7 +64,7 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyze
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
     name = $context.name,
     compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
-    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, false, false)
+    mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, true, false, true)
   ));
 }
 

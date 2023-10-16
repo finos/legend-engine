@@ -114,7 +114,7 @@ function meta::analytics::search::transformation::dataspace::buildExecutionConte
 
 function meta::analytics::search::transformation::dataspace::buildClassDocuments(mapping: meta::pure::mapping::Mapping[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
 {
-  let analysedMapping = meta::analytics::mapping::modelCoverage::analyze($mapping, true, true);
+  let analysedMapping = meta::analytics::mapping::modelCoverage::analyze($mapping, true, true, false);
   $analysedMapping.mappedEntities->filter(e|$e.info.isRootEntity == true)->map(e|
     ^meta::analytics::search::metamodel::class::SimpleClassElement(
       name = $e.path->split('::')->last()->toOne(),

@@ -56,8 +56,16 @@ public class TestDataSpaceAnalyticsApi
     public void testDataSpaceAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
-        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"datasets\":[],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[]},\"name\":\"dummyContext\"}],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
+        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"datasets\":[],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[],\"model\":{\"_type\":\"data\",\"elements\":[{\"_type\":\"dataSpace\",\"defaultExecutionContext\":\"dummyContext\",\"executionContexts\":[{\"defaultRuntime\":{\"path\":\"model::dummyRuntime\",\"type\":\"RUNTIME\"},\"mapping\":{\"path\":\"model::dummyMapping\",\"type\":\"MAPPING\"},\"name\":\"dummyContext\"}],\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"stereotypes\":[],\"taggedValues\":[]}]}},\"name\":\"dummyContext\"}],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
         testAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
+    }
+
+    @Test
+    public void testDataSpaceCoverageAnalysis() throws IOException
+    {
+        PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
+        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[],\"model\":{\"_type\":\"data\",\"elements\":[{\"_type\":\"dataSpace\",\"defaultExecutionContext\":\"dummyContext\",\"executionContexts\":[{\"defaultRuntime\":{\"path\":\"model::dummyRuntime\",\"type\":\"RUNTIME\"},\"mapping\":{\"path\":\"model::dummyMapping\",\"type\":\"MAPPING\"},\"name\":\"dummyContext\"}],\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"stereotypes\":[],\"taggedValues\":[]}]}},\"name\":\"dummyContext\"}],\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
+        testCoverageAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
     }
 
     private void testAnalyticsWithVersions(String expected, PureModelContextData modelContextData, String dataSpace)
@@ -65,6 +73,15 @@ public class TestDataSpaceAnalyticsApi
         testVersions.forEach(pureClient ->
         {
             Response response = api.analyzeDataSpace(new DataSpaceAnalysisInput(pureClient, dataSpace, modelContextData), null);
+            Assert.assertEquals(expected, response.getEntity().toString());
+        });
+    }
+
+    private void testCoverageAnalyticsWithVersions(String expected, PureModelContextData modelContextData, String dataSpace)
+    {
+        testVersions.forEach(pureClient ->
+        {
+            Response response = api.analyzeDataSpaceCoverage(new DataSpaceAnalysisInput(pureClient, dataSpace, modelContextData), null);
             Assert.assertEquals(expected, response.getEntity().toString());
         });
     }
