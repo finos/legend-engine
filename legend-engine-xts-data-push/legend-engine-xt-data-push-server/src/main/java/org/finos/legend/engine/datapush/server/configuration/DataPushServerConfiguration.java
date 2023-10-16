@@ -15,15 +15,23 @@
 package org.finos.legend.engine.datapush.server.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 
 public class DataPushServerConfiguration extends BaseServerConfiguration
 {
     @JsonProperty("connection")
     private ConnectionFactoryConfiguration connectionFactoryConfiguration;
+    @JsonProperty("metadata-server")
+    private MetaDataServerConfiguration metadataserver;
 
     public ConnectionFactoryConfiguration getConnectionFactoryConfiguration()
     {
         return connectionFactoryConfiguration;
+    }
+
+    public MetaDataServerConfiguration getMetadataServerConfiguration()
+    {
+        return metadataserver;
     }
 }

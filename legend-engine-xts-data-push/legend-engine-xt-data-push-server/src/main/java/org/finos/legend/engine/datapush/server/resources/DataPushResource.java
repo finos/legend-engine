@@ -23,11 +23,15 @@ import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.connection.StoreInstanceBuilderHelper;
 import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.datapush.server.ConnectionModelLoader;
 import org.finos.legend.engine.datapush.server.Data;
 import org.finos.legend.engine.datapush.server.DataPusher;
 import org.finos.legend.engine.datapush.server.DataStager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
 import org.finos.legend.engine.server.support.server.resources.BaseResource;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -35,12 +39,15 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/data-push")
 @Api("Data Push")
@@ -48,6 +55,7 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class DataPushResource extends BaseResource
 {
+    private final ConnectionModelLoader connectionModelLoader;
     private final LegendEnvironment environment;
     private final IdentityFactory identityFactory;
     private final StoreInstanceProvider storeInstanceProvider;
@@ -56,7 +64,7 @@ public class DataPushResource extends BaseResource
     private final DataStager dataStager;
     private final DataPusher dataPusher;
 
-    public DataPushResource(LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataStager dataStager, DataPusher dataPusher)
+    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataStager dataStager, DataPusher dataPusher)
     {
         this.environment = environment;
         this.identityFactory = identityFactory;
@@ -65,6 +73,7 @@ public class DataPushResource extends BaseResource
         this.connectionFactory = connectionFactory;
         this.dataStager = dataStager;
         this.dataPusher = dataPusher;
+        this.connectionModelLoader = new ConnectionModelLoader(metadataserver);
     }
 
     @Path("/stage")
@@ -107,6 +116,30 @@ public class DataPushResource extends BaseResource
         );
     }
 
+    @Path("/pushDev")
+    @POST
+    @ApiOperation("(DEV) Push data from staging area")
+    public Response pushDataDev(
+            DevelopmentDataPushInput input,
+            @Context HttpServletRequest request,
+            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
+    )
+    {
+        Identity identity = this.identityFactory.createIdentity(
+                new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
+        );
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, input.projectId, input.workspaceId, input.isGroupWorkspace, input.connectionPath);
+
+        return executeWithLogging(
+                "pushing data\"",
+                () ->
+                {
+                    this.pushData(identity, connectionDemo, input.stagingRef);
+                    return Response.noContent().build();
+                }
+        );
+    }
+
     @Path("/push")
     @POST
     @ApiOperation("Push data from staging area")
@@ -115,23 +148,37 @@ public class DataPushResource extends BaseResource
             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
     {
+        List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = this.identityFactory.createIdentity(
                 new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
         );
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromProject(profiles, input.groupId, input.artifactId, input.versionId, input.connectionPath);
 
         return executeWithLogging(
                 "pushing data\"",
                 () ->
                 {
-                    this.pushData(identity, input.storeInstanceRef, input.stagingRef);
+                    this.pushData(identity, connectionDemo, input.stagingRef);
                     return Response.noContent().build();
                 }
         );
     }
 
+    public static class DevelopmentDataPushInput
+    {
+        public String projectId;
+        public String workspaceId;
+        public boolean isGroupWorkspace;
+        public String connectionPath;
+        public String stagingRef;
+    }
+
     public static class DataPushInput
     {
-        public String storeInstanceRef;
+        public String groupId;
+        public String artifactId;
+        public String versionId;
+        public String connectionPath;
         public String stagingRef;
     }
 
@@ -161,12 +208,13 @@ public class DataPushResource extends BaseResource
         }
     }
 
-    private void pushData(Identity identity, String storeInstanceRef, String stagingRef)
+    private void pushData(Identity identity, ConnectionDemo connectionDemo, String stagingRef)
     {
-        StoreInstance storeInstance = this.storeInstanceProvider.lookup(storeInstanceRef);
+        StoreInstance storeInstance = StoreInstanceBuilderHelper.buildStoreInstance(connectionDemo.storeInstance, this.environment);
+        AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, storeInstance);
+        authenticationConfiguration = authenticationConfiguration != null ? authenticationConfiguration : this.authenticationConfigurationProvider.lookup(identity, storeInstance);
         try
         {
-            AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, storeInstance);
             this.dataPusher.write(identity, storeInstance, authenticationConfiguration, this.dataStager.read(identity, stagingRef));
         }
         catch (Exception e)

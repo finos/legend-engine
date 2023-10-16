@@ -250,6 +250,21 @@
         </dependency>
         <!-- Mastery -->
 
+        <!-- Connection -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-connection-protocol</artifactId>
+        </dependency>
+        <!-- Connection -->
+
         <!-- Diagram -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

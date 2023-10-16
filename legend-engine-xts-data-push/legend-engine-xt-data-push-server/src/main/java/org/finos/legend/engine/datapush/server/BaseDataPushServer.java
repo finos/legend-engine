@@ -22,7 +22,6 @@ import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstanceProvider;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.resources.DataPushResource;
-import org.finos.legend.engine.datapush.server.resources.RegistryResource;
 import org.finos.legend.engine.server.support.server.BaseServer;
 
 public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfiguration>
@@ -52,8 +51,7 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
     @Override
     protected void configureServerCore(DataPushServerConfiguration configuration, Environment environment)
     {
-        environment.jersey().register(new DataPushResource(this.environment, this.identityFactory, this.storeInstanceProvider, this.authenticationConfigurationProvider, this.connectionFactory, this.dataStager, this.dataPusher));
-        environment.jersey().register(new RegistryResource(this.environment, this.storeInstanceProvider));
+        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.storeInstanceProvider, this.authenticationConfigurationProvider, this.connectionFactory, this.dataStager, this.dataPusher));
     }
 
     @Override

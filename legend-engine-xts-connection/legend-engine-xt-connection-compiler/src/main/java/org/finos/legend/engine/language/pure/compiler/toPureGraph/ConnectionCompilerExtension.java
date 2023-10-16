@@ -24,14 +24,14 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_connection_Conne
 
 import java.util.Collections;
 
-public class ConnectionDemoCompilerExtension implements CompilerExtension
+public class ConnectionCompilerExtension implements CompilerExtension
 {
     static final MutableMap<String, Root_meta_pure_metamodel_connection_ConnectionDemo> connectionsIndex = Maps.mutable.empty();
 
     @Override
     public CompilerExtension build()
     {
-        return new ConnectionDemoCompilerExtension();
+        return new ConnectionCompilerExtension();
     }
 
     @Override

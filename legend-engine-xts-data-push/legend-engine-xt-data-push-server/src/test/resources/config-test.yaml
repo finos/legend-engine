@@ -35,6 +35,17 @@ filterPriorities:
   org.pac4j.j2e.filter.SecurityFilter: 3
   CORS: 4
 
+metadata-server:
+  pure:
+    host: 127.0.0.1
+    port: 8080
+  alloy:
+    host: 127.0.0.1
+    port: 6200
+    prefix: "/depot/api"
+  sdlc:
+    host: localhost
+    port: 6100
 
 logging:
   # Change this to affect library class logging

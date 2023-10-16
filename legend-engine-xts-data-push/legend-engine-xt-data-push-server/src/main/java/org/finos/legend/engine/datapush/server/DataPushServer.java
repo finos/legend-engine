@@ -171,7 +171,7 @@ public class DataPushServer extends BaseDataPushServer
     public DataStager buildDataStager(DataPushServerConfiguration configuration)
     {
         return new S3DataStager(
-                "http://localhost:9000",
+                "http://localhost:6350",
                 StaticCredentialsProvider.create(
                         AwsBasicCredentials.create("admin", "password")
                 )

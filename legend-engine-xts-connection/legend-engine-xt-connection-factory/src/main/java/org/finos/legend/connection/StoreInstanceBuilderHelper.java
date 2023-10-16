@@ -14,6 +14,7 @@
 
 package org.finos.legend.connection;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 
 public class StoreInstanceBuilderHelper
@@ -23,12 +24,14 @@ public class StoreInstanceBuilderHelper
         return new StoreSupport.Builder()
                 .withIdentifier(storeSupport.identifier)
                 .withAuthenticationMechanismConfigurations(
-                        ListIterate.collect(storeSupport.authenticationMechanisms, mechanism ->
+                        storeSupport.authenticationMechanisms != null
+                                ? ListIterate.collect(storeSupport.authenticationMechanisms, mechanism ->
                                 new AuthenticationMechanismConfiguration.Builder(environment.getAuthenticationMechanism(mechanism.mechanism))
                                         .withAuthenticationConfigurationTypes(
                                                 ListIterate.collect(mechanism.configurationTypes, environment::getAuthenticationConfigurationType)
                                         )
                                         .build())
+                                : Lists.mutable.empty()
                 )
                 .build();
     }
@@ -38,12 +41,14 @@ public class StoreInstanceBuilderHelper
         return new StoreInstance.Builder(environment.getStoreSupport(protocol.storeSupport))
                 .withIdentifier(protocol.identifier)
                 .withAuthenticationMechanismConfigurations(
-                        ListIterate.collect(protocol.authenticationMechanisms, mechanism ->
+                        protocol.authenticationMechanisms != null
+                                ? ListIterate.collect(protocol.authenticationMechanisms, mechanism ->
                                 new AuthenticationMechanismConfiguration.Builder(environment.getAuthenticationMechanism(mechanism.mechanism))
                                         .withAuthenticationConfigurationTypes(
                                                 ListIterate.collect(mechanism.configurationTypes, environment::getAuthenticationConfigurationType)
                                         )
                                         .build())
+                                : Lists.mutable.empty()
                 )
                 .withConnectionSpecification(protocol.connectionSpecification)
                 .build();
