@@ -15,7 +15,6 @@
 package org.finos.legend.engine.datapush.server.resources;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.finos.legend.connection.AuthenticationConfigurationProvider;
 import org.finos.legend.connection.ConnectionFactory;
@@ -25,10 +24,10 @@ import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.StoreInstanceBuilderHelper;
 import org.finos.legend.connection.StoreInstanceProvider;
+import org.finos.legend.engine.datapush.DataPusher;
+import org.finos.legend.engine.datapush.DataPusherProvider;
+import org.finos.legend.engine.datapush.data.CSVData;
 import org.finos.legend.engine.datapush.server.ConnectionModelLoader;
-import org.finos.legend.engine.datapush.server.Data;
-import org.finos.legend.engine.datapush.server.DataPusher;
-import org.finos.legend.engine.datapush.server.DataStager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
@@ -38,11 +37,14 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -55,170 +57,144 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class DataPushResource extends BaseResource
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataPushResource.class);
+
     private final ConnectionModelLoader connectionModelLoader;
     private final LegendEnvironment environment;
     private final IdentityFactory identityFactory;
     private final StoreInstanceProvider storeInstanceProvider;
     private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
     private final ConnectionFactory connectionFactory;
-    private final DataStager dataStager;
-    private final DataPusher dataPusher;
+    private final DataPusherProvider dataPusherProvider;
 
-    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataStager dataStager, DataPusher dataPusher)
+    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataPusherProvider dataPusherProvider)
     {
         this.environment = environment;
         this.identityFactory = identityFactory;
         this.storeInstanceProvider = storeInstanceProvider;
         this.authenticationConfigurationProvider = authenticationConfigurationProvider;
         this.connectionFactory = connectionFactory;
-        this.dataStager = dataStager;
-        this.dataPusher = dataPusher;
+        this.dataPusherProvider = dataPusherProvider;
         this.connectionModelLoader = new ConnectionModelLoader(metadataserver);
     }
 
-    @Path("/stage")
+    @Path("/push/{groupId}/{artifactId}/{versionId}/{connectionPath}/{dataRef}")
     @POST
-    @ApiOperation("Push data to staging area")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response stageData(
-            Data data,
-            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
-    )
-    {
-        Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
-        );
-
-        return executeWithLogging(
-                "staging data\"",
-                () -> Response.ok().entity(this.stageData(identity, data)).build()
-        );
-    }
-
-    @Path("/__debug__/getStagedData")
-    @POST
-    @ApiOperation("DEBUG: Get staged data")
     @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response stageData(
-            String stagingRef,
-            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
-    )
-    {
-        Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
-        );
-
-        return executeWithLogging(
-                "getting staged data\"",
-                () -> Response.ok().entity(this.getStagedData(identity, stagingRef)).build()
-        );
-    }
-
-    @Path("/pushDev")
-    @POST
-    @ApiOperation("(DEV) Push data from staging area")
-    public Response pushDataDev(
-            DevelopmentDataPushInput input,
-            @Context HttpServletRequest request,
-            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
-    )
-    {
-        Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
-        );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, input.projectId, input.workspaceId, input.isGroupWorkspace, input.connectionPath);
-
-        return executeWithLogging(
-                "pushing data\"",
-                () ->
-                {
-                    this.pushData(identity, connectionDemo, input.stagingRef);
-                    return Response.noContent().build();
-                }
-        );
-    }
-
-    @Path("/push")
-    @POST
-    @ApiOperation("Push data from staging area")
+    @Produces(MediaType.TEXT_PLAIN)
     public Response pushData(
-            DataPushInput input,
+            @PathParam("groupId") String groupId,
+            @PathParam("artifactId") String artifactId,
+            @PathParam("versionId") String versionId,
+            @PathParam("connectionPath") String connectionPath,
+            @PathParam("dataRef") String dataRef,
+            String rawData,
+            @Context HttpServletRequest request,
             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
     {
         List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(ProfileManagerHelper.extractProfiles(profileManager)).build()
+                new IdentitySpecification.Builder().withProfiles(profiles).build()
         );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromProject(profiles, input.groupId, input.artifactId, input.versionId, input.connectionPath);
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromProject(profiles, groupId, artifactId, versionId, connectionPath);
+
+        CSVData csvData = new CSVData();
+        csvData.name = dataRef;
+        csvData.value = rawData;
 
         return executeWithLogging(
-                "pushing data\"",
+                "pushing data to connection " + connectionPath,
                 () ->
                 {
-                    this.pushData(identity, connectionDemo, input.stagingRef);
+                    this.pushCSVData(identity, connectionDemo, csvData);
                     return Response.noContent().build();
                 }
         );
     }
 
-    public static class DevelopmentDataPushInput
+    @Path("/pushDev/{projectId}/{workspaceId}/{connectionPath}/{dataRef}")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response pushData_Dev(
+            @PathParam("projectId") String projectId,
+            @PathParam("workspaceId") String workspaceId,
+            @PathParam("connectionPath") String connectionPath,
+            @PathParam("dataRef") String dataRef,
+            String rawData,
+            @Context HttpServletRequest request,
+            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
+    )
     {
-        public String projectId;
-        public String workspaceId;
-        public boolean isGroupWorkspace;
-        public String connectionPath;
-        public String stagingRef;
+        List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = this.identityFactory.createIdentity(
+                new IdentitySpecification.Builder().withProfiles(profiles).build()
+        );
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, false, connectionPath);
+
+        CSVData csvData = new CSVData();
+        csvData.name = dataRef;
+        csvData.value = rawData;
+
+        return executeWithLogging(
+                "pushing data to connection " + connectionPath,
+                () ->
+                {
+                    this.pushCSVData(identity, connectionDemo, csvData);
+                    return Response.noContent().build();
+                }
+        );
     }
 
-    public static class DataPushInput
+    @Path("/pushDevGroup/{projectId}/{workspaceId}/{connectionPath}/{dataRef}")
+    @POST
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response pushData_DevGroup(
+            @PathParam("projectId") String projectId,
+            @PathParam("workspaceId") String workspaceId,
+            @PathParam("connectionPath") String connectionPath,
+            @PathParam("dataRef") String dataRef,
+            String rawData,
+            @Context HttpServletRequest request,
+            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
+    )
     {
-        public String groupId;
-        public String artifactId;
-        public String versionId;
-        public String connectionPath;
-        public String stagingRef;
+        List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = this.identityFactory.createIdentity(
+                new IdentitySpecification.Builder().withProfiles(profiles).build()
+        );
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, true, connectionPath);
+
+        CSVData csvData = new CSVData();
+        csvData.name = dataRef;
+        csvData.value = rawData;
+
+        return executeWithLogging(
+                "pushing data to connection " + connectionPath,
+                () ->
+                {
+                    this.pushCSVData(identity, connectionDemo, csvData);
+                    return Response.noContent().build();
+                }
+        );
     }
 
-    private String stageData(Identity identity, Data data)
+    private void pushCSVData(Identity identity, ConnectionDemo connectionDemo, CSVData csvData)
     {
+        StoreInstance connectionInstance = StoreInstanceBuilderHelper.buildStoreInstance(connectionDemo.storeInstance, this.environment);
+        AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
+        authenticationConfiguration = authenticationConfiguration != null ? authenticationConfiguration : this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
         try
         {
-            // TODO: @akphi - do we need to check for the identity here?
-            return this.dataStager.write(identity, data);
+            DataPusher dataPusher = this.dataPusherProvider.getDataPusher(connectionInstance);
+            dataPusher.configure(this.connectionFactory);
+            dataPusher.writeCSV(identity, connectionInstance, authenticationConfiguration, csvData);
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Data getStagedData(Identity identity, String stagingRef)
-    {
-        try
-        {
-            // TODO: @akphi - do we need to check for the identity here?
-            return this.dataStager.read(identity, stagingRef);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void pushData(Identity identity, ConnectionDemo connectionDemo, String stagingRef)
-    {
-        StoreInstance storeInstance = StoreInstanceBuilderHelper.buildStoreInstance(connectionDemo.storeInstance, this.environment);
-        AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, storeInstance);
-        authenticationConfiguration = authenticationConfiguration != null ? authenticationConfiguration : this.authenticationConfigurationProvider.lookup(identity, storeInstance);
-        try
-        {
-            this.dataPusher.write(identity, storeInstance, authenticationConfiguration, this.dataStager.read(identity, stagingRef));
-        }
-        catch (Exception e)
-        {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

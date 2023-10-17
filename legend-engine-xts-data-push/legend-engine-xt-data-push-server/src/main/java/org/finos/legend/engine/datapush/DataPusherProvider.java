@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server;
+package org.finos.legend.engine.datapush;
 
-public class CSVData extends Data
+import org.finos.legend.connection.StoreInstance;
+
+public interface DataPusherProvider
 {
-    public String value;
+    DataPusher getDataPusher(StoreInstance connectionInstance);
 }

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server.impl;
+package org.finos.legend.engine.datapush.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.datapush.server.Data;
-import org.finos.legend.engine.datapush.server.DataStager;
-import org.finos.legend.engine.datapush.server.SQLData;
+import org.finos.legend.engine.datapush.DataStager;
+import org.finos.legend.engine.datapush.data.CSVData;
+import org.finos.legend.engine.datapush.data.Data;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -29,18 +29,19 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-import java.net.URI;
-import java.time.Instant;
 import java.util.UUID;
 
 public class S3DataStager implements DataStager
 {
+    private final String s3BucketName;
     private final String s3Endpoint;
     private final AwsCredentialsProvider s3CredentialProvider;
 
-    public S3DataStager(String s3Endpoint, AwsCredentialsProvider s3CredentialProvider)
+    public S3DataStager(String s3BucketName, String s3Endpoint, AwsCredentialsProvider s3CredentialProvider)
     {
+        this.s3BucketName = s3BucketName;
         this.s3Endpoint = s3Endpoint;
         this.s3CredentialProvider = s3CredentialProvider;
     }
@@ -50,29 +51,53 @@ public class S3DataStager implements DataStager
         return identity.getName().replaceAll("_", "").toLowerCase();
     }
 
-    private static String generateObjectKey(Identity identity)
+    private static String generateObjectKey()
     {
-        return identity.getName() + "__" + Instant.now() + "__" + UUID.randomUUID();
+        return UUID.randomUUID().toString();
+    }
+
+    private static String generateObjectPrefix(Identity identity)
+    {
+        return identity.getName();
     }
 
     private S3Client getS3Client()
     {
         return S3Client
                 .builder()
-                .endpointOverride(URI.create(this.s3Endpoint))
+                //.endpointOverride(URI.create(this.s3Endpoint))
                 .credentialsProvider(this.s3CredentialProvider)
-                .region(Region.of(this.s3Endpoint))
+                .region(Region.US_EAST_1)
                 .build();
     }
 
     @Override
     public String write(Identity identity, Data data)
     {
-        SQLData sqlData = (SQLData) data;
+        CSVData csvData = (CSVData) data;
         S3Client s3Client = this.getS3Client();
-        String bucketName = generateBucketName(identity);
 
-        // create the default bucket
+        String bucketPrefix = generateObjectPrefix(identity);
+        String objectId = generateObjectKey();
+        String key = String.format("%s/%s/%s", bucketPrefix, csvData.name, objectId);
+        try
+        {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(this.s3BucketName)
+                    .key(key).build();
+            RequestBody requestBody = RequestBody.fromString(csvData.value);
+            PutObjectResponse putObjectResponse = s3Client.putObject(putObjectRequest, requestBody);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return key;
+    }
+
+    private static void createS3Bucket(S3Client s3Client, String bucketName)
+    {
         boolean bucketExists;
         try
         {
@@ -87,18 +112,6 @@ public class S3DataStager implements DataStager
         {
             s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
         }
-
-        // put the object in the bucket
-        String objectId = generateObjectKey(identity);
-        try
-        {
-            s3Client.putObject(PutObjectRequest.builder().bucket(bucketName).key(objectId).build(), RequestBody.fromString(new ObjectMapper().writeValueAsString(sqlData)));
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-        return objectId;
     }
 
     @Override

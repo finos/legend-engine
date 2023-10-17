@@ -31,8 +31,6 @@ import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.engine.datapush.server.DataPushServer;
-import org.finos.legend.engine.datapush.server.DataPusher;
-import org.finos.legend.engine.datapush.server.DataStager;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.server.support.server.BaseServer;
@@ -105,20 +103,6 @@ public class DataPushServerForTest extends DataPushServer
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
                 )
                 .build();
-    }
-
-    @Override
-    public DataStager buildDataStager(DataPushServerConfiguration configuration)
-    {
-        // TODO
-        return null;
-    }
-
-    @Override
-    public DataPusher buildDataPusher(DataPushServerConfiguration configuration)
-    {
-        // TODO
-        return null;
     }
 
     public LegendEnvironment getEnvironment()

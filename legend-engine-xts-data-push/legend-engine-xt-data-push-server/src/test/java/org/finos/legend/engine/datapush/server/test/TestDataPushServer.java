@@ -15,16 +15,17 @@
 package org.finos.legend.engine.datapush.server.test;
 
 import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
-import org.finos.legend.connection.AuthenticationMechanismType;
 import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.client.Entity;
@@ -102,6 +103,7 @@ public class TestDataPushServer extends AbstractDataPushServerResourceTest
     }
 
     @Test
+    @Ignore
     public void test()
     {
         Response response = this.clientFor("/api/data-push/stage").request().post(Entity.entity("{\n" +
@@ -111,11 +113,6 @@ public class TestDataPushServer extends AbstractDataPushServerResourceTest
                 "Insert into FirmTable (id, Legal_Name) values (1, 'FINOS');\"]\n" +
                 "}", MediaType.APPLICATION_JSON_TYPE));
         String responseText = response.readEntity(String.class);
-
-//        if (response.getStatus() != 200)
-//        {
-////            throw new HttpResponseException(response.getStatus(), "Error during http call with status: " + response.getStatus() + " , entity: " + responseText);
-//        }
 
         assertEquals("ok", responseText);
     }

@@ -34,13 +34,15 @@ import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.datapush.DataPusher;
+import org.finos.legend.engine.datapush.DataPusherProvider;
+import org.finos.legend.engine.datapush.impl.S3DataStager;
+import org.finos.legend.engine.datapush.impl.SnowflakeJDBCDataPusher;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
-import org.finos.legend.engine.datapush.server.impl.JDBCDataPusher;
-import org.finos.legend.engine.datapush.server.impl.S3DataStager;
 import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -106,49 +108,73 @@ public class DataPushServer extends BaseDataPushServer
     @Override
     public StoreInstanceProvider buildStoreInstanceProvider(DataPushServerConfiguration configuration, LegendEnvironment environment)
     {
-        InstrumentedStoreInstanceProvider instrumentedStoreInstanceProvider = new InstrumentedStoreInstanceProvider();
+        InstrumentedStoreInstanceProvider storeInstanceProvider = new InstrumentedStoreInstanceProvider();
 
-        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
+        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
                 .withIdentifier("test-postgres")
                 .withConnectionSpecification(new StaticJDBCConnectionSpecification(
                         "localhost",
                         5432,
                         "legend"
                 ))
+                .build());
+
+        SnowflakeConnectionSpecification summitSnowflake = new SnowflakeConnectionSpecification();
+        summitSnowflake.databaseName = "SUMMIT_DEV";
+        summitSnowflake.accountName = "ki79827";
+        summitSnowflake.warehouseName = "SUMMIT_DEV";
+        summitSnowflake.region = "us-east-2";
+        summitSnowflake.cloudType = "aws";
+        summitSnowflake.role = "SUMMIT_DEV";
+        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
+                .withIdentifier("test-snowflake")
+                .withConnectionSpecification(summitSnowflake)
                 .build()
         );
 
-        SnowflakeConnectionSpecification snowflakeConnectionSpecification = new SnowflakeConnectionSpecification();
-        snowflakeConnectionSpecification.databaseName = "SUMMIT_DEV";
-        snowflakeConnectionSpecification.accountName = "ki79827";
-        snowflakeConnectionSpecification.warehouseName = "SUMMIT_DEV";
-        snowflakeConnectionSpecification.region = "us-east-2";
-        snowflakeConnectionSpecification.cloudType = "aws";
-        snowflakeConnectionSpecification.role = "SUMMIT_DEV";
-        instrumentedStoreInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
-                .withIdentifier("test-snowflake")
-                .withConnectionSpecification(snowflakeConnectionSpecification)
+        SnowflakeConnectionSpecification finosSnowflake = new SnowflakeConnectionSpecification();
+        finosSnowflake.databaseName = "DPSH_DB1";
+        finosSnowflake.accountName = "ki79827";
+        finosSnowflake.warehouseName = "PUSH_WH1";
+        finosSnowflake.region = "us-east-2";
+        finosSnowflake.cloudType = "aws";
+        finosSnowflake.role = "PUSH_ROLE1";
+        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
+                .withIdentifier("finosSF")
+                .withConnectionSpecification(finosSnowflake)
                 .build()
         );
-        return instrumentedStoreInstanceProvider;
+
+        return storeInstanceProvider;
     }
 
     @Override
     public AuthenticationConfigurationProvider buildAuthenticationConfigurationProvider(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment)
     {
-        InstrumentedAuthenticationConfigurationProvider instrumentedAuthenticationConfigurationProvider = new InstrumentedAuthenticationConfigurationProvider(this.storeInstanceProvider, this.environment);
-        instrumentedAuthenticationConfigurationProvider.injectAuthenticationConfiguration(
+        InstrumentedAuthenticationConfigurationProvider authenticationConfigProvider = new InstrumentedAuthenticationConfigurationProvider(this.storeInstanceProvider, this.environment);
+        authenticationConfigProvider.injectAuthenticationConfiguration(
                 "test-postgres",
                 new UserPasswordAuthenticationConfiguration("newuser", new SystemPropertiesSecret("passwordRef")));
-        instrumentedAuthenticationConfigurationProvider.injectAuthenticationConfiguration(
+        authenticationConfigProvider.injectAuthenticationConfiguration(
                 "test-snowflake",
                 new EncryptedPrivateKeyPairAuthenticationConfiguration(
                         "SUMMIT_DEV1",
                         new SystemPropertiesSecret("snowflakePkRef"),
                         new SystemPropertiesSecret("snowflakePkPassphraseRef")
                 ));
+        authenticationConfigProvider.injectAuthenticationConfiguration(
+                "finosSF",
+                new EncryptedPrivateKeyPairAuthenticationConfiguration(
+                        "DEVELOPER_USER1",
+                        new SystemPropertiesSecret("snowflakePkRef"),
+                        new SystemPropertiesSecret("snowflakePkPassphraseRef")
+                ));
 
-        return instrumentedAuthenticationConfigurationProvider;
+        // TODO - add secrets
+        System.setProperty("snowflakePkPassphraseRef", "xxxxx");
+        System.setProperty("snowflakePkRef", "yyyy");
+
+        return authenticationConfigProvider;
     }
 
     @Override
@@ -168,19 +194,38 @@ public class DataPushServer extends BaseDataPushServer
     }
 
     @Override
-    public DataStager buildDataStager(DataPushServerConfiguration configuration)
+    public DataPusherProvider buildDataPushProvider()
     {
-        return new S3DataStager(
-                "http://localhost:6350",
-                StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create("admin", "password")
-                )
-        );
-    }
+        return new DataPusherProvider()
+        {
+            @Override
+            public DataPusher getDataPusher(StoreInstance connectionInstance)
+            {
+                String storeSupport = connectionInstance.getStoreSupport().getIdentifier();
+                if (storeSupport.equals("Snowflake"))
+                {
+                    return this.buildDataPusherForSnowflake();
+                }
+                throw new UnsupportedOperationException("Unsupported store support: " + storeSupport);
+            }
 
-    @Override
-    public DataPusher buildDataPusher(DataPushServerConfiguration configuration)
-    {
-        return new JDBCDataPusher(this.connectionFactory);
+            private DataPusher buildDataPusherForSnowflake()
+            {
+                // TODO - add secrets
+                S3DataStager s3DataStager = new S3DataStager(
+                        "legend-dpsh1",
+                        "https://s3.us-east-1/",
+                        StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(
+                                        "xxxxx",
+                                        "yyyyy")
+                        )
+                );
+                String tableName = "DPSH_DB1.SCHEMA1.TABLE1";
+                String stageName = "DPSH_DB1.SCHEMA1.STAGE1";
+                DataPusher dataPusher = new SnowflakeJDBCDataPusher(s3DataStager, tableName, stageName);
+                return dataPusher;
+            }
+        };
     }
 }

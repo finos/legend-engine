@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.datapush.server;
+package org.finos.legend.engine.datapush;
 
-import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.engine.datapush.data.Data;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
-import java.util.List;
-
-public class StoreCatalog
+public interface DataStager
 {
-    public List<StoreInstance> stores;
+    String write(Identity identity, Data data);
+
+    Data read(Identity identity, String stagingRef);
 }
