@@ -31,6 +31,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import java.net.URI;
 import java.util.UUID;
 
 public class S3DataStager implements DataStager
@@ -65,7 +66,7 @@ public class S3DataStager implements DataStager
     {
         return S3Client
                 .builder()
-                //.endpointOverride(URI.create(this.s3Endpoint))
+                .endpointOverride(URI.create(this.s3Endpoint))
                 .credentialsProvider(this.s3CredentialProvider)
                 .region(Region.US_EAST_1)
                 .build();

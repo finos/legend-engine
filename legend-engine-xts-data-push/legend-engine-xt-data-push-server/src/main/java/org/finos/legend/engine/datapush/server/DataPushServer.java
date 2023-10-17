@@ -159,20 +159,22 @@ public class DataPushServer extends BaseDataPushServer
                 "test-snowflake",
                 new EncryptedPrivateKeyPairAuthenticationConfiguration(
                         "SUMMIT_DEV1",
-                        new SystemPropertiesSecret("snowflakePkRef"),
-                        new SystemPropertiesSecret("snowflakePkPassphraseRef")
+                        new SystemPropertiesSecret("sfsummit_snowflakePkRef"),
+                        new SystemPropertiesSecret("sfsummit_snowflakePkPassphraseRef")
                 ));
         authenticationConfigProvider.injectAuthenticationConfiguration(
                 "finosSF",
                 new EncryptedPrivateKeyPairAuthenticationConfiguration(
                         "DEVELOPER_USER1",
-                        new SystemPropertiesSecret("snowflakePkRef"),
-                        new SystemPropertiesSecret("snowflakePkPassphraseRef")
+                        new SystemPropertiesSecret("finos_snowflakePkRef"),
+                        new SystemPropertiesSecret("finos_snowflakePkPassphraseRef")
                 ));
 
-        // TODO - add secrets
-        System.setProperty("snowflakePkPassphraseRef", "xxxxx");
-        System.setProperty("snowflakePkRef", "yyyy");
+        System.setProperty("passwordRef", "xxxxx"); // NOTE: secret - to be removed when committed
+        System.setProperty("sfsummit_snowflakePkRef", "xxxxx"); // NOTE: secret - to be removed when committed
+        System.setProperty("sfsummit_snowflakePkPassphraseRef", "xxxxx"); // NOTE: secret - to be removed when committed
+        System.setProperty("finos_snowflakePkRef", "xxxxx"); // NOTE: secret - to be removed when committed
+        System.setProperty("finos_snowflakePkPassphraseRef", "xxxxx"); // NOTE: secret - to be removed when committed
 
         return authenticationConfigProvider;
     }
@@ -211,20 +213,18 @@ public class DataPushServer extends BaseDataPushServer
 
             private DataPusher buildDataPusherForSnowflake()
             {
-                // TODO - add secrets
                 S3DataStager s3DataStager = new S3DataStager(
                         "legend-dpsh1",
                         "https://s3.us-east-1/",
                         StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create(
-                                        "xxxxx",
-                                        "yyyyy")
+                                        "xxxxx", // NOTE: secret - to be removed when committed
+                                        "xxxxx") // NOTE: secret - to be removed when committed
                         )
                 );
                 String tableName = "DPSH_DB1.SCHEMA1.TABLE1";
                 String stageName = "DPSH_DB1.SCHEMA1.STAGE1";
-                DataPusher dataPusher = new SnowflakeJDBCDataPusher(s3DataStager, tableName, stageName);
-                return dataPusher;
+                return new SnowflakeJDBCDataPusher(s3DataStager, tableName, stageName);
             }
         };
     }
