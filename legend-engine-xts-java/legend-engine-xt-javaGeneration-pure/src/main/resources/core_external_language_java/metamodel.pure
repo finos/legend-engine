@@ -786,17 +786,16 @@ Class meta::external::language::java::metamodel::project::MavenReference extends
 function meta::external::language::java::metamodel::javaKeywords(): String[*]
 {
    [
-      'abstract'  ,'default'    ,'if'          ,'org'        ,'switch',
-      'assert'    ,'do'         ,'goto'        ,'package'    ,'synchronized',
-      'boolean'   ,'double'     ,'implements'  ,'private'    ,'this',
-      'break'     ,'else'       ,'import'      ,'protected'  ,'throw',
-      'byte'      ,'enum'       ,'instanceof'  ,'public'     ,'throws',
-      'case'      ,'extends'    ,'int'         ,'return'     ,'transient',
-      'catch'     ,'final'      ,'interface'   ,'short'      ,'try',
-      'char'      ,'finally'    ,'long'        ,'static'     ,'void',
-      'class'     ,'float'      ,'native'      ,'strictfp'   ,'volatile',
-      'const'     ,'for'        ,'new'         ,'super'      ,'while',
-      'continue'
+      'abstract'  ,'continue'   ,'for'         ,'new'        ,'switch',
+      'assert'    ,'default'    ,'if'          ,'package'    ,'synchronized',
+      'boolean'   ,'do'         ,'goto'        ,'private'    ,'this',
+      'break'     ,'double'     ,'implements'  ,'protected'  ,'throw',
+      'byte'      ,'else'       ,'import'      ,'public'     ,'throws',
+      'case'      ,'enum'       ,'instanceof'  ,'return'     ,'transient',
+      'catch'     ,'extends'    ,'int'         ,'short'      ,'try',
+      'char'      ,'final'      ,'interface'   ,'static'     ,'void',
+      'class'     ,'finally'    ,'long'        ,'strictfp'   ,'volatile',
+      'const'     ,'float'      ,'native'      ,'super'      ,'while'
    ];
 }
 
