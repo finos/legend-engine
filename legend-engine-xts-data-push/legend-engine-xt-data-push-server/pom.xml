@@ -66,6 +66,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-modelManager-sdlc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- RUNTIME -->
@@ -118,6 +126,17 @@
         </dependency>
         <!-- JSON -->
 
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>org.pac4j.jax-rs</groupId>
@@ -149,6 +168,31 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <!-- ANNOTATIONS -->
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -236,14 +280,6 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager-sdlc</artifactId>
         </dependency>
         <!-- TEST -->
     </dependencies>
