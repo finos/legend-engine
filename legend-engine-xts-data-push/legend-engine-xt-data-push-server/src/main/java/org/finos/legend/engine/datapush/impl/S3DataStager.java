@@ -24,6 +24,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
@@ -64,12 +65,15 @@ public class S3DataStager implements DataStager
 
     private S3Client getS3Client()
     {
-        return S3Client
+        S3ClientBuilder clientBuilder = S3Client
                 .builder()
-                .endpointOverride(URI.create(this.s3Endpoint))
                 .credentialsProvider(this.s3CredentialProvider)
-                .region(Region.US_EAST_1)
-                .build();
+                .region(Region.US_EAST_1);
+        if (this.s3Endpoint != null)
+        {
+            clientBuilder.endpointOverride(URI.create(this.s3Endpoint));
+        }
+        return clientBuilder.build();
     }
 
     @Override

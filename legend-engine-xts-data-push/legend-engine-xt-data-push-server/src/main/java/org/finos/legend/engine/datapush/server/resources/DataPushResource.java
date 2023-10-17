@@ -184,8 +184,9 @@ public class DataPushResource extends BaseResource
     private void pushCSVData(Identity identity, ConnectionDemo connectionDemo, CSVData csvData)
     {
         StoreInstance connectionInstance = StoreInstanceBuilderHelper.buildStoreInstance(connectionDemo.storeInstance, this.environment);
-        AuthenticationConfiguration authenticationConfiguration = this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
-        authenticationConfiguration = authenticationConfiguration != null ? authenticationConfiguration : this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
+        AuthenticationConfiguration authenticationConfiguration = connectionDemo.authenticationConfiguration != null
+                ? connectionDemo.authenticationConfiguration
+                : this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
         try
         {
             DataPusher dataPusher = this.dataPusherProvider.getDataPusher(connectionInstance);
