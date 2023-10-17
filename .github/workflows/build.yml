@@ -18,6 +18,7 @@ env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  MAVEN_OPTS: "-Xmx6g"
 
 on: [push, pull_request]
 
@@ -82,8 +83,8 @@ jobs:
       - name: Build + Test
         if: github.ref != 'refs/heads/master'
         run: |
-          mvn -B -e -DXmx8g -DskipTests=true install
-          mvn -B -e -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e -DskipTests=true install
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: github.ref == 'refs/heads/master'
@@ -97,8 +98,8 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: |
-          mvn -B -e -DXmx8g -DskipTests=true deploy -P docker-snapshot,sonar
-          mvn -B -e -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e -DskipTests=true deploy -P docker-snapshot,sonar
+          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
