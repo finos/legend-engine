@@ -65,7 +65,7 @@ public class ArrowRuntimeExtension implements ExternalFormatRuntimeExtension
     private Result streamArrowFromRelational(RelationalResult relationalResult) throws SQLException, IOException
     {
 
-        return new ExternalFormatSerializeResult(new ArrowDataWriter(relationalResult.getResultSet()), relationalResult, CONTENT_TYPE);
+        return new ExternalFormatSerializeResult(new ArrowDataWriter(relationalResult), relationalResult, CONTENT_TYPE);
 
     }
 
