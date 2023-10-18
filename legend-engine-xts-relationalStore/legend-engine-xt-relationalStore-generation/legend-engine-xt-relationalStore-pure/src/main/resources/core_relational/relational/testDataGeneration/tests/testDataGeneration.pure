@@ -22,7 +22,9 @@ import meta::relational::testDataGeneration::tests::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::lineage::scanTables::*;
 import meta::relational::tests::model::simple::*;
@@ -35,7 +37,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|'constant'], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -61,7 +63,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -88,7 +90,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -127,7 +129,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -167,7 +169,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['No Name']));
@@ -192,7 +194,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.vehicles.description], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -251,7 +253,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                                                                           ['Person','Engine Type','Bicycle Person'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -313,7 +315,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Trade.all()->project([t|$t.product.name, t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],['prodName', 'synName'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'tradeTable', [createRowIdentifier(['prodId'], [2]), createRowIdentifier(['tradeDate'], [%2014-12-04]) ]);
@@ -381,7 +383,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Person.all()->project([t|$t.name, t|$t.manager.name, t|$t.manager.manager.name],['1', '2', '3'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'personTable', [createRowIdentifier(['ID'], [1]), createRowIdentifier(['ID'], 5)]);
@@ -425,7 +427,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Firm.all()->project([p|$p.legalName, p|$p.employees.lastName], ['Firm','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionMappingWithSameJoinInPropertyInBothUnions;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -499,7 +501,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Firm.all()->project([p|$p.legalName, p|$p.bridge.employees.lastName], ['Firm','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionMappingWithEmbeddedProperty2;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -580,7 +582,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -633,7 +635,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|OrderPnl.all()->project(#/OrderPnl/pnl#)};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -679,7 +681,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -726,7 +728,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Order.all()->project([o|$o.id, o|$o.pnl], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -776,7 +778,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::projection::view::unionOnViewOnViewMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -822,7 +824,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Order.all()->project([o|$o.id, o|$o.pnlContact.firm.legalName], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
    let db = meta::relational::tests::db;
-   let runtime = meta::relational::tests::testRuntime($db);
+   let runtime = meta::external::store::relational::tests::testRuntime($db);
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -875,7 +877,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -928,7 +930,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -960,7 +962,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Trader.all(%2015-10-16)->project([t|$t.kerberos, t|$t.location(%9999-12-28).place], ['A', 'B'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -989,7 +991,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::businessSnapshotMilestoningMap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -1023,7 +1025,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -1071,7 +1073,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Trader.all(%2015-10-16)->project([t|$t.kerberos, t|$t.location(%9999-12-28).place], ['A', 'B'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -1100,7 +1102,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::businessSnapshotMilestoningMap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -1131,7 +1133,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 {
    let query   = {|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))};
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1163,7 +1165,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                         ->project([col(r:TDSRow[1]|$r.getString('LASTNAME'), 'firstName')])
                         ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')])};
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1193,7 +1195,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query   = {|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
                          ->groupBy(['FIRSTNAME'], agg('cnt', x|$x.getString('LASTNAME'), y| $y->count()))};
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1225,7 +1227,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                         ->concatenate(tableToTDS(tableReference(meta::relational::tests::dbInc,'default','firmTable'))->project([col(r:TDSRow[1]|$r.getString('LEGALNAME'), 'name')]))};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1272,7 +1274,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','personTable')), JoinType.INNER, {a,b|$a.getInteger('personID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1308,7 +1310,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','addressTable')), JoinType.LEFT_OUTER, {a,b|$a.getInteger('ceoID') == $b.getInteger('ID');})
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','locationTable'))->project([col(r:TDSRow[1]|$r.getInteger('PERSONID'), 'locationPersonID')]), JoinType.LEFT_OUTER, {a,b|$a.getInteger('personID') == $b.getInteger('locationPersonID');})};
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1360,7 +1362,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','addressTable')), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1419,7 +1421,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                            ->olapGroupBy('FIRSTNAME',asc('LASTNAME'),func('cnt',y|$y->sum()),'testCol1')};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1460,7 +1462,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                               ->restrict(['FIRST NAME', 'LAST NAME'])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -1528,7 +1530,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 
 function <<access.protected>> meta::relational::testDataGeneration::tests::initDatabase():Runtime[1]
 {
-   let connection = meta::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connections->toOne()->cast(@TestDatabaseConnection);
+   let connectionStore = meta::external::store::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connectionStores->toOne();
+   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
 
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate DATE, id Integer, prodFk Integer)',$connection);
@@ -1794,7 +1797,7 @@ function <<access.protected>> meta::relational::testDataGeneration::tests::initD
    executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(2, \'def3\', \'2018-05-07\', \'9999-12-31\', \'2018-05-06\', \'9999-12-31\');', $connection);
    executeInDb('insert into BiTemporalProductTable_Out_Thru_Inclusive values(3, \'ghi1\', \'2018-05-09\', \'9999-12-31\', \'2018-05-08\', \'9999-12-31\');', $connection);
 
-   ^Runtime(connections=$connection);
+   ^Runtime(connectionStores=$connectionStore);
 }
 
 function <<access.private>> meta::relational::testDataGeneration::tests::assertSqlEquals(s1 : String[1], s2 : String[1]):Boolean[1]
@@ -1811,7 +1814,7 @@ function meta::relational::testDataGeneration::tests::assertTestData(s1 : String
 
 function <<access.private>> meta::relational::testDataGeneration::tests::loadAndTestExecution(query: FunctionDefinition<Any>[1], parametersValues:Any[*], mapping: meta::pure::mapping::Mapping[1], runtime: Runtime[1], data:String[1], db: Database[1]):Boolean[1]
 {
-   let testConnection = $runtime.connections->toOne()->cast(@TestDatabaseConnection);
+   let testConnection = $runtime.connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
    let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($data, $db);
    $setUpSQLs->map(sql | executeInDb($sql, $testConnection));
    let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -1832,7 +1835,9 @@ import meta::relational::testDataGeneration::tests::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::lineage::scanTables::*;
 import meta::relational::tests::model::simple::*;
@@ -1844,7 +1849,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|'constant'], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -1891,7 +1896,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -1912,7 +1917,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
@@ -1938,7 +1943,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -1966,7 +1971,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['No Name']));
@@ -1987,7 +1992,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.vehicles.description], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -2025,7 +2030,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                                                                           ['Person','Engine Type','Bicycle Person'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
@@ -2060,7 +2065,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Trade.all()->project([t|$t.product.name, t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],['prodName', 'synName'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'tradeTable', [createRowIdentifier(['prodId'], [2]), createRowIdentifier(['tradeDate'], [%2014-12-04]) ]);
@@ -2100,7 +2105,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([t|$t.name, t|$t.manager.name, t|$t.manager.manager.name],['1', '2', '3'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'personTable', [createRowIdentifier(['ID'], [1]), createRowIdentifier(['ID'], 5)]);
@@ -2124,7 +2129,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2176,7 +2181,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnlContact.firm.legalName], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2226,7 +2231,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2271,7 +2276,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnl], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2315,7 +2320,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2367,7 +2372,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = [];
@@ -2403,7 +2408,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
@@ -2442,7 +2447,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnlContact.firm.legalName], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2484,11 +2489,11 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
 
 function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta::relational::testDataGeneration::tests::alloy::testViewWithGroupByRoot_Alloy():Boolean[1]
 {
-  let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
-  let mapping = meta::relational::tests::simpleRelationalMapping;
-  let db = meta::relational::tests::db;
-  let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
-  meta::relational::tests::createTablesAndFillDb();
+   let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let db = meta::relational::tests::db;
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   meta::relational::tests::createTablesAndFillDb();
 
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
       let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
@@ -2522,7 +2527,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Account.all()->project([o|$o.accountPnl.pnl, o|$o.name], ['Pnl', 'Acct'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connections = ^TestDatabaseConnection(element=$db, type=DatabaseType.H2));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
@@ -2557,7 +2562,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -2658,7 +2663,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Trader.all(%2015-10-16)->project([t|$t.kerberos, t|$t.location(%9999-12-28).place], ['A', 'B'])};
    let mapping = meta::relational::tests::milestoning::milestoningmap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -2758,7 +2763,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|meta::relational::tests::milestoning::Product.all(%2015-10-16)->project([p|$p.name, p|$p.classificationTypeStr],['name','classificationType'])};
    let mapping = meta::relational::tests::milestoning::businessSnapshotMilestoningMap;
    let db = meta::relational::tests::milestoning::db;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    meta::relational::testDataGeneration::tests::initDatabase();
 
    let tableRowIdentifiers = [
@@ -2858,7 +2863,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
 {
    let query   = {|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))};
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -2885,7 +2890,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                         ->meta::pure::tds::filter({r:TDSRow[1] | $r.getString('firstName') == 'John'})
                         ->meta::pure::tds::extend([col({r:TDSRow[1]|'Hello'}, 'hello')])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -2907,7 +2912,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                         ->concatenate(tableToTDS(tableReference(meta::relational::tests::dbInc,'default','firmTable'))->project([col(r:TDSRow[1]|$r.getString('LEGALNAME'), 'name')]))};
 
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -2950,7 +2955,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','addressTable')), JoinType.LEFT_OUTER, {a,b|$a.getInteger('ceoID') == $b.getInteger('ID');})
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','locationTable'))->project([col(r:TDSRow[1]|$r.getInteger('PERSONID'), 'locationPersonID')]), JoinType.LEFT_OUTER, {a,b|$a.getInteger('personID') == $b.getInteger('locationPersonID');})};
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -2995,7 +3000,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','addressTable')), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -3045,7 +3050,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                               ->restrict(['FIRST NAME', 'LAST NAME'])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let db = meta::relational::tests::db;
    meta::relational::tests::createTablesAndFillDb();
 
@@ -3102,7 +3107,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
   let query = {|OrderPnl.all()->project([o | $o.pnl, o | $o.order.settlementDateTime], ['pnl', 'settlementDateTime'])};
   let mapping = meta::relational::tests::simpleRelationalMapping;
   let db = meta::relational::tests::db;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
   meta::relational::tests::createTablesAndFillDb();
 
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
@@ -3143,7 +3148,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
   let query = {|meta::pure::lineage::scanRelations::test::Party.all()->project([r | $r.identifier.identifier],['id'])->distinct()};
   let mapping = meta::pure::lineage::scanRelations::test::MappingWithJoinToSchemaInAnotherView;
   let db = meta::pure::lineage::scanRelations::test::DB2;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let tableRowIdentifiers = [
     meta::relational::testDataGeneration::createTableRowIdentifiers($db, 'E', 'Entity', [

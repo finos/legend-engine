@@ -15,6 +15,7 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
@@ -131,12 +132,12 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
                                               col(f:Firm[1]|$f.employees->map(e|$e.lastName),'b'),
                                               col(f:Firm[1]|$f.employees->map(e|2 + $e.locations.place->count()),'c')
                                              ])};
-      
-      
+
+
       println($l->evaluateAndDeactivate());
-                        
-                                             
-   
+
+
+
    let result = execute($l, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));
@@ -151,7 +152,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
                                               col(f:Firm[1]|$f.employees->map(e|$e.lastName),'b'),
                                               col(f:Firm[1]|$f.employees->map(e|2 + $e.locations.place->count()),'c')
                                              ]->cast(@BasicColumnSpecification<Firm>);
-   
+
    let result = execute({|Firm.all()->project($cols)}, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));

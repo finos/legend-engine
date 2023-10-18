@@ -14,8 +14,10 @@
 
 import meta::relational::metamodel::relation::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::typeInference::*;
@@ -32,20 +34,41 @@ function meta::relational::metamodel::execute::executeInDb(sql:String[1], databa
     meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000)
 }
 
+function meta::relational::metamodel::execute::executeInDb(sql:String[1], connectionStore:ConnectionStore[1]):ResultSet[1]
+{
+    let databaseConnection = $connectionStore.connection->cast(@DatabaseConnection);
+    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);
+}
+
+
 function meta::relational::functions::database::executeInDb(str: String[1] , connection:DatabaseConnection[1], debug:Boolean[1]):ResultSet[1]
 {
    print(if($debug,|$str+'\n',|''));
    executeInDb($str, $connection);
 }
 
+function meta::relational::functions::database::executeInDb(str: String[1] , connectionStore:ConnectionStore[1], debug:Boolean[1]):ResultSet[1]
+{
+   let connection = $connectionStore.connection->cast(@DatabaseConnection);
+   print(if($debug,|$str+'\n',|''));
+   executeInDb($str, $connection);
+}
+
+
 function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[1], table:Table[1], databaseConnection:DatabaseConnection[1]):Nil[0]
 {
     loadCsvToDbTable($filePath, $table, $databaseConnection, [])
 }
 
+function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[1], table:Table[1], connectionStore:ConnectionStore[1]):Nil[0]
+{
+    let databaseConnection = $connectionStore.connection->cast(@DatabaseConnection);
+    loadCsvToDbTable($filePath, $table, $databaseConnection, []);
+}
+
 function meta::relational::metamodel::execute::createTestDatabaseConnection():DatabaseConnection[1]
 {
-   ^TestDatabaseConnection(element='TEST', type=DatabaseType.H2);
+   ^TestDatabaseConnection(type=DatabaseType.H2);
 }
 
 function meta::relational::metamodel::execute::resultSetToTDS(resultSet:ResultSet[1]):TabularDataSet[1]
@@ -56,9 +79,9 @@ function meta::relational::metamodel::execute::resultSetToTDS(resultSet:ResultSe
    let rows = $resultSet.rows->map(r | ^TDSRow(values=$r.values->map(v | if($v == $sqlNull, | $tdsNull, | $v))));
 
    let tds =^TabularDataSet(columns=$columns, rows=$rows);
-   
+
    $tds.rows->map(r|mutateAdd($r, 'parent', $tds));
-                  
+
    $tds;
 }
 
@@ -71,17 +94,17 @@ function meta::relational::runtime::mergeRuntimes(runtimes:Runtime[1..*]):Runtim
 {
    if($runtimes->distinct()->size()==1,
       |$runtimes->at(0),
-      | ^Runtime(connections = $runtimes.connections->distinct())
+      | ^Runtime(connectionStores= $runtimes.connectionStores->distinct())
     );
 }
 
 function meta::relational::runtime::dataSourceEquality(a:DataSource[1],b:DataSource[1]):Boolean[1]
 {
    $a.host == $b.host &&
-   $a.port == $b.port  &&   
-   $a.name == $b.name  &&   
-   $a.type == $b.type  &&   
-   $a.serverPrincipal == $b.serverPrincipal;   
+   $a.port == $b.port  &&
+   $a.name == $b.name  &&
+   $a.type == $b.type  &&
+   $a.serverPrincipal == $b.serverPrincipal;
 
 }
 
@@ -97,18 +120,18 @@ function meta::relational::functions::typeInference::inferDynaFunctionReturnType
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-   inferRelationalType($rop, true); 
+   inferRelationalType($rop, true);
 }
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-   let relationalType = inferRelationalType($rop); 
+   let relationalType = inferRelationalType($rop);
    $relationalType->translateCoreTypeToDbSpecificType($translationContext);
 }
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1], translationContext:TranslationContext[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-   let relationalType = inferRelationalType($rop, $failOnMatchFailure); 
+   let relationalType = inferRelationalType($rop, $failOnMatchFailure);
    $relationalType->translateCoreTypeToDbSpecificType($translationContext);
 }
 
@@ -126,7 +149,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
          d: Float[1]   |  ^meta::relational::metamodel::datatype::Float(),
          d: StrictDate[1]   |  ^meta::relational::metamodel::datatype::Date(),
          d: Date[1]   |  ^meta::relational::metamodel::datatype::Timestamp(),
-         d: meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]   |  
+         d: meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder[1]   |
             if($d.type == String,
                | ^meta::relational::metamodel::datatype::Varchar(size = 4000),
                | if($d.type == Integer,
@@ -224,7 +247,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
             )
          ])
-      ),       
+      ),
 
       pair(
          'asin',
@@ -326,7 +349,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 1)}
             )
          ])
-      ),       
+      ),
 
       pair(
          'coalesce',
@@ -406,7 +429,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
             )
          ])
-      ),      
+      ),
 
       pair(
          'count',
@@ -616,7 +639,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
             )
          ])
-      ),      
+      ),
 
       pair(
          'firstMinuteOfHour',
@@ -626,7 +649,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
             )
          ])
-      ),         
+      ),
 
       pair(
          'firstSecondOfMinute',
@@ -636,7 +659,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
             )
          ])
-      ),   
+      ),
 
       pair(
          'firstMillisecondOfSecond',
@@ -646,7 +669,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Timestamp()}
             )
          ])
-      ),         
+      ),
 
       pair(
          'floor',
@@ -854,7 +877,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Double()}
             )
          ])
-      ),      
+      ),
 
       pair(
          'ltrim',
@@ -888,7 +911,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 32)}
             )
          ])
-      ),      
+      ),
 
       pair(
          'min',
@@ -983,7 +1006,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
-      
+
       pair(
          'notEqual',
          list([
@@ -1142,7 +1165,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
             )
          ])
-      ),      
+      ),
 
       pair(
          'right',
@@ -1210,7 +1233,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 40)}
             )
          ])
-      ),          
+      ),
 
       pair(
          'sha256',
@@ -1220,7 +1243,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 64)}
             )
          ])
-      ),        
+      ),
 
       pair(
          'sign',
@@ -1230,7 +1253,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Integer()}
             )
          ])
-      ),      
+      ),
 
       pair(
          'sin',
@@ -1291,7 +1314,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
-      
+
       pair(
          'sqlFalse',
          list([
@@ -1542,7 +1565,7 @@ function <<access.private>> meta::relational::functions::typeInference::getSafeT
    if($safeType->instanceOf(meta::relational::metamodel::datatype::Char) || $safeType->instanceOf(meta::relational::metamodel::datatype::Varchar),
       | ^meta::relational::metamodel::datatype::Varchar(size = [if($type1->instanceOf(meta::relational::metamodel::datatype::Other), | 0, | $type1->getSize()), if($type2->instanceOf(meta::relational::metamodel::datatype::Other), | 0, | $type2->getSize())]->max()),
       | if($safeType->instanceOf(meta::relational::metamodel::datatype::Numeric) || $safeType->instanceOf(meta::relational::metamodel::datatype::Decimal),
-        {| 
+        {|
           let scale = max([getDecimalScale($type1), getDecimalScale($type2)]);
           let precision = max([getDecimalIntegerPrecision($type1), getDecimalIntegerPrecision($type2)]) + $scale;
           ^meta::relational::metamodel::datatype::Decimal(precision = $precision, scale = $scale);
@@ -1595,7 +1618,7 @@ function <<access.private>> meta::relational::functions::typeInference::safeType
       pair(meta::relational::metamodel::datatype::Date, list([meta::relational::metamodel::datatype::Date])),
       pair(meta::relational::metamodel::datatype::Timestamp, list([meta::relational::metamodel::datatype::Timestamp])),
       pair(meta::relational::metamodel::datatype::Bit, list([meta::relational::metamodel::datatype::Bit])),
-      pair(meta::relational::metamodel::datatype::Other, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric, 
+      pair(meta::relational::metamodel::datatype::Other, list([meta::relational::metamodel::datatype::TinyInt, meta::relational::metamodel::datatype::SmallInt, meta::relational::metamodel::datatype::Integer, meta::relational::metamodel::datatype::Float, meta::relational::metamodel::datatype::BigInt, meta::relational::metamodel::datatype::Double, meta::relational::metamodel::datatype::Numeric,
                                                                meta::relational::metamodel::datatype::Decimal, meta::relational::metamodel::datatype::Char, meta::relational::metamodel::datatype::Varchar, meta::relational::metamodel::datatype::Date, meta::relational::metamodel::datatype::Timestamp, meta::relational::metamodel::datatype::Bit, meta::relational::metamodel::datatype::Other]))
    ])
 }

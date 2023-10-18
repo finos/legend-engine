@@ -1,24 +1,25 @@
 import meta::rel::runtime::*;
+import meta::core::runtime::*;
 
-Class meta::rel::runtime::TestConnection extends meta::pure::runtime::Connection {
+Class meta::rel::runtime::TestConnection extends meta::core::runtime::Connection {
   onExecute: Function<{String[1]->Any[*]}>[0..1];
 }
 
 function meta::rel::runtime::TestConnection(
   element: Any[1],
   onExecute: Function<{String[1]->Any[*]}>[0..1]
-): TestConnection[1] {
-  ^TestConnection(onExecute=$onExecute, element=$element);
+): ConnectionStore[1] {
+  ^ConnectionStore(element=$element,connection=^TestConnection(onExecute=$onExecute));
 }
 
-function meta::rel::runtime::TestConnection(element: Any[1]): TestConnection[1] {
+function meta::rel::runtime::TestConnection(element: Any[1]): ConnectionStore[1] {
   TestConnection($element, []);
 }
 
-function meta::rel::runtime::query(connection: TestConnection[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {  
+function meta::rel::runtime::query(connection: ConnectionStore[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
   let schema = $connection.element->cast(@meta::rel::mapping::frontend::RAISchema);
 
-  let runtime = ^meta::pure::runtime::Runtime(connections=$connection);
+  let runtime = ^meta::core::runtime::Runtime(connectionStores=$connection);
 
   let result = execute(
     $query,

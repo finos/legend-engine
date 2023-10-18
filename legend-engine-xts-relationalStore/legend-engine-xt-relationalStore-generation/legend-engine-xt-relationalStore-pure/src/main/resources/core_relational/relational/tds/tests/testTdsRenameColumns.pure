@@ -15,8 +15,10 @@
 import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumns():Boolean[1]
 {
@@ -26,16 +28,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'), col({r:TDSRow[1]|'Hello'}, 'hello')])
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'hello', second = 'Other')])
          ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);   
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_0"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_0"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -44,23 +46,23 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    let result = execute(
       |Person.all()
          ->project([
-            col(p|$p.firstName,'firstName'), 
+            col(p|$p.firstName,'firstName'),
             col(p|$p.age, 'age')
             ])
          ->groupBy('firstName', meta::pure::tds::agg('count', x|$x, y| $y->count()))
          ->sort(asc('firstName'))
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'count', second = 'People Count')])
          ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);   
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Anthony|1,David|1,Fabrice|1,John|2,Oliver|1,Peter|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "persontable_0"."firstName" as "First Name", "persontable_0"."count" as "People Count" from (select "root".FIRSTNAME as "firstName", count(*) as "count" from personTable as "root" group by "firstName" order by "firstName") as "persontable_0"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -73,16 +75,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          )
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name')])
          ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 1);   
-   
+
+   assertSize($result.values.columns, 1);
+
    assertEquals('Anthony,Anthony,David,David,Fabrice,Fabrice,John,John,John,John,Oliver,Oliver,Peter,Peter',
       $result.values->sort(asc('First Name')).rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" UNION ALL select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsWithQuotes():Boolean[1]
@@ -98,14 +100,14 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
    };
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "firstName", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."1columnStartsWithNumber" as "1columnStartsWithNumber" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_0"';
-   
+
    assertEquals($expected, $resWithoutQuotes->sqlRemoveFormatting());
-   
+
    let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
        ->project([
                                col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
@@ -115,9 +117,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
                  ->restrict(['"FIRST NAME"', '"LAST NAME"', '1columnStartsWithNumber'])
                  ->renameColumns([^Pair<String,String>(first = '"FIRST NAME"', second = 'firstName')])
    };
-   
+
    let resWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());   
+   assertEquals($expected, $resWithQuotes->sqlRemoveFormatting());
 }
 

@@ -17,6 +17,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::processingDate::setUp():Any[0..1]
 {

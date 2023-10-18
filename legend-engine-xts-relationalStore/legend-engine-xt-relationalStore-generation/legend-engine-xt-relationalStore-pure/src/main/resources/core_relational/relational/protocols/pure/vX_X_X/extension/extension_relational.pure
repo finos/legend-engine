@@ -19,6 +19,7 @@ import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::csv:
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::relational::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::context::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::protocols::pure::vX_X_X::invocation::execution::execute::*;
 import meta::relational::mapping::*;
@@ -33,7 +34,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension(type:S
    ]->filter(f|$f.first == $type);
    assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
    $res->at(0).second->eval();
-   
+
 }
 
 function meta::protocols::pure::vX_X_X::extension::transformTempTableStrategy(tempTableStrategy:meta::relational::graphFetch::executionPlan::TempTableStrategy[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy[1]
@@ -80,8 +81,8 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
        transfers_valueSpecification_transformAny = {
           inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
-                r:meta::pure::runtime::Runtime[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                r:meta::core::runtime::Runtime[1]|
+                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                 (
                   _type = 'classInstance',
                   type = 'runtimeInstance',
@@ -91,7 +92,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                           )
                 ),
                 e:meta::pure::runtime::ExecutionContext[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                 (
                   _type = 'classInstance',
                   type = 'executionContextInstance',
@@ -297,7 +298,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                             let rv = $resultJSON->fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, $extendedJSONDeserializationConfig);
                             $rv->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne()->processTDSResult($extensions);}
                     ),
-      
+
                pair (builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='classBuilder',
                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], pureRuntime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
                             let r = $resultJSON->fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalClassResult, $extendedJSONDeserializationConfig);
@@ -313,7 +314,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
       ]}
 
    ,
-   invocation_execution_transformContext = 
+   invocation_execution_transformContext =
       [
          r:meta::relational::runtime::RelationalExecutionContext[1]|
             let importDataFlowFkCols = if($r.importDataFlowFksByTable->isEmpty(), |[],
@@ -343,10 +344,10 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
       ]},
       transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
       [
-         db:meta::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+         db:meta::external::store::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
       ]},
       scan_buildPureModelAsText_getAllElementsFromMapping = {stores : meta::pure::store::Store[*] |
-                        $stores->map(s|$s->concatenate($s->match([d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore()),a:Any[1]|[]])))      
+                        $stores->map(s|$s->concatenate($s->match([d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore()),a:Any[1]|[]])))
       }
    )
 }

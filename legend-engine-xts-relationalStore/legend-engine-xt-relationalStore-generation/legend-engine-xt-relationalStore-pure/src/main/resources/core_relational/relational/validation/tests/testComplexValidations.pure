@@ -228,16 +228,18 @@ Database meta::relational::validation::complex::db
 ###Pure
 import meta::relational::validation::complex::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::csv::*;
 import meta::relational::validation::*;
 import meta::relational::metamodel::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::validation::complex::createTablesInDb():Boolean[1]
 {
    let runtime    = getRuntime();
-   let connection = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
    executeInDb('Drop table if exists legalEntityTable;', $connection);
    executeInDb('Create Table legalEntityTable(id INT, firmId INT, legalEntityAddressId INT);', $connection);
@@ -310,7 +312,7 @@ function <<test.BeforePackage>> meta::relational::validation::complex::createTab
 
 function meta::relational::validation::complex::getRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(^Database());
+   meta::external::store::relational::tests::testRuntime(^Database());
 }
 
 function <<test.Test>> meta::relational::validation::complex::validateComplexValidation1():Boolean[1]

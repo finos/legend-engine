@@ -481,7 +481,7 @@ public class TestExecutionPlan extends AlloyTestServer
     @Test
     public void testUnion() throws Exception
     {
-        // executionPlan(|meta::pure::tests::model::simple::Person.all(), meta::relational::tests::mapping::union::unionMapping, meta::relational::tests::testRuntime())->meta::alloy::protocol::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan()->toJSON([], 1000, config(false, false, true, true));
+        // executionPlan(|meta::pure::tests::model::simple::Person.all(), meta::relational::tests::mapping::union::unionMapping, meta::external::store::relational::tests::testRuntime())->meta::alloy::protocol::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan()->toJSON([], 1000, config(false, false, true, true));
         String plan = "{\n" +
                 "  \"rootExecutionNode\": {\n" +
                 "    \"sqlQuery\": \"select \\\"unionBase\\\".u_type as u_type, \\\"unionBase\\\".\\\"pk_0_0\\\" as \\\"pk_0_0\\\", \\\"unionBase\\\".\\\"pk_0_1\\\" as \\\"pk_0_1\\\", \\\"unionBase\\\".\\\"lastName\\\" as \\\"lastName\\\" from (select '0' as u_type, \\\"root\\\".ID as \\\"pk_0_0\\\", null as \\\"pk_0_1\\\", \\\"root\\\".lastName_s1 as \\\"lastName\\\" from PersonSet1 as \\\"root\\\" UNION ALL select '1' as u_type, null as \\\"pk_0_0\\\", \\\"root\\\".ID as \\\"pk_0_1\\\", \\\"root\\\".lastName_s2 as \\\"lastName\\\" from PersonSet2 as \\\"root\\\") as \\\"unionBase\\\"\",\n" +

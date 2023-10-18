@@ -20,6 +20,7 @@ import meta::analytics::mapping::modelCoverage::utility::*;
 import meta::analytics::class::modelCoverage::*;
 import meta::analytics::class::modelCoverage::utility::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::milestoning::*;
 
 
@@ -47,7 +48,7 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
     Unknown
 }
 
-Class meta::analytics::mapping::modelCoverage::MappedEntityInfo 
+Class meta::analytics::mapping::modelCoverage::MappedEntityInfo
 {
    isRootEntity : Boolean[0..1];
    classPath: String[1];
@@ -61,7 +62,7 @@ Class meta::analytics::mapping::modelCoverage::MappedEntity
    info: MappedEntityInfo[0..1];
 }
 
-Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo 
+Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo
 {
   type : MappedPropertyType[1];
   multiplicity: Multiplicity[1];

@@ -60,7 +60,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
@@ -577,7 +577,7 @@ public class HelperMappingBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
         if (testData.store.equals("ModelStore"))
         {
-            mappingStoreTestData._store(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl(""));
+            mappingStoreTestData._store(new Root_meta_external_store_model_ModelStore_Impl(""));
         }
         else
         {

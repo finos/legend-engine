@@ -14,6 +14,7 @@
 
 ###Pure
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
 import meta::protocols::pure::v1_27_0::transformation::fromPureGraph::*;
@@ -56,7 +57,7 @@ function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::
       package = if($class.package->isEmpty(),|[],|$class.package->toOne()->elementToPath()),
       superTypes = $class.generalizations->map(g | $g.general.rawType->toOne()->elementToPath()),
       properties = $properties->map(p | $p->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformProperty($extensions)),
-      qualifiedProperties = $qualifiedProperties->map(q|$q->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformQualifiedProperty($useAppliedFunction, $extensions)), 
+      qualifiedProperties = $qualifiedProperties->map(q|$q->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformQualifiedProperty($useAppliedFunction, $extensions)),
       originalMilestonedProperties = $originalMilestonedProperties->map(p | $p->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformProperty($extensions)),
       stereotypes = $class.stereotypes->map(s|$s->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformStereotype()),
       taggedValues = $class.taggedValues->map(t|$t->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformTaggedValue())
@@ -169,7 +170,7 @@ function <<access.private>> meta::protocols::pure::v1_27_0::transformation::from
       parameters = $fType.parameters->tail()->map(p|$p->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)), true, $extensions)->cast(@meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable)),
       returnType = $fType.returnType.rawType->toOne()->elementToPath(),
       returnMultiplicity = $fType.returnMultiplicity->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()->toOne(),
-      body = $qualifiedProperty->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions), 
+      body = $qualifiedProperty->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformFunctionBody($useAppliedFunction, $extensions),
       stereotypes = $qualifiedProperty.stereotypes->map(s|$s->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformStereotype()),
       taggedValues = $qualifiedProperty.taggedValues->map(t|$t->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformTaggedValue())
    );
@@ -256,7 +257,7 @@ function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::transfor
                                                                package = if($p.package->isEmpty(),|[],|$p.package->toOne()->elementToPath()),
                                                                stereotypes = $p.p_stereotypes->map(s|$s.value),
                                                                tags = $p.p_tags->map(t|$t.value)
-                                           
+
                                                           )
-                                   
+
 }

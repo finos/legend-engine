@@ -20,6 +20,7 @@ import meta::legend::*;
 
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::platformBinding::legendJava::test::testInternalizeExternalizeSimple(): Boolean[1]
@@ -45,7 +46,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                                 '<firstName>John</firstName>\n' +
                                 '<lastName>Doe</lastName>\n' +
                               '</Person>');
-  
+
   let result  = executeXSDBindingQuery($query, $vars);
 
   assertEquals('{"builder":{"_type":"json"},"values":{"fullName":"John Doe"}}', $result);

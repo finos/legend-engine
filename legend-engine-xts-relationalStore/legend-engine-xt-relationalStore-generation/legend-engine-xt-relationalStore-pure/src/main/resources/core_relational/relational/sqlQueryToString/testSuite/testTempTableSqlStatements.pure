@@ -16,6 +16,7 @@ import meta::relational::functions::sqlQueryToString::tests::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
@@ -94,7 +95,7 @@ function meta::relational::functions::sqlQueryToString::tests::getTempTableSqlSt
   let temporaryTable = meta::relational::functions::sqlQueryToString::tests::createTable([],$dbType);
   let createSql = ^CreateTableSQL(table = $temporaryTable, isTempTable=true);
   let loadSql = ^LoadTableSQL(table = $temporaryTable, absolutePathToFile=^VarPlaceHolder(name= $VarPlaceHolder, type = $VarPlaceHolder->type()), columnsToLoad=$temporaryTable.columns->cast(@Column));
-  
+
   $createSql->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig)->concatenate(
     $loadSql->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig))->concatenate(
       ^DropTableSQL(table = $temporaryTable)->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig));
@@ -119,5 +120,5 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::tes
    'INSERT INTO temp_table_test SELECT * FROM CSVREAD(\'${csv_file_location}\');',
    'Drop table if exists temp_table_test;'
   ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
+  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);
 }

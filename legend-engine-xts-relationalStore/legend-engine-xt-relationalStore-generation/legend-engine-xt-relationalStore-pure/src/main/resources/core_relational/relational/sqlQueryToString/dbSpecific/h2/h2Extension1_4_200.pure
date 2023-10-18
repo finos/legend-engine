@@ -1,4 +1,5 @@
 import meta::relational::functions::sqlQueryToString::default::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
@@ -83,7 +84,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAY_OF_YEAR(%s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
-    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),    
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
@@ -158,11 +159,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
   let castTo = if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'varchar', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp', |
-  if ($returnType == 'DATE', | 'date', |   
+  if ($returnType == 'DATE', | 'date', |
   if ($returnType == 'BOOLEAN', | 'boolean', |
   if ($returnType == 'FLOAT', | 'float', |
-  if ($returnType == 'INTEGER', | 'integer', |  
-  $returnType)))))); 
+  if ($returnType == 'INTEGER', | 'integer', |
+  $returnType))))));
 
   format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
 }
@@ -186,7 +187,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc)
-   ])  
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -255,9 +256,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformToTimestampH2(params:String[2]):String[1]
 {
   //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported '); 
-   let timestampFormat = '\'yyyy-MM-dd hh:mm:ss\'';   
-   'parsedatetime('+$params->at(0)+','+ $timestampFormat+')';    
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'yyyy-MM-dd hh:mm:ss\'';
+   'parsedatetime('+$params->at(0)+','+ $timestampFormat+')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processDateDiffDurationUnitForH2(durationUnit:String[1]):String[1]

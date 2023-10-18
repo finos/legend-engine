@@ -17,9 +17,11 @@ import meta::relational::tests::mapping::inheritance::cross::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::tests::model::inheritance::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::setUp():Boolean[1]
@@ -67,7 +69,7 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::relational
    let result1 = execute(|RoadVehicle.all(), inheritanceMappingDB, testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(5, $result1->size());
    assertSameElements([4,4,4,3,2], $result1.wheelCount);
-   assertSameElements([Car,Car,Car,Bicycle, Bicycle], $result1->map(r|$r->genericType().rawType));   
+   assertSameElements([Car,Car,Car,Bicycle, Bicycle], $result1->map(r|$r->genericType().rawType));
    if ($result1->at(0).elementOverride->isNotEmpty(),
        |assertSameElements([1,1,2,2,3], $result1->map(r|$r->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk)),
        |true
@@ -189,13 +191,13 @@ function meta::relational::tests::mapping::inheritance::createTablesAndFillDb():
    executeInDb('insert into Vehicle (id, PersonID, carMechanicName, vehicleType) values (1, 1, \'Mohammed\',\'C\');', $connection);
    executeInDb('insert into Vehicle (id, PersonID, bicycleMechanicName, vehicleType) values (2, 1, \'David\',\'B\');', $connection);
    executeInDb('insert into Vehicle (id, PersonID, carMechanicName, vehicleType) values (3, 2, \'Mohammed\',\'C\');', $connection);
-   
+
    executeInDb('Drop table if exists Car;', $connection);
    executeInDb('Create Table Car (id INT, c_PersonID VARCHAR(200), db_car_wheelCount INTEGER, c_description VARCHAR(200), engineType INT);', $connection);
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (1, 1, 4, \'Peugeot\', 1);', $connection);
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (2, 1, 4, \'Renault\', 2);', $connection);
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (3, 2, 4, \'Nissan\', 3);', $connection);
-   
+
    executeInDb('Drop table if exists Bicycle;', $connection);
    executeInDb('Create Table Bicycle(id INT, b_PersonID VARCHAR(200), db_bic_wheelCount INTEGER, b_description VARCHAR(200));', $connection);
    executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (1, 1, 2, \'MBK\');', $connection);
@@ -229,7 +231,7 @@ Database meta::relational::tests::mapping::inheritance::myDB
     (
         ID INT PRIMARY KEY,
         db_car_wheelCount INT,
-        engineType INT, 
+        engineType INT,
         c_Description VARCHAR(200),
         c_PersonID INT
     )
@@ -239,7 +241,7 @@ Database meta::relational::tests::mapping::inheritance::myDB
         ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
-   
+
     Table Bicycle
     (
         ID INT PRIMARY KEY,
@@ -247,7 +249,7 @@ Database meta::relational::tests::mapping::inheritance::myDB
         b_Description VARCHAR(200),
         b_PersonID INT
     )
-    
+
     Table Unleaded
     (
         ID INT PRIMARY KEY,
@@ -255,19 +257,19 @@ Database meta::relational::tests::mapping::inheritance::myDB
         octaneLevel INT,
         description VARCHAR(200)
     )
-   
+
     Table CombustionCharacteristics
     (
         ID INT PRIMARY KEY,
         idealCompression INT
     )
-   
+
     Table Owner
     (
         VEHICLE_ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
-    
+
     Join CarOwner(Car.ID = Owner.VEHICLE_ID)
     Join BicycleOwner(Bicycle.ID = Owner.VEHICLE_ID)
     Join PersonCar(Person.ID = Car.c_PersonID)
@@ -285,7 +287,7 @@ Database meta::relational::tests::mapping::inheritance::oneTableForInheritanceHi
         ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
-   
+
     Table Vehicle
     (
         ID INT PRIMARY KEY,
@@ -293,7 +295,7 @@ Database meta::relational::tests::mapping::inheritance::oneTableForInheritanceHi
         carMechanicName VARCHAR(200),
         bicycleMechanicName VARCHAR(200)
     )
-   
+
     Join PersonVehicle(Person.ID = Vehicle.PersonID)
 )
 
@@ -312,12 +314,12 @@ Mapping meta::relational::tests::mapping::inheritance::inheritanceWithEmbedded
                   vehicles[map2] : @PersonVehicle
                )
             }
-   
+
     Vehicle : Operation
              {
                 meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
              }
-   
+
     Car[map1]: Relational
             {
                   mechanic(name : [oneTableForInheritanceHierarchyDB]Vehicle.carMechanicName)
@@ -345,7 +347,7 @@ Mapping meta::relational::tests::mapping::inheritance::inheritanceMain
                cars[map1] : [myDB]@PersonCar,
                bicycles[map2] : [myDB]@PersonBicycle
             }
-            
+
    Car[map1]: Relational
             {
                id : [myDB] Car.ID,
@@ -364,7 +366,7 @@ Mapping meta::relational::tests::mapping::inheritance::inheritanceMain
                person : [myDB]@PersonBicycle,
                owner(name : 'Unknown')
             }
-   
+
    Unleaded : Relational
             {
                octaneLevel  :  [myDB] Unleaded.octaneLevel,
@@ -376,7 +378,7 @@ Mapping meta::relational::tests::mapping::inheritance::inheritanceMain
             {
                idealCompression  : [myDB] CombustionCharacteristics.idealCompression
             }
-   
+
    VehicleOwner : Relational
    {
       name : [myDB] Owner.name
@@ -404,7 +406,7 @@ Mapping meta::relational::tests::mapping::inheritance::relational::inheritanceMa
                  {
                     meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
                  }
-   
+
    Vehicle : Operation
                  {
                     meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()

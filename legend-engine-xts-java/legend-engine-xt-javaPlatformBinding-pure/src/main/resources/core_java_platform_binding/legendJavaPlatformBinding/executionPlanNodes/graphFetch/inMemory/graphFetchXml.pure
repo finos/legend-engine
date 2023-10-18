@@ -28,6 +28,7 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
@@ -36,32 +37,32 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let pureDate = $conventions->className(PureDate);
 
    if($type == String,
-      | $parser+'.getLocalName()', 
-      | 
+      | $parser+'.getLocalName()',
+      |
    if($type == Boolean,
       | $conventions->codeType(javaClass('java.lang.Boolean'))->codeToString()+'.valueOf('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == Integer,
       | $conventions->codeType(javaClass('java.lang.Integer'))->codeToString()+'.valueOf('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == Float,
       | $conventions->codeType(javaClass('java.lang.Float'))->codeToString()+'.valueOf('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == Decimal,
-      | 'new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getLocalName())', 
-      | 
+      | 'new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getLocalName())',
+      |
    if($type == Number,
       | ' new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == StrictDate,
       | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == DateTime,
       | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getLocalName())',
-      | 
+      |
    if($type == Date,
       | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getLocalName())',
-      | 
+      |
    if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
       | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.getEnumFromPureName('+$parser+'.getLocalName())',
       |
@@ -224,7 +225,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
       },
       {a: Any[1] |
         let propertyValue = j_variable($pgi.accept.type, 'propertyValue');
-        
+
         [
           $propertyValue->j_declare($pgi.accept),
           j_if($propertyValue->j_ne(j_null()),
@@ -260,7 +261,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     let pgi          = $cgi.propertyGenInfoFor($p);
     let variableSize = $pgi.variable->j_invoke('size', []);
     let expected     = $p.multiplicity->printMultiplicity();
-    let errorMessage = j_string('Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [')->j_plus($variableSize)->j_plus(j_string(']')); 
+    let errorMessage = j_string('Invalid multiplicity for '+$p.name->toOne()+': expected ['+$expected+'] found [')->j_plus($variableSize)->j_plus(j_string(']'));
     let definer      = j_string($cgi.class->elementToPath());
 
     if($p.multiplicity->isToOne(),
@@ -344,7 +345,7 @@ Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platf
   {
     $this.propertyGenInfos->filter(pgi| $pgi.property == $property)->toOne();
   }: PropertyGenInfo[1];
-  
+
   jThis()
   {
     j_this($this.thisClass);
@@ -411,13 +412,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     let propertyType = $p.genericType.rawType->toOne();
 
     let xmlType = if($p.name->toOne() == 'value__',
-                    | XmlType.Text, 
+                    | XmlType.Text,
                     |
                   if($p->isPrimitiveValueProperty() && $p.name->toOne()->startsWith('_'),
                     | XmlType.Attribute,
                     | XmlType.Element
                   ));
-                      
+
     ^PropertyGenInfo
     (
       property    = $p,
@@ -502,7 +503,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                           ]
                       ));
 
-  let parseException = $conventions->className(DataParsingException); 
+  let parseException = $conventions->className(DataParsingException);
   let parseEx        = j_parameter($parseException, 'ex');
   let illegalArgEx   = j_parameter(javaIllegalArgumentException(), 'ex');
 
@@ -727,15 +728,15 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     j_if(
       list([
         pair(
-          $getCurrentToken->j_eq(xmlStartElement()),  
+          $getCurrentToken->j_eq(xmlStartElement()),
           j_return($localName)
         ),
         pair(
-          $getCurrentToken->j_eq(xmlAttributeName()), 
+          $getCurrentToken->j_eq(xmlAttributeName()),
           j_return(j_string('_')->j_plus($localName))
         ),
         pair(
-          $getCurrentToken->j_eq(xmlText()),          
+          $getCurrentToken->j_eq(xmlText()),
           j_return(j_string('value__'))
         )
       ]),
@@ -775,7 +776,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   let append        = j_parameter(javaBoolean(), 'appendToRecord');
   let jThis         = j_this($self);
   let tokenStream   = $jThis->j_field('xmlTokenStream');
-  
+
   $self->addMethod(javaMethod('private', javaVoid(), 'accept', [$append],
     [
       j_if($append,
@@ -795,7 +796,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   let currentToken  = $tokenStream->j_invoke('getCurrentToken', [], javaInt());
   let localName     = $tokenStream->j_invoke('getLocalName', [], javaString());
   let text          = $tokenStream->j_invoke('getText', [], javaString());
-  
+
   $self->addMethod(javaMethod('private', javaVoid(), 'appendToRecord', [],
     [
       j_if(list(
@@ -843,7 +844,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     j_if(
       list([
         pair(
-          $getCurrentToken->j_eq(xmlStartElement()),  
+          $getCurrentToken->j_eq(xmlStartElement()),
           [
             $depth->j_declare(j_int(0)),
             j_doWhile(
@@ -861,14 +862,14 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
           ]->j_block()
         ),
         pair(
-          $getCurrentToken->j_eq(xmlAttributeName()), 
+          $getCurrentToken->j_eq(xmlAttributeName()),
           [
             $accept,
             $accept
           ]->j_block()
         ),
         pair(
-          $getCurrentToken->j_eq(xmlText()),          
+          $getCurrentToken->j_eq(xmlText()),
           $accept
         )
       ]),

@@ -17,6 +17,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 
 function <<test.Test>> meta::relational::tests::query::qualifier::testNoParameters():Boolean[1]
@@ -91,7 +92,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::testNonTrivial
 {
    let result = execute(|Firm.all()->filter(f| $f.employeeByLastNameFirstName('Johnson') == 'John')
                                     , simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-    
+
    assertEquals(1, $result.values->size());
    assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Johnson\') where "persontable_0".FIRSTNAME = \'John\'', $result);
 }

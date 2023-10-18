@@ -21,6 +21,7 @@ import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::relational::runtime::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
 function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMilestonedTargetProperty::testWithHardcodedDate():Boolean[1]
 {
@@ -136,12 +137,12 @@ function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToMi
                     '    id: $src.id,\n'+
                     '    name: $src.name,\n'+
                     '    synonyms:$src.synonyms'+                                                                                    //syntactic sugar for better UX
-                    '  }\n' + 
+                    '  }\n' +
                     '  *meta::relational::tests::milestoning::TargetProductSynonym: Pure\n'+
                     '  {\n'+
                     '     ~src meta::relational::tests::milestoning::ProductSynonym\n'+
                     '    synonym: $src.synonym\n'+
-                    '  }\n' + 
+                    '  }\n' +
                     ')';
 
 let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
@@ -164,7 +165,7 @@ Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToMilestone
     name: $src.name,
     synonymsMilestonedAllVersions: $src.synonymsMilestonedAllVersions
   }
-  
+
   *meta::relational::tests::milestoning::TargetProductSynonymMilestoned: Pure
   {
     ~src meta::relational::tests::milestoning::ProductSynonymMilestoned

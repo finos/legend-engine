@@ -18,11 +18,13 @@ import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::relational::tests::milestoning::multi::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::milestoning::temporalpostprocessor::*;
 import meta::relational::postProcessor::*;
 import meta::relational::functions::database::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::milestoning::temporalpostprocessor::*;
 import meta::relational::milestoning::*;
@@ -30,6 +32,7 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
 import meta::relational::tests::csv::metamodel::execute::*;
 import meta::relational::metamodel::relation::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 
@@ -43,7 +46,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 {
    meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns();
    let ignoredDate = %2015-10-16T00:00:00;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let latestDatePP = dateEqualityTemporalMilestoningProcessor(meta::relational::tests::db, 'thru_z', %9999-12-31T00:00:00.000, relationalExtensions());
 
@@ -53,8 +56,9 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
    let tds = $result.values->at(0);
    assertEquals(['Firm A,ISIN1', 'Firm D,ISIN2'],$tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
-    'select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = \'9999-12-31 00:00:00.000\') where "root".thru_z = \'9999-12-31 00:00:00.000\'', 
-    'select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = TIMESTAMP\'9999-12-31 00:00:00.000\') where "root".thru_z = TIMESTAMP\'9999-12-31 00:00:00.000\'', 
+    'select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = \'9999-12-31 00:00:00.000\') where "root".thru_z = \'9999-12-31 00:00:00.000\'',
+    'select "root".NAME as "name", "synonymtable_0".NAME as "synonym" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".thru_z = TIMESTAMP\'9999-12-31 00:00:00.000\') where "root".thru_z = TIMESTAMP\'9999-12-31 00:00:00.000\'',
     $result->sqlRemoveFormatting()
    );
 }
+

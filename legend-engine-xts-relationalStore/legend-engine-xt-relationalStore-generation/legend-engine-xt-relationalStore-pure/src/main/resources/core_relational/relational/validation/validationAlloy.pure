@@ -16,12 +16,14 @@ import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::validation::functions::*;
 import meta::relational::validation::alloy::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::relational::validation::alloy::ClassValidationException

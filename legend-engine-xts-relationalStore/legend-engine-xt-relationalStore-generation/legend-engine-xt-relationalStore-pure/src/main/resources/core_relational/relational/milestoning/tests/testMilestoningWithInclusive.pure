@@ -13,9 +13,11 @@
 // limitations under the License.
 
 import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::milestoning::inclusive::*;
 
@@ -26,7 +28,7 @@ function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInFr
    let expectedNewSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_In_From_Inclusive as "root" where "root".id = 2 and "root".in_z <= DATE\'2018-05-05\' and "root".out_z > DATE\'2018-05-05\' and "root".from_z <= DATE\'2018-05-04\' and "root".thru_z > DATE\'2018-05-04\'';
    assertEqualsH2Compatible($expectedLegacySQL1, $expectedNewSQL1, $result1->sqlRemoveFormatting());
    assertSameElements(['def2'], $result1.values.name);
-   
+
    let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), InFromInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacySQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_From_Inclusive as "bitemporalproducttable_in_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_from_inclusive_0".id and ("bitemporalproducttable_in_from_inclusive_0".in_z <= \'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".out_z > \'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".from_z <= \'2018-05-04\' and "bitemporalproducttable_in_from_inclusive_0".thru_z > \'2018-05-04\')) where "bitemporalproducttable_in_from_inclusive_0".name = \'def2\'';
    let expectedNewSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_From_Inclusive as "bitemporalproducttable_in_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_from_inclusive_0".id and ("bitemporalproducttable_in_from_inclusive_0".in_z <= DATE\'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".out_z > DATE\'2018-05-05\' and "bitemporalproducttable_in_from_inclusive_0".from_z <= DATE\'2018-05-04\' and "bitemporalproducttable_in_from_inclusive_0".thru_z > DATE\'2018-05-04\')) where "bitemporalproducttable_in_from_inclusive_0".name = \'def2\'';
@@ -41,7 +43,7 @@ function <<test.Test>> meta::relational::tests::milestoning::inclusive::testInTh
    let expectedNewSQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_In_Thru_Inclusive as "root" where "root".id = 2 and "root".in_z <= DATE\'2018-05-05\' and "root".out_z > DATE\'2018-05-05\' and "root".from_z < DATE\'2018-05-04\' and "root".thru_z >= DATE\'2018-05-04\'';
    assertEqualsH2Compatible($expectedLegacySQL1, $expectedNewSQL1, $result1->sqlRemoveFormatting());
    assertSameElements(['def2'], $result1.values.name);
-   
+
    let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), InThruInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacySQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_Thru_Inclusive as "bitemporalproducttable_in_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_thru_inclusive_0".id and ("bitemporalproducttable_in_thru_inclusive_0".in_z <= \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".out_z > \'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".from_z < \'2018-05-04\' and "bitemporalproducttable_in_thru_inclusive_0".thru_z >= \'2018-05-04\')) where "bitemporalproducttable_in_thru_inclusive_0".name = \'def2\'';
    let expectedNewSQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_In_Thru_Inclusive as "bitemporalproducttable_in_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_in_thru_inclusive_0".id and ("bitemporalproducttable_in_thru_inclusive_0".in_z <= DATE\'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".out_z > DATE\'2018-05-05\' and "bitemporalproducttable_in_thru_inclusive_0".from_z < DATE\'2018-05-04\' and "bitemporalproducttable_in_thru_inclusive_0".thru_z >= DATE\'2018-05-04\')) where "bitemporalproducttable_in_thru_inclusive_0".name = \'def2\'';
@@ -56,7 +58,7 @@ function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutF
    let expectedNewH2SQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_Out_From_Inclusive as "root" where "root".id = 2 and "root".in_z < DATE\'2018-05-05\' and "root".out_z >= DATE\'2018-05-05\' and "root".from_z <= DATE\'2018-05-04\' and "root".thru_z > DATE\'2018-05-04\'';
    assertEqualsH2Compatible($expectedLegacyH2SQL1, $expectedNewH2SQL1, $result1->sqlRemoveFormatting());
    assertSameElements(['def2'], $result1.values.name);
-   
+
    let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), OutFromInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacyH2SQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_From_Inclusive as "bitemporalproducttable_out_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_from_inclusive_0".id and ("bitemporalproducttable_out_from_inclusive_0".in_z < \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".out_z >= \'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".from_z <= \'2018-05-04\' and "bitemporalproducttable_out_from_inclusive_0".thru_z > \'2018-05-04\')) where "bitemporalproducttable_out_from_inclusive_0".name = \'def2\'';
    let expectedNewH2SQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_From_Inclusive as "bitemporalproducttable_out_from_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_from_inclusive_0".id and ("bitemporalproducttable_out_from_inclusive_0".in_z < DATE\'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".out_z >= DATE\'2018-05-05\' and "bitemporalproducttable_out_from_inclusive_0".from_z <= DATE\'2018-05-04\' and "bitemporalproducttable_out_from_inclusive_0".thru_z > DATE\'2018-05-04\')) where "bitemporalproducttable_out_from_inclusive_0".name = \'def2\'';
@@ -71,7 +73,7 @@ function <<test.Test>> meta::relational::tests::milestoning::inclusive::testOutT
    let expectedNewH2SQL1 = 'select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", \'2018-05-05\' as "k_processingDate", \'2018-05-04\' as "k_businessDate" from BiTemporalProductTable_Out_Thru_Inclusive as "root" where "root".id = 2 and "root".in_z < DATE\'2018-05-05\' and "root".out_z >= DATE\'2018-05-05\' and "root".from_z < DATE\'2018-05-04\' and "root".thru_z >= DATE\'2018-05-04\'';
    assertEqualsH2Compatible($expectedLegacyH2SQL1, $expectedNewH2SQL1, $result1->sqlRemoveFormatting());
    assertSameElements(['def2'], $result1.values.name);
-   
+
    let result2 = execute(|Order.all()->filter(o | $o.biTemporalProduct(%2018-05-05, %2018-05-04).name == 'def2'), OutThruInclusiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacyH2SQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_Thru_Inclusive as "bitemporalproducttable_out_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_thru_inclusive_0".id and ("bitemporalproducttable_out_thru_inclusive_0".in_z < \'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".out_z >= \'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".from_z < \'2018-05-04\' and "bitemporalproducttable_out_thru_inclusive_0".thru_z >= \'2018-05-04\')) where "bitemporalproducttable_out_thru_inclusive_0".name = \'def2\'';
    let expectedNewH2SQL2 = 'select "root".id as "pk_0", "root".id as "id" from MyOrderTable as "root" left outer join BiTemporalProductTable_Out_Thru_Inclusive as "bitemporalproducttable_out_thru_inclusive_0" on ("root".prodFk = "bitemporalproducttable_out_thru_inclusive_0".id and ("bitemporalproducttable_out_thru_inclusive_0".in_z < DATE\'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".out_z >= DATE\'2018-05-05\' and "bitemporalproducttable_out_thru_inclusive_0".from_z < DATE\'2018-05-04\' and "bitemporalproducttable_out_thru_inclusive_0".thru_z >= DATE\'2018-05-04\')) where "bitemporalproducttable_out_thru_inclusive_0".name = \'def2\'';

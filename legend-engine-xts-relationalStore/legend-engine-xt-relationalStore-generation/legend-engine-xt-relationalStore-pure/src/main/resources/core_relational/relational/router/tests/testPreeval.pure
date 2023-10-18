@@ -27,6 +27,7 @@ import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting41():Boolean[1]
@@ -64,7 +65,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting41():Bo
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Boolean[1]
 {
   let runtime = ^Runtime();
-   
+
   let input = {name:String[1]|
     let person = meta::pure::router::preeval::tests::Person.all()->toOne()->graphFetch(
         #{
@@ -73,7 +74,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Bo
             }
         }#
     );
-       
+
     let person2 = meta::pure::router::preeval::tests::Person.all()->toOne()->graphFetch(
         #{
             meta::pure::router::preeval::tests::Person{
@@ -81,7 +82,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Bo
             }
         }#
     )->from(meta::relational::tests::simpleRelationalMapping, $runtime);
-       
+
     meta::pure::router::preeval::tests::Person.all()
        ->filter(x | ($x.firstName == $person.firstName) || ($x.firstName == $name) || $x.firstName == $person2.firstName)
        ->project([
@@ -93,15 +94,15 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Bo
   };
 
   let expected = {name:String[1]|
-      
+
         let person = meta::pure::router::preeval::tests::Person.all()->toOne()->graphFetch(
             #{
                 meta::pure::router::preeval::tests::Person{
                     firstName
                 }
             }#
-        );  
-      
+        );
+
         let person2 = meta::pure::router::preeval::tests::Person.all()->toOne()->graphFetch(
             #{
                 meta::pure::router::preeval::tests::Person{

@@ -18,6 +18,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -81,7 +82,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
-    dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')), 
+    dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     // dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForSpanner($p)})),

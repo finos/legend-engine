@@ -130,15 +130,17 @@ Mapping meta::pure::persistence::test::example::RelationalMapping
 
 ###Pure
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function meta::pure::persistence::test::example::RelationalConnection(): Connection[1]
 {
   ^RelationalDatabaseConnection(
-    element = meta::pure::persistence::test::example::RelationalDatabase,
     type = DatabaseType.H2,
     authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
     datasourceSpecification = ^LocalH2DatasourceSpecification()

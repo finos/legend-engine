@@ -15,14 +15,18 @@
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::extension::*;
 import meta::pure::functions::asserts::*;
 
@@ -32,14 +36,14 @@ import meta::pure::functions::asserts::*;
 
 
 // ==================================================
-// Via functions in mapping expressions 
+// Via functions in mapping expressions
 // ==================================================
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testSingleSubType():Boolean[1]
 {
    let tree = #{
       Target{
-         targetZipCode, 
+         targetZipCode,
          targetAddress
 
       }
@@ -57,16 +61,16 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '    street\n' +
       '    zipCode\n' +
       '  )\n' +
-      ')' 
-   ; 
-   assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+      ')'
+   ;
+   assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_instanceOf():Boolean[1]
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -93,15 +97,15 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '    zipCode\n' +
       '  )\n'+
       ')'
-   ; 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+   ;
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_match():Boolean[1]
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -128,15 +132,15 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '    zipCode\n' +
       '  )\n'+
       ')'
-   ; 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+   ;
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_match_functionCall():Boolean[1]
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -163,15 +167,15 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '    zipCode\n' +
       '  )\n'+
       ')'
-   ; 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+   ;
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_noPropertyAccess_instanceOf():Boolean[1]
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -194,8 +198,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '    zipCode\n' +
       '  )\n' +
       ')';
-       
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
     true;
 }
 
@@ -203,7 +207,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -226,14 +230,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '  )\n' +
       ')';
 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMultipleSubTypes_noPropertyAccess_match_functionCall():Boolean[1]
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -256,7 +260,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '  )\n' +
       ')';
 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
     true;
 }
 
@@ -279,10 +283,10 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::sour
       '  ->SubType(Street)\n' +
       ')';
 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
     true;
 }
- 
+
 ###Mapping
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
 
@@ -309,7 +313,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
                          |$src->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road).road,
                          |$src->cast(@meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location).coordinates
                          )
-                      )   
+                      )
    }
 )
 
@@ -320,7 +324,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
       ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
       targetZipCode: $src.zipCode,
       targetAddress: $src->match([
-         s:Street[1] | $s.street, 
+         s:Street[1] | $s.street,
          r:Road[1] | $r.road,
          l:Location[1] | $l.coordinates
          ])
@@ -350,7 +354,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
                          |'road_valueFromMapping',
                          |'location_valueFromMapping'
                          )
-                      )   
+                      )
    }
 )
 
@@ -362,7 +366,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
       targetZipCode: $src.zipCode,
       isLocation : $src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location),
       isRoad :  $src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road),
-      isStreet : $src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street ) 
+      isStreet : $src->instanceOf(meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street )
    }
 )
 
@@ -373,7 +377,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
       ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
       targetZipCode: $src.zipCode,
       targetAddress: $src->match([
-         s:Street[1] | 'street_valueFromMapping', 
+         s:Street[1] | 'street_valueFromMapping',
          r:Road[1] | 'road_valueFromMapping',
          l:Location[1] | 'location_valueFromMapping'
          ])
@@ -398,7 +402,7 @@ import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
 function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::getLocationStr(loc:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location[1]):String[1]
 {
   $loc->match([
-         s:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street[1] | $s.street, 
+         s:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street[1] | $s.street,
          r:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road[1] | $r.road,
          l:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location[1] | $l.coordinates
          ]);
@@ -407,7 +411,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::
 function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::getLocationStr_noPropertyAccess(loc:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location[1]):String[1]
 {
   $loc->match([
-         s:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street[1] | 'street_valueFromMapping', 
+         s:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street[1] | 'street_valueFromMapping',
          r:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road[1] | 'road_valueFromMapping',
          l:meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location[1] | 'location_valueFromMapping'
          ]);
@@ -415,7 +419,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::
 
 
 // ===========================================================
-// Via multiple sets in mapping 
+// Via multiple sets in mapping
 // TODO - handle operation sets in calculateSourceTree
 // ===========================================================
 
@@ -423,7 +427,7 @@ function <<meta::pure::profiles::test.ToFix>> meta::pure::graphFetch::tests::sou
 {
     let tree = #{
         Target{
-          targetZipCode, 
+          targetZipCode,
           targetAddress
 
         }
@@ -448,8 +452,8 @@ function <<meta::pure::profiles::test.ToFix>> meta::pure::graphFetch::tests::sou
       '    zipCode\n' +
       '  )\n'+
       ')'
-   ; 
-    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+   ;
+    assertEquals($expectedSourceTree, $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 
@@ -462,7 +466,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::s
    {
       meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(location,road,street)
    }
-    
+
   meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target[location]: Pure
   {
     ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location

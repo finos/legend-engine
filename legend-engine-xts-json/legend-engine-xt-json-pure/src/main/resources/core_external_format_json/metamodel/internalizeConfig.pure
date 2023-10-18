@@ -18,6 +18,7 @@ import meta::pure::metamodel::path::*;
 
 import meta::pure::graphFetch::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::external::format::json::metamodel::internalize::JsonPathReference
@@ -34,7 +35,7 @@ Class meta::external::format::json::metamodel::internalize::JsonSchemaInternaliz
 function meta::external::format::json::metamodel::internalize::generateJsonSchemaInternalizeConfig(path:Path<Nil,Any|*>[1]): JsonSchemaInternalizeConfig[1]
 {
   let pathString = $path.path->filter(ele | $ele->instanceOf(PropertyPathElement))->cast(@PropertyPathElement).property.name->joinStrings('/', '/', '');
-  
+
   ^JsonSchemaInternalizeConfig
   (
     pathReference = ^JsonPathReference(path = $pathString)

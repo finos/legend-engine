@@ -20,6 +20,7 @@ import meta::pure::router::utils::*;
 import meta::external::store::elasticsearch::v7::metamodel::property::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -73,7 +74,7 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
 }
 
 Class meta::external::store::elasticsearch::v7::pureToEs::TDSESDetail
-{ 
+{
   <<equality.Key>> name: String[1];
   type: DataType[1];
   resultPath: ResultPath[1];
@@ -84,13 +85,13 @@ Class meta::external::store::elasticsearch::v7::pureToEs::TDSESDetail
   format: String[0..1];
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds(vs : FunctionExpression[1], req: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   $req.debug(|'Processing ->indexToTds');
   let store = $vs.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Elasticsearch7Store);
   let indexName = $vs.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@String);
-  
-  let index = $store.index($indexName)->toOne('No index found on store: ' + $indexName); 
+
+  let index = $store.index($indexName)->toOne('No index found on store: ' + $indexName);
 
   let primitiveProperties = $index.properties->collectPrimitiveTypeProperties();
 
@@ -101,15 +102,15 @@ function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds
   ->concatenate(^_IDResultPath(property = ^KeywordProperty(), fieldPath = '_id'));
 
   let tdsDetails = $resultPaths->map(x | let type = $x.property->propertySupport().pureType->cast(@DataType); ^TDSESDetail(type = $type, name = $x.path(), resultPath = $x, format = if($type == Date, |'date_optional_time', |[])););
-  
+
   ^$req(
-    lazyIndex = $index, 
+    lazyIndex = $index,
     search = resultPathToQuery($tdsDetails, $req.search),
     tdsESDetails = $tdsDetails
   );
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::getResultPath(property: PropertyBase[1], path: String[*]): ResultPath[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::getResultPath(property: PropertyBase[1], path: String[*]): ResultPath[1]
 {
   if($property->propertySupport().pureType == Date,
     |^DocValueResultPath(property = $property, fieldPath = $path->toOneMany()),
@@ -117,7 +118,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::getResultPath(prope
   );
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::resultPathToQuery(tdsDetails: TDSESDetail[*], search: SearchRequestBody[1]): SearchRequestBody[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::resultPathToQuery(tdsDetails: TDSESDetail[*], search: SearchRequestBody[1]): SearchRequestBody[1]
 {
   let frps = $tdsDetails.resultPath->filter(x | $x->instanceOf(FieldResultPath))->cast(@FieldResultPath);
   let srps = $tdsDetails.resultPath->concatenate($frps.readFrom)->filter(x | $x->instanceOf(SourceFieldResultPath))->cast(@SourceFieldResultPath);
@@ -134,19 +135,19 @@ function meta::external::store::elasticsearch::v7::pureToEs::resultPathToFieldAn
   ^FieldAndFormat(field = $resultPath.path()->literal(), format = $format->literal());
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processExtend(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processExtend(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   $initReq.debug(|'Processing ->extend');
   processProject($vs, $initReq, true);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   $initReq.debug(|'Processing ->project');
   processProject($vs, $initReq, false);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1], extend: Boolean[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1], extend: Boolean[1]): State[1]
 {
   let currReq = process($vs.parametersValues->at(0), $initReq);
   assert(!$currReq.inFilter);
@@ -154,7 +155,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs :
   let cols = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars);
   let fieldsStatePair = $cols->match([
     tdsCols: BasicColumnSpecification<TDSRow>[*] | $tdsCols->fold(
-      {col: BasicColumnSpecification<TDSRow>[1], pair: Pair<List<TDSESDetail>, State>[1] | 
+      {col: BasicColumnSpecification<TDSRow>[1], pair: Pair<List<TDSESDetail>, State>[1] |
         let details = $col->processProjectColumn($pair.second);
         pair(list($pair.first.values->concatenate($details.first)), $details.second);
       }, pair(list([]->cast(@TDSESDetail)), ^$currReq(inProject = true)))
@@ -169,14 +170,14 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs :
   );
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processProjectColumn(vs : BasicColumnSpecification<TDSRow>[1], initReq: State[1]): Pair<TDSESDetail, State>[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processProjectColumn(vs : BasicColumnSpecification<TDSRow>[1], initReq: State[1]): Pair<TDSESDetail, State>[1]
 {
   let expr = $vs.func->cast(@FunctionDefinition<Any>).expressionSequence->toOne('tds column projection only supports simple expressions');
   let name = $vs.name;
   let type = $vs.func->functionReturnType().rawType->toOne()->cast(@DataType)->map(x | $x->_subTypeOf(Enum)->if(|String, |$x));
 
   $initReq.debug(|'Processing project - %s = %s'->format([$vs.name, $expr->printValueSpecification('')]));
-  
+
   $expr->extractSimpleValue($initReq).first.values->match([
     tdsDetail: TDSESDetail[1] | pair(^$tdsDetail(name = $name, type = $type), $initReq),
     {fe: FunctionExpression[1] |
@@ -188,7 +189,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
   ]);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processLimit(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processLimit(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   $initReq.debug(|'Processing ->limit');
   let currReq = process($vs.parametersValues->at(0), $initReq);
@@ -220,14 +221,14 @@ function meta::external::store::elasticsearch::v7::pureToEs::computeSize(currSiz
         v: PlanVarPlaceHolder[1] | ^LiteralOrExpression<Integer>(expression = '${10000 - %s}'->format($v.name))
       ]);
     ,
-    | 
+    |
       $currSize->toOne()->taggedUnionValue()->match([
         size: Integer[1] |
           $from->match([
             i: Integer[1] | literal($size - $i),
             v: PlanVarPlaceHolder[1] | ^LiteralOrExpression<Integer>(expression = '${%d - %s}'->format([$size, $v.name]))
           ]),
-        exp: String[1]   | 
+        exp: String[1]   |
           let rawExp = $exp->substring(2, $exp->length() - 1);
           $from->match([
             i: Integer[1] | ^LiteralOrExpression<Integer>(expression = '${%s - %d}'->format([$rawExp, $i])),
@@ -237,7 +238,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::computeSize(currSiz
   );
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processSlice(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processSlice(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   $initReq.debug(|'Processing ->slice');
   let currReq = process($vs.parametersValues->at(0), $initReq);
@@ -275,12 +276,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
   let aggPairs = $aggregateValues->map({x |
     let rawToAggregate = processProjectColumn(^BasicColumnSpecification<TDSRow>(func = $x.mapFn, name = $x.name), $groupedReq).first;
     let aggFunc = $x.aggregateFn->deepByPassRouterInfo()->cast(@FunctionDefinition<Any>).expressionSequence->toOne('tds aggregation only supports simple expressions: max, min, sum, etc.');
-    
+
     let container = if ($aggFunc->instanceOf(FunctionExpression),
       |
         $groupedReq.supportedAggregationFunctions->findAndEvalSupportedFunction($aggFunc->cast(@FunctionExpression), $rawToAggregate.path(), $groupedReq)
       ,
-      | 
+      |
         fail('Unsupported aggregation functions: ' + $aggFunc->printValueSpecification(''));
         ^AggregationContainer();
     );
@@ -292,9 +293,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
   });
 
   let aggregations = newMap($aggPairs->map(x | pair($x.first.name, $x.second)));
-  let aggregationsForSearch = if ($groupByCols->isEmpty(), 
+  let aggregationsForSearch = if ($groupByCols->isEmpty(),
     |
-      // no group by field - just run the aggregations 
+      // no group by field - just run the aggregations
       $aggregations
     ,
     |
@@ -306,7 +307,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
       newMap(pair('groupByComposite', ^AggregationContainer(composite = $composite, aggregations = $aggregations)));
   );
 
-  let groupByTdsESDetailsAsAgg = $groupByTdsESDetails->map({x | 
+  let groupByTdsESDetailsAsAgg = $groupByTdsESDetails->map({x |
     let resultPath = ^AggregateResultPath(fieldPath = $x.name, property = $x.resultPath.property);
     let toAggregate = ^$x(resultPath = $resultPath);
   });
@@ -335,15 +336,15 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilter(vs : 
   ^$withFilterReq(inFilter = false, debug = $debug);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda(vs : ValueSpecification[1], req: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda(vs : ValueSpecification[1], req: State[1]): State[1]
 {
   $req.debug(|'-- processing filter lambda ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
   $vs->match([
-    fr: FunctionRoutedValueSpecification[1] | $fr.value->processFilterLambda($req), 
-    iv: InstanceValue[1] | 
+    fr: FunctionRoutedValueSpecification[1] | $fr.value->processFilterLambda($req),
+    iv: InstanceValue[1] |
         $iv.values->match([
           f: FunctionDefinition<Any>[1] | $f.expressionSequence->at(0)->processFilterLambda($req),
-          any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString())->cast(@State)  
+          any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString())->cast(@State)
         ]),
     fe: FunctionExpression[1] |  $req.supportedFilterFunctions->findAndEvalSupportedFunction($fe, $req, $req),
     any: Any[1] | fail('not supported: ' + $any->printValueSpecification(''))->cast(@State)
@@ -354,14 +355,14 @@ function meta::external::store::elasticsearch::v7::pureToEs::processDefaultSort(
 {
   let toSortPair = $vs.parametersValues->at(1)->extractSimpleValue($initReq);
   let toSort = $toSortPair.first.values->cast(@String)->toOneMany();
-  $vs->processSort($toSort->map( x | ^SortInformation(column = $x, direction = SortDirection.ASC)), $toSortPair.second);       
+  $vs->processSort($toSort->map( x | ^SortInformation(column = $x, direction = SortDirection.ASC)), $toSortPair.second);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processSortWithInformation(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   let toSortPair = $vs.parametersValues->at(1)->extractSimpleValue($initReq);
   let toSort = $toSortPair.first.values->cast(@SortInformation)->toOneMany();
-  $vs->processSort($toSort, $toSortPair.second);  
+  $vs->processSort($toSort, $toSortPair.second);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processSortWithDirection(vs : FunctionExpression[1], initReq: State[1]): State[1]
@@ -394,7 +395,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processSort(vs : Fu
   let newSearch = if($currReq.aggregationQuery,
     |
       let maybeGroupByContainer = $search.aggregations->toOne()->get('groupByComposite');
-      
+
       if ($maybeGroupByContainer->isNotEmpty(),
         |
           let container = $maybeGroupByContainer->toOne();
@@ -422,12 +423,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::processSort(vs : Fu
       );
     ,
     |
-      let sortCombo = $toSort->map({x | 
+      let sortCombo = $toSort->map({x |
         let fieldSort = ^FieldSort(order = $x.second);
         let fieldMap = newMap(pair($x.first.path(), $fieldSort));
         ^SortCombinations(options = ^SortOptions(__additionalProperty = $fieldMap));
         });
-     
+
       ^$search(sort = $sortCombo);
   );
 
@@ -441,7 +442,7 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
   compositeSources : Pair<String, CompositeAggregationSource>[*]
 ): Map<String, AggregationContainer>[1]
 {
-  let termsSorted = $toSort->map({x | 
+  let termsSorted = $toSort->map({x |
     let compositeSourcePair = $compositeSources->filter(m | $m.first == $x.first)->toOne();
     let sourceTerms = $compositeSourcePair.second.terms->toOne();
     ^$compositeSourcePair(second = ^CompositeAggregationSource(terms = ^$sourceTerms(order = ^TermsAggregationSortOrder(order = $x.second))));
@@ -449,7 +450,7 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
 
   let notSortedTerms = $compositeSources
         ->filter(m | $m.first->in($toSort.first)->not())
-        ->map({m | 
+        ->map({m |
           let sourceTerms = $m.second.terms->toOne();
           ^$m(second = ^CompositeAggregationSource(terms = ^$sourceTerms(order = [])));
         });
@@ -484,7 +485,7 @@ function <<access.private>> meta::external::store::elasticsearch::v7::pureToEs::
     ,
     |
       assertEmpty($compositeSourcesToSort,
-        | 'No supported: multiple sort fields, where the source of these fields is mixed between aggregate fields and group by fields.  Either remove group by fields or aggregate fields from sort' 
+        | 'No supported: multiple sort fields, where the source of these fields is mixed between aggregate fields and group by fields.  Either remove group by fields or aggregate fields from sort'
       );
 
       let terms = $compositeSources.second.terms->map(x | ^MultiTermLookup(field = $x.field->toOne(), missing = [] /*todo handle null / missing*/));
@@ -509,24 +510,24 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueS
     fe: FunctionExpression[1] | $req.supportedRoutingFunctions->findAndEvalSupportedFunction($fe, $req, $req),
     tds: TDSRoutedValueSpecification[1] | $tds.value->process($req),
     ervs: ExtendedRoutedValueSpecification[1] | $ervs.value->process($req),
-    any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;  
+    any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;
   ]);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction<P, T | n, m>(funcs: Pair<LambdaFunction<{Function<Any>[1],State[0..1]->Boolean[1]}>, Function<{FunctionExpression[1], P[n]->T[m]}>>[*], fe : FunctionExpression[1], req: P[n], state: State[1]): T[m] 
+function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction<P, T | n, m>(funcs: Pair<LambdaFunction<{Function<Any>[1],State[0..1]->Boolean[1]}>, Function<{FunctionExpression[1], P[n]->T[m]}>>[*], fe : FunctionExpression[1], req: P[n], state: State[1]): T[m]
 {
   eval($funcs->filter(x|$x.first->eval($fe.func, $state))->first()->toOne('function not supported yet: ' + $fe.func->elementToPath()).second, $fe, $req);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::defaultSize(): Integer[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::defaultSize(): Integer[1]
 {
   // need to default to a number since otherwise elastic defaults to 10, hence using the default max per search operation limit of 10,000
   10000;
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1]
 {
-  let req = ^State(    
+  let req = ^State(
     search = ^SearchRequestBody(_source = ^SourceConfig(fetch = false->literal()), track_total_hits = ^TrackHits(enabled = true->literal())),
     inFilter = false,
     inProject = false,
@@ -606,17 +607,17 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(leftSi
   let literalOrExpression = $eqInputs.second.values->literalOrExpression(true);
 
   let tdsESDetail = $eqInputs.first;
-  
+
   let query = $literalOrExpression->match([
     value: LiteralOrExpression<Nil>[1] | $tdsESDetail.resultPath.property->match([
-      p:KeywordProperty[1]  | 
+      p:KeywordProperty[1]  |
         let string = $value->cast(@LiteralOrExpression<String>);
         if($tdsESDetail.resultPath->instanceOf(_IDResultPath),
           | ^QueryContainer(ids = ^IdsQuery(values = $string)),
           | ^QueryContainer(term = newMap(pair($tdsESDetail.path(), ^TermQuery(value = ^FieldValue(any = $string)))))
         );
       ,
-      p:DateProperty[1]     | 
+      p:DateProperty[1]     |
         let dateStr = $value->cast(@LiteralOrExpression<String>);
         ^QueryContainer(
           range = newMap(pair(
@@ -633,16 +634,16 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(leftSi
           ))
         )
       ]),
-    none: Any[0] | 
+    none: Any[0] |
       let exists = ^QueryContainer(exists = ^ExistsQuery(field = $tdsESDetail.path()->literal()));
       ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
   ]);
 
   // handle optional parameters (ie zero lower bound multiplicities)
-  let queryWithZeroMultHandling = if ($eqInputs.second.values->size() == 1 
-      && $eqInputs.second.values->toOne()->instanceOf(VariableExpression) 
+  let queryWithZeroMultHandling = if ($eqInputs.second.values->size() == 1
+      && $eqInputs.second.values->toOne()->instanceOf(VariableExpression)
       && $eqInputs.second.values->toOne()->cast(@VariableExpression).multiplicity->getLowerBound() == 0,
-    | 
+    |
       let var = $eqInputs.second.values->toOne()->cast(@VariableExpression);
 
       // check param was not provided
@@ -666,7 +667,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(leftSi
       // pseudo code: ($variable->isNotEmpty() && queryMatchingVariableValue()) || ($variable->isEmpty() && queryCheckingFieldIsMissing())
       ^QueryContainer(bool = ^BoolQuery(should = [ $ifParamExists, $ifParamMissing ]));
     ,
-    | 
+    |
       $query
   );
 
@@ -677,7 +678,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(leftSi
 function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   assert($initReq.inFilter, 'in only supporter on filter context');
-  
+
   let leftSidePair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
   let leftSide = $leftSidePair.first.values;
 
@@ -698,7 +699,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : Func
   let tdsESDetail = $inInputs.first;
 
   let query = $tdsESDetail.resultPath.property->match([
-    p:KeywordProperty[1]  | 
+    p:KeywordProperty[1]  |
       let string = $literalOrExpression->cast(@LiteralOrExpression<String>);
       if($tdsESDetail.resultPath->instanceOf(_IDResultPath),
         | ^QueryContainer(ids = ^IdsQuery(values = $string)),
@@ -708,7 +709,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIn(vs : Func
     a:Any[1]              |
       ^QueryContainer(terms = ^TermsQuery(__additionalProperty = newMap(pair($tdsESDetail.path(), ^TermsQueryField(value = $literalOrExpression->map(val | ^FieldValue(any = $val)))))))
   ]);
-  
+
   let search = $req.search;
   ^$req(search = ^$search(query = ^QueryContainer(bool = ^BoolQuery(filter = $query))));
 }
@@ -717,11 +718,11 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThan(
 {
   $vs->processRangeQuery([
     pair(
-        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gt = $x), 
+        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gt = $x),
         x: LiteralOrExpression<String>[1] | ^DateRangeQuery(gt = $x, format = 'date_optional_time'->literal())
-    ), 
+    ),
     pair(
-      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lt = $x), 
+      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lt = $x),
       x: LiteralOrExpression<String>[1] | ^DateRangeQuery(lt = $x, format = 'date_optional_time'->literal())
     )
   ], $req);
@@ -731,42 +732,42 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThanE
 {
   $vs->processRangeQuery([
     pair(
-        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gte = $x), 
+        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gte = $x),
         x: LiteralOrExpression<String>[1] | ^DateRangeQuery(gte = $x, format = 'date_optional_time'->literal())
-    ), 
+    ),
     pair(
-      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lte = $x), 
+      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lte = $x),
       x: LiteralOrExpression<String>[1] | ^DateRangeQuery(lte = $x, format = 'date_optional_time'->literal())
     )
-  ], $req);  
+  ], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processLessThan(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   $vs->processRangeQuery([
     pair(
-        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lt = $x), 
+        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lt = $x),
         x: LiteralOrExpression<String>[1] | ^DateRangeQuery(lt = $x, format = 'date_optional_time'->literal())
-    ), 
+    ),
     pair(
-      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gt = $x), 
+      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gt = $x),
       x: LiteralOrExpression<String>[1] | ^DateRangeQuery(gt = $x, format = 'date_optional_time'->literal())
     )
-  ], $req);    
+  ], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqual(vs : FunctionExpression[1], req: State[1]): State[1]
 {
   $vs->processRangeQuery([
     pair(
-        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lte = $x), 
+        x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(lte = $x),
         x: LiteralOrExpression<String>[1] | ^DateRangeQuery(lte = $x, format = 'date_optional_time'->literal())
-    ), 
+    ),
     pair(
-      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gte = $x), 
+      x: LiteralOrExpression<Number>[1] | ^NumberRangeQuery(gte = $x),
       x: LiteralOrExpression<String>[1] | ^DateRangeQuery(gte = $x, format = 'date_optional_time'->literal())
     )
-  ], $req);      
+  ], $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(vs : FunctionExpression[1], options: Pair<Function<{LiteralOrExpression<Number>[1]->NumberRangeQuery[1]}>, Function<{LiteralOrExpression<String>[1]->DateRangeQuery[1]}>>[2], initReq: State[1]): State[1]
@@ -793,7 +794,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(v
   let value = $inputs.second.second->literalOrExpression(false);
 
   let range = $tdsESDetail.resultPath.property->match([
-    d:DateProperty[1]     | 
+    d:DateProperty[1]     |
       let dateStr = $value->cast(@LiteralOrExpression<String>);
       ^RangeQuery(date = $option.second->eval($dateStr));,
     n:NumberPropertyBase[1] |
@@ -813,7 +814,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   assert($initReq.inFilter, 'TdsRow.isNotNull only supporter on filter context');
-  
+
   let columnForNullCheckPair = $vs->extractSimpleValue($initReq);
   let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
 
@@ -841,7 +842,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processIsNotEmpty(v
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsGetBoolean(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   assert($initReq.inFilter, 'TdsRow.getBoolean only supporter on filter context');
-  
+
   let columnPair = $vs->extractSimpleValue($initReq);
   let column = $columnPair.first.values->cast(@TDSESDetail)->toOne();
 
@@ -853,7 +854,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processTdsGetBoolea
 function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   assert($initReq.inFilter, 'TdsRow.isNull only supporter on filter context');
-  
+
   let columnForNullCheckPair = $vs->extractSimpleValue($initReq);
   let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
 
@@ -868,7 +869,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs
 function meta::external::store::elasticsearch::v7::pureToEs::processIsEmpty(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   assert($initReq.inFilter, 'TdsRow.isNull only supporter on filter context');
-  
+
   let columnForNullCheckPair = $vs.parametersValues->at(0)->extractSimpleValue($initReq);
   let columnForNullCheck = $columnForNullCheckPair.first.values->cast(@TDSESDetail)->toOne();
 
@@ -916,7 +917,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs 
   let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
   let rightSide = $rightSidePair.first.values->toOne();
 
-  let req = $rightSidePair.second;  
+  let req = $rightSidePair.second;
 
   assert($leftSide->instanceOf(TDSESDetail), 'at the moment, endsWith only works when source value comes from index property');
 
@@ -946,7 +947,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs 
   let rightSidePair = $vs.parametersValues->at(1)->extractSimpleValue($leftSidePair.second);
   let rightSide = $rightSidePair.first.values->toOne();
 
-  let req = $rightSidePair.second;    
+  let req = $rightSidePair.second;
 
   assert($leftSide->instanceOf(TDSESDetail), 'at the moment, contains only works when source value comes from index property');
 
@@ -954,14 +955,14 @@ function meta::external::store::elasticsearch::v7::pureToEs::processContains(vs 
 
   // todo need to escape asterisk on value
   let query = $tdsESDetail.resultPath.property->match([
-    {keyword: KeywordProperty[1] | 
+    {keyword: KeywordProperty[1] |
       let literalOrExpression = $rightSide->match([
         var: VariableExpression[1] | ^LiteralOrExpression<String>(expression = '${\'"*\' + ' + $var.name + '?json_string + \'*"\'}'),
         other: String[1] | literal('*' + $other + '*')
       ]);
       ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = $literalOrExpression))));
     },
-    {text: TextProperty[1] | 
+    {text: TextProperty[1] |
       let literalOrExpression = $rightSide->match([
         var: VariableExpression[1] | ^LiteralOrExpression<String>(expression = '${\'"\' + ' + $var.name + '?json_string + \'"\'}'),
         other: String[1] | literal($other)
@@ -1025,10 +1026,10 @@ function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(
             | $fe.parametersValues->at(0)->extractSimpleValue($req),
             | $req.supportedSimpleValueFunctions->findAndEvalSupportedFunction($fe, $req, $req)
       ));,
-    iv: InstanceValue[1] | $iv.values->fold({x, currState | 
+    iv: InstanceValue[1] | $iv.values->fold({x, currState |
             let r = $x->extractSimpleValue($currState.second);
             pair($currState.first.values->concatenate($r.first.values)->list(), $r.second);
-          }, 
+          },
         pair(list([]), $req)
       ),
     any: Any[*] | pair($any->list(), $req)
@@ -1083,12 +1084,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedFilterFunc
     ,pair(supportedIfEqual(meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_), processLessThanEqual_FunctionExpression_1__State_1__State_1_)
 
     ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'getBoolean'}, processTdsGetBoolean_FunctionExpression_1__State_1__State_1_)
-    
+
     ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNull'},    processTdsIsNull_FunctionExpression_1__State_1__State_1_)
     ,pair(supportedIfEqual(meta::pure::functions::collection::isEmpty_Any_$0_1$__Boolean_1_),                     processIsEmpty_FunctionExpression_1__State_1__State_1_)
     ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNotNull'}, processTdsIsNotNull_FunctionExpression_1__State_1__State_1_)
     ,pair(supportedIfEqual(meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_),                  processIsNotEmpty_FunctionExpression_1__State_1__State_1_)
-    
+
     ,pair(supportedIfEqual(meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_),  processStartsWith_FunctionExpression_1__State_1__State_1_)
     ,pair(supportedIfEqual(meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_),    processEndsWith_FunctionExpression_1__State_1__State_1_)
     ,pair(supportedIfEqual(meta::pure::functions::string::contains_String_$0_1$__String_1__Boolean_1_),    processContains_FunctionExpression_1__State_1__State_1_)
@@ -1110,20 +1111,20 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedSimpleValu
   ];
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::reactivateFE(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
   $req.debug(|'Reactivating FE: ' + $fe->printValueSpecification(''));
   pair($fe->cast(@FunctionExpression)->reactivate($req.sq.inScopeVars)->list(), $req);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::passthruForPainlessExpression(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::passthruForPainlessExpression(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
   $req.debug(|'Passthru for painless: ' + $fe->printValueSpecification(''));
-  assert($req.inProject, |'Evaluation as runtime mapping expression only supported on project context');  
+  assert($req.inProject, |'Evaluation as runtime mapping expression only supported on project context');
   pair(list($fe), $req);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpressionNode(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::evaluateAsPureExpressionNode(fe: FunctionExpression[1], req: State[1]): Pair<List<Any>, State>[1]
 {
   $req.debug(|'Converting to pure expression node: ' + $fe->printValueSpecification(''));
   assert($req.inFilter, |'Evaluation as pure expression only supported on filter context');
@@ -1149,11 +1150,11 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedAggregatio
      pair(supportedIfEqual(meta::pure::functions::math::sum_Integer_MANY__Integer_1_), {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::sum_Float_MANY__Float_1_),     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::sum_Number_MANY__Number_1_),   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(sum = ^SumAggregation(field = $y->literal()))})
-    
+
     ,pair(supportedIfEqual(meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_), {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::max_Float_MANY__Float_$0_1$_),     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::max_Number_MANY__Number_$0_1$_),   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(max = ^MaxAggregation(field = $y->literal()))})
-    
+
     ,pair(supportedIfEqual(meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_), {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::min_Float_MANY__Float_$0_1$_),     {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
     ,pair(supportedIfEqual(meta::pure::functions::math::min_Number_MANY__Number_$0_1$_),   {x: FunctionExpression[1], y: String[1] | ^AggregationContainer(min = ^MinAggregation(field = $y->literal()))})
@@ -1190,7 +1191,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::literalOrExpression
 
 function meta::external::store::elasticsearch::v7::pureToEs::expression(var : PlanVarPlaceHolder[1], supportZeroMult: Boolean[1]): LiteralOrExpression<Any>[1]
 {
-  assert($supportZeroMult  || ($var.multiplicity->toOne()->getLowerBound() > 0), 
+  assert($supportZeroMult  || ($var.multiplicity->toOne()->getLowerBound() > 0),
     |'Operation does not support variable \'%s: %s[%s]\' with 0 lower bound multiplicity'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()])
   );
 
@@ -1201,9 +1202,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::expression(var : Pl
         | if ( $varType->in([Float, Number, Decimal]),      | ^LiteralOrExpression<Number>(expression = $var->varFreemarkerExpression(false)),
           | if ($varType->in([Date, DateTime, StrictDate]), | ^LiteralOrExpression<String>(expression = $var->varFreemarkerExpression(true)),
             {|
-              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()])); 
-              ^LiteralOrExpression<Any>(expression = $var.name); 
-            }  
+              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
+              ^LiteralOrExpression<Any>(expression = $var.name);
+            }
           )
         )
       )
@@ -1218,7 +1219,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::varFreemarkerExpres
   if ($var.multiplicity->toOne()->isToMany(),
     |
       '${(' + $var.name + '??)?then((' + $var.name + '?is_enumerable)?then(' + $var.name + '?map(x -> x' + $toJson + ')?join(\', \'), ' + $var.name + $toJson + '), "")}',
-    | 
+    |
       if ($var.multiplicity->toOne()->getLowerBound() == 0,
     |
       '${(' + $var.name + '??)?then(' + $var.name + $toJson + ', \'"\\\\r\\\\n"\')}',
@@ -1228,12 +1229,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::varFreemarkerExpres
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::toRuntimeMapping(vs: FunctionExpression[1], field: DocValueResultPath[1], initReq: State[1]): State[1]
-{  
-  let p = processPainless($vs, ^$initReq(inProject = false, inFilter = true)); 
-  
+{
+  let p = processPainless($vs, ^$initReq(inProject = false, inFilter = true));
+
   let script = $p.first;
   let req = $p.second;
-  
+
   let type = $field.property->match([
     b: BooleanProperty[1] | RuntimeFieldType._boolean,
     k: KeywordProperty[1] | RuntimeFieldType.keyword,
@@ -1266,7 +1267,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainless(vs:
 {
   $vs->match([
     fe: FunctionExpression[1] | $initReq.supportedForPainlessScriptFunctions->findAndEvalSupportedFunction($fe, $initReq, $initReq),
-    iv: InstanceValue[1] | 
+    iv: InstanceValue[1] |
           $iv.values->match([
           f: FunctionDefinition<Any>[1] | $f.expressionSequence->at(0)->processPainless($initReq),
           any: Any[1] | $any->processPainlessScalarValue($initReq)
@@ -1310,7 +1311,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessIsEm
     text: TextProperty[1] | 'params[\'_source\'][\'%s\'] == null',
     any: Any[1] | 'doc[\'%s\'].size() == 0';
   ])->format($field.path());
-  
+
   pair(^InlineScript(source = $script->literal(), params = newMap([])), $req);
 }
 
@@ -1320,7 +1321,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessIsNo
     |$fe->qualifiedPropertyToTDSESDetail($initReq),
     |$fe.parametersValues->at(0)->extractSimpleValue($initReq)
   );
-  
+
   let field = $fieldPair.first.values->cast(@TDSESDetail)->toOne('isNotEmpty only works on tds columns for now');
   let req = $fieldPair.second;
 
@@ -1359,9 +1360,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
   let operation = if($rightSide->size() == 1 && $rightSide->toOne()->instanceOf(TDSESDetail) && $maybeOperation != '==',
     |
       [
-        pair('<=', '>='), 
-        pair('<', '>'), 
-        pair('>=', '<='), 
+        pair('<=', '>='),
+        pair('<', '>'),
+        pair('>=', '<='),
         pair('>', '<')
       ]->filter(x | $x.first == $maybeOperation).second->toOne(),
     |$maybeOperation
@@ -1383,7 +1384,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
       ]);
 
       let paramScript = $newValue->match([
-        pv: PlanVarPlaceHolder[1] | 
+        pv: PlanVarPlaceHolder[1] |
           if($pv.type == StrictDate,
             |'LocalDate.parse(params[\'%s\']).atTime(0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()',
             | if($pv.type == DateTime,
@@ -1392,7 +1393,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
             )
           ),
         any: Any[*] | 'params[\'%s\']'
-      ])->format($param.first);      
+      ])->format($param.first);
 
       let script = '%s.toInstant().toEpochMilli() %s %s'->format([painlessExtractField($tdsESDetail), $operation, $paramScript]);
       let literalOrExpression = $newValue->literalOrExpression(true)->toOne();
@@ -1408,7 +1409,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessNot(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
 {
-  let toNot = processPainless($fe.parametersValues->at(0), $initReq);  
+  let toNot = processPainless($fe.parametersValues->at(0), $initReq);
   let toNotScript = $toNot.first;
   let script = '!(%s)'->format($toNotScript.source.value->toOne());
   pair(^$toNotScript(source = $script->literal()), $toNot.second);
@@ -1419,10 +1420,10 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessAndO
   let funcName = $fe.func.functionName->toOne();
   let operation = [
         pair('and', '&&'),
-        pair('or', '||')        
+        pair('or', '||')
     ]->filter(x | $x.first == $funcName).second->toOne('Only support and/or but found: ' + $funcName);
 
-  let left = processPainless($fe.parametersValues->at(0), $initReq);  
+  let left = processPainless($fe.parametersValues->at(0), $initReq);
   let right = processPainless($fe.parametersValues->at(1), $left.second);
 
   let leftScript = $left.first.source.value->toOne();
@@ -1436,14 +1437,14 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessAndO
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessIf(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
 {
-  let condition = processPainless($fe.parametersValues->at(0), $initReq);  
+  let condition = processPainless($fe.parametersValues->at(0), $initReq);
   let ifTrue = processPainless($fe.parametersValues->at(1), $condition.second);
   let ifFalse = processPainless($fe.parametersValues->at(2), $ifTrue.second);
 
   let conditionScript = $condition.first.source.value->toOne();
   let ifTrueScript = $ifTrue.first.source.value->toOne();
   let ifFalseScript = $ifFalse.first.source.value->toOne();
-  
+
   let params = $condition.first.params->toOne()->keyValues()
                 ->concatenate($ifTrue.first.params->toOne()->keyValues())
                 ->concatenate($ifFalse.first.params->toOne()->keyValues())
@@ -1455,8 +1456,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessIf(f
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessDateTruncate(fe: FunctionExpression[1], initReq: State[1], unit: String[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1466,8 +1467,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessDate
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessExtractDatePart(fe: FunctionExpression[1], initReq: State[1], field: String[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1477,8 +1478,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessExtr
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessDateFormat(fe: FunctionExpression[1], initReq: State[1], format: String[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1490,8 +1491,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessDate
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessFirstDayOfWeek(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1501,8 +1502,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessFirs
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessFirstDayOfMonth(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1512,8 +1513,8 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessFirs
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessFirstDayOfQuarter(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
 {
-  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq); 
-  
+  let dateFieldPair = $fe.parametersValues->at(0)->extractSimpleValue($initReq);
+
   let dateField = $dateFieldPair.first.values->cast(@TDSESDetail)->toOne();
   let req = $dateFieldPair.second;
 
@@ -1530,43 +1531,43 @@ function meta::external::store::elasticsearch::v7::pureToEs::painlessDateFunctio
 function meta::external::store::elasticsearch::v7::pureToEs::painlessDateSupportedFunctions(): Pair<Function<Any>, PainlessDateSupportedFunction>[*]
 {
   [
-     pair(datePart_Date_1__Date_1_, 
+     pair(datePart_Date_1__Date_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateTruncate($fe, $req, 'DAYS')}, 'yyyy-MM-dd'))
-    ,pair(firstMillisecondOfSecond_Date_1__DateTime_1_, 
+    ,pair(firstMillisecondOfSecond_Date_1__DateTime_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateTruncate($fe, $req, 'SECONDS')}, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSZ'))
-    ,pair(firstSecondOfMinute_Date_1__DateTime_1_, 
+    ,pair(firstSecondOfMinute_Date_1__DateTime_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateTruncate($fe, $req, 'MINUTES')}, 'yyyy-MM-dd\'T\'HH:mm:ssZ'))
-    ,pair(firstMinuteOfHour_Date_1__DateTime_1_, 
+    ,pair(firstMinuteOfHour_Date_1__DateTime_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateTruncate($fe, $req, 'HOURS')}, 'yyyy-MM-dd\'T\'HH:mmZ'))
-    ,pair(firstHourOfDay_Date_1__DateTime_1_, 
+    ,pair(firstHourOfDay_Date_1__DateTime_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateTruncate($fe, $req, 'DAYS')}, 'yyyy-MM-dd\'T\'HH'))
-    
-    ,pair(firstDayOfMonth_Date_1__Date_1_, 
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfMonth($fe, $req)}, 'yyyy-MM-dd'))    
-    ,pair(firstDayOfWeek_Date_1__Date_1_, 
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfWeek($fe, $req)}, 'yyyy-MM-dd'))    
-    ,pair(firstDayOfQuarter_Date_1__StrictDate_1_, 
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfQuarter($fe, $req)}, 'yyyy-MM-dd'))    
+
+    ,pair(firstDayOfMonth_Date_1__Date_1_,
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfMonth($fe, $req)}, 'yyyy-MM-dd'))
+    ,pair(firstDayOfWeek_Date_1__Date_1_,
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfWeek($fe, $req)}, 'yyyy-MM-dd'))
+    ,pair(firstDayOfQuarter_Date_1__StrictDate_1_,
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessFirstDayOfQuarter($fe, $req)}, 'yyyy-MM-dd'))
 
     ,pair(year_Date_1__Integer_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'ChronoField.YEAR')}, []))
     ,pair(weekOfYear_Date_1__Integer_1_,
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'IsoFields.WEEK_OF_WEEK_BASED_YEAR')}, []))    
-    
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'IsoFields.WEEK_OF_WEEK_BASED_YEAR')}, []))
+
     ,pair(monthNumber_Date_1__Integer_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'ChronoField.MONTH_OF_YEAR')}, []))
     ,pair(month_Date_1__Month_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateFormat($fe, $req, 'MMMM')}, []))
-    
+
     ,pair(quarterNumber_Date_1__Integer_1_,
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'IsoFields.QUARTER_OF_YEAR')}, []))    
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'IsoFields.QUARTER_OF_YEAR')}, []))
     ,pair(quarter_Date_1__Quarter_1_,
                           painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateFormat($fe, $req, '\'Q\'q')}, []))
-    
+
     ,pair(dayOfWeekNumber_Date_1__Integer_1_,
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'ChronoField.DAY_OF_WEEK')}, []))    
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessExtractDatePart($fe, $req, 'ChronoField.DAY_OF_WEEK')}, []))
     ,pair(dayOfWeek_Date_1__DayOfWeek_1_,
-                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateFormat($fe, $req, 'EEEE')}, []))    
+                          painlessDateSupportedFunction({fe: FunctionExpression[1], req: State[1] | processPainlessDateFormat($fe, $req, 'EEEE')}, []))
   ]
 }
 
@@ -1592,9 +1593,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedForPainles
     ,pair(supportedIfEqual(isEmpty_Any_$0_1$__Boolean_1_),            processPainlessIsEmpty_FunctionExpression_1__State_1__Pair_1_)
     ,pair(supportedIfEqual(isNotEmpty_Any_$0_1$__Boolean_1_),         processPainlessIsNotEmpty_FunctionExpression_1__State_1__Pair_1_)
 
-    ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNull'}, 
+    ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNull'},
             processPainlessIsEmpty_FunctionExpression_1__State_1__Pair_1_)
-    ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNotNull'}, 
+    ,pair({x: Function<Any>[1], req: State[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNotNull'},
             processPainlessIsNotEmpty_FunctionExpression_1__State_1__Pair_1_)
 
 
@@ -1615,7 +1616,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedForPainles
 
     ,pair(supportedIfEqual(lessThan_Date_1__Date_1__Boolean_1_),      processPainlessBooleanComparison_FunctionExpression_1__State_1__Pair_1_)
     ,pair(supportedIfEqual(lessThanEqual_Date_1__Date_1__Boolean_1_), processPainlessBooleanComparison_FunctionExpression_1__State_1__Pair_1_)
-  
+
     ,pair(supportedIfEqual(if_Boolean_1__Function_1__Function_1__T_m_), processPainlessIf_FunctionExpression_1__State_1__Pair_1_)
 
   ]->concatenate(

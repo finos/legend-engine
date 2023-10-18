@@ -15,6 +15,7 @@
 ###Pure
 import meta::legend::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::external::format::flatdata::executionPlan::test::convertStringToBytes(data:String[1]): InstanceValue[1]

@@ -427,7 +427,7 @@ function <<access.private>> meta::protocols::pure::v1_19_0::transformation::from
                      _type = 'mappingInstance',
                      fullPath = $m->elementToPath()->toOne()
                    ),
-                 r:meta::pure::runtime::Runtime[1]|
+                 r:meta::core::runtime::Runtime[1]|
                      ^meta::protocols::pure::v1_19_0::metamodel::valueSpecification::raw::RuntimeInstance
                      (
                         _type = 'runtimeInstance',

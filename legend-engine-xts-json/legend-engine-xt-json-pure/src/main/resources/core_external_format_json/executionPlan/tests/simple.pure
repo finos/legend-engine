@@ -15,6 +15,7 @@
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::external::format::shared::functions::*;
 import meta::external::format::json::executionPlan::model::*;
@@ -131,7 +132,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let binding = getTestBinding();
   let query   = {data:String[1]| Person->internalize($binding, $data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->externalize($binding, checked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#, $binding))};
-                 
+
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
 
   assertEquals('{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}', $result);
@@ -141,7 +142,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let binding = getTestBinding();
   let query   = {data:String[1]| Person->internalize($binding, $data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->externalize($binding, checked(#{Person{firstName, lastName}}#, $binding))};
-                 
+
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
   assertEquals('{"defects":[],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\",\\\"firm\\\":{\\\"legalName\\\":\\\"Firm A\\\"}}"},"value":{"firstName":"John","lastName":"Doe"}}', $result);
@@ -198,7 +199,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJson(): Boolean[1]
 {
   let binding = getTestBinding();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::ModelChainConnection(element=^meta::pure::mapping::modelToModel::ModelStore(), mappings = M2MMapping1));
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element=^meta::external::store::model::ModelStore(), connection=^meta::external::store::model::ModelChainConnection(mappings = M2MMapping1)));
   let query   = {data:String[1]| RefinedPerson.all()->graphFetch(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping2, mergeRuntimes([$runtime, getRuntimeWithModelQueryConnection(Person, 'application/json', $data)]))->externalize($binding, #{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
@@ -209,7 +210,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testMultiLevelM2MChainingWithJsonAndChecked(): Boolean[1]
 {
   let binding = getTestBinding();
-  let runtime = ^Runtime(connections = ^meta::pure::mapping::modelToModel::ModelChainConnection(element=^meta::pure::mapping::modelToModel::ModelStore(), mappings = M2MMapping1));
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element=^meta::external::store::model::ModelStore(), connection=^meta::external::store::model::ModelChainConnection(mappings = M2MMapping1)));
   let query   = {data:String[1]| RefinedPerson.all()->graphFetchChecked(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping2, mergeRuntimes([$runtime, getRuntimeWithModelQueryConnection(Person, 'application/json', $data)]))->externalize($binding, checked(#{RefinedPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree()))};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
@@ -222,7 +223,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let binding = getTestBinding();
   let tree    = #{TargetPerson{fullName, firm {legalName}, addresses {street, decoratedStreet}}}#;
   let query   = {data:String[1]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, $tree);};
-  
+
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '[{"firstName":"John", "lastName":"Doe", "firm":{"legalName":"Firm A"}, "addresses": {"street": "Street A"}}, {"firstName":"John", "lastName":"Doe2", "firm":{"legalName":"Firm B"}, "addresses": [{"street": "Street A"}, {"street": "Street B"}]}, {"firstName":"John", "lastName":"Doe3", "firm":{"legalName":"Firm C"}}]'));
 
   assertEquals('[{"fullName":"John Doe","firm":{"legalName":"Firm A"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"}]},{"fullName":"John Doe2","firm":{"legalName":"Firm B"},"addresses":[{"street":"Street A","decoratedStreet()":"Street:Street A"},{"street":"Street B","decoratedStreet()":"Street:Street B"}]},{"fullName":"John Doe3","firm":{"legalName":"Firm C"},"addresses":[]}]', $result);
@@ -238,7 +239,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                       firstName,
                       lastName
                     },
-                    product { 
+                    product {
                       productId,
                       productName,
                       description,
@@ -252,7 +253,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let query   = {tradeData:String[1], productData:String[1]| Trade.all()->graphFetch($tree)->from(M2MCrossStoreMapping, mergeRuntimes([getRuntimeWithModelQueryConnection(S_Trade, $binding, $tradeData), getRuntimeWithModelQueryConnection(S_Product, $binding, $productData)]))->externalize($binding, $tree);};
   let vars    = [pair('tradeData', '[{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"},{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}]'),
                  pair('productData', '[{"s_productId": "30", "s_productName": "Product 30", "s_description": "Product 30 description", "s_synonyms": [{"s_name":"product 30 synonym 1", "s_type":"isin"},{"s_name":"product 30 synonym 2", "s_type":"cusip"}]},{"s_productId": "31", "s_productName": "Product 31", "s_description": "Product 31 description", "s_synonyms": [{"s_name":"product 31 synonym 1", "s_type":"isin"}, {"s_name":"product 31 synonym 2", "s_type":"cusip"}]}]')];
-  
+
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, $vars);
 
   assertEquals('[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"30","productName":"Product 30","description":"Product 30 description","synonyms":[{"name":"product 30 synonym 1","type":"ISIN"},{"name":"product 30 synonym 2","type":"CUSIP"}]}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"},"product":{"productId":"31","productName":"Product 31","description":"Product 31 description","synonyms":[{"name":"product 31 synonym 1","type":"ISIN"},{"name":"product 31 synonym 2","type":"CUSIP"}]}}]', $result);
@@ -273,7 +274,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let query   = {tradeData1:String[1], tradeData2:String[1]| Trade.all()->graphFetch($tree)->from(M2MUnionMapping, mergeRuntimes([getRuntimeWithModelQueryConnection(S_Trade1, $binding, $tradeData1), getRuntimeWithModelQueryConnection(S_Trade2, $binding, $tradeData2)]))->externalize($binding, $tree);};
   let vars    = [pair('tradeData1', '[{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"},{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}]'),
                  pair('tradeData2', '[{"s_tradeId": 5, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 6, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"},{"s_tradeId": 7, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"},{"s_tradeId": 8, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}]')];
-  
+
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, $vars);
 
   assertEquals('[{"tradeId":1,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":2,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":3,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":4,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":5,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":6,"trader":{"kerberos":"abc","firstName":"F_Name_1","lastName":"L_Name_1"}},{"tradeId":7,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}},{"tradeId":8,"trader":{"kerberos":"xyz","firstName":"F_Name_2","lastName":"L_Name_2"}}]', $result);
@@ -327,7 +328,7 @@ Class meta::external::format::json::executionPlan::test::simple::Address
 
 function meta::external::format::json::executionPlan::test::simple::getTestBinding():Binding[1]
 {
-  let schema = 
+  let schema =
     '###ExternalFormat\n' +
     'Binding meta::external::format::json::executionPlan::test::simple::TestBinding\n' +
     '{\n' +
@@ -340,7 +341,7 @@ function meta::external::format::json::executionPlan::test::simple::getTestBindi
     '    meta::external::format::json::executionPlan::test::simple::Address\n' +
     '  ];\n' +
     '}\n';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 
@@ -436,7 +437,7 @@ Association meta::external::format::json::executionPlan::test::simple::Trade_Tra
 
 function meta::external::format::json::executionPlan::test::simple::getTradeProductTestBinding():Binding[1]
 {
-  let schema = 
+  let schema =
     '###ExternalFormat\n' +
     'Binding meta::external::format::json::executionPlan::test::simple::TradeProductTestBinding\n' +
     '{\n' +
@@ -449,7 +450,7 @@ function meta::external::format::json::executionPlan::test::simple::getTradeProd
     '    meta::external::format::json::executionPlan::test::simple::S_Synonym\n' +
     '  ];\n' +
     '}\n';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 
@@ -460,7 +461,7 @@ Mapping meta::external::format::json::executionPlan::test::simple::M2MMapping1
   meta::external::format::json::executionPlan::test::simple::TargetPerson: Pure
   {
     ~src meta::external::format::json::executionPlan::test::simple::Person
-    
+
     fullName : $src.firstName + ' ' + $src.lastName,
     firm : $src.firm,
     addresses : $src.addresses
@@ -486,7 +487,7 @@ Mapping meta::external::format::json::executionPlan::test::simple::M2MMapping2
   meta::external::format::json::executionPlan::test::simple::RefinedPerson: Pure
   {
     ~src meta::external::format::json::executionPlan::test::simple::TargetPerson
-    
+
     fullName : $src.fullName + ' refined',
     firm : $src.firm,
     addresses : $src.addresses

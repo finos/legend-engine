@@ -1,5 +1,6 @@
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::default::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::join::*;
 import meta::pure::extension::*;
@@ -194,7 +195,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAY_OF_YEAR(%s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
-    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),    
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
@@ -236,7 +237,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='rawtohex(hash(\'SHA-1\', %s))')),
-    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA-256\', %s))')), 
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA-256\', %s))')),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s, %s, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
@@ -273,11 +274,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
   let castTo = if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'varchar', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp', |
-  if ($returnType == 'DATE', | 'date', |   
+  if ($returnType == 'DATE', | 'date', |
   if ($returnType == 'BOOLEAN', | 'boolean', |
   if ($returnType == 'FLOAT', | 'float', |
-  if ($returnType == 'INTEGER', | 'integer', |  
-  $returnType)))))); 
+  if ($returnType == 'INTEGER', | 'integer', |
+  $returnType))))));
 
   format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
 }
@@ -301,7 +302,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc)
-   ])  
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -350,18 +351,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       // FIXME: we currently allow MMMyyyy as a dateformat which requires the following hack similar to IQ
       if($dateFormat == '\'MMMyyyy\'',
       | 'cast( parseDateTime(concat(\'01\', %s), \'%s\') as date)'->format([
-          $params->at(0), 
+          $params->at(0),
           joinStrings(['dd', $dateFormat->replace('\'', '')])
         ]),
       | 'cast( parseDateTime('+$params->at(0)+','+$dateFormat +') as date)'
       );
-      
+
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::normalizeH2DateFormat(params:String[1]):String[1]
 {
    [
-    pair('YYYY', 'yyyy'), 
+    pair('YYYY', 'yyyy'),
     pair('DD', 'dd')
    ]->fold({e, a| $a->replace($e.first,$e.second)}, $params);
 }
@@ -386,9 +387,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::convertDateTimeFunctionHasCorrectParamsH2(params:String[*]):Boolean[1]
 {
    assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
-   
-   let supportedDateTimeFormat = if($params->size() == 2, 
-     | let userFormat = $params->at(1); 
+
+   let supportedDateTimeFormat = if($params->size() == 2,
+     | let userFormat = $params->at(1);
        dateTimeFormatsH2()->get($userFormat->normalizeH2DateTimeFormat()->replace('\'', ''));,
      | []
    );
@@ -413,14 +414,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
    ]);
 }
 
-// FIXME: Are datetime and timestamp not treated the same in the backend (because parsedatetime always returns TIMESTAMP_WITH_TIMEZONE)? 
+// FIXME: Are datetime and timestamp not treated the same in the backend (because parsedatetime always returns TIMESTAMP_WITH_TIMEZONE)?
 // If so, this and the above logic (convertToDateTimeH2) should be identical
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::transformToTimestampH2(params:String[2]):String[1]
 {
   // Standardizing the format as per Postgres specification, will include mappings for the formats in future.
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported '); 
-   let timestampFormat = '\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\'';   
-   'cast(parsedatetime('+$params->at(0)+','+ $timestampFormat+') as timestamp)';    
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\'';
+   'cast(parsedatetime('+$params->at(0)+','+ $timestampFormat+') as timestamp)';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processDateDiffDurationUnitForH2(durationUnit:String[1]):String[1]
@@ -450,22 +451,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processSelectSQLQueryForH2(
-  s:SelectSQLQuery[1], 
-  dbConfig : DbConfig[1], 
-  format:Format[1], 
-  config:Config[1], 
-  isSubSelect : Boolean[1], 
+  s:SelectSQLQuery[1],
+  dbConfig : DbConfig[1],
+  format:Format[1],
+  config:Config[1],
+  isSubSelect : Boolean[1],
   extensions:Extension[*]
 ): String[1]
 {
-  let opStr = 
-    if($s.filteringOperation->isEmpty(), 
-      | '', 
+  let opStr =
+    if($s.filteringOperation->isEmpty(),
+      | '',
       | $s.filteringOperation->map(s | $s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
   );
-  let havingStr = 
-    if($s.havingOperation->isEmpty(), 
-      | '', 
+  let havingStr =
+    if($s.havingOperation->isEmpty(),
+      | '',
       | $s.havingOperation->map(s|$s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
   );
 
@@ -508,7 +509,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 }
 
 /*
-TODO: 
+TODO:
 - what to do with freemarker placeholder operations? They are also RelationalOpElements
 */
 // To be used to wrap filter conditions and their arguments to compare boolean to boolean
@@ -584,11 +585,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 // Required so that any join conditions also have correct wrapping
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::processJoinTreeNodeH2(
-  joinTreeNode:RelationalTreeNode[1], 
-  parent:TableAlias[0..1], 
-  dbConfig : DbConfig[1], 
-  format:Format[1], 
-  joinOrder:JoinType[*], 
+  joinTreeNode:RelationalTreeNode[1],
+  parent:TableAlias[0..1],
+  dbConfig : DbConfig[1],
+  format:Format[1],
+  joinOrder:JoinType[*],
   extensions:Extension[*]
 ):String[1]
 {
@@ -722,22 +723,22 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
 function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::testWhenJustCase_thenIsWrapped(): Boolean[1]
 {
   let op = ^DynaFunction(
-    name='case', 
+    name='case',
     parameters=[
-      ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-      ^Literal(value='true'), 
+      ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+      ^Literal(value='true'),
       ^Literal(value='false')
     ]
   );
 
   let expected = ^DynaFunction(
-    name= 'castBoolean', 
+    name= 'castBoolean',
     parameters=[
       ^DynaFunction(
-        name='case', 
+        name='case',
         parameters=[
-          ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-          ^Literal(value='true'), 
+          ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+          ^Literal(value='true'),
           ^Literal(value='false')
         ]
       )
@@ -751,10 +752,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
 {
   let op = ^DynaFunction(name='and', parameters=[
     ^DynaFunction(
-      name='case', 
+      name='case',
       parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-        ^Literal(value='true'), 
+        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+        ^Literal(value='true'),
         ^Literal(value='false')
       ]
     ),
@@ -766,13 +767,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
 
   let expected = ^DynaFunction(name='and', parameters=[
     ^DynaFunction(
-      name= 'castBoolean', 
+      name= 'castBoolean',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
         )
@@ -795,13 +796,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
-        ), 
+        ),
         ^Literal(value=true)
       ]
     ),
@@ -816,13 +817,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name= 'castBoolean', 
+          name= 'castBoolean',
           parameters=[
             ^DynaFunction(
-              name='case', 
+              name='case',
               parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-                ^Literal(value='true'), 
+                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+                ^Literal(value='true'),
                 ^Literal(value='false')
               ]
             )
@@ -845,13 +846,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
-        ), 
+        ),
         ^Literal(value='true')
       ]
     ),
@@ -866,10 +867,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
         ),
@@ -893,13 +894,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
-        ), 
+        ),
         ^Literal(value='Y')
       ]
     ),
@@ -914,10 +915,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
         ),
@@ -941,13 +942,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
-        ), 
+        ),
         ^Literal(value=true)
       ]
     )
@@ -961,15 +962,15 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
           name='castBoolean',
           parameters=[
             ^DynaFunction(
-              name='case', 
+              name='case',
               parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-                ^Literal(value='true'), 
+                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+                ^Literal(value='true'),
                 ^Literal(value='false')
               ]
             )
           ]
-        ), 
+        ),
         ^DynaFunction(name= 'castBoolean', parameters=[^Literal(value=true)])
       ]
     )
@@ -983,10 +984,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
 {
   let op = ^DynaFunction(name='or', parameters=[
     ^DynaFunction(
-      name='case', 
+      name='case',
       parameters=[
-        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-        ^Literal(value='true'), 
+        ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+        ^Literal(value='true'),
         ^Literal(value='false')
       ]
     ),
@@ -998,13 +999,13 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
 
   let expected = ^DynaFunction(name='or', parameters=[
     ^DynaFunction(
-      name= 'castBoolean', 
+      name= 'castBoolean',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
         )
@@ -1027,10 +1028,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
       name='equal',
       parameters=[
         ^DynaFunction(
-          name='case', 
+          name='case',
           parameters=[
-            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-            ^Literal(value='true'), 
+            ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+            ^Literal(value='true'),
             ^Literal(value='false')
           ]
         ),
@@ -1047,10 +1048,10 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::h2::v2_1_2
           name='castBoolean',
           parameters=[
             ^DynaFunction(
-              name='case', 
+              name='case',
               parameters=[
-                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]), 
-                ^Literal(value='true'), 
+                ^DynaFunction(name='equal', parameters=[^Literal(value='Y'), ^Literal(value='Y')]),
+                ^Literal(value='true'),
                 ^Literal(value='false')
               ]
             )

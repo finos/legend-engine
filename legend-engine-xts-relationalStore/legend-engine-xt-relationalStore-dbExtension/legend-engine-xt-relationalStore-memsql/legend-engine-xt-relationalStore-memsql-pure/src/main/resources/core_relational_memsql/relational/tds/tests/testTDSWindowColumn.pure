@@ -13,6 +13,8 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::functions::math::olap::*;
 import meta::relational::tests::model::simple::*;

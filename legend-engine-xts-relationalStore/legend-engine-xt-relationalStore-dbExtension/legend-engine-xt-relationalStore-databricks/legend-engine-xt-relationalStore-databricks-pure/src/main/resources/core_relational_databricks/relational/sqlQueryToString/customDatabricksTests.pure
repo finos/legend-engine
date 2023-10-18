@@ -59,16 +59,20 @@ Mapping meta::relational::databricks::tests::mapping::simpleRelationalMappingPer
 
 
 ###Pure
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::profiles::*;
 
@@ -79,7 +83,7 @@ function <<test.BeforePackage>> meta::relational::databricks::tests::setUp():Boo
 
 function meta::relational::databricks::tests::testRuntimeForDB():Runtime[1]
 {
-   meta::relational::tests::testRuntime(meta::relational::databricks::tests::db::delta);
+   meta::external::store::relational::tests::testRuntime(meta::relational::databricks::tests::db::delta);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::tableAndColumnNamesAreQuoted():Boolean[1]
@@ -113,8 +117,8 @@ function <<test.Test>> meta::relational::databricks::tests::getDateTime():Boolea
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
     |Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
-    meta::relational::tests::simpleRelationalMapping, 
-    DatabaseType.Databricks, 
+    meta::relational::tests::simpleRelationalMapping,
+    DatabaseType.Databricks,
     meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
 }
@@ -124,7 +128,7 @@ function <<test.Test>> meta::relational::databricks::tests::getDate():Boolean[1]
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
     |Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $dt),
-    meta::relational::tests::simpleRelationalMapping, 
+    meta::relational::tests::simpleRelationalMapping,
      DatabaseType.Databricks,
      meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);

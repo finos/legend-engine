@@ -16,6 +16,7 @@ import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::projection::filter::in::testIn():Boolean[1]
 {

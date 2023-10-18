@@ -20,9 +20,11 @@ import meta::relational::metamodel::datatype::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::database::model::definition::*;
 import meta::relational::functions::database::model::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::database::constructDb::*;
@@ -269,7 +271,7 @@ function meta::relational::functions::database::testDatabaseDefinitionForRuntime
 {
 
    $database.schemas->map(s | $s.tables->map(t | let sql = createSelectOneRowSql($t, $s, DatabaseType.SybaseIQ);
-                                                 executeInDb($sql, $runtime.connections->at(0)->cast(@DatabaseConnection));
+                                                 executeInDb($sql, $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection));
                                              )
                       );
 }
@@ -284,7 +286,7 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                                          tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
                                                          ) : String[*]
 {
-   
+
    loadCsvDataToDbTable($csvData, $db, createDbConfig(DatabaseType.H2), $tablePostProcessor);
 }
 

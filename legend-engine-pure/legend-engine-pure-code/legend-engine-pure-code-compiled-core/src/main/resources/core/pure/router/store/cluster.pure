@@ -27,6 +27,7 @@ import meta::pure::router::store::clustering::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
@@ -96,20 +97,20 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                let expr = $func.expressionSequence->evaluateAndDeactivate()->toOne();
                                                                let y = $expr->reactivate(newMap($func->openVariableValues()->keyValues()->concatenate(pair($func->functionType().parameters->evaluateAndDeactivate().name->toOne(), list($ac)))));
                                                                if($y == $ac.sourceSetId, |$ac.targetStore, |$ac.sourceStore););
-      
+
               assert($tgtStores->removeDuplicates()->size() == 1, 'More than 1 data flow target stores, Not supported!');
-                
+
               let tgtStore = $tgtStores->removeDuplicates()->toOne();
               let setIdStoreIdPairs = $crossPropertyAccesses->map(ac | [pair($ac.sourceSetId, $ac.sourceStore), pair($ac.targetSetId, $ac.targetStore)])->removeDuplicates();
               let targetStorePairs = $setIdStoreIdPairs->filter(x | $x.second == $tgtStore);
               let otherStorePairs = $setIdStoreIdPairs->filter(x | $x.second != $tgtStore);
-      
+
               let replacedSets = $otherStorePairs->map(p |
                  let setId = $p.first;
                  let storeId = $p.second;
                  $mapping->classMappingById($setId)->toOne()->createCrossSetImplementation($mapping, $mapping->classMappingById($targetStorePairs.first->at(0))->toOne()->meta::pure::router::routing::getStoreFromSet($mapping, $extensions), $setId + '_gen_replaced_' +  toString($otherStorePairs->indexOf($p)), $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicates(), $crossPropertyAccesses->filter(x | $x.targetSetId == $setId)->removeDuplicates(), $allPropertyAccesses->filter(x | $x.sourceSetId == $setId));
               );
-                
+
               let modifiedSets = $targetStorePairs->map(p |
                  let setId = $p.first;
                  let storeId = $p.second;
@@ -124,9 +125,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                          let crossMapping = $set->propertyMappingByPropertyNameAndTargetId($ca.property.name->toOne(), $ca.targetSetId)->toOne()->cast(@XStorePropertyMapping);
                          ^CrossSetImplementationReverseComplexPropertyMapping
                           (
-                             property = $ca.property->cast(@Property<Nil,Any|*>), 
+                             property = $ca.property->cast(@Property<Nil,Any|*>),
                              crossExperssionPropertyPairs = $crossMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual(),
-                             sourceSetImplementationId = $newSetId, 
+                             sourceSetImplementationId = $newSetId,
                              targetSetImplementationId = $newTargetSet.id,
                              targetSet = $newTargetSet,
                              sourcePropertyMapping = $crossMapping
@@ -137,24 +138,24 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                       let newPropMappingsWithOwner = $newPropMappings->map(pm | ^$pm(owner=$newSet));
                       $newSet->mutateAdd('propertyMappings', $newPropMappingsWithOwner);
                       pair($set, $newSet);,
-                    | [] 
+                    | []
                  );
               );
-                
+
               let otherStoreSets = $replacedSets.first;
               let finalCluster = cluster($v, $mapping, $openVariables, $exeCtx, $debug, ^AnalyticsDecision(replacedSets=$replacedSets, modifiedSets=$modifiedSets, targetStoreId=$tgtStore), $extensions);
-                  
+
               let executables = $finalCluster.executableSetOperations;
               let createdLetFns = $otherStoreSets->cast(@InstanceSetImplementation)->map(os |
                  let execs = $executables->filter(e | $e.first.id == $os.id);
                  let pre_cls = if($execs->size() == 1, | $execs->at(0).second, | $os->clusteredGetAll($mapping, $runtime, $exeCtx, $extensions));
-                                                       
+
                  let newSetId = $os.id + '_gen_modified_flowing_' +  toString($otherStoreSets->indexOf($os));
                  let propertiesAccessed = $allPropertyAccesses->filter(s | $s.sourceSetId == $os.id).property;
                  let propertiesInSourceCrossExpressions = $crossPropertyAccesses->filter(s | $s.sourceSetId == $os.id)->map(cross | $os->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
                  let propertiesInTargetCrossExpressions = $crossPropertyAccesses->filter(s | $s.targetSetId == $os.id)->map(cross | $mapping->classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne()->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
                  let requiredSimpleProperties = $propertiesAccessed->concatenate($propertiesInSourceCrossExpressions)->concatenate($propertiesInTargetCrossExpressions)->removeDuplicates();
-                 
+
                  let allPropertyMappings = $os->allPropertyMappings()->filter(pm | $requiredSimpleProperties->contains($pm.property))->map(pm | ^$pm(sourceSetImplementationId = $newSetId));
                  let newSet = ^$os(superSetImplementationId='', id=$newSetId, propertyMappings=[]);
                  let newPropMappingsWithOwner = $allPropertyMappings->map(pm | ^$pm(owner=$newSet));
@@ -200,7 +201,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
               ^$finalCluster(letFunctions = $createdLetFns->concatenate($finalCluster.letFunctions));
          );,
       |  cluster($v, $mapping, $openVariables, $exeCtx,  $debug, [], $extensions);
-   );     
+   );
 }
 
 function meta::pure::router::clustering::specializedFunctionExpressionClustering() : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[1], Mapping[1], Map<String, List<Any>>[1], ExecutionContext[1], DebugContext[1], AnalyticsDecision[0..1], meta::pure::extension::Extension[*]->ClusterResponse[1]}>>[*]
@@ -212,7 +213,7 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
           let params = $childClustersResponse.cluster->evaluateAndDeactivate();
 
           let runtime = $f.parametersValues->at(3)->cast(@InstanceValue).values->cast(@Runtime)->toOne();
-          let store = $runtime.connections.element->cast(@meta::pure::store::Store)->toOne();
+          let store = $runtime.connectionStores.element->cast(@meta::pure::store::Store)->toOne();
           ^ClusterResponse(
             cluster = ^StoreMappingClusteredValueSpecification(
                         openVars = $openVariables,
@@ -254,7 +255,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                          let pre_params = $childClustersResponse.cluster->evaluateAndDeactivate();
                                          let paramsExecutablePairs = if($analyticsDecision->isNotEmpty(),
                                             | let crossPropertyAccesses = meta::pure::router::analytics::getAllCrossPropertyAccesses($f, $mapping, $extensions);
-                                              if($crossPropertyAccesses->isNotEmpty(), 
+                                              if($crossPropertyAccesses->isNotEmpty(),
                                                  | let newExecutables = $pre_params->map(p | $p->match([
                                                       c:StoreMappingClusteredValueSpecification[1] | if($c.executable && $c.val->instanceOf(StoreMappingRoutedValueSpecification) && $c.val->cast(@StoreMappingRoutedValueSpecification).sets->size() == 1 && $analyticsDecision.replacedSets.first.id->contains($c.val->cast(@StoreMappingRoutedValueSpecification).sets.id->toOne()),
                                                                                             | pair($c.val->cast(@StoreMappingRoutedValueSpecification).sets->toOne(), $c);,
@@ -262,10 +263,10 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                       v:ValueSpecification[1] | []
                                                    ]));
                                                    let rewrittenParams = $f.parametersValues->evaluateAndDeactivate()->map(p |  $p->doReplacementWithPairsForVS($analyticsDecision.replacedSets->concatenate($analyticsDecision.modifiedSets))->cluster($mapping, $openVariables, $exeCtx,   $debug, [], $extensions)).cluster->evaluateAndDeactivate();
-                                                   pair(list($rewrittenParams), list($newExecutables));, 
+                                                   pair(list($rewrittenParams), list($newExecutables));,
                                                  | pair(list($pre_params), list([]));
                                               );,
-                                            | pair(list($pre_params), list([]));  
+                                            | pair(list($pre_params), list([]));
                                          );
                                          let params = $paramsExecutablePairs.first.values;
                                          let executables = $paramsExecutablePairs.second.values->cast(@Pair<SetImplementation, StoreMappingClusteredValueSpecification>);
@@ -293,7 +294,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                               | let varName = meta::pure::router::clustering::createVarExpName($paramSuffix);
                                                                                                 meta::pure::router::clustering::createVariableExpression($p,$varName);,
                                                                                               | $p)->cast(@ValueSpecification));
-    
+
                                                         print(if($debug.debug,| $updatedParams->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+' '))->joinStrings('  ')->debug($debug.space+'updated Function Parameters:'),|''));
                                                         let updatedUnique = getDistinctClusterVSByStore($updatedParams, $extensions);
                                                         if($updatedUnique->size()==1,
@@ -310,7 +311,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                                       executable   = true
                                                                                                     );,
                                                                                                  | [];));
-    
+
                                                               print(if($debug.debug, |$newLetFns->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+'Generated Lets:'))->joinStrings(''), |''));
                                                               let updatedOne = $updatedUnique->toOne();
                                                               let updatedCluster = ^$updatedOne(
@@ -329,7 +330,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                                                                                   |$p))),
                                                                                           executable=true
                                                                                         ));
-    
+
                                                           );,
                                                       | ^ClusterResponse(cluster=^PlatformClusteredValueSpecification(
                                                                                     genericType  = $f.genericType,
@@ -443,7 +444,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                 executable = true
                                                                               )),
                e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
-              
+
       ]
    )->cast(@ClusterResponse);
 }
@@ -496,8 +497,8 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
    let allClusters = if($recurse,
                         | $params->filter(p|$p->instanceOf(SimpleFunctionExpression))->fold({x, y | $x->cast(@SimpleFunctionExpression).parametersValues->getDistinctClusterVSByStore($recurse, $extensions)->concatenate($y->cast(@SimpleFunctionExpression).parametersValues->getDistinctClusterVSByStore($recurse, $extensions))},[]),
                         | []);
-   
-   let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | ($x->instanceOf(PlatformClusteredValueSpecification) && $y->instanceOf(PlatformClusteredValueSpecification)) 
+
+   let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | ($x->instanceOf(PlatformClusteredValueSpecification) && $y->instanceOf(PlatformClusteredValueSpecification))
                                                                                                                                                                        || ($x->instanceOf(StoreMappingClusteredValueSpecification) && $y->instanceOf(StoreMappingClusteredValueSpecification) && areStoreMappingClustersCompatible($x->cast(@StoreMappingClusteredValueSpecification), $y->cast(@StoreMappingClusteredValueSpecification), $extensions))});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
    $n_unique;
@@ -505,7 +506,7 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
 
 function meta::pure::router::store::clustering::areStoreMappingClustersCompatible(cluster1:StoreMappingClusteredValueSpecification[1], cluster2:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-   ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::pure::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
+   ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
 }
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1],  parentCluster:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
@@ -552,7 +553,7 @@ function <<access.private>> meta::pure::router::clustering::clusteredVSToBeRepla
    if($clusteredVSToBeReplaced->forAll(c | $c.val->byPassValueSpecificationWrapper()->instanceOf(FunctionExpression)
                                         && $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->isNotEmpty()
                                         && $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet)),
-      | $clusteredVSToBeReplaced, 
+      | $clusteredVSToBeReplaced,
       | []);
 }
 
@@ -588,8 +589,8 @@ function <<access.private>> meta::pure::router::clustering::propertyPairsInMulti
                                                                            );,
                                        a: Any[*] | assert(false, 'Complex cross expressions not supported yet!'); [];
                                       ]),
-                                    | if($f.functionName == 'and', 
-                                         | $params->at(0)->propertyPairsInMultiEqual()->concatenate($params->at(1)->propertyPairsInMultiEqual()), 
+                                    | if($f.functionName == 'and',
+                                         | $params->at(0)->propertyPairsInMultiEqual()->concatenate($params->at(1)->propertyPairsInMultiEqual()),
                                          | assert(false, 'Complex cross expressions not supported yet!'); [];
                                       );
                                  );
@@ -599,20 +600,20 @@ function <<access.private>> meta::pure::router::clustering::propertyPairsInMulti
 function <<access.private>> meta::pure::router::clustering::createCrossSetImplementation(set:SetImplementation[1], mapping:Mapping[1], store: Store[1], varName: String[1], sourceCrossAcceses: meta::pure::router::analytics::PropertyAccess[*], targetCrossAcceses: meta::pure::router::analytics::PropertyAccess[*], allPropertyAccesses: PropertyAccess[*]):Pair<SetImplementation, CrossSetImplementation>[1]
 {
    let newSetId = $varName;
-   
+
    let propertiesAccessed = $allPropertyAccesses.property;
    let propertiesInSourceCrossExpressions = $sourceCrossAcceses->map(cross | $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
    let propertiesInTargetCrossExpressions = $targetCrossAcceses->map(cross | $mapping->classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne()->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
    let requiredSimpleProperties = $propertiesAccessed->concatenate($propertiesInSourceCrossExpressions)->concatenate($propertiesInTargetCrossExpressions)->removeDuplicates();
-   
+
    let simplePropertyMappings = $set->cast(@InstanceSetImplementation)->allPropertyMappings()
                                  ->filter(s| $s.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(DataType))
                                  ->filter(s | $requiredSimpleProperties->contains($s.property))
                                  ->map(pm | ^CrossSetImplementationPrimtivePropertyMapping
                                              (
-                                                property = $pm.property->cast(@Property<Nil,Any|*>), 
-                                                propertyPlaceHolder = $pm.property.name->toOne(), 
-                                                sourceSetImplementationId = $newSetId, 
+                                                property = $pm.property->cast(@Property<Nil,Any|*>),
+                                                propertyPlaceHolder = $pm.property.name->toOne(),
+                                                sourceSetImplementationId = $newSetId,
                                                 targetSetImplementationId = '',
                                                 sourcePropertyMapping = $pm
                                              )
@@ -620,16 +621,16 @@ function <<access.private>> meta::pure::router::clustering::createCrossSetImplem
 
    let complexPropertyMappings = $sourceCrossAcceses->map(cross | ^CrossSetImplementationComplexPropertyMapping
                                                                    (
-                                                                      property = $cross.property->cast(@Property<Nil,Any|*>), 
+                                                                      property = $cross.property->cast(@Property<Nil,Any|*>),
                                                                       crossExperssionPropertyPairs = $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual(),
-                                                                      sourceSetImplementationId = $newSetId, 
+                                                                      sourceSetImplementationId = $newSetId,
                                                                       targetSetImplementationId = $cross.targetSetId,
                                                                       sourcePropertyMapping = $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()
                                                                    )
                                                          );
-   
+
    let allPropertyMappings = $simplePropertyMappings->concatenate($complexPropertyMappings);
-                                  
+
    let crossSet =  ^CrossSetImplementation
                     (
                        targetStore = $store,
@@ -639,10 +640,10 @@ function <<access.private>> meta::pure::router::clustering::createCrossSetImplem
                        parent = $set.parent,
                        varName = $varName
                     );
-   
+
    let allPropertyMappingsWithAddedOwner = $allPropertyMappings->map(a | ^$a(owner = $crossSet));
    $crossSet->mutateAdd('propertyMappings', $allPropertyMappingsWithAddedOwner);
-   
+
    pair($set, $crossSet);
 }
 
@@ -655,9 +656,9 @@ function meta::pure::router::clustering::doReplacementWithPairsForVS(vs: ValueSp
                                                    | $vs,
                                                    | ^$evs
                                                      (
-                                                        value = $evs.value->doReplacementWithPairsForVS($pairs), 
+                                                        value = $evs.value->doReplacementWithPairsForVS($pairs),
                                                         sets = $evs.sets->map(ss | if($pairs.first.id->contains($ss.id), |$pairs->filter(s|$s.first.id == $ss.id)->at(0).second, |$ss)),
-                                                        propertyMapping = $evs.propertyMapping->map(pm | 
+                                                        propertyMapping = $evs.propertyMapping->map(pm |
                                                                              let set = $pm.owner.parent->toOne()->classMappingById(if($pm.sourceSetImplementationId == '',|$pm.owner->cast(@InstanceSetImplementation).id->toOne(), |$pm.sourceSetImplementationId));
                                                                              if($set->isEmpty(), | $pm, |
                                                                              let parent = $set->toOne();
@@ -708,7 +709,7 @@ function meta::pure::router::clustering::clusteredGetAll(set: SetImplementation[
               ),
       routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime)
    )->evaluateAndDeactivate();
-   
+
    let clustered = list($newExpr)->doCluster(^LambdaFunction<{->Any[1]}>(expressionSequence=^InstanceValue(values='', genericType=^GenericType(rawType=String), multiplicity=PureOne)),
                                              $mapping,
                                              $runtime,
@@ -731,7 +732,7 @@ function meta::pure::router::doCluster(built:List<ValueSpecification>[*], f:Func
                               ->map(
                                     c| print(if($clusteringDebug.debug,|'\n'+$c->asString()->debug($clusteringDebug.space+'Processing: '),|''));
                                        let res = $c->cluster($mapping, $runtime, $openVariables, $exeCtx, $extensions, $clusteringDebug);
-                                     
+
                                        $res->map(clusterResult|
                                                  if($clusterResult.cluster->instanceOf(ClusteredValueSpecification),
                                                      |$clusterResult.letFunctions->concatenate($clusterResult.cluster),
@@ -745,7 +746,7 @@ function meta::pure::router::doCluster(built:List<ValueSpecification>[*], f:Func
                                                         )
                                                    );
                                                 ););
-            
+
             let result = ^$f(expressionSequence = $res->toOneMany());
             print(if($debug.debug,|$result->asString()+'\n',|''));
             $result;

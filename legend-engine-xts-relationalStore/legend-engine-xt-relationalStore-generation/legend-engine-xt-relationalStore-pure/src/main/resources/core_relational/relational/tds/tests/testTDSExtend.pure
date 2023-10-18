@@ -17,8 +17,10 @@ import meta::relational::tests::model::simple::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringLiteral():Boolean[1]
 {
@@ -26,16 +28,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringLitera
       |Person.all()
          ->project(p|$p.firstName,'firstName')
          ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertSize($result.values.columns, 2);   
-   
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnVariable():Boolean[1]
@@ -52,14 +54,14 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnSt
       |Person.all()
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|'Hello'->length()}, 'hello_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertSize($result.values.columns, 2);
-   
+
    assertEquals('Peter|5,John|5,John|5,Anthony|5,Fabrice|5,Oliver|5,David|5',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));  
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", char_length(\'Hello\') as "hello_length" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
@@ -70,16 +72,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringColumn
       |Person.all()
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|$r.getString('first_name')}, 'name_again')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);  
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnStringColumn():Boolean[1]
@@ -88,16 +90,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFunctionOnSt
       |Person.all()
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length()}, 'name_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([String, Integer], $result.values.columns.type);
-   assertSize($result.values.columns, 2);  
-   
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|5,John|4,John|4,Anthony|7,Fabrice|7,Oliver|6,David|5',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testFunctionOnEnumColumn():Boolean[1]
@@ -108,12 +110,12 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testFunctionOnE
          ->extend([col({r:TDSRow[1]|$r.getEnum('type') == GeographicEntityType.CITY}, 'type_enum')]),
       simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);   
-      
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Hoboken|CITY|1,New York|CITY|1,New York|CITY|1,New York|CITY|1,San Fransisco|CITY|1,Hong Kong|CITY|1,New York|CITY|1,New York|CITY|1,Cupertino|CITY|1,Tokyo|CITY|1,Mountain View|CITY|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
+
    assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root" where "root".TYPE = 1',
       $result->sqlRemoveFormatting());
 }
@@ -125,16 +127,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testMultipleFunc
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|'Hello'}, 'const'),
                    col({r:TDSRow[1]|$r.getString('first_name')->length()}, 'name_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-      
+
    assertSize($result.values.columns, 3);
-   
+
    assertEquals('Peter|Hello|5,John|Hello|4,John|Hello|4,Anthony|Hello|7,Fabrice|Hello|7,Oliver|Hello|6,David|Hello|5',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", \'Hello\' as "const", char_length("root".FIRSTNAME) as "name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendAndExtendAgain():Boolean[1]
@@ -144,16 +146,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendAndExt
          ->project(p|$p.firstName,'first_name')
          ->extend([col({r:TDSRow[1]|$r.getString('first_name')->length()}, 'name_length')])
          ->extend([col({r:TDSRow[1]|$r.getInteger('name_length') * 2}, 'double_name_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);  
-   
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Peter|5|10,John|4|8,John|4|8,Anthony|7|14,Fabrice|7|14,Oliver|6|12,David|5|10',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", char_length("root".FIRSTNAME) as "name_length", (char_length("root".FIRSTNAME) * 2) as "double_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendOnDynaFunctionColumn():Boolean[1]
@@ -162,14 +164,14 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendOnDyna
       |Person.all()
          ->project([p|$p.firstName, p|$p.lastName->toUpper()], ['first', 'LAST'])
          ->extend([col({r:TDSRow[1]|$r.getString('LAST')->length()}, 'name_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-      
+
    assertSize($result.values.rows, 7);
-   
+
    assertEquals('Peter|SMITH|5,John|JOHNSON|7,John|HILL|4,Anthony|ALLEN|5,Fabrice|ROBERTS|7,Oliver|HILL|4,David|HARRIS|6',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
+
    assertEquals('select "root".FIRSTNAME as "first", upper("root".LASTNAME) as "LAST", char_length(upper("root".LASTNAME)) as "name_length" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
@@ -180,16 +182,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendOnMult
       |Person.all()
          ->project([#/Person/firstName!first_name#, #/Person/lastName!last_name#])
          ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length() + $r.getString('last_name')->length()}, 'combined_length')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);  
-   
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Peter|Smith|10,John|Johnson|11,John|Hill|8,Anthony|Allen|12,Fabrice|Roberts|14,Oliver|Hill|10,David|Harris|11',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", (char_length("root".FIRSTNAME) + char_length("root".LASTNAME)) as "combined_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDateLiteral():Boolean[1]
@@ -198,19 +200,19 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDateLiteral(
       |Person.all()
          ->project(p|$p.firstName,'firstName')
          ->extend([col({r:TDSRow[1]|%2016-08-10}, 'dateLiteral')]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    let tds = $result.values->at(0);
-   
-   assertSize($tds.columns, 2); 
-   
+
+   assertSize($tds.columns, 2);
+
    assertEquals('Peter|2016-08-10,John|2016-08-10,John|2016-08-10,Anthony|2016-08-10,Fabrice|2016-08-10,Oliver|2016-08-10,David|2016-08-10',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
+
    assertEqualsH2Compatible(
-    'select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"', 
-    'select "root".FIRSTNAME as "firstName", DATE\'2016-08-10\' as "dateLiteral" from personTable as "root"', 
+    'select "root".FIRSTNAME as "firstName", \'2016-08-10\' as "dateLiteral" from personTable as "root"',
+    'select "root".FIRSTNAME as "firstName", DATE\'2016-08-10\' as "dateLiteral" from personTable as "root"',
     $result->sqlRemoveFormatting()
    );
 }
@@ -226,16 +228,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNoopFunction
           col({r:TDSRow[1]|[]->cast(@String)}, 'castNull'),
           col({r:TDSRow[1]|$r.getString('firstName')->cast(@String)}, 'cast')
           ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertSize($result.values.columns, 5);   
-   
+   assertSize($result.values.columns, 5);
+
    assertEquals('Peter|Peter|Peter|TDSNull|Peter,John|John|John|TDSNull|John,John|John|John|TDSNull|John,Anthony|Anthony|Anthony|TDSNull|Anthony,Fabrice|Fabrice|Fabrice|TDSNull|Fabrice,Oliver|Oliver|Oliver|TDSNull|Oliver,David|David|David|TDSNull|David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".FIRSTNAME as "toOne", "root".FIRSTNAME as "first", null as "castNull", "root".FIRSTNAME as "cast" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".FIRSTNAME as "toOne", "root".FIRSTNAME as "first", null as "castNull", "root".FIRSTNAME as "cast" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFirstNotNullFunction():Boolean[1]
@@ -246,16 +248,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testFirstNotNull
          ->extend([
           col({row:TDSRow[1]|meta::pure::tds::extensions::firstNotNull([$row.getString('firstName'), 'N/A'])}, 'first')
           ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertSize($result.values.columns, 2);   
-   
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", coalesce("root".FIRSTNAME, \'N/A\') as "first" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "firstName", coalesce("root".FIRSTNAME, \'N/A\') as "first" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testParseDate():Boolean[1]
@@ -266,7 +268,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testParseDate():
          ->extend([
           col({row:TDSRow[1]| parseDate('2023-01-01')}, 'date')
           ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
 
   assert($sql->contains('parsedatetime'));
@@ -280,9 +282,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDecimal():Bo
          ->extend([
           col({row:TDSRow[1]| $row.getDecimal('decimal') + 1}, 'plus')
           ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-  
+
   assertEquals('select 1 as "decimal", (1 + 1) as "plus" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
@@ -293,21 +295,21 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
    let result = execute(
       |
          let firstNameColName = 'first_name';
-      
+
          Person.all()
             ->project([#/Person/firstName!first_name#, #/Person/lastName!last_name#])
             ->extend([col({r:TDSRow[1]| $r.getString($firstNameColName)->length()}, 'first_name_length')]);
       ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);  
-   
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Peter|Smith|5,John|Johnson|4,John|Hill|4,Anthony|Allen|7,Fabrice|Roberts|7,Oliver|Hill|6,David|Harris|5',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testExtendWithVariables2():Boolean[1]
@@ -315,21 +317,21 @@ function <<test.ToFix>> meta::relational::tests::tds::tdsExtend::testExtendWithV
    let result = execute(
       |
          let outColName = 'first_name_length';
-      
+
          Person.all()
             ->project([#/Person/firstName!first_name#, #/Person/lastName!last_name#])
             ->extend([col({r:TDSRow[1]| $r.getString('first_name')->length()}, $outColName)]);
       ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);  
-   
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Peter|Smith|6,John|Johnson|4,John|Hill|4,Anthony|Allen|7,Fabrice|Roberts|7,Oliver|Hill|7,David|Harris|5',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", "root".LASTNAME as "last_name", char_length("root".FIRSTNAME) as "first_name_length" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNull():Boolean[1]
@@ -341,16 +343,16 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNull():Boole
             col({r:TDSRow[1]|$r.isNull('firstName')}, 'isNull'),
             col({r:TDSRow[1]|$r.isNotNull('firstName')}, 'isNotNull')
             ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 3);   
-   
+
+   assertSize($result.values.columns, 3);
+
    assertEquals('Peter|false|true,John|false|true,John|false|true,Anthony|false|true,Fabrice|false|true,Oliver|false|true,David|false|true',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", "root".FIRSTNAME is null as "isNull", "root".FIRSTNAME is not null as "isNotNull" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".FIRSTNAME is null as "isNull", "root".FIRSTNAME is not null as "isNotNull" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringConcatSQLGeneration():Boolean[1]
@@ -360,9 +362,9 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testStringConcat
                      col({p:meta::relational::tests::model::simple::Person[1]|$p.lastName}, 'lastName'),
                      col({p:meta::relational::tests::model::simple::Person[1]|$p.age}, 'age')])
 	      ->extend(col({row:TDSRow[1]|$row.getString('firstName') + $row.getString('lastName')}, 'exprString3'))};
-   
+
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   
+
    let sqlResultH2 = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals($sqlResultH2, 'select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", concat("root".FIRSTNAME, "root".LASTNAME) as "exprString3" from personTable as "root"');
 
@@ -380,10 +382,10 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testIfWithEmptyE
          ->extend([
             col({r:TDSRow[1]|if($r.isNotNull('firstName'), | $r.getString('firstName'), | [])}, 'extended')
             ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", case when "root".FIRSTNAME is not null then "root".FIRSTNAME else null end as "extended" from personTable as "root"', 
+
+   assertEquals('select "root".FIRSTNAME as "firstName", case when "root".FIRSTNAME is not null then "root".FIRSTNAME else null end as "extended" from personTable as "root"',
       $result->sqlRemoveFormatting());
 }
 
@@ -399,12 +401,12 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendWithQu
                                col({r:TDSRow[1]|$r.getString('FIRST NAME')+'_hello'}, 'name_again'),
                                col({r:TDSRow[1]|$r.getString('1columnStartsWithNumber')+'_hello'}, 'numbercol_again')
                             ])};
-   
+
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
-   
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
    let resultWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    let queryWithQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
       ->project([
                                col({r:TDSRow[1]|$r.getString('FIRST NAME')}, 'FIRST NAME'),
@@ -416,15 +418,15 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendWithQu
                    ->extend([
                                col({r:TDSRow[1]|$r.getString('"FIRST NAME"')+'_hello'}, 'name_again'),
                                col({r:TDSRow[1]|$r.getString('"1columnStartsWithNumber"')+'_hello'}, 'numbercol_again')
-                         
+
                             ])};
-   
+
    let resultWithQuotes = execute($queryWithQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    let expectedSql = 'select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber", concat("root"."FIRST NAME", \'_hello\') as "name_again", concat("root"."1columnStartsWithNumber", \'_hello\') as "numbercol_again" from tableWithQuotedColumns as "root"';
 
    assertEquals($expectedSql, $resultWithoutQuotes->sqlRemoveFormatting());
-      
+
    assertEquals($expectedSql, $resultWithQuotes->sqlRemoveFormatting());
 }
 
@@ -445,8 +447,8 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testExtendsWithI
             col(r:TDSRow[1] | $r.getDate('dt')->in([%2021-01-01, %2021-01-02]), 'dateExtends'),
             col(r:TDSRow[1] | $r.getBoolean('ageGreaterThan50')->in([true, false]), 'booleanExtends')
          ]),
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
-   
+
    assertEquals('select "root".FIRSTNAME as "firstName", "root".AGE as "age", DATE\'2021-01-01\' as "dt", ("root".AGE is not null and "root".AGE > 50) as "ageGreaterThan50", "root".FIRSTNAME in (\'Peter\') as "stringExtends1", "root".FIRSTNAME in (\'Peter\', \'John\') as "stringExtends2", "root".AGE in (22, 23) as "numberExtends", DATE\'2021-01-01\' in (DATE\'2021-01-01\', DATE\'2021-01-02\') as "dateExtends", ("root".AGE is not null and "root".AGE > 50) in (true, false) as "booleanExtends" from personTable as "root"', $result->sqlRemoveFormatting());
 }

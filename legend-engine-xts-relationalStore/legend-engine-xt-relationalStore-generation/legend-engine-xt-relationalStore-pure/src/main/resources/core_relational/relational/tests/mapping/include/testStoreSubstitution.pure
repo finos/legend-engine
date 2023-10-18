@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::include::testStoreSubstitution():Boolean[1]

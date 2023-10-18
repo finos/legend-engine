@@ -18,6 +18,7 @@ import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::temporalDate::testBusinessDateForAllVersions():Boolean[1]
 {

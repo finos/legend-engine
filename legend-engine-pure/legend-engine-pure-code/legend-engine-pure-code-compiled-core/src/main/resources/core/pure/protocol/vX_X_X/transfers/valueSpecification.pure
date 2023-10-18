@@ -346,7 +346,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                     ),
                   v:ValueSpecification[1]|$v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
                   a:Path<Nil,Any|*>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'path',
@@ -369,7 +369,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                      )
                      ;,
                   a:meta::pure::functions::collection::AggregateValue<Any, Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'aggregateValue',
@@ -380,7 +380,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                 )
                      ),
                   a:meta::pure::tds::AggregateValue<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                      (
                        _type = 'classInstance',
                        type = 'tdsAggregateValue',
@@ -394,7 +394,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                   oo:meta::pure::tds::OlapOperation<Any>[1]|
                      $oo->match([
                         oa : meta::pure::tds::TdsOlapAggregation<Any>[1]|
-                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsOlapAggregation',
@@ -405,7 +405,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     )
                           ),
                         or :  meta::pure::tds::TdsOlapRank<Any>[1]|
-                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsOlapRank',
@@ -416,7 +416,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                           )
                         ]),
                   si:meta::pure::tds::SortInformation[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsSortInformation',
@@ -427,7 +427,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     )
                           ),
                   co:meta::pure::tds::BasicColumnSpecification<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'tdsColumnInformation',
@@ -438,7 +438,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     )
                           ),
                   pair:Pair<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'pair',
@@ -454,8 +454,8 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         _type = 'packageableElementPtr',
                         fullPath = $m->elementToPath()->toOne()
                      ),
-                 r:meta::pure::runtime::Runtime[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                 r:meta::core::runtime::Runtime[1]|
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                       (
                         _type = 'classInstance',
                         type = 'runtimeInstance',
@@ -471,7 +471,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         values = $l.values->map(la|$la->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions))
                      ),
                   a:AlloySerializationConfig[1] |
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                       (
                         _type = 'classInstance',
                         type = 'alloySerializationConfig',
@@ -488,7 +488,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                 )
                       ),
                   g:GraphFetchTree[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
                           (
                             _type = 'classInstance',
                             type = 'rootGraphFetchTree',
@@ -689,11 +689,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
 
   let fControlToFunctionMapping = $imports.children->map(e|$e->match([c:Function<Any>[1]|$c, a:Any[*]|[]]))
                                                    ->map(c|pair($c.name->toOne(), $c))
-                                                   ->concatenate(meta::pure::router::routing::shouldStopFunctions($extensions)->map(f | pair($f.name->toOne(), $f))) 
+                                                   ->concatenate(meta::pure::router::routing::shouldStopFunctions($extensions)->map(f | pair($f.name->toOne(), $f)))
                                                    ->concatenate([
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_),
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_),
-                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_),
+                                                      pair(meta::core::runtime::currentUserId__String_1_.name->toOne(), meta::core::runtime::currentUserId__String_1_),
                                                       pair(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_.name->toOne(), meta::pure::functions::hash::hash_String_1__HashType_1__String_1_)
                                                    ])
                                                    ->removeDuplicatesBy(p | $p.second)

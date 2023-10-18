@@ -1,10 +1,13 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::executionPlan::toString::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp1():Boolean[1]
 {
@@ -33,7 +36,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                                               meta::relational::tests::m2m2r::AxionToModelMapping,
                                               meta::relational::tests::m2m2r::runtime(),
                                               meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-  let expected = 
+  let expected =
                 'Relational\n' +
                 '(\n' +
                 '  type = TDS[(name, String, "", ""), (prop2, String, "", "")]\n' +
@@ -41,7 +44,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '  sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
                 '  connection = RelationalDatabaseConnection(type = "H2")\n' +
                 ')\n' ;
-               
+
     assertEquals($expected, $result);
 }
 
@@ -53,7 +56,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
     meta::relational::tests::m2m2r::AxionToModelMapping,
     meta::relational::tests::m2m2r::runtime(),
     meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-    let expectedLegacyH2 = 
+    let expectedLegacyH2 =
                 'Relational\n' +
                 '(\n' +
                 '  type = TDS[(name, String, "", ""), (prop3, Number, "", "")]\n' +
@@ -61,7 +64,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
                 '  connection = RelationalDatabaseConnection(type = "H2")\n' +
                 ')\n' ;
-    let expectedNewH2 = 
+    let expectedNewH2 =
                 'Relational\n' +
                 '(\n' +
                 '  type = TDS[(name, String, "", ""), (prop3, Number, "", "")]\n' +
@@ -124,23 +127,23 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
   assertEquals($expected, $result);
 }
 
-function meta::relational::tests::m2m2r::runtimeSimple():meta::pure::runtime::Runtime[1]
+function meta::relational::tests::m2m2r::runtimeSimple():meta::core::runtime::Runtime[1]
 {
-  meta::pure::runtime::getRuntimeWithModelConnection(meta::relational::tests::m2m2r::Entitlement,[])
+  meta::core::runtime::getRuntimeWithModelConnection(meta::relational::tests::m2m2r::Entitlement,[])
 }
 
 function meta::relational::tests::m2m2r::runtime():Runtime[1]
 {
- ^meta::pure::runtime::Runtime(
-      connections=[
-         ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+ ^meta::core::runtime::Runtime(
+      connectionStores=[
+        ^meta::core::runtime::ConnectionStore(
           element = meta::relational::tests::m2m2r::SourceDB,
-          type = DatabaseType.H2,
-          authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
-          datasourceSpecification = ^LocalH2DatasourceSpecification()
-        ),
-        ^ModelChainConnection(element = ^ModelStore(), mappings = [meta::relational::tests::m2m2r::AxionToModelMapping])
-
+          connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+            type = DatabaseType.H2,
+            authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+            datasourceSpecification = ^LocalH2DatasourceSpecification()
+        )),
+        ^ConnectionStore(element = ^ModelStore(),connection=^ModelChainConnection( mappings = [meta::relational::tests::m2m2r::AxionToModelMapping]))
       ]
   )
 }
@@ -157,7 +160,7 @@ Class  meta::relational::tests::m2m2r::Entitlement
 
   prop3()
   {
-    if($this.announcement.basis==0.0, 
+    if($this.announcement.basis==0.0,
       |0.0,
       | ($this.entitledQuantity->toOne()/$this.announcement.basis->toOne())* $this.announcement.grossRate->toOne());
   }:Number[1];
@@ -215,7 +218,7 @@ Association meta::relational::tests::m2m2r::SourceEntitlementAnnouncementAssocia
 Mapping meta::relational::tests::m2m2r::AxionToModelMapping
 (
   include meta::relational::tests::m2m2r::AxionRelational
-  
+
   *meta::relational::tests::m2m2r::Entitlement: Pure
   {
     ~src meta::relational::tests::m2m2r::SourceEntitlement
@@ -234,7 +237,7 @@ Mapping meta::relational::tests::m2m2r::AxionToModelMapping
   }
 )
 
-###Mapping 
+###Mapping
 Mapping meta::relational::tests::m2m2r::AxionRelational
 (
 
@@ -255,7 +258,7 @@ Mapping meta::relational::tests::m2m2r::AxionRelational
   }
 )
 
-###Mapping 
+###Mapping
 Mapping meta::relational::tests::m2m2r::AxionTargetRelational
 (
 

@@ -64,7 +64,7 @@ Diagram meta::pure::persistence::aws::Persistence_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_18(
-        type=meta::pure::runtime::Connection,
+        type=meta::core::runtime::Connection,
         position=(457.87482, 263.77329),
         width=104.35840,
         height=44.00000,

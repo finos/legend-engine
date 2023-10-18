@@ -26,6 +26,7 @@ import meta::pure::executionPlan::tests::datetime::*;
 import meta::relational::tests::tds::tabletds::*;
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::metamodel::join::*;
@@ -37,7 +38,9 @@ import meta::relational::tests::groupBy::datePeriods::*;
 import meta::relational::tests::groupBy::datePeriods::domain::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -54,7 +57,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>now()->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let expectedLegacyH2 =
    'Sequence\n'+
@@ -117,8 +120,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    ')\n';
 
    assertEqualsH2Compatible(
-    $expectedLegacyH2, 
-    $expectedNewH2, 
+    $expectedLegacyH2,
+    $expectedNewH2,
     $res->planToString(meta::relational::extension::relationalExtensions())
    );
 
@@ -193,8 +196,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    ')\n';
 
    assertEqualsH2Compatible(
-    $expectedJavaLegacyH2, 
-    $expectedJavaNewH2, 
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
     $withJava->planToString(meta::relational::extension::relationalExtensions())
    );
 }
@@ -207,15 +210,16 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
          employeeCount
       }
    }#;
-   
+
    let query = {|meta::relational::graphFetch::tests::chain::Target_Firm.all()->graphFetch($tree)->serialize($tree)};
-  
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+
+   let modelChainConnection = ^meta::core::runtime::ConnectionStore(
+    element = ^meta::external::store::model::ModelStore(),
+    connection=^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
-   );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   ));
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores = meta::external::store::relational::tests::testRuntime().connectionStores->concatenate($modelChainConnection)
    );
 
    let res = meta::pure::executionPlan::executionPlan($query, meta::relational::graphFetch::tests::chain::M2M_Mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -228,7 +232,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    let newGlobalGraphFetchWithSequence = ^$globalGraphFetch(localGraphFetchExecutionNode = $newLocalGraphFetchWithSequence);
    let newRoot = ^$root(executionNodes = $newGlobalGraphFetchWithSequence);
 
-   let plan = ^$res(rootExecutionNode = $newRoot);  
+   let plan = ^$res(rootExecutionNode = $newRoot);
 
    let expected =
     'PureExp\n'+
@@ -340,7 +344,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      meta::relational::tests::model::simple::Person.all()
                      ->filter(p|$x>now()->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacyH2 =
    'Sequence\n'+
    '(\n'+
@@ -402,8 +406,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    ')\n';
 
    assertEqualsH2Compatible(
-    $expectedLegacyH2, 
-    $expectedNewH2, 
+    $expectedLegacyH2,
+    $expectedNewH2,
     $res->planToString(meta::relational::extension::relationalExtensions())
    );
 
@@ -535,8 +539,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0024 }\n' +
    ')\n';
    assertEqualsH2Compatible(
-    $expectedJavaLegacyH2, 
-    $expectedJavaNewH2, 
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
     $withJava->planToString(true, meta::relational::extension::relationalExtensions())
    );
 }
@@ -548,7 +552,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>%2005-10-10->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let expectedLegacyH2 =
    'Sequence\n'+
    '(\n'+
@@ -609,8 +613,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    ')\n';
 
    assertEqualsH2Compatible(
-    $expectedLegacyH2, 
-    $expectedNewH2, 
+    $expectedLegacyH2,
+    $expectedNewH2,
     $res->planToString(meta::relational::extension::relationalExtensions())
    );
 
@@ -740,8 +744,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0023 }\n' +
    ')\n';
    assertEqualsH2Compatible(
-    $expectedJavaLegacyH2, 
-    $expectedJavaNewH2, 
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
     $withJava->planToString(true, meta::relational::extension::relationalExtensions())
    );
 }
@@ -753,7 +757,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                                                                       ->filter(p|$p.classification($asOf).type==$CLSFtype)
                                                                       ->project([x|$x.classification($asOf).type], ['classificationType'])->distinct();};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
 
    let expectedJavaLegacyH2 =
@@ -895,8 +899,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0026 }\n' +
    ')\n';
    assertEqualsH2Compatible(
-    $expectedJavaLegacyH2, 
-    $expectedJavaNewH2, 
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
     $withJava->planToString(true, meta::relational::extension::relationalExtensions())
    );
 }
@@ -921,7 +925,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>%2005-10-10->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let withoutPlanId        = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
    let withoutPlanIdPackage = $withoutPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
@@ -946,11 +950,11 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
 
   let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
   let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
- 
+
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
   let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
   let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);
@@ -976,12 +980,12 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
 
   let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
   let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
-   
- 
+
+
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
   let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
   let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);

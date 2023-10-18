@@ -80,27 +80,30 @@ Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMap
 
    MyEnum: EnumerationMapping MyEnumMapping
    {
-    Value1: 'V1', 
+    Value1: 'V1',
     Value2: 'V2',
     Value_3 : 'V3',
     VALUE__4: 'V4'
-   }   
+   }
 
    FieldType: EnumerationMapping FieldTypeMapping
    {
-    Type1: 'T1', 
+    Type1: 'T1',
     Type2: 'T2',
     Type_3 : 'T3',
     Type__4: 'T4'
-   }      
+   }
 )
 
 ###Pure
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::legend::service::metamodel::*;
@@ -109,28 +112,29 @@ import meta::external::query::sql::transformation::queryToPure::*;
 import meta::external::query::sql::transformation::queryToPure::tests::*;
 import meta::external::query::sql::metamodel::*;
 
-function meta::external::query::sql::transformation::queryToPure::tests::dummyConnection(): Connection[1]
+function meta::external::query::sql::transformation::queryToPure::tests::dummyConnection(): ConnectionStore[1]
 {
+  ^ConnectionStore(
+    element = meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase,connection=
   ^RelationalDatabaseConnection(
     type = DatabaseType.H2,
     datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
-    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
-    element = meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase
-  )
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+  ))
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::dummyRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = dummyMapping,
-    connections = dummyConnection()
+    connectionStores = dummyConnection()
   );
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::sqlExtensions():Extension[*]
 {
   let sqlTestExtension = ^meta::pure::extension::Extension(
-    type = 'sql', 
+    type = 'sql',
     serializerExtension = meta::external::query::sql::transformation::queryToPure::tests::getSqlSerializerExtension_String_1__String_1_);
 
   meta::relational::extension::relationalExtensions()->concatenate($sqlTestExtension);
@@ -146,7 +150,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::sqlSeri
   ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
       transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
       [
-         c:Connection[1] | ^meta::protocols::pure::vX_X_X::metamodel::runtime::Connection(_type = 'connection', element = $c.element->toString())
+         c:Connection[1] | ^meta::protocols::pure::vX_X_X::metamodel::runtime::Connection(_type = 'connection', element = '')
       ]}
     );
 }
@@ -247,7 +251,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
 
 function meta::external::query::sql::transformation::queryToPure::tests::Service3(): Service[1]
 {
-  createService('/service/service3', {| 
+  createService('/service/service3', {|
         let const = 123;
         FlatInput.all()->project(
         [
@@ -261,7 +265,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
 
 function meta::external::query::sql::transformation::queryToPure::tests::Service4(): Service[1]
 {
-  createService('/service/service4/{id}', {id:String[1], ints:Integer[*], date:StrictDate[0..1] | 
+  createService('/service/service4/{id}', {id:String[1], ints:Integer[*], date:StrictDate[0..1] |
 
         FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
         [

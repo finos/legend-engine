@@ -15,6 +15,7 @@
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::*;
 
 Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::baseMappingWithInnerJoinInFilter
@@ -84,7 +85,7 @@ Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mappi
                 )
 
             }
-   
+
    meta::relational::tests::mapping::classMappingFilterWithInnerJoin::model::Person[p2] : Relational
             {
                ~filter [dbInc] (INNER) @Firm_Person2 | [dbInc] FirmXFilter
@@ -95,7 +96,7 @@ Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mappi
                 )
 
             }
-   
+
    meta::relational::tests::mapping::classMappingFilterWithInnerJoin::model::Person[p3] : Relational
             {
                ~filter [dbInc] (INNER) @Firm_Person | [dbInc] FirmBFilter
@@ -549,7 +550,7 @@ Class meta::relational::tests::mapping::classMappingFilterWithInnerJoin::model::
 function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::createTablesAndFillDb():Boolean[1]
 {
 
-   let connection = meta::relational::tests::testRuntime().connectionByElement(meta::relational::tests::db)->cast(@meta::relational::runtime::TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(meta::relational::tests::db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    executeInDb2('Drop table if exists PersonSet1;', $connection);
@@ -636,7 +637,7 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
           milestoning(
               business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
           )
-          id Integer PRIMARY KEY, 
+          id Integer PRIMARY KEY,
           name VARCHAR(200) PRIMARY KEY,
           type VARCHAR(200),
           exchange VARCHAR(200),
@@ -661,9 +662,9 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
           type_description VARCHAR(400),
           system VARCHAR(200),
           exchange VARCHAR(200),
-          from_z DATE, 
+          from_z DATE,
           thru_z DATE
-  )     
+  )
 
   Table ProductClassificationFilterTable(
           type VARCHAR(200) PRIMARY KEY,
@@ -681,12 +682,13 @@ Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
 
 ###Pure
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::initDatabase():Boolean[1]
 {
-  let connection = meta::relational::tests::testRuntime(meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore).connections->toOne()->cast(@TestDatabaseConnection);
-  
+  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+
   executeInDb('drop table if exists ProductClassificationFilterTable;',$connection);
   executeInDb('create table ProductClassificationFilterTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
   executeInDb('insert into ProductClassificationFilterTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);

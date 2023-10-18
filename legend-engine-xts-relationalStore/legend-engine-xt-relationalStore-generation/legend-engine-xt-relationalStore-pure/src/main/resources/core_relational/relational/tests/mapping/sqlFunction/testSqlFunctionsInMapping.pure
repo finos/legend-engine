@@ -30,10 +30,13 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::setUp():Boolean[1]
@@ -48,7 +51,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::s
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForH2():Boolean[1]
-{  
+{
   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals([%2016-06-23T00:00:00.123000000+0000, %2016-06-23T00:00:00.345000000+0000], $result.values->at(0).rows.values);
   assertEquals('select cast(parsedatetime("root".string2date,\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\') as timestamp) as "timestamp" from dataTable as "root"',$result->sqlRemoveFormatting());
@@ -638,7 +641,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testAdjust
       |SqlFunctionDemo.all()->project([s | $s.adjustDate], ['Dt']),
       testMapping,
       testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
    meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
 }
@@ -670,7 +673,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatATan2Result : Float[1];
    floatSqrtResult : Float[1];
    float1VarianceSample: Float[1];
-   float1VariancePopulation: Float[1];   
+   float1VariancePopulation: Float[1];
    string2Float : Float[1];
    string2decimal: String[1];
    string2Decimal: Decimal[1];
@@ -679,7 +682,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatRemResult : Integer[1];
 
    string2Date: Date[1];
-   string2TimestampStr: String[1];   
+   string2TimestampStr: String[1];
    string2TimestampFormat : Date[1];
    string2DateTime: DateTime[1];
    convertToDate1: Date[1];
@@ -722,7 +725,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
 
 function meta::relational::tests::mapping::sqlFunction::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 ###Relational
@@ -784,13 +787,13 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           floatATan2Result : atan2(float1, int1),
           floatSqrtResult : sqrt(int1),
           float1VarianceSample: varianceSample(int1),
-          float1VariancePopulation: variancePopulation(int1),          
+          float1VariancePopulation: variancePopulation(int1),
           string2Float : parseFloat(string2float),
           string2Decimal : parseDecimal(string2Decimal),
           string2decimal: trim(string2Decimal),
           string2Date  : parseDate(string2date),
-          string2TimestampStr : string2date,                    
-          string2TimestampFormat : toTimestamp(stringDateTimeFormat,'YYYY-MM-DD HH24:MI:SS'),              
+          string2TimestampStr : string2date,
+          string2TimestampFormat : toTimestamp(stringDateTimeFormat,'YYYY-MM-DD HH24:MI:SS'),
           string2Integer  : parseInteger(string2Integer),
           convertToDate1: convertDate(stringDateFormat),
           convertToDate: convertDate(stringDateFormat,'yyyy-MM-dd'),

@@ -17,6 +17,7 @@ import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
@@ -189,12 +190,12 @@ function meta::pure::functions::meta::isDataTypeProperty(p: Property<Nil,Any|*>[
    !$p.genericType.rawType->isEmpty() && $p.genericType.rawType->toOne()->instanceOf(DataType)
 }
 
-function {doc.doc = 'Checks if the value of a property is a primitive (string/int/enum/etc.)'} 
+function {doc.doc = 'Checks if the value of a property is a primitive (string/int/enum/etc.)'}
 meta::pure::functions::meta::isPrimitiveValueProperty(property : AbstractProperty<Any>[1]) : Boolean[1]
 {
    $property.genericType.rawType->toOne()->match([
-      pt:PrimitiveType[1]    | true, 
-      et:Enumeration<Any>[1] | true, 
+      pt:PrimitiveType[1]    | true,
+      et:Enumeration<Any>[1] | true,
       a:Class<Any>[1]        | false,
       u: Unit[1]             | true,
       m: Measure[1]          | true
@@ -220,11 +221,11 @@ function meta::pure::functions::meta::pathToPackage(path:String[1]):Package[1]
 
 function meta::pure::functions::meta::pathToPackage(path:String[1], createMissing : Boolean[1]):Package[1]
 {
-    $path->split('::')->fold({str:String[1], pkg:Package[1] | 
+    $path->split('::')->fold({str:String[1], pkg:Package[1] |
        let p = $pkg->cast(@Package).children->filter(c | $c.name == $str);
-       if ($p->isNotEmpty(), 
-           | $p->cast(@Package)->toOne(), 
-           | if(!$createMissing, 
+       if ($p->isNotEmpty(),
+           | $p->cast(@Package)->toOne(),
+           | if(!$createMissing,
                 | fail(| $path + ' is not a valid Package. Package \'' + $str + '\' not found in ' + $pkg->elementToPath()); []->cast(@Package)->toOne();,
                 | ^Package(name = $str, package = $pkg);
                 );
@@ -326,7 +327,7 @@ function meta::pure::functions::meta::findPackagableElement(obj : Any[1]) : Pack
 }
 
 function meta::pure::functions::meta::functionReturnMultiplicity(f:Function<Any>[1]):Multiplicity[1]
-{  
+{
    $f->match(
                [
                   p:AbstractProperty<Any>[1] | $p.multiplicity,
@@ -367,14 +368,14 @@ function meta::pure::functions::meta::findExpressionsForFunctionInValueSpecifica
 
 function <<access.private>> meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification(vs:ValueSpecification[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1], visitedFuncs:FunctionDefinition<Any>[*]):FunctionExpression[*]
 {
-   $vs->match([fe:FunctionExpression[1] | 
+   $vs->match([fe:FunctionExpression[1] |
                                             let res = $fe.parametersValues->map(v | $v->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs));
-                                            if ( !($fe.func->instanceOf(Property) || $fe.func->instanceOf(QualifiedProperty)) && ($funcs->isEmpty() || $fe.func->in($funcs)), 
-                                            | [$fe]->concatenate($res), 
+                                            if ( !($fe.func->instanceOf(Property) || $fe.func->instanceOf(QualifiedProperty)) && ($funcs->isEmpty() || $fe.func->in($funcs)),
+                                            | [$fe]->concatenate($res),
                                             | $fe.func->match([
                                                                 fd:ConcreteFunctionDefinition<Any>[1] |
-                                                                  if(!($fd->in($visitedFuncs)) && $shouldRecurse->eval($fd), 
-                                                                  |$fd->findExpressionsForFunctionInFunctionDefinition($funcs, $shouldRecurse, $visitedFuncs)->concatenate($res), 
+                                                                  if(!($fd->in($visitedFuncs)) && $shouldRecurse->eval($fd),
+                                                                  |$fd->findExpressionsForFunctionInFunctionDefinition($funcs, $shouldRecurse, $visitedFuncs)->concatenate($res),
                                                                   |$res);,
                                                                 a:Any[1] | $res
                                                             ]););,
@@ -405,13 +406,13 @@ function <<access.private>> meta::pure::functions::meta::findExpressionsForFunct
 
 function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func:FunctionDefinition<Any>[1]):Runtime[*]
 {
-  extractRuntimesFromFunctionDefinition($func, false) 
+  extractRuntimesFromFunctionDefinition($func, false)
 }
 
 function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func:FunctionDefinition<Any>[1], filterBeforeCast:Boolean[1]):Runtime[*]
 {
-  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, 
-                                                                            from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, 
+  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+                                                                            from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
                                                                             from_T_m__Mapping_1__Runtime_1__T_m_]);
   $fromExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(2)->evaluateAndDeactivate()->filter(p | !$filterBeforeCast || $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)->cast(@Runtime);
 }
@@ -493,7 +494,7 @@ function meta::pure::functions::meta::reprocessVSWithInScopeVars(v:ValueSpecific
       fe:FunctionExpression[1] | ^$fe
                                   (
                                      func=$fe.func->match([
-                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessLambdaWithInScopeVars(^Map<String, List<Any>>()), 
+                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessLambdaWithInScopeVars(^Map<String, List<Any>>()),
                                         v: Function<Any>[1]|$v
                                      ]),
                                      parametersValues=$fe.parametersValues->map(v|$v->reprocessVSWithInScopeVars($inScopeVars))
@@ -521,7 +522,7 @@ function meta::pure::functions::meta::reprocessVariableExpressionsName(v:ValueSp
       fe:FunctionExpression[1] | ^$fe
                                   (
                                      func=$fe.func->match([
-                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessVariableExpressionsNameInLambda($nameMap), 
+                                        fd:QualifiedProperty<Any>[1]|$fd->reprocessVariableExpressionsNameInLambda($nameMap),
                                         v: Function<Any>[1]|$v
                                      ]),
                                      parametersValues=$fe.parametersValues->map(v|$v->reprocessVariableExpressionsName($nameMap))
@@ -547,22 +548,22 @@ function {doc.doc = 'Get all generalisations of a type'}
 function meta::pure::functions::meta::simpleToString(obj : Any[1]) : String[1]
 {
    let type = $obj->type();
-   if($type->instanceOf(Class), 
-      {| 
+   if($type->instanceOf(Class),
+      {|
          let theClass = $type->cast(@Class<Any>);
-   
+
          let theProperties = $theClass->getAllTypeGeneralisations()->remove(Any)->map(t|$t->match([c:Class<Any>[1]|$c, a:Any[*]|[]])).properties->removeAll(Class.properties);
-   
+
          let p = $theProperties->sortBy(p|$p.name->toOne())->map(p|
                let val = $p->eval($obj);
-               if($val->size() == 1, 
-                     | '%s=%s%s%s'->format([$p.name->toOne(), if($val->toOne()->instanceOf(String), |'\'', |''), $val->makeString(), if($val->toOne()->instanceOf(String), |'\'', |'')]), 
+               if($val->size() == 1,
+                     | '%s=%s%s%s'->format([$p.name->toOne(), if($val->toOne()->instanceOf(String), |'\'', |''), $val->makeString(), if($val->toOne()->instanceOf(String), |'\'', |'')]),
                      | '%s=%s'->format([$p.name->toOne(), $val->map(v|if($v->instanceOf(String), |'\'', |'') + $v->makeString() + if($v->instanceOf(String), |'\'', |''))->joinStrings('[',', ', ']')])
                      );
             );
-     
+
          '%s(%s)'->format($theClass->elementToPath()->concatenate($p->joinStrings(', ')));
-      }, 
+      },
       | $obj->makeString()
       );
 }
@@ -588,7 +589,7 @@ function meta::pure::functions::meta::stringToDataType(dt : String[1]) : DataTyp
 
 function meta::pure::functions::meta::multiplicitySubsumes(subsuming:Multiplicity[1], subsumed:Multiplicity[1]) :Boolean[1]
 {
-  
+
      let lower1 = if($subsuming->hasLowerBound(),|$subsuming->getLowerBound(),|-1);
      let upper1 = if($subsuming->hasUpperBound(),|$subsuming->getUpperBound(),|-1);
      let lower2 = if($subsumed->hasLowerBound(),|$subsumed->getLowerBound(),|-1);

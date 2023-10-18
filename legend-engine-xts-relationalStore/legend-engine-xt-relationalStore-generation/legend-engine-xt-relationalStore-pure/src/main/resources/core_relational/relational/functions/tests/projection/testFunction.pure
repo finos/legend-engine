@@ -14,6 +14,7 @@
 
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
@@ -131,7 +132,7 @@ function <<test.Test>> meta::relational::tests::projection::function::date::test
    assertSize($dayResult.values->at(0).rows, 2);
    assertEquals([1,^TDSNull()], $dayResult.values->at(0).rows.values);
    assertEquals('select datediff(day,"root".tradeDate,"root".settlementDateTime) as "daysDiff" from tradeTable as "root" where "root".ID in (9, 10)', $dayResult->sqlRemoveFormatting());
-   
+
    let hourResult = execute(|Trade.all()->filter(f| $f.id->in([9,10]))->project([t| dateDiff($t.date, $t.settlementDateTime, DurationUnit.HOURS )], ['hoursDiff']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($hourResult.values->at(0).rows, 2);
    assertEquals([45,^TDSNull()], $hourResult.values->at(0).rows.values);
@@ -154,7 +155,7 @@ function <<test.Test>> meta::relational::tests::projection::function::testSameBe
 {
     let resultForAdd = execute(|Order.all()->project([o|$o.pnl, o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedAdd, testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals('select ("root".quantity + ("root".quantity + 3)) as "pnl", (("root".quantity + ("root".quantity + 3)) * 3) as "scaledPnl" from orderTable as "root"', $resultForAdd->sqlRemoveFormatting());
-   
+
     let resultForPlus = execute(|Order.all()->project([o|$o.pnl->toOne(), o|$o.pnl->toOne() * 3], ['pnl', 'scaledPnl']), simpleRelationalMappingWithNestedPlus, testRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals('select ("root".quantity + ("root".quantity + 3)) as "pnl", (("root".quantity + ("root".quantity + 3)) * 3) as "scaledPnl" from orderTable as "root"', $resultForPlus->sqlRemoveFormatting());   
+    assertEquals('select ("root".quantity + ("root".quantity + 3)) as "pnl", (("root".quantity + ("root".quantity + 3)) * 3) as "scaledPnl" from orderTable as "root"', $resultForPlus->sqlRemoveFormatting());
 }

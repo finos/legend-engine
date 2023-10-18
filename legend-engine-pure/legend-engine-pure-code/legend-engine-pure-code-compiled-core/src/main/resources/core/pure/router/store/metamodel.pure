@@ -19,6 +19,7 @@ import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
@@ -53,7 +54,7 @@ Class meta::pure::router::store::metamodel::StoreMappingRoutingStrategy extends 
    sets        : PermutationSet[*];
    setsByDepth : Map<String,PermutationSet>[1];
    toChooseSet : SetImplementation[0..1];
-   
+
    classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];         //TODO: Move to mapping
 
    classMappingsForClass(class:Class<Any>[1])
@@ -71,7 +72,7 @@ Class meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpeci
 
 Class meta::pure::router::store::metamodel::clustering::StoreMappingClusteredValueSpecification extends StoreClusteredValueSpecification
 {
-   mapping    : Mapping[1]; 
+   mapping    : Mapping[1];
 }
 
 // =========================================================================================
@@ -111,6 +112,7 @@ Class meta::pure::router::ClassSetImplementationHolder extends RoutedValueSpecif
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 

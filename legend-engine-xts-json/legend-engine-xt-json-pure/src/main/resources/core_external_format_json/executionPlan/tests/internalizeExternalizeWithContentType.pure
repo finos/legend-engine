@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::dataQuality::*;
 import meta::pure::graphFetch::execution::*;
@@ -120,7 +121,7 @@ Mapping meta::external::format::json::executionPlan::test::withContentType::M2MM
   meta::external::format::json::executionPlan::test::withContentType::TargetPerson: Pure
   {
     ~src meta::external::format::json::executionPlan::test::withContentType::Person
-    
+
     fullName : $src.firstName + ' ' + $src.lastName,
     firm : $src.firm,
     addresses : $src.addresses

@@ -21,7 +21,7 @@ import meta::pure::router::store::metamodel::*;
 
 // TODO: package should be changed to meta::pure::router::store::analytics?
 
-Class meta::pure::router::analytics::AnalyticsExecutionContext extends meta::pure::runtime::ExtendedExecutionContext
+Class meta::pure::router::analytics::AnalyticsExecutionContext extends meta::core::runtime::ExtendedExecutionContext
 {
    useAnalytics      : Boolean[1]; // To use the analytics feature or not
    toFlowSetFunction : LambdaFunction<{PropertyAccess[1]->String[1]}>[1]; // Will give back the set id which must flow over to the other side
@@ -45,7 +45,7 @@ Class meta::pure::router::analytics::AnalyticsState
 Class meta::pure::router::analytics::PropertyAccessState
 {
    <<equality.Key>> inFilterFunction   : Boolean[1];
-   <<equality.Key>> inProjectFunctions : Boolean[1];   
+   <<equality.Key>> inProjectFunctions : Boolean[1];
 }
 
 Class meta::pure::router::analytics::PropertyAccess
@@ -63,7 +63,7 @@ function meta::pure::router::analytics::filterCrossPropertyAccesses(accesses: Pr
    $accesses
       ->filter(a | $a.sourceStore != 'AGGREGATION_AWARE')
       ->filter(a | !$a.targetStore->in(['PRIMITIVE_PROPERTY', 'EMBEDDED', 'AGGREGATION_AWARE']))
-      ->filter(a | $a.sourceStore != $a.targetStore);    
+      ->filter(a | $a.sourceStore != $a.targetStore);
 }
 
 
@@ -83,12 +83,12 @@ function meta::pure::router::analytics::getAllCrossPropertyAccesses(v:ValueSpeci
 function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecification[1], state:AnalyticsState[1], extensions:meta::pure::extension::Extension[*]):PropertyAccess[*]
 {
    $vs->evaluateAndDeactivate()->match([
-      
+
       fe : FunctionExpression[1] |
          let parameters = $fe.parametersValues->evaluateAndDeactivate();
          $fe.func->evaluateAndDeactivate()->match([
             p : Property<Nil,Any|*>[1] |
-               $state.propertyMappings->map(pm |  
+               $state.propertyMappings->map(pm |
                   ^PropertyAccess
                   (
                      property    = $pm.property,
@@ -109,11 +109,11 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
                   | $parameters->at(0)->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions)->concatenate($parameters->tail()->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[], inFilterFunction=!$state.inProjectFunctions), $extensions))),
                   | if($fe.functionName == 'project',
                        | $parameters->at(0)->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions)->concatenate($parameters->tail()->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[], inProjectFunctions=true), $extensions))),
-                       | $parameters->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions))))   
+                       | $parameters->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions))))
          ]);,
 
       e: StoreMappingRoutedValueSpecification[1] | if($e.sets->isNotEmpty() && $e.sets->at(0)->instanceOf(CrossSetImplementation), | [], | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=$e.propertyMapping), $extensions)),
-      
+
       e : RoutedValueSpecification[1] | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions),
 
       iv : InstanceValue[1] |
@@ -126,8 +126,8 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
          ),
 
       v : ValueSpecification[1] | []
-      
-   ]) ->removeDuplicates() 
+
+   ]) ->removeDuplicates()
 }
 
 function meta::pure::router::analytics::getStore(setId: String[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):String[1]

@@ -14,6 +14,7 @@
 
 ###Pure
 import meta::pure::executionPlan::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
@@ -21,40 +22,43 @@ import meta::relational::functions::database::*;
 import meta::relational::tests::mapping::union::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::tests::model::simple::*;
 
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::propertyLevel::setup(): Boolean[1]
 {
-  let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=meta::relational::tests::mapping::union::myDB, type=DatabaseType.H2)]);
-  let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
-   
-  executeInDb('Drop table if exists PersonSet1;', $connection);    
-  executeInDb('Create Table PersonSet1 (ID INT, firstName_s1 VARCHAR(200), lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);    
-  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (1, \'Bran\', \'Scott\', 1, 1);', $connection);    
-  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (2, \'Ravi\', \'Anand\', 1, 2);', $connection);    
+  let runtime =  ^Runtime(connectionStores = [^ConnectionStore(element=meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+  let connection  = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+
+  executeInDb('Drop table if exists PersonSet1;', $connection);
+  executeInDb('Create Table PersonSet1 (ID INT, firstName_s1 VARCHAR(200), lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (1, \'Bran\', \'Scott\', 1, 1);', $connection);
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (2, \'Ravi\', \'Anand\', 1, 2);', $connection);
   executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (3, \'Sam\', \'Roberts\', 2, 2);', $connection);
-  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (4, \'Novel\', \'David\', 2, 1);', $connection);   
+  executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (4, \'Novel\', \'David\', 2, 1);', $connection);
   executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (21, \'Simran\', \'Bala\', 3, 1);', $connection);
   executeInDb('insert into PersonSet1 (ID, firstName_s1, lastName_s1, FirmID, ADDRESSID) values (22, \'CV\', \'Raman\', 3, 2);', $connection);
 
-  executeInDb('Drop table if exists PersonSet2;', $connection);    
-  executeInDb('Create Table PersonSet2 (ID INT, firstName_s2 VARCHAR(200), lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);    
-  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (5, \'Rahul\', \'Taylor\', 1, 1);', $connection);    
+  executeInDb('Drop table if exists PersonSet2;', $connection);
+  executeInDb('Create Table PersonSet2 (ID INT, firstName_s2 VARCHAR(200), lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (5, \'Rahul\', \'Taylor\', 1, 1);', $connection);
   executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (6, \'Pranay\', \'Wright\', 1, 2);', $connection);
   executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (7, \'Nitin\', \'Mark\', 2, 1);', $connection);
-  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (8, \'Atul\', \'Allen\', 2, 2);', $connection);    
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (8, \'Atul\', \'Allen\', 2, 2);', $connection);
   executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (19, \'Raj\', \'Bark\', 3, 1);', $connection);
-  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (20, \'Khali\', \'Simon\', 3, 2);', $connection); 
+  executeInDb('insert into PersonSet2 (ID, firstName_s2, lastName_s2, FirmID, ADDRESSID) values (20, \'Khali\', \'Simon\', 3, 2);', $connection);
 
-  executeInDb('Drop table if exists PersonSet3;', $connection);    
-  executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);    
-  executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (9, \'Rafael\', 1, 1);', $connection);    
+  executeInDb('Drop table if exists PersonSet3;', $connection);
+  executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);
+  executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (9, \'Rafael\', 1, 1);', $connection);
   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (10, \'wick\', 1, 2);', $connection);
   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (11, \'root\', 1, 3);', $connection);
   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (13, \'gayle\', 2, 1);', $connection);
@@ -64,36 +68,36 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::prop
   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (17, \'Smith\', 3, 2);', $connection);
   executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (18, \'Cook\', 3, 3);', $connection);
 
-  executeInDb('Drop table if exists FirmSet1;', $connection);    
-  executeInDb('Create Table FirmSet1(id INT, name VARCHAR(200),NICKNAME VARCHAR(200));', $connection);    
-  executeInDb('insert into FirmSet1 (id, name) values (1, \'Firm X\');', $connection);    
+  executeInDb('Drop table if exists FirmSet1;', $connection);
+  executeInDb('Create Table FirmSet1(id INT, name VARCHAR(200),NICKNAME VARCHAR(200));', $connection);
+  executeInDb('insert into FirmSet1 (id, name) values (1, \'Firm X\');', $connection);
 
-  executeInDb('Drop table if exists FirmSet2;', $connection);    
-  executeInDb('Create Table FirmSet2(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into FirmSet2 (id, name) values (2, \'Firm A\');', $connection);    
+  executeInDb('Drop table if exists FirmSet2;', $connection);
+  executeInDb('Create Table FirmSet2(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into FirmSet2 (id, name) values (2, \'Firm A\');', $connection);
 
-  executeInDb('Drop table if exists FirmSet3;', $connection);    
-  executeInDb('Create Table FirmSet3(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into FirmSet3(id, name) values (3, \'Firm B\');', $connection); 
+  executeInDb('Drop table if exists FirmSet3;', $connection);
+  executeInDb('Create Table FirmSet3(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into FirmSet3(id, name) values (3, \'Firm B\');', $connection);
 
-  executeInDb('Drop table if exists AddressSet1;', $connection);    
-  executeInDb('Create Table AddressSet1(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into AddressSet1 (id, name) values (1, \'New York\');', $connection);   
-  
-  executeInDb('Drop table if exists AddressSet2;', $connection);    
-  executeInDb('Create Table AddressSet2(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into AddressSet2 (id, name) values (2, \'Hoboken\');', $connection);   
+  executeInDb('Drop table if exists AddressSet1;', $connection);
+  executeInDb('Create Table AddressSet1(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into AddressSet1 (id, name) values (1, \'New York\');', $connection);
 
-  executeInDb('Drop table if exists AddressSet3;', $connection);    
-  executeInDb('Create Table AddressSet3(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into AddressSet3(id, name) values (3, \'Dalas\');', $connection);  
+  executeInDb('Drop table if exists AddressSet2;', $connection);
+  executeInDb('Create Table AddressSet2(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into AddressSet2 (id, name) values (2, \'Hoboken\');', $connection);
 
-  executeInDb('Drop table if exists Firm;', $connection);    
-  executeInDb('Create Table Firm(id INT, name VARCHAR(200));', $connection);    
-  executeInDb('insert into Firm (id, name) values (1, \'Firm X\');', $connection);    
-  executeInDb('insert into Firm (id, name) values (2, \'Firm A\');', $connection);   
+  executeInDb('Drop table if exists AddressSet3;', $connection);
+  executeInDb('Create Table AddressSet3(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into AddressSet3(id, name) values (3, \'Dalas\');', $connection);
+
+  executeInDb('Drop table if exists Firm;', $connection);
+  executeInDb('Create Table Firm(id INT, name VARCHAR(200));', $connection);
+  executeInDb('insert into Firm (id, name) values (1, \'Firm X\');', $connection);
+  executeInDb('insert into Firm (id, name) values (2, \'Firm A\');', $connection);
   true;
-} 
+}
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::propertyLevel::test1():Boolean[1]
 {
@@ -265,18 +269,18 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
 (
   *Firm : Operation
   {
-    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
   }
 
   *Person : Operation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)   
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
   }
 
   *Address : Operation
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
-  }   
+  }
 
   Person[person_set1] : Relational
   {
@@ -285,7 +289,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
       address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet1AddressSet2_ADDRESSID
   }
-          
+
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
@@ -293,7 +297,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
       address[a_set1] : [myDB]@PersonSet2AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
-          
+
   Firm[firm_set1] : Relational
   {
       legalName : [myDB]FirmSet1.name,
@@ -316,7 +320,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping1
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  }   
+  }
 )
 
                       //      F
@@ -328,33 +332,33 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping2
 (
   *Person : Operation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)   
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
   }
-   
+
   *Address : Operation
   {
       meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
-  } 
+  }
 
   Person[person_set1] : Relational
   {
     lastName : [myDB]PersonSet1.lastName_s1,
     address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID
   }
-            
+
   Person[person_set2] : Relational
   {
     lastName : [myDB]PersonSet2.lastName_s2,
     address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
-            
+
   Firm : Relational
   {
     legalName : [myDB]Firm.name,
     employees[person_set1]:[myDB]@firmPersonSet1,
     employees[person_set2]:[myDB]@firmPersonSet2
   }
-   
+
   Address[a_set1] : Relational
   {
     name : [myDB]AddressSet1.name
@@ -363,19 +367,19 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping2
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  }   
+  }
 )
 
-                      //       F              
-                      //     /    \              
-                      //    P1     P2            
-                      //   / \     /  \         
-                      //  A1  A2  A1  A2        
+                      //       F
+                      //     /    \
+                      //    P1     P2
+                      //   / \     /  \
+                      //  A1  A2  A1  A2
 Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping3
 (
   *Person : Operation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)   
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
   }
 
   *Address : Operation
@@ -389,21 +393,21 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping3
       address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet1AddressSet2_ADDRESSID
   }
-          
+
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
       address[a_set1] : [myDB]@PersonSet2AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
-  
+
   Firm : Relational
   {
       legalName : [myDB]Firm.name,
       employees[person_set1]:[myDB]@firmPersonSet1,
       employees[person_set2]:[myDB]@firmPersonSet2
   }
-  
+
   Address[a_set1] : Relational
   {
     name : [myDB]AddressSet1.name
@@ -412,7 +416,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping3
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  }   
+  }
 )
 
                       //       F1              U        F2
@@ -424,12 +428,12 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping4
 (
   *Firm : Operation
   {
-      meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+      meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
   }
 
   *Person : Operation
   {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)   
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
   }
 
   *Address : Operation
@@ -443,14 +447,14 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping4
       address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet1AddressSet2_ADDRESSID
   }
-          
+
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
       address[a_set1] : [myDB]@PersonSet2AddressSet1_ADDRESSID,
       address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
-          
+
   Firm[firm_set1] : Relational
   {
       legalName : [myDB]FirmSet1.name,
@@ -462,7 +466,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping4
       legalName : [myDB]FirmSet2.name,
       employees[person_set2]:[myDB]@firm2_person2_join
   }
-  
+
   Address[a_set1] : Relational
   {
     name : [myDB]AddressSet1.name
@@ -471,7 +475,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping4
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  }   
+  }
 )
 
                       //       F1              U       F2
@@ -483,12 +487,12 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping5
 (
   *Firm : Operation
   {
-      meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+      meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
   }
 
   *Person : Operation
   {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)   
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2)
   }
 
   *Address : Operation
@@ -501,13 +505,13 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping5
       lastName : [myDB]PersonSet1.lastName_s1,
       address[a_set1] : [myDB]@PersonSet1AddressSet1_ADDRESSID
   }
-          
+
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
       address[a_set2] : [myDB]@PersonSet2AddressSet2_ADDRESSID
   }
-          
+
   Firm[firm_set1] : Relational
   {
       legalName : [myDB]FirmSet1.name,
@@ -521,7 +525,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping5
       employees[person_set1]:[myDB]@firm2_person1_join,
       employees[person_set2]:[myDB]@firm2_person2_join
   }
-  
+
   Address[a_set1] : Relational
   {
     name : [myDB]AddressSet1.name
@@ -530,7 +534,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping5
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  }   
+  }
 )
 
                       //       F1              U       F2                    // with 3 sets of each
@@ -542,18 +546,18 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping6
 (
   *Firm : Operation
   {
-    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2, firm_set3)   
+    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2, firm_set3)
   }
 
   *Person : Operation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2, person_set3)   
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_set1, person_set2, person_set3)
   }
 
   *Address : Operation
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2, a_set3)
-  }   
+  }
 
   Person[person_set1] : Relational
   {
@@ -562,7 +566,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping6
       address[a_set2] : [myDB]@PersonSet1AddressSet2_ADDRESSID,
       address[a_set3] : [myDB]@PersonSet1AddressSet3_ADDRESSID
   }
-          
+
   Person[person_set2] : Relational
   {
       lastName : [myDB]PersonSet2.lastName_s2,
@@ -578,7 +582,7 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping6
       address[a_set2] : [myDB]@PersonSet3AddressSet2_ADDRESSID,
       address[a_set3] : [myDB]@PersonSet3AddressSet3_ADDRESSID
   }
-          
+
   Firm[firm_set1] : Relational
   {
       legalName : [myDB]FirmSet1.name,
@@ -611,10 +615,10 @@ Mapping meta::relational::graphFetch::tests::union::propertyLevel::Mapping6
   Address[a_set2] : Relational
   {
     name : [myDB]AddressSet2.name
-  } 
+  }
 
   Address[a_set3] : Relational
   {
     name : [myDB]AddressSet3.name
-  }   
+  }
 )

@@ -20,7 +20,7 @@ function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connecti
 {
    ^meta::protocols::pure::v1_21_0::metamodel::connection::store::service::ServiceStoreConnection(
       _type   = 'serviceStore',
-      element = $connection.element->cast(@ServiceStore)->elementToPath(),
+      element = '',
       baseUrl = $connection.baseUrl
    );
 }

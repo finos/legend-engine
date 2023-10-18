@@ -17,6 +17,7 @@ import meta::relational::tests::mapping::filter::model::domain::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 
 function <<test.BeforePackage>> meta::relational::tests::map::setUp():Boolean[1]
@@ -328,7 +329,7 @@ function <<test.Test>> meta::relational::tests::map::testSequenceMapWithConfusin
                                                'p_p_name'
                                             ]
                                            ), meta::relational::tests::map::embeddedWithConsfusingSetImpl
-                                            , meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                                            , meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(6, $result.values.rows->size());
     assertEquals(['ROOT','ok',^TDSNull()], $result.values.rows->at(0).values);
     assertEquals(['Firm X','ok','ROOT'], $result.values.rows->at(1).values);
@@ -358,6 +359,6 @@ Mapping meta::relational::tests::map::embeddedWithConsfusingSetImpl
           ),
           children : @OrgParentOrg
        )
-       
+
     }
 )

@@ -70,10 +70,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyI
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -142,9 +142,9 @@ public class PureModel implements IPureModel
     final MutableMap<String, Store> storesIndex = Maps.mutable.empty();
     final MutableMap<String, Mapping> mappingsIndex = Maps.mutable.empty();
     final MutableMap<String, Root_meta_pure_runtime_PackageableConnection> packageableConnectionsIndex = Maps.mutable.empty();
-    final MutableMap<String, Root_meta_pure_runtime_Connection> connectionsIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_core_runtime_Connection> connectionsIndex = Maps.mutable.empty();
     final MutableMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = Maps.mutable.empty();
-    final MutableMap<String, Root_meta_pure_runtime_Runtime> runtimesIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_core_runtime_Runtime> runtimesIndex = Maps.mutable.empty();
 
     public static final PureModel CORE_PURE_MODEL = getCorePureModel();
 
@@ -979,36 +979,36 @@ public class PureModel implements IPureModel
     }
 
 
-    public Root_meta_pure_runtime_Runtime getRuntime(String fullPath)
+    public Root_meta_core_runtime_Runtime getRuntime(String fullPath)
     {
         return getRuntime(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
-    public Root_meta_pure_runtime_Runtime getRuntime(String fullPath, SourceInformation sourceInformation)
+    public Root_meta_core_runtime_Runtime getRuntime(String fullPath, SourceInformation sourceInformation)
     {
-        Root_meta_pure_runtime_Runtime runtime = getRuntime_safe(fullPath);
+        Root_meta_core_runtime_Runtime runtime = getRuntime_safe(fullPath);
         Assert.assertTrue(runtime != null, () -> "Can't find runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return runtime;
     }
 
-    public String getRuntimePath(Root_meta_pure_runtime_Runtime runtime)
+    public String getRuntimePath(Root_meta_core_runtime_Runtime runtime)
     {
         return ListIterate.detect(runtimesIndex.keysView().toList(), (path) -> runtimesIndex.get(path).equals(runtime));
     }
 
-    public Root_meta_pure_runtime_Runtime getRuntime_safe(String fullPath)
+    public Root_meta_core_runtime_Runtime getRuntime_safe(String fullPath)
     {
         return this.runtimesIndex.get(packagePrefix(fullPath));
     }
 
-    public Root_meta_pure_runtime_Connection getConnection(String fullPath, SourceInformation sourceInformation)
+    public Root_meta_core_runtime_Connection getConnection(String fullPath, SourceInformation sourceInformation)
     {
-        Root_meta_pure_runtime_Connection connection = this.getConnection_safe(fullPath);
+        Root_meta_core_runtime_Connection connection = this.getConnection_safe(fullPath);
         Assert.assertTrue(connection != null, () -> "Can't find connection '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return connection;
     }
 
-    public Root_meta_pure_runtime_Connection getConnection_safe(String fullPath)
+    public Root_meta_core_runtime_Connection getConnection_safe(String fullPath)
     {
         return this.connectionsIndex.get(packagePrefix(fullPath));
     }

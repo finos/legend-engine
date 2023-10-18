@@ -92,8 +92,7 @@ public final class HelperElasticsearchBuilder
 
         Root_meta_external_store_elasticsearch_v7_metamodel_runtime_Elasticsearch7StoreConnection conn = new Root_meta_external_store_elasticsearch_v7_metamodel_runtime_Elasticsearch7StoreConnection_Impl("", sourceInformation, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::runtime::Elasticsearch7StoreConnection"))
                 ._authSpec(authSpec)
-                ._sourceSpec(sourceSpec)
-                ._element(context.pureModel.getStore(srcConn.element, srcConn.elementSourceInformation));
+                ._sourceSpec(sourceSpec);
 
         return conn._validate(true, sourceInformation, context.getExecutionSupport());
     }

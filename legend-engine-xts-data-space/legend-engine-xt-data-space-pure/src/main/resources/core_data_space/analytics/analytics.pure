@@ -15,6 +15,7 @@
 import meta::pure::milestoning::*;
 import meta::pure::metamodel::dataSpace::*;
 import meta::pure::metamodel::dataSpace::analytics::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::doc::*;

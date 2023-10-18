@@ -48,7 +48,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
   let relationTreeWithPureToSqlFlow = scanRelations(|Party.all()->project([r | $r.identifier.identifier],['id'])->distinct(),
                                                     MappingWithJoinToSchemaInAnotherView,
-                                                    meta::relational::tests::testRuntime(),
+                                                    meta::external::store::relational::tests::testRuntime(),
                                                     relationalExtensions());
   let expectedWithPureToSqlFlow = 'root\n'+
                                   '  ------> (t) Entity [entityID]\n'+
@@ -65,7 +65,7 @@ Class meta::pure::lineage::scanRelations::test::Party
   recognitionDate: Date[0..1];
 }
 
-Association meta::pure::lineage::scanRelations::test::Party_Identifier 
+Association meta::pure::lineage::scanRelations::test::Party_Identifier
 {
   party: meta::pure::lineage::scanRelations::test::Party[1];
   identifier: meta::pure::lineage::scanRelations::test::Identifier[*];
@@ -84,10 +84,10 @@ import meta::pure::lineage::scanRelations::test::*;
 import meta::pure::router::operations::*;
 
 Mapping meta::pure::lineage::scanRelations::test::TopMapping
-(  
+(
   include meta::pure::lineage::scanRelations::test::DetailMapping
-   
-  *Identifier[idAll] : Operation 
+
+  *Identifier[idAll] : Operation
   {
     union_OperationSetImplementation_1__SetImplementation_MANY_(id1, id2)
   }
@@ -101,19 +101,19 @@ Mapping meta::pure::lineage::scanRelations::test::DetailMapping
   Party [p] : Relational
   {
     ~mainTable [DB1] E.Entity
-    
+
     identifier [id1]: [DB2]@Entity_AltId_View,
     identifier [id2]: [DB2]@Entity_Self
   }
- 
+
   Identifier [id1]: Relational
   {
     scope([DB2]E.AltID_View)
     (
       identifier: txt
     )
-  }   
-  
+  }
+
   *Identifier [id2]: Relational
   {
     scope([DB2]E.Entity)
@@ -128,10 +128,10 @@ Mapping meta::pure::lineage::scanRelations::test::MappingWithJoinToSchemaInAnoth
   Party [p] : Relational
   {
     ~mainTable [DB1] E.Entity
-    
+
     identifier: [DB2]@Entity_ViewSchema_AltId_View
-  } 
-  
+  }
+
   *Identifier: Relational
   {
     scope([DB2]ViewSchema.AltID_View)
@@ -142,12 +142,12 @@ Mapping meta::pure::lineage::scanRelations::test::MappingWithJoinToSchemaInAnoth
 )
 
 ###Relational
-Database meta::pure::lineage::scanRelations::test::DB2 
+Database meta::pure::lineage::scanRelations::test::DB2
 (
   include meta::pure::lineage::scanRelations::test::DB1
 
-  Schema E 
-  (        
+  Schema E
+  (
     View AltID_View
     (
       altID:      E.AltIDToEntityMapping.alternativeID  PRIMARY KEY,
@@ -159,8 +159,8 @@ Database meta::pure::lineage::scanRelations::test::DB2
     )
   )
 
-  Schema ViewSchema 
-  (        
+  Schema ViewSchema
+  (
     View AltID_View
     (
       altID:      E.AltIDToEntityMapping.alternativeID  PRIMARY KEY,
@@ -173,34 +173,34 @@ Database meta::pure::lineage::scanRelations::test::DB2
   Join Entity_Self( E.Entity.entityID = {target}.entityID)
 )
 
-###Relational 
-Database meta::pure::lineage::scanRelations::test::DB1 
+###Relational
+Database meta::pure::lineage::scanRelations::test::DB1
 (
-  Schema E 
+  Schema E
   (
-    Table Entity 
+    Table Entity
     (
-      entityID                      INT                  PRIMARY KEY      
+      entityID                      INT                  PRIMARY KEY
     )
 
-    Table AlternativeID 
+    Table AlternativeID
     (
       alternativeID                 INT                  PRIMARY KEY,
       alternativeNameTXT            VARCHAR(255)         ,
-      alternativeTypeID             INT                      
+      alternativeTypeID             INT
     )
 
-    Table AltIDToEntityMapping 
+    Table AltIDToEntityMapping
     (
       alternativeID                 INT                  PRIMARY KEY,
       entityID                      INT                  PRIMARY KEY
     )
 
-    Table LookupTable 
+    Table LookupTable
     (
       altrnIdentTypeCD              CHAR(4)              PRIMARY KEY,
       altrnIdentTypeID              INT                  NOT NULL,
-      altrnIdentTypeNameTXT         CHAR(60)        
+      altrnIdentTypeNameTXT         CHAR(60)
     )
   )
 

@@ -17,6 +17,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::milestoning::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mergerules::setUp():Any[0..1]
@@ -25,7 +26,7 @@ function <<test.BeforePackage>> meta::relational::tests::mergerules::setUp():Any
 }
 
 //It is valid for ..1 properties' JoinTreeNodes to merge across filter and project e.g. if you filter all Synonyms where their product.name == 'Firm C'
-//Then when it comes time to project from the Synonym then all Synonyms will meet this criteria. 
+//Then when it comes time to project from the Synonym then all Synonyms will meet this criteria.
 function <<test.Test>> meta::relational::tests::mergerules::testToOneJoinTreeNodesForFilterAndProjectMerge():Boolean[1]
 {
    let result = execute(|Synonym.all()->filter(s| $s.product.name == 'Firm C')->project([s|$s.name, s|$s.product.name],['synonymName','productName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());

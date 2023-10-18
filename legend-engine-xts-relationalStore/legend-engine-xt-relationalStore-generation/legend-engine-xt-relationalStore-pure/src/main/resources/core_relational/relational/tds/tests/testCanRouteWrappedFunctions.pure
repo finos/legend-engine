@@ -28,8 +28,8 @@ Class meta::relational::tests::tds::window::routing::ACCOUNT
 function <<test.Test>> meta::relational::tests::tds::window::routing::testExecutionPlanGeneration():Boolean[1]
 {
   let plan =  {limit:Integer[1]|$limit->function1()->function2()->function3()}
-              ->meta::pure::executionPlan::executionPlan(meta::relational::tests::tds::window::routing::AccountMapping, 
-                                                        meta::relational::tests::testRuntime(), relationalExtensions());
+              ->meta::pure::executionPlan::executionPlan(meta::relational::tests::tds::window::routing::AccountMapping,
+                                                        meta::external::store::relational::tests::testRuntime(), relationalExtensions());
   let expectedPlan ='Sequence\n'+
                     '(\n'+
                     '  type = TDS[(firstName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(200), ""), (id, Integer, "", ""), (ageSum, Integer, INT, ""), (olapcolumn, Integer, INT, "")]\n'+

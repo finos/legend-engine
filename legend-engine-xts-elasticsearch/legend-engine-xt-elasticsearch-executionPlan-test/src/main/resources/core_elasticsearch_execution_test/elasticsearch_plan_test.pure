@@ -21,6 +21,7 @@ import meta::pure::extension::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 import meta::external::store::elasticsearch::executionTest::testCase::*;
@@ -89,14 +90,14 @@ function meta::external::store::elasticsearch::executionTest::testCase::omdbComm
 ): OmdbRecord[1]
 {
   ^OmdbRecord(
-    _id = $title->hash(HashType.MD5), 
-    Title = $title, 
+    _id = $title->hash(HashType.MD5),
+    Title = $title,
     Director = $director,
-    MPAA = $MPAA, 
-    ReleaseDate = format('%t{yyyy-MM-dd hh:mm:ss.SSSa}', $releaseDate), 
+    MPAA = $MPAA,
+    ReleaseDate = format('%t{yyyy-MM-dd hh:mm:ss.SSSa}', $releaseDate),
     ReleaseDateRaw = $releaseDate,
-    Budget = $budget, 
-    Revenue = $revenue, 
+    Budget = $budget,
+    Revenue = $revenue,
     Description = $description,
     MainActor = ^Actor(Name = $mainActor)
   );
@@ -106,11 +107,11 @@ function meta::external::store::elasticsearch::executionTest::testCase::omdbComm
 {
   // at the moment,dates are hard to distinguish between StrictDate or DateTime, hence we are testing using DateTime for now
   let records = [
-    omdbCommonIndexRecord('Iron Man',                              'Jon Favreau',    'PG-13', %2008-05-02T00:00:00.100, 140, 585.8, 
+    omdbCommonIndexRecord('Iron Man',                              'Jon Favreau',    'PG-13', %2008-05-02T00:00:00.100, 140, 585.8,
           'Tells the story of Tony Stark, a billionaire industrialist and genius inventor who is kidnapped and forced to build a devastating weapon',
           'Robert Downey Jr.'
           ),
-    omdbCommonIndexRecord('Iron Man 2',                            'Jon Favreau',    'PG-13', %2010-04-26T00:00:00.200, 170, 623.9, 
+    omdbCommonIndexRecord('Iron Man 2',                            'Jon Favreau',    'PG-13', %2010-04-26T00:00:00.200, 170, 623.9,
           'With the world now aware of his identity as Iron Man, Tony Stark must contend with both his declining health and a vengeful mad man with ties to his father\'s legacy.',
           'Robert Downey Jr.'
           ),
@@ -163,7 +164,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::omdbComm
 
 function <<paramTest.BeforePackage>> meta::external::store::elasticsearch::executionTest::testCase::startESCluster(config:TestConfig[1]):Boolean[1]
 {
-  let omdbSerializer = {x: OmdbRecord[1], state: JSONState[1] | 
+  let omdbSerializer = {x: OmdbRecord[1], state: JSONState[1] |
     $x->toJSONElement([], 1000, $state.config)->cast(@JSONObject).keyValuePairs
       ->filter(kv | $kv.key.value->in(['_id', 'ReleaseDateRaw'])->not())
       ->newJSONObject()
@@ -227,7 +228,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::run
   let vars = $variables->filter(x | $x.second.second.values->isNotEmpty())->map(x | pair($x.first, $x.second.second->map(l | if($l.values->size() == 1, |$l.values, |$l)->toOne())));
 
   let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
-  
+
   let toCompile = $config.model->replace('%_url_%', 'http://%s:%d'->format([$url.host, $url.port])) + '\n\n' +
     '###Pure \n\n ' +
     'function test::test(' +  $varDefinitions + '): TabularDataSet[1] {\n' +
@@ -242,29 +243,27 @@ function meta::external::store::elasticsearch::executionTest::testCase::tds::run
 
 function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): TabularDataSet[1]
 {
-  // $f->printFunctionDefinition(' ')->println();
-
   let resultJson = meta::legend::execute(
       $f,
       $vars,
       ^ExecutionContext(),
       $config.extension
   );
-  
+
   // println($resultJson);
 
   let result = $resultJson->meta::json::parseJSON()->cast(@meta::json::JSONObject);
   let builderJson = $result->meta::json::getValue('builder')->toOne();
   let builder = $builderJson->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder)
                               ->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder);
-  
+
   let tdsColumns = $builder.columns->toIndexed()->map(c | ^TDSColumn(offset = $c.first, name=$c.second.name, type = $c.second.type->map(t | $t->stringToDataType())));
 
   let rowsJson = $result->meta::json::getValue('result')
                   ->cast(@meta::json::JSONObject)->toOne()->meta::json::getValue('rows')
                   ->cast(@meta::json::JSONArray).values
                   ->cast(@meta::json::JSONObject)->map(o | $o->meta::json::getValue('values'))
-                  ->cast(@meta::json::JSONArray);  
+                  ->cast(@meta::json::JSONArray);
 
 
   let tds = ^TabularDataSet(columns = $tdsColumns);
@@ -274,27 +273,22 @@ function meta::external::store::elasticsearch::executionTest::testCase::execute(
 
 function meta::external::store::elasticsearch::executionTest::testCase::assertTdsEquivalent(description: String[1], expected: TabularDataSet[1], actual: TabularDataSet[1]): Boolean[1]
 {
-  assertEquals($expected.columns.name,  $actual.columns.name, 
-      'Columns are different.  Expected  %s, got %s', 
+  assertEquals($expected.columns.name,  $actual.columns.name,
+      'Columns are different.  Expected  %s, got %s',
       [ $expected.columns.name->joinStrings('[', ', ', ']'), $actual.columns.name->joinStrings('[', ', ', ']') ]
   );
 
-  assertEquals($expected.rows->size(), $actual.rows->size(),       
-      'Number of rows are different.  Expected  %d, got %d', 
+  assertEquals($expected.rows->size(), $actual.rows->size(),
+      'Number of rows are different.  Expected  %d, got %d',
       [ $expected.rows->size(), $actual.rows->size() ]
   );
-
-  // println($expected.rows.values);
-  // println($actual.rows.values);
 
   let zipped = if ($description->contains('sort('),
     | $expected.rows->map(r | $expected.columns.name->map(c | $r.get($c)))
         ->zip($actual.rows->map(r | $actual.columns.name->map(c | $r.get($c)))),
     | $expected->sort($expected.columns.name).rows->map(r | $expected.columns.name->map(c | $r.get($c)))
-        ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns.name->map(c | $r.get($c)))) 
+        ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns.name->map(c | $r.get($c))))
   );
-
-  //  $zipped->map(p | $p.first->toString() + ' == ' + $p.second->toString())->println();
 
   $zipped->forAll(x | assert(comparePrimitives($x.first, $x.second)));
 }

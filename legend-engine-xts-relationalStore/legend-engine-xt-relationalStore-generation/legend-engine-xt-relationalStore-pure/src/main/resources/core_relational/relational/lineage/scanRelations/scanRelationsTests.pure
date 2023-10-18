@@ -38,7 +38,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) Owner(CarOwner) [VEHICLE_ID, name]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions())-> toOne();
 
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
@@ -64,7 +64,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) Car(PersonCar) [c_PersonID, engineType]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
                    '    ------> (t) Bicycle(equal_rootID_Bicycle_d#7_d_m3b_PersonID) [b_PersonID]\n' +
@@ -85,7 +85,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) Car(PersonCar) [c_Description, c_PersonID]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions())-> toOne();
    let expected1 =  'root\n' +
                     '  ------> (t) Person [ID, name]\n' +
                     '    ------> (t) Bicycle(or_equal_rootID_unionAlias_d#4_d_m2b_PersonID_0_equal_rootID_SQLNull) [b_Description, b_PersonID]\n' +
@@ -98,7 +98,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query = {|meta::relational::tests::model::inheritance::Person.all()-> project([f|'constant'], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, relationalExtensions())-> toOne();
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions())-> toOne();
 
    let expected = 'root\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
@@ -114,7 +114,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query = {|meta::relational::tests::model::inheritance::Person.all()-> filter(p|$p.name == 'ok' && $p.vehicles-> subType(@meta::relational::tests::model::inheritance::Car).owner.name == 'test').name};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, relationalExtensions())-> toOne();
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
 
    let expected = 'root\n' +
                   '  ------> (t) Person [ID, name]\n' +
@@ -148,7 +148,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) Owner(CarOwner) [VEHICLE_ID, name]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
                    '    ------> (t) Bicycle(equal_rootID_Bicycle_d#7_d#2_m1b_PersonID) [ID, b_PersonID]\n' +
@@ -169,7 +169,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) synonymTable(Product_Synonym) [NAME, PRODID, TYPE]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) tradeTable [prodId]\n' +
                    '    ------> (t) productTable(equal_rootprodId_productTable_d#4_d_m1ID) [ID, NAME]\n' +
@@ -189,7 +189,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) firmTable(Firm_Person) [ID, LEGALNAME]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions())-> toOne();
    let expected1 = 'root\n' +
                    '  ------> (t) personTable [FIRMID, FIRSTNAME]\n' +
                    '    ------> (t) firmTable(equal_firmTable_d#2_d#2_m1ID_rootFIRMID) [ID, LEGALNAME]\n';
@@ -208,7 +208,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(BiTemporalProductWithLatest_BiTemporalClassificationWithLatest) [type]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [prodFk]\n' +
                    '    ------> (t) BiTemporalProductTableWithLatest(equal_rootprodFk_BiTemporalProductTableWithLatest_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
@@ -231,7 +231,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
       '      ------> (t) SystemAOrderDescriptionTable(OrderToSystemADescriptions_SystemAOrderDescriptionTable) [description, descriptionId]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [id, prodFk]\n' +
                    '    ------> (t) BiTemporalProductTable(equal_rootprodFk_BiTemporalProductTable_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
@@ -255,7 +255,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(BiTemporalProductWithLatest_BiTemporalClassificationWithLatest) [type]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [prodFk]\n' +
                    '    ------> (t) BiTemporalProductTableWithLatest(equal_rootprodFk_BiTemporalProductTableWithLatest_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
@@ -276,7 +276,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) PersonMaster(PersonMasterFirmSet2) [FirmID, firstName, lastName]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) FirmSet1 [ID, name]\n' +
                   '    ------> (t) PersonMaster [FirmID, ID, firstName, lastName]\n' +
@@ -292,7 +292,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query = {|Firm.all()-> project([p|$p.legalName, p|$p.employees.name], ['Firm','EmployeeName'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping3;
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) FirmSet1 [ID, name]\n' +
                   '    ------> (t) PersonSet1 [FirmID, firstName_s1, lastName_s1]\n' +
@@ -315,7 +315,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) PersonSet2(PersonSet2FirmSet2) [FirmID, firstName_s2, lastName_s2]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) FirmSet1 [ID, name]\n' +
                   '    ------> (t) PersonSet1 [FirmID, ID, firstName_s1, lastName_s1]\n' +
@@ -345,7 +345,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '    ------> (t) FirmSet2(PersonSet2FirmSet2) [ID, name]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) PersonSet1 [FirmID, ID, lastName_s1]\n' +
                   '    ------> (t) AddressSet1 [ID, name]\n' +
@@ -387,7 +387,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '      ------> (t) PersonSet2(PersonSet2FirmSet2) [FirmID, lastName_s2]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) PersonSet1 [FirmID, ID, lastName_s1]\n' +
                   '    ------> (t) AddressSet1 [ID, name]\n' +
@@ -415,7 +415,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query = {|Firm.all()-> project([f|$f.legalName, f|$f.employees.firstName], ['legalName','employee_firstname'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMappingWithJoinToSameTableWithDiffKeys;
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) Firm [ID, name]\n' +
                   '    ------> (t) PersonSet4(equal_unionAlias_d#4_d_m2firmId_rootID) [FirmID_1, firstName_s1]\n' +
@@ -440,7 +440,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '          ------> (t) salesPersonTable(Order_SalesPerson) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (v) orderPnlView [pnl]\n' +
                    '    root\n' +
@@ -468,7 +468,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '          ------> (t) salesPersonTable(Order_SalesPerson) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (v) orderPnlView [ORDER_ID, pnl]\n' +
                    '    ------> (t) orderTable(equal_rootORDER_ID_orderTable_d_1_d_m2ID) [ID, settlementDateTime]\n' +
@@ -498,7 +498,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '            ------> (t) salesPersonTable(Order_SalesPerson) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) orderTable [ID]\n' +
                   '    ------> (v) orderPnlView(equal_orderPnlView_d#2_d_m2ORDER_ID_rootID) [ORDER_ID, pnl]\n' +
@@ -538,7 +538,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '              ------> (t) salesPersonTable(Order_SalesPerson) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n'+
                   '  ------> (v) orderNegativePnlViewOnView [ORDER_ID, pnl]\n'+
                   '    ------> (t) orderTable(or_equal_SQLNull_orderTable_d_1_d_m2ID_equal_unionBaseORDER_ID_1_orderTable_d_1_d_m2ID) [ID, settlementDateTime]\n'+
@@ -577,7 +577,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                   '            ------> (t) firmTable(Firm_Person) [ID, LEGALNAME]\n';
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) orderTable [ID, accountID]\n' +
                   '    ------> (t) salesPersonTable(equal_rootaccountID_salesPersonTable_d#6_d_m2ACCOUNT_ID) [ACCOUNT_ID, PERSON_ID]\n' +
@@ -593,7 +593,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query = {|meta::relational::tests::mapping::union::sqlQueryMerging::model::A.all()->filter(a|$a.p3 == 'A')->project([a|$a.pk, a|$a.p1, a|$a.p2], ['a_pk', 'a_p1', 'a_p3'])};
    let mapping = meta::relational::tests::mapping::union::sqlQueryMerging::mapping::unionMapping;
 
-   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
+   let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected = 'root\n'+
                   '  ------> (t) aTable1 [fk, pk]\n'+
                   '    ------> (t) bTable1(equal_rootfk_bTable1_d#2_d_m2_m1fk) [fk]\n'+
@@ -706,7 +706,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query   = {| tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -721,7 +721,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                           ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'first_name'), col(r:TDSRow[1]|$r.getString('LASTNAME'), 'last_name')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -736,7 +736,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                           ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'first_name'), col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name_again')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -751,7 +751,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->restrict(['FIRSTNAME', 'AGE'])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -766,7 +766,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->meta::pure::tds::filter({r:TDSRow[1] | $r.getString('FIRSTNAME') == 'John'})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -782,7 +782,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->project([col(r:TDSRow[1]|$r.getString('LASTNAME'), 'name')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -798,7 +798,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -814,7 +814,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -828,7 +828,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let query   = {|tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])->distinct()->take(2)};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -843,7 +843,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->sort('LASTNAME')->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name')])};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -858,7 +858,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                          ->groupBy(['FIRSTNAME'], agg('cnt', x|$x.getString('LASTNAME'), y| $y->count()))};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -874,7 +874,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))};
 
    let mapping = meta::relational::tests::simpleRelationalMappingInc;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -891,7 +891,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->concatenate(tableToTDS(tableReference(meta::relational::tests::dbInc,'default','firmTable'))->project([col(r:TDSRow[1]|$r.getString('LEGALNAME'), 'name')]))};
 
    let mapping = meta::relational::tests::simpleRelationalMappingInc;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -907,7 +907,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','firmTable')), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -925,7 +925,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','addressTable')), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -945,7 +945,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','locationTable'))->project([col(r:TDSRow[1]|$r.getInteger('PERSONID'), 'locationPersonID')]), JoinType.LEFT_OUTER, {a,b|$a.getInteger('personID') == $b.getInteger('locationPersonID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -963,7 +963,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                         ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','personTable')), JoinType.INNER, {a,b|$a.getInteger('personID') == $b.getInteger('ID');})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -981,7 +981,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                      ->olapGroupBy('FIRSTNAME',asc('LASTNAME'),func('cnt',y|$y->sum()),'testCol1')};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -998,7 +998,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                      ->join(tableToTDS(tableReference(meta::relational::tests::db,'default','firmTable'))->project([col(r:TDSRow[1]|$r.getString('ID'), 'firmID'), col(r:TDSRow[1]|$r.getString('CEOID'), 'ceoID')]), JoinType.INNER, {a,b| true})};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
@@ -1037,11 +1037,11 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
               )
               ->join(
                   testJoinTDS_Person.all()->filter(x|$x.firstName->in('Pierre'))->project([x|$x.firstName, x|$x.age], ['fName', 'age']),
-                  JoinType.LEFT_OUTER,  'First_1', 'fName' 
+                  JoinType.LEFT_OUTER,  'First_1', 'fName'
               )};
 
   let mapping =  testJoinTDSMapping;
-  let runtime =  meta::relational::tests::testRuntime();
+  let runtime =  meta::external::store::relational::tests::testRuntime();
   let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
   let expectedTree = 'root\n'+
                       '  ------> (t) personTable [AGE, FIRSTNAME]\n'+

@@ -16,6 +16,7 @@ import meta::protocols::*;
 import meta::json::*;
 import meta::pure::store::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::milestoning::*;
 import meta::pure::mapping::*;
 import meta::protocols::pure::v1_31_0::transformation::fromPureGraph::*;
@@ -299,7 +300,7 @@ function meta::protocols::pure::v1_31_0::transformation::fromPureGraph::buildBas
    let foundClasses = $gm->fold({x, y | let alltype = $x->findAllTypesFromMapping($extensions);
                                         ^$y(classes = $y.classes->concatenate($alltype.classes)->removeDuplicates(),
                                            enumerations = $y.enumerations->concatenate($alltype.enumerations)->removeDuplicates());}, ^AllTypes());
-   
+
    let associations = $foundClasses.classes->findAllAssociations();
 
    let found = ^$foundClasses(classes = $foundClasses.classes->concatenate($associations.properties.genericType.rawType)->removeDuplicates()->cast(@Class<Any>));

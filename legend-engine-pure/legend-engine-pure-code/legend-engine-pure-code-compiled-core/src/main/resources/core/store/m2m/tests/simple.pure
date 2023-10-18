@@ -21,7 +21,9 @@ import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::pure::mapping::modelToModel::test::primitives::*;
 import meta::pure::mapping::modelToModel::test::filter::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -33,7 +35,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all(),
             simpleModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= ^ConnectionStore(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -42,7 +44,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleAsserts($res);
@@ -61,7 +63,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->filter(p|$p.lastName == 'Yo'),
             simpleModelMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= ^ConnectionStore(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -70,7 +72,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleFilterAsserts($res);
@@ -90,14 +92,14 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all(),
             simpleModelMappingWithAssociation,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= ^ConnectionStore(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                pair(_Firm , list([
                                                                                                               ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
                                                                                                                  ])
                                                                                                )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleAssociationAsserts($res);
@@ -119,13 +121,13 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName','lastName']),
             simpleModelMappingWithAssociation,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= ^ConnectionStore(element=^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_Firm , list([
                                                                                                                         ^_Firm (name='A', employees = [^_Person(fullName='Pierre Doe'),^_Person(fullName='A. Only One')] )
                                                                                                                     ]))
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
    testSimpleProjectAssoAsserts($res);
@@ -152,8 +154,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |Person.all()->project([p|$p.firstName, p|$p.lastName], ['firstName','lastName']),
             meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
-            ^Runtime(connections = [
-                                       ^ModelConnection(element = ^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores= [
+                                       ^ConnectionStore(element = ^ModelStore(),connection=^ModelConnection( instances= newMap(
                                                                                                       pair(_S_Person, list([
                                                                                                                         ^_S_Person(fullName='Pierre Doe'),
                                                                                                                         ^_S_Person(fullName='Pierre XE'),
@@ -162,7 +164,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                        )
-                                   ]
+            )]
              ),
              meta::pure::extension::defaultExtensions()
           );
@@ -184,7 +186,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    let theMapping = meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany;
    let extensions = meta::pure::extension::defaultExtensions();
    let domainElements = $theMapping->map(m|$m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping($extensions));
-   let transform = $domainElements.classMappings->cast(@meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInstanceClassMapping).propertyMappings->map(m | $m.transform.body); 
+   let transform = $domainElements.classMappings->cast(@meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::PureInstanceClassMapping).propertyMappings->map(m | $m.transform.body);
    assertEmpty($transform->filter(t | $t->instanceOf(UnknownAppliedFunction)));
    assert($transform->map(t | $t->cast(@AppliedFunction).function)->contains('meta::pure::mapping::modelToModel::test::createInstances::getFullName'), 'meta::pure::mapping::modelToModel::test::createInstances::createInstancesModelMappingOneMany');
 }
@@ -234,8 +236,8 @@ Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping
                firstName     : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
                lastName      : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
                type          : $src._type,
-               alternateName : $src.alternateName->toOne() 
-               
+               alternateName : $src.alternateName->toOne()
+
             }
   NameWithLang : Pure
             {
@@ -262,17 +264,17 @@ Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithS
    meta::pure::mapping::modelToModel::test::shared::dest::Firm : Pure
             {
                ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
-               
+
                legalName        : $src.name,
                employees[A]     : $src.employees->filter(e | $e->instanceOf(_S_PersonA))->cast(@_S_PersonA)
             }
-   
+
    Person[A]  : Pure
    {
-      ~src _S_PersonA      
+      ~src _S_PersonA
       firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,
       lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())
-      
+
    }
 )
 
@@ -286,11 +288,11 @@ Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithS
    meta::pure::mapping::modelToModel::test::shared::dest::Firm : Pure
             {
                ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Firm
-               
+
                legalName        : $src.name,
                employees[A]     : $src.employees->filter(e | $e->instanceOf(_S_PersonA))->cast(@_S_PersonA)
             }
-   
+
    Person[A]  : Pure
    {
       ~src _S_PersonA
@@ -395,7 +397,7 @@ Mapping meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMapp
       ~src Firm
       name : $src.legalName
    }
-   
+
    meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm_SimplePerson: XStore
    {
       simpleEmployees[firm_set, person_Set] : $this.name == $that.firmName,
@@ -416,7 +418,7 @@ Mapping meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMapp
       ~src Firm
       name : $src.legalName
    }
-   
+
    meta::pure::mapping::modelToModel::test::shared::src::_SimpleFirm_SimplePerson: XStore
    {
       simpleEmployees[firm_set, person_Set] : $this.name == $that.fullName,
@@ -438,7 +440,7 @@ Mapping meta::pure::mapping::modelToModel::test::simple::mappingWithTypeName
     firstName     : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
     lastName      : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
     type          : $src->typeName(),
-    description   : $src->typePath()   
+    description   : $src->typePath()
   }
 
   TradeExtended : Pure

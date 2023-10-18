@@ -1,6 +1,7 @@
 import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::datatype::*;
@@ -164,8 +165,8 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      assert($translator.loadTable->isNotEmpty(), '[unsupported-api] Load table translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.loadTable->toOne()->eval($l, $this);
    }: String[*];
-  
-   preAndFinallyExecutionSQLQuery(dc: meta::relational::runtime::DatabaseConnection[1])
+
+   preAndFinallyExecutionSQLQuery(dc: meta::external::store::relational::runtime::DatabaseConnection[1])
    {
      assert($this.dbExtension.preAndFinallyExecutionSQLQuery->isNotEmpty(), 'Pre & Finally Execution SQL Queries are not set for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.preAndFinallyExecutionSQLQuery->toOne()->eval($this, $dc);
@@ -213,7 +214,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
-   preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
+   preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1], meta::external::store::relational::runtime::DatabaseConnection[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
    processTempTableName: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
 }
 
@@ -374,7 +375,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                                 ]);
 
                                                 let identifier = $dbConfig.identifierProcessor($alias.name);
-                                            
+
                                                 let sqlOp = $alias.relationalElement->instanceOf(SelectSQLQuery) || $alias.relationalElement->instanceOf(VarCrossSetPlaceHolder);
 
                                                 '%s%s%s as %s'->format([
@@ -582,7 +583,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::place
 }
 
 function meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
-{  
+{
    convertStringToSQLString(^LiteralReplacement(old='\'',new='\'\''))->eval($s);
 }
 
@@ -630,7 +631,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::extra
 function <<access.private>> meta::relational::functions::sqlQueryToString::extractSemiStructuredBracketPathAccess(jsonPath: String[1], startIndex: Integer[1]): String[1]
 {
    let quoted = $jsonPath->substring($startIndex+1, $startIndex+2) == '"';
-   if($quoted, 
+   if($quoted,
       | let quoteEnd = $jsonPath->indexOf('"', $startIndex+2);
         assert($quoteEnd != $jsonPath->length(), 'unmatched " at ' + toString($startIndex+1));
         $jsonPath->substring($startIndex+1, $quoteEnd+1);, // include quotes too
@@ -638,23 +639,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::extra
         assert($bracketEnd != $jsonPath->length(), 'unmatched [ at ' + $startIndex->toString());
         let property = $jsonPath->substring($startIndex+1, $bracketEnd);
         assert($property->isDigit(), 'expected ' + $property + ' to be numeric');
-        $property;         
+        $property;
    );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigationHelper(jsonPath: String[1], startIndex: Integer[1]): String[*]
 {
-   if($startIndex < $jsonPath->length(), 
+   if($startIndex < $jsonPath->length(),
       |
          let char = $jsonPath->substring($startIndex, $startIndex+1);
          assert($char->in(['.', '[']), 'invalid token ' + $char);
-         if($char == '.', 
+         if($char == '.',
             | let field = $jsonPath->extractSemiStructuredDotPathAccess($startIndex);
-              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()-1));, 
+              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()-1));,
             | let field = $jsonPath->extractSemiStructuredBracketPathAccess($startIndex);
-              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()+2));       
+              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()+2));
          );,
-      | []         
+      | []
    );
 }
 
@@ -663,7 +664,7 @@ function meta::relational::functions::sqlQueryToString::parseSemiStructuredPathN
    let dotIndex = if($jsonPath->indexOf('.') == -1, | $jsonPath->length(), | $jsonPath->indexOf('.'));
    let bracketIndex = if($jsonPath->indexOf('[') == -1, | $jsonPath->length(), | $jsonPath->indexOf('['));
    let prefix = $jsonPath->substring(0, min($dotIndex, $bracketIndex));
-   if($prefix->length() > 0, 
+   if($prefix->length() > 0,
       | concatenate('"' + $prefix + '"', $jsonPath->parseSemiStructuredPathNavigationHelper(min($dotIndex, $bracketIndex)));,
       | $jsonPath->parseSemiStructuredPathNavigationHelper(0);
    );
@@ -711,9 +712,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
   assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
   let p2 = $params->at(2)->cast(@Literal).value->cast(@String);
   let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP'];
-  assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));  
+  assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));
   let processedParams = $result.toSql.transform->toOne()->eval([$p0, $p1, $p2]);
-  format($result.toSql.format, $processedParams);  
+  format($result.toSql.format, $processedParams);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::extractFromSemiStructuredPathRegex(): String[1]
@@ -1024,7 +1025,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   today,
   trim,
   variancePopulation,
-  varianceSample,  
+  varianceSample,
   weekOfYear,
   year
 }

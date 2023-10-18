@@ -33,12 +33,14 @@ import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::milestoning::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
@@ -66,13 +68,13 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 
       p : InMemoryPropertyGraphFetchExecutionNode[1]    | ^NodeInfo(path = $path, returnType = $simpleType)
    ]);
-   
+
    let newTypeInfos = $node->match([
       c : InMemoryCrossStoreGraphFetchExecutionNode[1]  | let xStorePropertyMapping   = $c.xStorePropertyMapping;
                                                           validateXStorePropertyMapping($xStorePropertyMapping);
                                                           let equalityExpressions     = $xStorePropertyMapping.crossExpression->findExpressionsForFunctionInFunctionDefinition([meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_])->toOneMany();
                                                           let newTypeInfos            = $equalityExpressions->fold(
-                                                             {exp, ti | 
+                                                             {exp, ti |
                                                                 let graphFetchTree          = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree);
                                                                 let isMilestonedProp        = $graphFetchTree.property->instanceOf(QualifiedProperty) && $graphFetchTree.property->hasGeneratedMilestoningPropertyStereotype();
                                                                 let property                = if ($isMilestonedProp,
@@ -89,21 +91,21 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 
                                                                 let childClass     = $property.genericType.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
                                                                 let childProperty  = $allProperties->filter(x | $x.owner->cast(@meta::pure::metamodel::type::Class<Any>)->_subTypeOf($childClass) || $childClass->_subTypeOf($x.owner->cast(@meta::pure::metamodel::type::Class<Any>)))->cast(@Property<Nil,Any|*>)->toOne();
-                                                                
+
                                                                 $ti->addProperties([$parentProperty, $childProperty]);
                                                              },
                                                              $context.typeInfos
                                                           );,
 
-      p : InMemoryGraphFetchExecutionNode[1]            | if($p->nodeIsMerged(),  
+      p : InMemoryGraphFetchExecutionNode[1]            | if($p->nodeIsMerged(),
                                                              |  let classesUsedInMerge = $p.graphFetchTree.sets.parent.classMappings->filter(m|$m->instanceOf(MergeOperationSetImplementation))->cast(@MergeOperationSetImplementation).parameters.setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@meta::pure::metamodel::type::Class<Any>);
                                                                  $context.typeInfos->addForClassesWithAllProperties($classesUsedInMerge);,
                                                              |   $context.typeInfos;
                                                               );
-                                                        
-                                                               
+
+
    ]);
-   
+
    ^$context(
       typeInfos = $newTypeInfos,
       nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo)
@@ -167,7 +169,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                [
                   $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
                   j_return($mapField->j_invoke(
-                     'computeIfAbsent', 
+                     'computeIfAbsent',
                      [
                         $keyVar,
                         j_lambda(
@@ -241,7 +243,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   let resultPath =  $path+'.n1';
   let resultGraphImpl = $initialNode->graphImplClass($resultPath, $context);
   let rootSet = $node.graphFetchTree->cast(@RoutedRootGraphFetchTree<Any>).sets->cast(@OperationSetImplementation)->toOne();
-    
+
 
   let input = j_parameter(javaList(javaObject()), 'input');
 
@@ -291,7 +293,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    let conventions     = $context.conventions;
    let graphFetchTree  = $node.graphFetchTree->cast(@RoutedPropertyGraphFetchTree);
-   
+
    let isMilestonedProp = $graphFetchTree.property->instanceOf(QualifiedProperty) && $graphFetchTree.property->hasGeneratedMilestoningPropertyStereotype();
    let property         = if ($isMilestonedProp,
                               | let cl = $graphFetchTree.property->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
@@ -303,14 +305,14 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                 $graphFetchTree.sets.parent->map(x|$x->rootClassMappingByClass($cl)->cast(@InstanceSetImplementation))->map(w|$w->_propertyMappingsByPropertyName($property.name->toOne()))->toOne();,
                               | $graphFetchTree.propertyMapping
                           );
-   
+
    let currentGraphImpl = $node->graphImplClass($path, $context);
    let parentPath       = $path->substring(0, $path->lastIndexOf('.'));
    let parentNodeInfo   = $context->nodeInfosForPath($parentPath)->toOne();
    let parentIFace      = $parentNodeInfo.returnType->match([c:CheckedJavaType[1]|$c.checkedOf, s:SimpleJavaType[1]|$s])->cast(@SimpleJavaType).javaType->cast(@meta::external::language::java::metamodel::Class);
    let parentGraphImpl  = graphImplClass($node.parentIndex->toOne(), $parentIFace, $parentPath, $context);
-   
-   let executeClassWithImports = 
+
+   let executeClassWithImports =
       $context.conventions->planNodeClass('public', $path, 'Execute')
          ->usingKnownPackages($conventions->knownPackages())
          ->imports($conventions->standardImports())
@@ -323,13 +325,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
       let transform = $parentSet->generatePropertyMappingTransform($property, $pm, $parentSrc, $conventions, $extensions, $debug->indent());
       j_lambda($parentSrc, $transform->toOne());
    });
-   
+
    let targetSetTransformers = $propertyMappings->map({pm |
       let targetSet = $graphFetchTree.sets->filter(x | $x.id == $pm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
       let input     = j_parameter($conventions->className($targetSet->sourceClass($extensions)), 'input');
       j_lambda($input, $input->setTransformerCodes($path,$targetSet, $graphFetchTree, $currentGraphImpl, false, false, $context, $extensions, $debug)->j_block());
    });
-   
+
    let executeClassWithFields = $executeClassWithImports
       ->addFields($propMappingTransformers->toIndexed()->map({idxPmt |
          let idx     = $idxPmt.first;
@@ -355,7 +357,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let graphObjects      = j_parameter(javaList(javaWildcard()), 'graphObjects');
    let graphObject       = j_parameter($parentGraphImpl, 'graphObject');
    let targetGraphObject = j_parameter($currentGraphImpl, 'targetGraphObject');
-   
+
    let singlePropMappingStreamGenerator = {pmIndex: Integer[1], pm : PropertyMapping[1] |
       let pmTransformer = $executeClassWithFields->j_field('propertyMappingTransformer_' + $pmIndex->toString());
       let tsTransformer = $executeClassWithFields->j_field('targetSetTransformer_' + $pmIndex->toString());
@@ -428,7 +430,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     $allProjects->mergeProjects();
 }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
-{ 
+{
   //if source is a mappingclass skip the filter
   let sourceClass = $targetSet->sourceClass($extensions);
   let sourceClassMappings = $targetSet.parent->_classMappingByClass($sourceClass)->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
@@ -436,11 +438,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
   if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
      |let interParam  = j_parameter(javaClassType(), 'interParam');
-      $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType())) 
+      $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType()))
           ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
      |$input
      );
-  
+
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::validateXStorePropertyMapping(xStorePropertyMapping: XStorePropertyMapping[1]):Boolean[1]
@@ -551,7 +553,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let propertyFieldName = $conventions->fieldName($propertyName);
    let propertyField     = $class->j_this()->j_field($propertyFieldName, $propertyType);
    let setterParameter   = j_parameter($propertyType, $propertyName);
-   
+
    $class
       ->addField(
          javaField(['private'], $propertyType, $propertyFieldName)
@@ -565,7 +567,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::setFilterCodes(input: Code[1], filter:LambdaFunction<Any>[0..1], parameters:VariableInput[*] , parameterContext: Code[1], set: InstanceSetImplementation[1], graphFetchTree: RoutedGraphFetchTree[1], graphImplClass: meta::external::language::java::metamodel::Class[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[*]
-{    
+{
   let checkedType = $context.conventions->pureTypeToJavaType(meta::pure::dataQuality::Checked,PureOne);
   let targetInstance =   j_conditional( $input ->j_instanceof( $checkedType), j_cast($input,$checkedType)->j_invoke('getValue',[],javaObject())->j_cast($graphImplClass), j_cast($input,$graphImplClass) ) ;
 
@@ -578,11 +580,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                         let typeArg  = if($javaType->isJavaList(), |$parameterContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
                                         j_variable($javaType, $s.name)->j_declare($parameterContext->j_invoke('getResult', [j_string($s.name), $typeArg], javaObject())););
           let lambdaParam = $filterFn->functionType().parameters;
-          let filtercodeExp = $filterFn.expressionSequence->at(0)->generateJava($context.conventions); 
+          let filtercodeExp = $filterFn.expressionSequence->at(0)->generateJava($context.conventions);
           let filterExpression =  j_return($filtercodeExp);
           let inputCast =  j_declare( [],$graphImplClass, $lambdaParam.name->toOne(),j_cast($targetInstance,$graphImplClass ));
           let result =  $parameterGetters ->concatenate($inputCast)->concatenate($filterExpression);
-     
+
           $result;
    );
   }
@@ -600,7 +602,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let isMerged = $set->isPartOfMerge();
    let transform = if ($setHasExplosion,
                        | $set->cast(@PureInstanceSetImplementation)->propertyExplosionCodes($requiredSubTrees, $result, $graphImplClass, $src, $wrapAsGraphInstance, $resolveToList, $conventions, $extensions, $debug),
-                       | let inScopeSubTrees = $requiredSubTrees->filter( t| $set->propertyMappingsByPropertyName($t.property->cast(@Property<Nil,Any|*>).name->toOne())->head()->isNotEmpty() && $isMerged || !$isMerged ); 
+                       | let inScopeSubTrees = $requiredSubTrees->filter( t| $set->propertyMappingsByPropertyName($t.property->cast(@Property<Nil,Any|*>).name->toOne())->head()->isNotEmpty() && $isMerged || !$isMerged );
 
                          let propertyValues = $inScopeSubTrees->map({st |
                             let prop = $st.property->cast(@Property<Nil,Any|*>);
@@ -611,13 +613,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                          let milestoneDateGetter   = {strategy: SingleDateTemporalStrategy[1] |
                             let propertyName = temporalStrategyToPropertyName($strategy);
                             let property     = $set.class->propertyByName($propertyName)->toOne()->cast(@Property<Nil,Any|*>);
-                            pair($property, $src->j_invoke($conventions->getterName($propertyName), [], javaObject()));      
+                            pair($property, $src->j_invoke($conventions->getterName($propertyName), [], javaObject()));
                          };
                          let milestoningDateValues = if ($set.class->isProcessingTemporal() && $srcClass->isProcessingTemporal(),
-                                                         | $milestoneDateGetter->eval(^ProcessingTemporal()), 
+                                                         | $milestoneDateGetter->eval(^ProcessingTemporal()),
                                                          |
                                                      if ($set.class->isBusinessTemporal() && $srcClass->isBusinessTemporal(),
-                                                         | $milestoneDateGetter->eval(^BusinessTemporal()), 
+                                                         | $milestoneDateGetter->eval(^BusinessTemporal()),
                                                          |
                                                      if ($set.class->isBiTemporal() && $srcClass->isBiTemporal(),
                                                          | [$milestoneDateGetter->eval(^ProcessingTemporal()), $milestoneDateGetter->eval(^BusinessTemporal())],
@@ -625,7 +627,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                                      )));
                          $result->objectCreationCodes($graphImplClass, $set, $src, $milestoningDateValues->concatenate($propertyValues), $wrapAsGraphInstance, $conventions);
                    );
-   
+
    [$src->j_declare($input->j_cast($srcJavaClass))]->concatenate($set->applyTypeFilter($path,$src, $transform, $context, $extensions, $debug->indent()))->toOneMany();
 }
 
@@ -639,7 +641,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                                                                                                                                     ->j_throw())
                                                                                                                                                     )
                                                                                                                                             );
-                                                                                                                                         
+
    let returnCodes         = if($wrapAsGraphInstance, | $conventions->createGraphInstance($class, $var), | $var)->j_return();
 
    $initializationCodes->concatenate($assignmentCodes)->concatenate($returnCodes)->toOneMany();
@@ -654,9 +656,9 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 }
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], explodeProperty: Boolean[1], debug: DebugContext[1]): Code[0..1]
-{  
+{
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
-   
+
    let isNoMappingPassThru       = $propertyMapping->isEmpty() && $property.owner->instanceOf(meta::pure::metamodel::type::Class) && $setImpl->passThruProperty($property, $extensions);
    let isNoMappingDefaultToEmpty = $propertyMapping->isEmpty() && $property.owner->instanceOf(meta::pure::metamodel::type::Class) && $setImpl->isNoMappingDefaultToEmpty($property);
    let isMergedUnMappedProperty =  $propertyMapping->isEmpty() && $setImpl ->isPartOfMerge();
@@ -664,7 +666,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 
    if ($isNoMappingPassThru,
       {|
-         let pureSetImpl    = $setImpl->cast(@PureInstanceSetImplementation);    
+         let pureSetImpl    = $setImpl->cast(@PureInstanceSetImplementation);
          let sourceProperty = $pureSetImpl->noMappingPassThruSourceProperty($property)->toOne();
          let sourceType     = $conventions->pureTypeToJavaType($sourceProperty);
          let callGetter     = $src->j_invoke($conventions->getterName($sourceProperty), [], $sourceType);
@@ -674,8 +676,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       {|
          if($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
             {|
-               if (isJavaList($propertyJavaType), 
-                   | $propertyJavaType->j_emptyList(), 
+               if (isJavaList($propertyJavaType),
+                   | $propertyJavaType->j_emptyList(),
                    | $propertyJavaType->j_null()
                )
             },
@@ -719,7 +721,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::applyTransformer(expression: Code[1], transformer: ValueTransformer<Any>[1], conventions: Conventions[1], explodeProperty: Boolean[1], debug: DebugContext[1]): Code[1]
 {
    assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
-   
+
    print(if($debug.debug,|$debug.space+'applyTransformer\n', |''));
 
    let enumerationType  = $conventions->enumerationType($transformer);
@@ -731,7 +733,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                     | $transformerClass->j_invoke('toDomainValue', $expression)
                                 )
                           );
-   
+
    $transformrCode->dependsOn($transformerClass->typeToString()->newDependency($transformerClass));
 }
 
@@ -740,7 +742,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
 
    let em = $transformer->cast(@EnumerationMapping<Any>);
-   
+
    print(if($debug.debug,|$debug.space+'generateTransformer: \''+$em.name->toOne()+'\'\n', |''));
 
    let enumType     = $conventions->enumerationType($transformer);
@@ -767,9 +769,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                  javaIllegalArgumentException()->j_new([j_string('Unmapped value: ')->j_plus($in)])->j_throw()
                               )
                            );
-                              
+
    javaClass(
-      ['public'], $class, $fValuesField, 
+      ['public'], $class, $fValuesField,
       [
          pair(javaMethod(['private', 'static'], $mapType, 'initValues', []),     $initCode),
          pair(javaMethod(['public', 'static'],  $enumType,'toDomainValue', $in), $toDomainValueCode)
@@ -815,13 +817,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let explodePropertyVars = $explodeProperties->map(p | j_variable(javaList($conventions->pureTypeToJavaType($p)), $conventions->explodePropertyListName($p)));
    let explodeListLength   = j_variable(javaInt(), 'explodeListlength');
    let idx                 = j_parameter(javaInt(), 'idx');
-   
+
    let explodeListInitCodes = $explodeProperties->size()->range()->map({i |
       let property = $explodeProperties->at($i);
       let propertyMapping = $set->_propertyMappingsByPropertyName($property.name->toOne())->cast(@PurePropertyMapping)->at(0);
-      $explodePropertyVars->at($i)->j_declare($set->generatePropertyMappingTransform($property, $propertyMapping, $src, $conventions->updateConventionsForExplosion(), $extensions, true, $debug->indent())->toOne());                                  
+      $explodePropertyVars->at($i)->j_declare($set->generatePropertyMappingTransform($property, $propertyMapping, $src, $conventions->updateConventionsForExplosion(), $extensions, true, $debug->indent())->toOne());
    });
-   
+
    let explodeListLengthCode = $explodeListLength->j_declare($explodePropertyVars->at(0)->j_invoke('size', [], javaInt()));
    let sameLengthCheckCodes  = $explodeProperties->tail()->size()->range()->map({i |
       j_if(
@@ -834,7 +836,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let propertyValues = $primitiveSubTrees->map({st |
       let prop = $st.property->cast(@Property<Nil,Any|*>);
       if ($explodeProperties->contains($prop),
-          | $explodePropertyVars->at($explodeProperties->indexOf($prop))->j_invoke('get', [$idx], $conventions->pureTypeToJavaType($prop)), 
+          | $explodePropertyVars->at($explodeProperties->indexOf($prop))->j_invoke('get', [$idx], $conventions->pureTypeToJavaType($prop)),
           | $set->generatePropertyMappingTransform($prop, $set->_propertyMappingsByPropertyName($prop.name->toOne())->head(), $src, $conventions, $extensions, $debug->indent())
       );
    });
@@ -844,7 +846,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
          ->j_invoke('mapToObj', j_lambda($idx, $transformLambdaCodes->j_block()), $returnElementType->javaStream())
          ->map(x | if($resolveToList, | $x->js_resolve($returnElementType->javaList()), | $x))
          ->j_return();
-   
+
    $explodeListInitCodes->concatenate($explodeListLengthCode)->concatenate($sameLengthCheckCodes)->concatenate($mapToObjectCodes)->toOneMany();
 }
 

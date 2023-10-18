@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::test::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 
@@ -23,7 +24,7 @@ function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::athe
   // If a feature described in extension APIs / test suite is not supported,
   // then throw an exception with message that starts with '[unsupported-api]'
   // Tests which raise such exception will be reported as ignored by the runner
-  
+
   meta::relational::tests::dbSpecificTests->collectParameterizedTests('Athena',
                 ^DbTestConfig(dbType=DatabaseType.Athena, connection=$connection),
                 meta::relational::tests::sqlQueryToString::athena::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
