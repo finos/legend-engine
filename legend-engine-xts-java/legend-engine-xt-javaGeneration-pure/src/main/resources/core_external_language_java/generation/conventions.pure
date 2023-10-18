@@ -1044,7 +1044,7 @@ function <<access.private>> meta::external::language::java::transform::buildIden
 
 function <<access.private>> meta::external::language::java::transform::buildJavaKeywordReplacementMap():Map<String, String>[1]
 {
-   javaKeywords()->map(kw | pair($kw, '_' + $kw))->newMap()
+   reservedKeywords()->map(kw | pair($kw, '_' + $kw))->newMap()
 }
 
 function meta::external::language::java::transform::setBasePackageName(conventions:Conventions[1], name:String[1]): Conventions[1]
