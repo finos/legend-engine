@@ -103,10 +103,24 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
 
     public abstract void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
-    // --- DONE ----
+    @Test
+    void testNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform()
+    {
+        TestScenario testScenario = scenarios.NO_AUDTING__ALLOW_DUPS_ALL_VERSION_WITHOUT_PERFORM();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(testScenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .build();
+
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(testScenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     @Test
-    void testNonTemporalDeltaWithWithAuditingWithDataSplit()
+    void testNonTemporalDeltaWithWithAuditingFailOnDupsAllVersion()
     {
         TestScenario testScenario = scenarios.WITH_AUDTING__FAIL_ON_DUPS_ALL_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -117,10 +131,10 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(testScenario.getDatasets(), dataSplitRangesOneToTwo);
-        verifyNonTemporalDeltaWithWithAuditingWithDataSplit(operations, dataSplitRangesOneToTwo);
+        verifyNonTemporalDeltaWithWithAuditingFailOnDupsAllVersion(operations, dataSplitRangesOneToTwo);
     }
 
-    public abstract void verifyNonTemporalDeltaWithWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+    public abstract void verifyNonTemporalDeltaWithWithAuditingFailOnDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     @Test
     void testNontemporalDeltaWithUpperCaseOptimizer()
@@ -230,7 +244,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
     public abstract void verifyNontemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations);
 
     @Test
-    void testNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup()
+    void testNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters()
     {
         TestScenario testScenario = scenarios.MAX_VERSION__FILTER_DUPLICATES__WITH_STAGING_FILTER();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -240,13 +254,13 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(operations);
+        verifyNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters(operations);
     }
 
-    public abstract void verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(GeneratorResult operations);
+    public abstract void verifyNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters(GeneratorResult operations);
 
     @Test
-    void testNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters()
+    void testNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters()
     {
         TestScenario testScenario = scenarios.MAX_VERSION_WITHOUT_PERFORM__ALLOW_DUPLICATES__WITH_STAGING_FILTER();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -256,15 +270,15 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(operations);
+        verifyNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters(operations);
     }
 
-    public abstract void verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(GeneratorResult operations);
+    public abstract void verifyNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters(GeneratorResult operations);
 
     @Test
-    void testNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters()
+    void testNontemporalDeltaMaxVersionWithoutPerformAllowDups()
     {
-        TestScenario testScenario = scenarios.MAX_VERSION_WITHOUT_PERFORM__ALLOW_DUPLICATES__WITHOUT_STAGING_FILTER();
+        TestScenario testScenario = scenarios.MAX_VERSION_WITHOUT_PERFORM__ALLOW_DUPLICATES();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -272,15 +286,15 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(operations);
+        verifyNontemporalDeltaMaxVersionWithoutPerformAllowDups(operations);
     }
 
-    public abstract void verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations);
+    public abstract void verifyNontemporalDeltaMaxVersionWithoutPerformAllowDups(GeneratorResult operations);
 
     @Test
-    void testNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters()
+    void testNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase()
     {
-        TestScenario testScenario = scenarios.MAX_VERSIONING__ALLOW_DUPLICATES__WITHOUT_STAGING_FILTER();
+        TestScenario testScenario = scenarios.MAX_VERSIONING__ALLOW_DUPLICATES();
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
@@ -289,10 +303,10 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
-        verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(operations);
+        verifyNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase(operations);
     }
 
-    public abstract void verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations);
+    public abstract void verifyNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase(GeneratorResult operations);
 
     public abstract RelationalSink getRelationalSink();
 }

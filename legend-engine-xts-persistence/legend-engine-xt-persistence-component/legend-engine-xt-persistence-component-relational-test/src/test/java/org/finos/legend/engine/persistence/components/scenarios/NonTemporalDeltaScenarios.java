@@ -71,6 +71,17 @@ public class NonTemporalDeltaScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
+    }
+
+    public TestScenario NO_AUDTING__ALLOW_DUPS_ALL_VERSION_WITHOUT_PERFORM()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(false).build())
+                .deduplicationStrategy(AllowDuplicates.builder().build())
+                .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
@@ -92,7 +103,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
    }
 
     public TestScenario NO_VERSIONING__WITH_STAGING_FILTER()
@@ -134,7 +145,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
     }
 
-    public TestScenario MAX_VERSION_WITHOUT_PERFORM__ALLOW_DUPLICATES__WITHOUT_STAGING_FILTER()
+    public TestScenario MAX_VERSION_WITHOUT_PERFORM__ALLOW_DUPLICATES()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
@@ -148,7 +159,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
     }
 
-    public TestScenario MAX_VERSIONING__ALLOW_DUPLICATES__WITHOUT_STAGING_FILTER()
+    public TestScenario MAX_VERSIONING__ALLOW_DUPLICATES()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)

@@ -526,14 +526,28 @@ public class AnsiTestArtifacts
         "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
         "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\") as stage)";
 
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndAllowDups = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+            "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"data_split\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
+            "DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" ASC) as \"data_split\" " +
+            "FROM \"mydb\".\"staging\" as stage)";
+
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.\"legend_persistence_count\") as \"MAX_DUPLICATES\" FROM " +
             "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
 
-    public static String dataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+    public static String dataErrorCheckSqlWithBizDateVersion = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
         "(SELECT COUNT(DISTINCT(\"digest\")) as \"legend_persistence_distinct_rows\" FROM " +
         "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
 
-    public static String dataErrorCheckSqlUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" " +
+    public static String dataErrorCheckSql = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
+            "(SELECT COUNT(DISTINCT(\"digest\")) as \"legend_persistence_distinct_rows\" FROM " +
+            "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"version\") as stage";
+
+    public static String dataErrorCheckSqlUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" FROM" +
+            " (SELECT COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_DISTINCT_ROWS\" FROM " +
+            "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage GROUP BY \"ID\", \"NAME\", \"VERSION\") as stage";
+
+    public static String dataErrorCheckSqlWithBizDateAsVersionUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" " +
             "FROM (SELECT COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_DISTINCT_ROWS\" FROM " +
             "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\") as stage";
 
