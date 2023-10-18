@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::legend::service::metamodel::*;
