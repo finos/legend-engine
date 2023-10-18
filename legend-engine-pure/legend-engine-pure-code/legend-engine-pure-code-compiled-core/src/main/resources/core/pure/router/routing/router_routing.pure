@@ -510,7 +510,7 @@ function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression
     ]))->cast(@ValueSpecification);
 
    let nfe = ^$fe(parametersValues = $parametersValues);
-   let colSpec = $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>)->toOne();
+   $nfe->reactivate($inScopeVars)->evaluateAndDeactivate()->cast(@ColumnSpecification<Any>);
 }
 
 
