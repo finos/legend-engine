@@ -19,12 +19,14 @@ import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::protocols::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::context::*;
 import meta::pure::router::routing::*;
 import meta::protocols::pure::v1_29_0::invocation::execution::execute::*;
 import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::*;
 import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::runtime::*;
 import meta::pure::functions::io::http::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::milestoning::*;
@@ -172,7 +174,10 @@ function meta::protocols::pure::v1_29_0::invocation::execution::execute::generat
 function meta::protocols::pure::v1_29_0::invocation::execution::execute::generateAlloyRelationalStoreObjectReference(mapping:Mapping[1], set:RelationalInstanceSetImplementation[1], sets:SetImplementation[*], runtime:Runtime[1], pkMap:Map<String, Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_29_0::metamodel::objectReference::AlloyRelationalStoreObjectReference[1]
 {
    let store                = $set.stores->toOne();
-   let databaseConnection   = $runtime->connectionByElement($store->toOne())->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->cast(@meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection);
+   let conn                 = $runtime->connectionByElement($store->toOne());
+   let connectionStore               = $runtime.connectionStores->filter(c|$c.connection==$conn);
+   let databaseConnection   = $connectionStore->map(ce|$ce.connection->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->map(c|^$c(element=$ce.element->match([d:meta::pure::store::Store[1]|if($d->instanceOf(meta::external::store::model::ModelStore),|'ModelStore',|$d->elementToPath()),s:String[1]|$s]))))
+                                ->toOne()->cast(@meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection);
 
    let setIdx               = if($sets->size() == 1, | '', | '_' + $sets->indexOf($set)->toString());
    let transformedPkMap     = meta::relational::mapping::resolvePrimaryKeysNames($set->cast(@RelationalInstanceSetImplementation), $pkMap, $setIdx, true, $extensions);
@@ -190,10 +195,10 @@ function meta::protocols::pure::v1_29_0::invocation::execution::execute::decodeA
 {
    let parsedObjectRef = meta::alloy::objectReference::decodeAndParseAlloyObjectReference($ref);
    let type            = $parsedObjectRef->get('type')->cast(@String)->toOne();
-   
+
    if($type->toLower() == 'relational',
       | meta::protocols::pure::v1_29_0::invocation::execution::execute::getAlloyRelationalStoreObjectReference($parsedObjectRef),
-      | fail('Not Supported Yet!!'); 
+      | fail('Not Supported Yet!!');
         ^meta::protocols::pure::v1_29_0::metamodel::objectReference::AlloyObjectReference
          (
             type = meta::protocols::pure::v1_29_0::metamodel::objectReference::AlloyObjectReferenceType.Relational,

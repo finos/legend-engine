@@ -150,7 +150,7 @@ public class JsonNodeComparator implements Comparator<JsonNode>
     {
         if (node1.isIntegralNumber())
         {
-            if (!node2.isIntegralNumber())
+            if (!node2.isIntegralNumber() && !(node1.asText().equals(node2.asText())))
             {
                 return -1;
             }
@@ -166,7 +166,7 @@ public class JsonNodeComparator implements Comparator<JsonNode>
         }
         if (node1.isFloatingPointNumber())
         {
-            if (!node2.isFloatingPointNumber())
+            if (!node2.isFloatingPointNumber() && !(node1.asText().equals(node2.asText())))
             {
                 return -1;
             }

@@ -29,7 +29,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_DefaultValue_Impl;
@@ -539,7 +539,7 @@ public class HelperModelBuilder
 
     public static String getElementFullPath(PackageableElement element, CompiledExecutionSupport executionSupport)
     {
-        if (element instanceof Root_meta_pure_mapping_modelToModel_ModelStore_Impl)
+        if (element instanceof Root_meta_external_store_model_ModelStore_Impl)
         {
             return "ModelStore";
         }

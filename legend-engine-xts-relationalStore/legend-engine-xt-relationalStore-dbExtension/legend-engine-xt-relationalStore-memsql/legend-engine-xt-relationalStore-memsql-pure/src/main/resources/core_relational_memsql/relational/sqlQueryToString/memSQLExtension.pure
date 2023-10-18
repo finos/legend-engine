@@ -5,6 +5,7 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -154,10 +155,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformToTimestampMemSQL(params:String[2]):String[1]
 {
-  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
-   let timestampFormat = $params->at(1);   
-   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';   
+   let timestampFormat = $params->at(1);
+   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
 
 function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]

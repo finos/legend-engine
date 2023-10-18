@@ -59,10 +59,7 @@ function meta::external::store::service::executionPlan::toString::limitExecution
 
 function meta::external::store::service::executionPlan::toString::serviceStoreConnectionToString(conn:ServiceStoreConnection[1]):String[1]
 {
-   let store   = 'store="'+$conn.element->cast(@ServiceStore)->elementToPath()+'"';
    let baseUrl = 'baseUrl="'+$conn.baseUrl+'"';
-   
-   [$store, $baseUrl]->joinStrings(', ');
 }
 
 function meta::external::store::service::executionPlan::toString::authenticationSchemeToString(s:AuthenticationSchemeRequirement[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]

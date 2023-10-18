@@ -21,11 +21,12 @@ import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::relational::runtime::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
-//fix transform property platform code 
+//fix transform property platform code
 function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::test_ViaNoArgMapping():Boolean[1]
 {
-  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();  
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();
   let runtime = getModelChainRuntime($mapping);
 
    let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductMilestoned.all($bdate)->graphFetch(
@@ -34,8 +35,8 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests
           id,
           name,
           synonymsNonMilestoned
-          { 
-            synonym 
+          {
+            synonym
           }
         }
       }#
@@ -62,7 +63,7 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests
 
 function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testWithHardcodedDate_ViaNoArgMapping():Boolean[1]
 {
-  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();  
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgMapping();
   let runtime = getModelChainRuntime($mapping);
 
    let query={|meta::relational::tests::milestoning::TargetProductMilestoned.all(%2023-10-15T00:00:00)->graphFetch(
@@ -71,8 +72,8 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::pure::graphFetch::tests
           id,
           name,
           synonymsNonMilestoned
-          { 
-            synonym 
+          {
+            synonym
           }
         }
       }#
@@ -108,8 +109,8 @@ function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::mil
           id,
           name,
           synonymsNonMilestoned
-          { 
-            synonym 
+          {
+            synonym
           }
         }
       }#
@@ -138,7 +139,7 @@ function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::mil
 
 function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaNoArgMapping():Boolean[1]
 {
-  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping();  
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping();
   let runtime = getModelChainRuntime($mapping);
 
    let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
@@ -169,7 +170,7 @@ function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::mil
 
 function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaNoArgMapping_ViaAssociation():Boolean[1]
 {
-  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping_ViaAssociation();  
+  let mapping = meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::getNoArgFlattenMapping_ViaAssociation();
   let runtime = getModelChainRuntime($mapping);
 
    let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
@@ -231,7 +232,7 @@ function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::mil
 
 function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::testFlatten_ViaHardcodedDateMapping():Boolean[1]
 {
-  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_HardcodedDate;  
+  let mapping = meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilestonedTargetProperty::TargetToModeMappingWithComplexPropertyFlattened_HardcodedDate;
   let runtime = getModelChainRuntime($mapping);
 
    let query={bdate:DateTime[1]|meta::relational::tests::milestoning::TargetProductFlattened.all($bdate)->graphFetch(
@@ -272,12 +273,12 @@ function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNo
                     '    id: $src.id,\n'+
                     '    name: $src.name,\n'+
                     '    synonymsNonMilestoned:$src.synonymsMilestoned\n'+
-                    '  }\n' + 
+                    '  }\n' +
                     '  *meta::relational::tests::milestoning::TargetProductSynonymNonMilestoned: Pure\n'+
                     '  {\n'+
                     '     ~src meta::relational::tests::milestoning::ProductSynonymMilestoned\n'+
                     '    synonym: $src.synonym\n'+
-                    '  }\n' + 
+                    '  }\n' +
                     ')';
 
   let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
@@ -299,7 +300,7 @@ function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNo
                     '    id: $src.id,\n'+
                     '    name: $src.name,\n'+
                     '    synonymNames:$src.synonymsMilestoned.synonym\n'+
-                    '  }\n' + 
+                    '  }\n' +
                     ')';
 
   let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
@@ -320,7 +321,7 @@ function meta::pure::graphFetch::tests::m2m2r::milestoning::milestonedSourceToNo
                     '    id: $src.id,\n'+
                     '    name: $src.name,\n'+
                     '    synonymNames:$src.synonymsMilestonedViaAssociation.synonym\n'+
-                    '  }\n' + 
+                    '  }\n' +
                     ')';
 
   let mapping = meta::legend::compileLegendGrammar($mappingStr)->at(0)->cast(@Mapping);
@@ -375,4 +376,4 @@ Mapping meta::relational::tests::m2m2r::milestoning::milestonedSourceToNonMilest
     name: $src.name,
     synonymNames:$src.synonymsMilestoned(%2023-10-15T00:00:00).synonym
   }
-) 
+)

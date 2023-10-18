@@ -14,6 +14,7 @@
 
 import meta::relational::tests::routing::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 function meta::relational::tests::routing::testColumnSpecificationRouting():Boolean[1]
 {

@@ -19,7 +19,7 @@ Database meta::relational::tests::mapping::join::model::store::db
     Table personExtensionTable (ID INT PRIMARY KEY, PERSON_ID INT, EXTRAINFO VARCHAR(200), NUMBER INT,AGE INT)
     Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, FLAG INT)
     Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
-   
+
     Table firmPersonBridgeTable(FIRM_ID INT PRIMARY KEY, PERSON_ID INT PRIMARY KEY)
 
     Table TypeTable (ID INT PRIMARY KEY, TypeProperty VARCHAR(200))
@@ -30,7 +30,7 @@ Database meta::relational::tests::mapping::join::model::store::db
 
     Table tradeTable(ID INT PRIMARY KEY, accountID INT, quantity INT, tradeDate DATE)
     Table accountTable(ID VARCHAR(200) PRIMARY KEY, name VARCHAR(200), createDate DATE)
-   
+
     Table organizationTable(name VARCHAR(200) PRIMARY KEY, firmID INT PRIMARY KEY)
     Table membershipTable(name VARCHAR(200) PRIMARY KEY,  memberID INT PRIMARY KEY)
 
@@ -42,15 +42,15 @@ Database meta::relational::tests::mapping::join::model::store::db
     Join MiddleTable_PersonExtension(MiddleTable.LINKID = personExtensionTable.ID and MiddleTable.LINKID <> 999999999 and personExtensionTable.ID != -99999999)
     Join Person_PersonExtension(personTable.ID = personExtensionTable.PERSON_ID)
     Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
-   
+
     Join Firm_FirmPersonBridge(firmTable.ID = firmPersonBridgeTable.FIRM_ID)
     Join Person_FirmPersonBridge(personTable.ID = firmPersonBridgeTable.PERSON_ID)
-    
+
     Join TypeTableTableA (TypeTable.ID = TypeTableA.ID)
     Join TypeTableTableB (TypeTable.ID = TypeTableB.ID)
     Join TypeTableTableBNow (TypeTable.ID = TypeTableB.ID and TypeTableB.IN_Z <= now() and now() < TypeTableB.OUT_Z)
     Join TypeTableTableBThen (TypeTable.ID = TypeTableB.ID and TypeTableB.IN_Z <= '2013-07-15 13:52:22.370' and '2013-07-15 13:52:22.370' < TypeTableB.OUT_Z)
-      
+
     Join Trade_Account(convertVarchar128(tradeTable.accountID) = accountTable.ID)
 
     Join Org_Membership(membershipTable.name = organizationTable.name)
@@ -58,12 +58,12 @@ Database meta::relational::tests::mapping::join::model::store::db
     Join Firm_Org(organizationTable.firmID = firmTable.ID)
 
     Join Person_schemaBPerson(schemaB.personTable.ID = personTable.ID)
-    
+
     Schema schemaB
     (
-       Table personTable(ID INT PRIMARY KEY,FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200)) 
+       Table personTable(ID INT PRIMARY KEY,FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200))
     )
-   
+
 )
 
 
@@ -90,7 +90,7 @@ Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelation
              legalName : [db]firmTable.LEGALNAME,
              employees : [db]@Firm_Person
           }
-          
+
    TypeBuiltOutOfMultipleJoins : Relational
                                  {
                                     tableProperty : [db]default.TypeTable.TypeProperty,
@@ -126,14 +126,14 @@ Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelation
              legalName : [db]firmTable.LEGALNAME,
              employees : [db]@Firm_Person
           }
-          
+
 )
 
 Mapping meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingIncludePersonAndFirm
 (
    include advancedRelationalMappingForPerson
    include meta::relational::tests::mapping::join::model::mapping::advancedRelationalMappingForFirm
-   
+
    TypeBuiltOutOfMultipleJoins : Relational
                                  {
                                     tableProperty : [db]default.TypeTable.TypeProperty,
@@ -276,7 +276,7 @@ Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoins
                     age: AGE
                 ),
                 firm : [db]@Person_FirmPersonBridge > @Firm_FirmPersonBridge
-                
+
             }
 
    Firm : Relational
@@ -284,8 +284,8 @@ Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoins
              legalName : [db]firmTable.LEGALNAME,
              employees : [db]@Firm_FirmPersonBridge > @Person_FirmPersonBridge
           }
-   
-   
+
+
 )
 
 Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoinsInner
@@ -306,10 +306,10 @@ Mapping meta::relational::tests::mapping::join::model::mapping::chainedJoinsInne
              legalName : [db]firmTable.LEGALNAME,
              employees : [db]@Firm_FirmPersonBridge > (INNER) @Person_FirmPersonBridge,
              address(
-                name :   [db] case(or(equal(@Firm_FirmPersonBridge > (INNER) @Person_FirmPersonBridge |firmTable.ADDRESSID, 1), equal(@Address_Firm |addressTable.ID, 1)), 'UK', 'Europe') 
+                name :   [db] case(or(equal(@Firm_FirmPersonBridge > (INNER) @Person_FirmPersonBridge |firmTable.ADDRESSID, 1), equal(@Address_Firm |addressTable.ID, 1)), 'UK', 'Europe')
              )
           }
-   
+
 )
 
 Mapping meta::relational::tests::mapping::join::model::mapping::chainedInnerJoinsForPrimitive
@@ -323,7 +323,7 @@ Mapping meta::relational::tests::mapping::join::model::mapping::chainedInnerJoin
                     extraInformation : [db]@Person_FirmPersonBridge > (INNER) @Firm_FirmPersonBridge | trim(firmTable.LEGALNAME)
                 )
             }
-   
+
 )
 
 ###Mapping
@@ -332,18 +332,18 @@ import meta::relational::tests::mapping::join::model::store::*;
 import meta::relational::tests::mapping::join::model::domain::*;
 
 Mapping meta::relational::tests::mapping::join::model::mapping::MappingForAccountAndTrade
-(   
+(
 
    Trade : Relational
-           {          
+           {
               id : [db]tradeTable.ID,
               quantity :[db] tradeTable.quantity,
-              account : [db] @Trade_Account,             
-              date : [db] tradeTable.tradeDate              
+              account : [db] @Trade_Account,
+              date : [db] tradeTable.tradeDate
            }
 
    Account : Relational
-             {               
+             {
                 name : [db] accountTable.name,
                 createDate :[db] accountTable.createDate
              }
@@ -388,14 +388,16 @@ Mapping meta::relational::tests::mapping::join::model::mapping::JoinSchemaBWithS
 ###Pure
 import meta::relational::tests::mapping::join::model::store::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function meta::relational::tests::mapping::join::model::store::testRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(db);
+   meta::external::store::relational::tests::testRuntime(db);
 }
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::join::setUp():Boolean[1]
@@ -428,7 +430,7 @@ function meta::relational::tests::mapping::join::model::store::createTablesAndFi
    executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (5, 5, \'extra 5\',21);', $connection);
    executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (6, 6, \'extra 6\',22);', $connection);
    executeInDb('insert into PersonExtensionTable (id, person_id, extraInfo,age) values (7, 7, \'extra 7\',23);', $connection);
-   
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'firmPersonBridgeTable', $connection);
    executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 1);', $connection);
    executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (1, 2);', $connection);
@@ -437,7 +439,7 @@ function meta::relational::tests::mapping::join::model::store::createTablesAndFi
    executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (2, 5);', $connection);
    executeInDb('insert into firmPersonBridgeTable (FIRM_ID, PERSON_ID) values (3, 6);', $connection);
    //deliberate choice that firm 4 has no employees
-   
+
    executeInDb('Drop table if exists MiddleTable;', $connection);
    executeInDb('Create Table MiddleTable(id INT, LINKID INT);', $connection);
    executeInDb('insert into MiddleTable (id, LINKID) values (1, 1);', $connection);
@@ -475,11 +477,11 @@ function meta::relational::tests::mapping::join::model::store::createTablesAndFi
    executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (1, \'Row1B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
    executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (2, \'Row2B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
    executeInDb('insert into TypeTableB (id, TypePropertyB, IN_Z, OUT_Z) values (3, \'Row3B\', \'2014-09-24 00:00:00\', \'9999-12-31 23:59:59.999\');', $connection);
-   
+
    executeInDb('Drop table if exists accountTable;', $connection);
    executeInDb('Create Table accountTable(ID VARCHAR(200), name VARCHAR(200), createDate DATE);', $connection);
    executeInDb('insert into accountTable (ID, name, createDate) values (\'1\', \'Account 1\', \'2013-12-01\');', $connection);
-   
+
    executeInDb('Drop table if exists tradeTable;', $connection);
    executeInDb('Create Table tradeTable(id INT, accountId INT, quantity FLOAT, tradeDate DATE);', $connection);
    executeInDb('insert into tradeTable (id, accountId, quantity, tradeDate) values (1, 1, 25, \'2013-12-01\');', $connection);

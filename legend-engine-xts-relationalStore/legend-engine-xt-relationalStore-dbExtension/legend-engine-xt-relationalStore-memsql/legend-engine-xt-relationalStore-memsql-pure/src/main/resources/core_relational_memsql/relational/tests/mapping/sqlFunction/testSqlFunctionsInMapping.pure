@@ -19,7 +19,7 @@ import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 
 function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQuery_MemSQL():Boolean[1]
 {
-  let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());  
+  let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
   assertEquals('select to_timestamp(`root`.string2date,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$memSQLSql->sqlRemoveFormatting());
 }
 

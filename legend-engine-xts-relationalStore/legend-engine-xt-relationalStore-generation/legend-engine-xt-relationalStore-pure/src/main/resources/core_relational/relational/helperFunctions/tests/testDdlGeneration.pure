@@ -22,6 +22,7 @@ import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.Test>>  meta::relational::tests::ddl::findTableByName():Boolean[1]
@@ -52,7 +53,7 @@ function <<test.Test>> meta::relational::tests::ddl::createCreateTableStatementW
 
 function <<test.Test>>  meta::relational::tests::ddl::dropAndCreateTable():Boolean[1]
 {
-    let c = meta::relational::tests::testRuntime(foo_db).connections->toOne()->cast(@TestDatabaseConnection);
+    let c = meta::external::store::relational::tests::testRuntime(foo_db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
     dropAndCreateTableInDb(foo_db, 'bar_t', $c);
     executeInDb('insert into bar_t (id, version, description) values (1, 1, \'Glorp\')', $c);
 
@@ -73,9 +74,9 @@ function <<test.Test>> meta::relational::tests::ddl::testCreateTempTableStatemen
 
 function <<test.Test>> meta::relational::tests::ddl::dropAndCreateTempTable():Boolean[1]
 {
-    let c = meta::relational::tests::testRuntime(foo_db).connections->toOne()->cast(@TestDatabaseConnection);
+    let c = meta::external::store::relational::tests::testRuntime(foo_db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
     createTempTable('tt', ^Column(name='col', type=^meta::relational::metamodel::datatype::Integer()), createTempTableStatement(), $c);
-   
+
     let res = executeInDb('select * from tt', $c);
     let columnNames = $res.columnNames;
     dropTempTable('tt', $c);

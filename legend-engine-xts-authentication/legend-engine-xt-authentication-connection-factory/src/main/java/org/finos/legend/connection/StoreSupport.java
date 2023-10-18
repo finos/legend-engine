@@ -15,16 +15,14 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A StoreSupport describes the capabilities supported by a Store.
@@ -33,14 +31,40 @@ import java.util.Set;
 public class StoreSupport
 {
     private final String identifier;
-    private final ImmutableList<AuthenticationMechanism> authenticationMechanisms;
-    private final ImmutableList<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
+    private final Map<AuthenticationMechanism, AuthenticationMechanismConfiguration> authenticationMechanismConfigurationIndex;
 
-    protected StoreSupport(String identifier, List<AuthenticationMechanism> authenticationMechanisms)
+    protected StoreSupport(String identifier, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
     {
-        this.identifier = identifier;
-        this.authenticationMechanisms = Lists.immutable.withAll(authenticationMechanisms);
-        this.authenticationConfigurationTypes = Lists.immutable.withAll(ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType));
+        this.identifier = Objects.requireNonNull(identifier, "Identifier is missing");
+
+        Map<AuthenticationMechanism, AuthenticationMechanismConfiguration> authenticationMechanismConfigurationIndex = new LinkedHashMap<>();
+        Map<Class<? extends AuthenticationConfiguration>, AuthenticationMechanism> authenticationConfigurationTypeIndex = new LinkedHashMap<>();
+        for (AuthenticationMechanismConfiguration authenticationMechanismConfiguration : authenticationMechanismConfigurations)
+        {
+            AuthenticationMechanism authenticationMechanism = authenticationMechanismConfiguration.getAuthenticationMechanism();
+            if (authenticationMechanismConfigurationIndex.containsKey(authenticationMechanism))
+            {
+                throw new RuntimeException(String.format("Found multiple configurations for authentication mechanism '%s'", authenticationMechanism.getLabel()));
+            }
+            authenticationMechanismConfigurationIndex.put(authenticationMechanism, authenticationMechanismConfiguration);
+            authenticationMechanismConfiguration.getAuthenticationConfigurationTypes().forEach(authenticationConfigurationType ->
+            {
+                if (authenticationConfigurationTypeIndex.containsKey(authenticationConfigurationType))
+                {
+                    throw new RuntimeException(String.format("Authentication configuration type '%s' is associated with multiple authentication mechanisms", authenticationConfigurationType.getSimpleName()));
+                }
+                authenticationConfigurationTypeIndex.put(authenticationConfigurationType, authenticationMechanism);
+            });
+        }
+
+        this.authenticationMechanismConfigurationIndex = authenticationMechanismConfigurationIndex;
+        this.authenticationMechanismConfigurationIndex.forEach((authenticationMechanism, authenticationMechanismConfiguration) ->
+        {
+            if (authenticationMechanismConfiguration.getAuthenticationConfigurationTypes().isEmpty())
+            {
+                throw new RuntimeException(String.format("No authentication configuration type is associated with authentication mechanism '%s'", authenticationMechanism.getLabel()));
+            }
+        });
     }
 
     public String getIdentifier()
@@ -48,20 +72,20 @@ public class StoreSupport
         return identifier;
     }
 
-    public ImmutableList<AuthenticationMechanism> getAuthenticationMechanisms()
+    public AuthenticationMechanismConfiguration getAuthenticationMechanismConfiguration(AuthenticationMechanism authenticationMechanism)
     {
-        return authenticationMechanisms;
+        return authenticationMechanismConfigurationIndex.get(authenticationMechanism);
     }
 
-    public ImmutableList<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()
+    public List<AuthenticationMechanism> getAuthenticationMechanisms()
     {
-        return Lists.immutable.withAll(authenticationConfigurationTypes);
+        return new ArrayList<>(this.authenticationMechanismConfigurationIndex.keySet());
     }
 
     public static class Builder
     {
         private String identifier;
-        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
+        private final List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations = Lists.mutable.empty();
 
         public Builder withIdentifier(String identifier)
         {
@@ -69,29 +93,29 @@ public class StoreSupport
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfiguration(AuthenticationMechanismConfiguration authenticationMechanismConfiguration)
         {
-            this.authenticationMechanisms.addAll(authenticationMechanisms);
+            this.authenticationMechanismConfigurations.add(authenticationMechanismConfiguration);
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfigurations(List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.addAll(Lists.mutable.of(authenticationMechanisms));
+            this.authenticationMechanismConfigurations.addAll(authenticationMechanismConfigurations);
             return this;
         }
 
-        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
+        public Builder withAuthenticationMechanismConfigurations(AuthenticationMechanismConfiguration... authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.add(authenticationMechanism);
+            this.authenticationMechanismConfigurations.addAll(Lists.mutable.of(authenticationMechanismConfigurations));
             return this;
         }
 
         public StoreSupport build()
         {
             return new StoreSupport(
-                    Objects.requireNonNull(this.identifier, "Store support identifier is required"),
-                    new ArrayList<>(this.authenticationMechanisms)
+                    this.identifier,
+                    this.authenticationMechanismConfigurations
             );
         }
     }

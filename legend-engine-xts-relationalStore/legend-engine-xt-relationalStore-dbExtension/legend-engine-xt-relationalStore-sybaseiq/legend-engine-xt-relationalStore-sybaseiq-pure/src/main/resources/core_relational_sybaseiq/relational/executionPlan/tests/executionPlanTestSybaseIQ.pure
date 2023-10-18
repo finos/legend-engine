@@ -15,6 +15,7 @@
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::mapping::modelToModel::test::createInstances::*;
 import meta::relational::postProcessor::*;
 import meta::pure::extension::*;
@@ -29,6 +30,7 @@ import meta::relational::tests::tds::tabletds::*;
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::tests::tds::tdsJoin::*;
@@ -39,16 +41,18 @@ import meta::relational::tests::groupBy::datePeriods::*;
 import meta::relational::tests::groupBy::datePeriods::domain::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::functions::collection::*;
 import meta::pure::executionPlan::tests::sybaseIQ::*;
 
-function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testFilterEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
-{  
+function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testFilterEqualsWithOptionalParameter_SybaseIQ():Boolean[1]
+{
    let expectedPlan ='Sequence\n'+
                      '(\n'+
                      '  type = TDS[(Time, Integer, INT, "")]\n'+
@@ -66,11 +70,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testFilterEqu
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.SybaseIQ, $expectedPlan);                     
+   assertPlanGenerationForOptionalParameter(DatabaseType.SybaseIQ, $expectedPlan);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testGreaterThanLessThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]
-{  
+{
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age>$optionalAgeLowerLimit && ($p.age<=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -93,8 +97,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testGreaterTh
 }
 
 
-function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testLessThanGreaterThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
-{  
+function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testLessThanGreaterThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]
+{
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age<$optionalAgeLowerLimit && ($p.age>=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -113,20 +117,22 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testLessThanG
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan); 
+   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan);
 }
 
-function meta::pure::executionPlan::tests::sybaseIQ::twoDBRunTimeSybaseIQ():meta::pure::runtime::Runtime[1]
+function meta::pure::executionPlan::tests::sybaseIQ::twoDBRunTimeSybaseIQ():meta::core::runtime::Runtime[1]
 {
-   ^meta::pure::runtime::Runtime
+   ^meta::core::runtime::Runtime
    (
-      connections = [^TestDatabaseConnection(
+      connectionStores = [^meta::core::runtime::ConnectionStore(
                         element = dbInc,
+                        connection=^TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
-                    ),^TestDatabaseConnection(
+                    )),^meta::core::runtime::ConnectionStore(
                         element = database2,
+                        connection=^TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
-                    )]
+                    ))]
    );
 }
 
@@ -210,7 +216,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::testExecution
 {
    let res = executionPlan(
       {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in(['A', 'B']))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.SybaseIQ)), meta::relational::extension::relationalExtensions()
+      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB, connection=^DatabaseConnection(type=DatabaseType.SybaseIQ))), meta::relational::extension::relationalExtensions()
    );
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));

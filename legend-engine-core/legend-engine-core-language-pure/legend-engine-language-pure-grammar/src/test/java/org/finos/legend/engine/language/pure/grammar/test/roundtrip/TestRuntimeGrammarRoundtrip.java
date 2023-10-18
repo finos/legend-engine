@@ -73,6 +73,34 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      id3: test::connection\n" +
                 "    ]\n" +
                 "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Runtime test::runtime5\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::someMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::someStore:\n" +
+                "    [\n" +
+                "      id1: test::connection,\n" +
+                "      id2: test::connection\n" +
+                "    ],\n" +
+                "    test::someStore2:\n" +
+                "    [\n" +
+                "      id3: test::connection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "  connectionStores:\n" +
+                "  [\n" +
+                "    test::connection:\n" +
+                "    [\n" +
+                "      test::store1,\n" +
+                "      test::store2\n" +
+                "    ]\n" +
+                "  ];\n" +
                 "}\n");
     }
 

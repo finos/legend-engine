@@ -146,6 +146,41 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testRuntimeWithConnectionStores()
+    {
+        test("Class meta::mySimpleClass\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping meta::mySimpleMapping\n" +
+                "(\n" +
+                ")\n\n\n" +
+                "###Connection\n" +
+                "JsonModelConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  class: meta::mySimpleClass;\n" +
+                "  url: 'my_url';\n" +
+                "}\n\n\n" +
+                "###Runtime\n" +
+                "import meta::*;\n" +
+                "Runtime meta::mySimpleRuntime\n" +
+                "{\n" +
+                "  connectionStores:\n" +
+                "  [\n" +
+                // connection pointer
+                "  meta::mySimpleConnection : [\n" +
+                "     ModelStore\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "  mappings : \n" +
+                // embedded runtime mapping
+                "  [meta::mySimpleMapping\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testRuntimeWithImport()
     {
         test("Class meta::mySimpleClass\n" +
@@ -281,7 +316,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_2: humanResourceModel::M2MModelChainConnection2\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null, Collections.singletonList("COMPILATION error at [84:21-64]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
+                "}",null, Collections.singletonList("COMPILATION error at [73:1-87:1]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
     }
 
     @Test
@@ -361,6 +396,6 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "      connection_3: modelToModel::test::XmlConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}",null,Collections.singletonList("COMPILATION error at [72:21-53]: Multiple Connections available for Source Class - __Firm"));
+                "}",null,Collections.singletonList("COMPILATION error at [60:1-75:1]: Multiple Connections available for Source Class - __Firm"));
     }
 }

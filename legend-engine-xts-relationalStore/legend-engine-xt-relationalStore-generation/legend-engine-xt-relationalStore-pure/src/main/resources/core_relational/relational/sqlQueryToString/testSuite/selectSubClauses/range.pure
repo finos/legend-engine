@@ -15,17 +15,17 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::slice::testSlice(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
-
   let result = executeViaPlan(|Person.all()->slice(1,4), simpleRelationalMapping, meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
   runDataAssertion($result, $config,  | assertSize($result.values, 3););
 
@@ -34,9 +34,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::slice::testSliceWithRestrict(config:DbTestConfig[1]):Boolean[1]
-{              
-  let runtime = ^Runtime(connections=$config.connection);
-
+{
    let f1 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->slice(3, 5);};
    let result = executeViaPlan($f1, simpleRelationalMapping, meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
    runDataAssertion($result, $config, | assertSize($result.values.rows, 2););
@@ -48,8 +46,6 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
 function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::limit::testSimpleLimit(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
-
    let result = executeViaPlan(|Person.all()->limit(0), simpleRelationalMapping, meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
     runDataAssertion($result, $config, | assertSize($result.values, 0 ););
 
@@ -59,8 +55,6 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 
 function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::take::testSimpleTake(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
-
    let result = executeViaPlan(|Person.all()->take(0), simpleRelationalMapping, meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
     runDataAssertion($result, $config, | assertSize($result.values, 0 ););
 
@@ -70,8 +64,6 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 
 function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::drop::testSimpleDrop(config:DbTestConfig[1]):Boolean[1]
 {
-   let runtime = ^Runtime(connections=$config.connection);
-
    let result = executeViaPlan(|Person.all()->drop(0), simpleRelationalMapping, meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
     runDataAssertion($result, $config, | assertSize($result.values, 7 ););
 
@@ -81,7 +73,6 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 
 function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::drop::testDropLimitByVendor(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
   let result = executeViaPlan(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10)->limit(100);, meta::relational::tests::simpleRelationalMapping,  meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
   runDataAssertion($result, $config, | assertSize($result.values, 1 ););
 }

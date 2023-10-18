@@ -15,17 +15,20 @@
 import meta::legend::service::metamodel::*;
 import meta::pure::executionPlan::tests::execution::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
 
 function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExecutionStrategyForRelationalInstantiationExecutionNode():Boolean[1]
 {
-   let simpleService = 
+   let simpleService =
       ^Service
       (
          pattern = '/service/testLargeInList',
@@ -36,7 +39,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
                      (
                         func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', 'D', 'E']))->project(col(p|$p.firstName, 'firstName'))},
                         mapping = simpleRelationalMapping,
-                        runtime = meta::relational::tests::testRuntime()
+                        runtime = meta::external::store::relational::tests::testRuntime()
                      ),
          test = ^SingleExecutionTest
                  (
@@ -66,7 +69,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
 
 function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExecutionStrategyForCreateAndPopulateTempTableExecutionNode():Boolean[1]
 {
-   let serviceWithStringFilter = 
+   let serviceWithStringFilter =
       ^Service
       (
          pattern = '/service/testLargeInList',
@@ -77,7 +80,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
                      (
                         func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))->project(col(p|$p.firstName, 'firstName'))},
                         mapping = simpleRelationalMapping,
-                        runtime = meta::relational::tests::testRuntime()
+                        runtime = meta::external::store::relational::tests::testRuntime()
                      ),
          test = ^SingleExecutionTest
                  (
@@ -101,7 +104,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
                  )
       );
 
-   let serviceWithIntegerFilter = 
+   let serviceWithIntegerFilter =
       ^Service
       (
          pattern = '/service/testLargeInList',
@@ -112,7 +115,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
                      (
                         func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', 'D', 'E']) && $p.age->in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 52, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]))->project(col(p|$p.firstName, 'firstName'))},
                         mapping = simpleRelationalMapping,
-                        runtime = meta::relational::tests::testRuntime()
+                        runtime = meta::external::store::relational::tests::testRuntime()
                      ),
          test = ^SingleExecutionTest
                  (
@@ -155,7 +158,7 @@ function <<access.private>> meta::pure::executionPlan::tests::execution::setUpDa
 {
    let databases = $mapping->extractDBs($runtime);
    let database = if ($databases->size() == 1, | $databases->toOne(), | ^Database(name='Default_CatchAll', includes = $databases));
-   
+
    meta::alloy::service::execution::setUpDataSQLs($t->cast(@SingleExecutionTest).data, $database)
       ->map(sql| executeInDb($sql, $runtime->connectionByElement($databases->at(0))->cast(@DatabaseConnection));)->size();  // DO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
    true;

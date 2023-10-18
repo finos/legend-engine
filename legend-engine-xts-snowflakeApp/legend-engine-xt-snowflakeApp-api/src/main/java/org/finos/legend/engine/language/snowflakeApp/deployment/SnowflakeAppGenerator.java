@@ -22,7 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionNode;
@@ -63,7 +63,7 @@ public class SnowflakeAppGenerator
                 .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
                 .select(x -> !x.toLowerCase().startsWith("alter"));
 
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection relCOnn = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection)collectAllNodes(node).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relCOnn = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection)collectAllNodes(node).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
                 .getAny()
                 ._connection();
         Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification ds = (Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification) relCOnn._datasourceSpecification();

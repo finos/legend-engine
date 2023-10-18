@@ -215,4 +215,17 @@ public class TestTestAssertionEvaluator
         Assert.assertTrue(assertionStatus instanceof AssertPass);
         Assert.assertEquals("assert1", assertionStatus.id);
     }
+    
+    @Test
+    public void testEqualToJsonAssertionWithExponentNotation()
+    {
+        ConstantResult constantResult = new ConstantResult("{\"negExp\":[6.2292853E-8, 6.2292853E-7, 6.2292853E-6, 6.2292853E-1], \"posExp\":[6.2292853E0, 6.2292853E1, 62.529285E6, 6.2292853E7, 6.22928534E8], \"noExp\":[0.62, 62, 6.2]}");
+        ExternalFormatData data = new ExternalFormatData();
+        data.contentType = "application/json";
+        EqualToJson equalToJson = new EqualToJson();
+        equalToJson.expected = data;
+        data.data = "{\"negExp\":[6.2292853E-8, 6.2292853E-7, 0.0000062292853, 0.62292853], \"posExp\":[6.2292853, 62.292853, 62529285, 62292853, 622928534], \"noExp\":[0.62, 62, 6.2]}";
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof AssertPass);
+    }
 }

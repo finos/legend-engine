@@ -1,6 +1,8 @@
 import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 
@@ -52,17 +54,17 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::unio
          }
       }
    }#;
-   
+
    let plan = executionPlan(|meta::pure::graphFetch::tests::union::Target.all()->graphFetch($m2mTree)->serialize($m2mTree),
                     meta::pure::graphFetch::tests::union::MyMapping,
-                    ^Runtime(
-                      connections = [
-                        ^JsonModelConnection(
+                    ^Runtime(connectionStores= [
+                        ^ConnectionStore(
                           element = ^ModelStore(),
+                          connection=^JsonModelConnection(
                           class = meta::pure::graphFetch::tests::union::A,
                           url = 'data:application/json,\n{"b1":{"c":{"d": {"s": "blah"}}},"b2": {"d": {"s": "foo"}}}\n'
                         )
-                      ]
+                      )]
                     ),
                     ^ExecutionContext(),
                     meta::pure::extension::defaultExtensions());

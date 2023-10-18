@@ -94,7 +94,7 @@
       
       let compiledMapping = $compiled->at(3)->cast(@meta::pure::mapping::Mapping)->toOne();
       
-      let compiledRuntime = $compiled->at(1)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue->cast(@meta::pure::runtime::Runtime);
+      let compiledRuntime = $compiled->at(1)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue->cast(@meta::core::runtime::Runtime);
       
       let executionContext = ^meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext(queryTimeOutInSeconds=5, enableConstraints=false);
       let debugContext = ^meta::pure::tools::DebugContext(

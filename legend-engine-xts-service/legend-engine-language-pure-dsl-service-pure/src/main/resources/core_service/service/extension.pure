@@ -1,5 +1,6 @@
 import meta::pure::extension::*;
 import meta::pure::router::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::router::store::routing::*;
 import meta::pure::router::store::metamodel::*;

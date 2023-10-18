@@ -16,6 +16,7 @@
 import meta::legend::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
 function meta::external::format::xml::executionPlan::test::convertStringToBytes(data:String[1]): InstanceValue[1]
 {

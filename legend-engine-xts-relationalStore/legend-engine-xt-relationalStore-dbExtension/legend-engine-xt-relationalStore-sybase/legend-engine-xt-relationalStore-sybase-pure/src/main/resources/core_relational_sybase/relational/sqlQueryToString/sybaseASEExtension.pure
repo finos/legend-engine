@@ -3,6 +3,7 @@ import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -145,7 +146,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='today(%s)', transform={p:String[*] | ''})),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),

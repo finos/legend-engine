@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::sqlstring::*;
 

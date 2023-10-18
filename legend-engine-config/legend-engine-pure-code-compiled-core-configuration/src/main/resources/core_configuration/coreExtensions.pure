@@ -61,7 +61,7 @@ function <<access.private, doc.deprecated>> meta::pure::extension::configuration
    }#;
    let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::tests::simpleRelationalMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let extensions = meta::relational::extension::relationalExtensions();
    let basicPlan = executionPlan($query, $mapping, $runtime, $extensions);

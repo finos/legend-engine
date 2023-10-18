@@ -42,7 +42,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.generated.core_relational_relational_extensions_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -66,7 +66,7 @@ public class TestArrowQueries
             ExecuteInput input = objectMapper.readValue(getClass().getClassLoader().getResource("arrowService.json"), ExecuteInput.class);
 
             PureModel model = org.finos.legend.engine.language.pure.compiler.Compiler.compile((PureModelContextData) input.model, DeploymentMode.TEST, null);
-            Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(input.runtime, model.getContext());
+            Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(input.runtime, model.getContext());
 
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(input.function.body, input.function.parameters, model.getContext());
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));

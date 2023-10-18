@@ -21,6 +21,7 @@ import meta::pure::router::platform::metamodel::*;
 import meta::pure::router::platform::metamodel::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 // =========================================================================================
@@ -95,8 +96,8 @@ function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecifi
 
 function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
 {
-   $v->match([f:FunctionExpression[1]                | let params         = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));     
-                                                       let uniqueClusters = $params->filter(p | $p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | areClustersCompatible($x, $y, $extensions)});      
+   $v->match([f:FunctionExpression[1]                | let params         = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));
+                                                       let uniqueClusters = $params->filter(p | $p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | areClustersCompatible($x, $y, $extensions)});
                                                        if($uniqueClusters->size() == 1 && $uniqueClusters->toOne()->isFunctionSupportedByCluster($f),
                                                           |let uniqueCluster = $uniqueClusters->toOne();
                                                           ^$uniqueCluster
@@ -149,7 +150,7 @@ function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[
                                                        );,
                v:VariableExpression[1]               | $v,
                e:ExtendedRoutedValueSpecification[1] | $e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug),
-               c:ClusteredValueSpecification[1]      | $c 
+               c:ClusteredValueSpecification[1]      | $c
       ]
    );
 }

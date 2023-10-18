@@ -14,8 +14,10 @@
 
 import meta::relational::metamodel::relation::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::typeInference::*;

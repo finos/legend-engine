@@ -1,0 +1,275 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "Enumeration",
+      "name": "OrgType",
+      "package": "model",
+      "values": [
+        {
+          "value": "CORP"
+        },
+        {
+          "value": "LLC"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Person",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "lastName",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Organization",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employees",
+          "type": "model::Person"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "type",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Trader",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fullName",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Bank",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "entityName",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employees",
+          "type": "model::Trader"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "type",
+          "type": "model::OrgType"
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "pureInstance",
+          "class": "model::Trader",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "model::Trader",
+                "property": "fullName"
+              },
+              "source": "model_Trader",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "plus",
+                    "parameters": [
+                      {
+                        "_type": "collection",
+                        "multiplicity": {
+                          "lowerBound": 3,
+                          "upperBound": 3
+                        },
+                        "values": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ],
+                            "property": "firstName"
+                          },
+                          {
+                            "_type": "string",
+                            "multiplicity": {
+                              "lowerBound": 1,
+                              "upperBound": 1
+                            },
+                            "values": [
+                              " "
+                            ]
+                          },
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "src"
+                              }
+                            ],
+                            "property": "lastName"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Person"
+        },
+        {
+          "_type": "pureInstance",
+          "class": "model::Bank",
+          "propertyMappings": [
+            {
+              "_type": "purePropertyMapping",
+              "property": {
+                "class": "model::Bank",
+                "property": "employees"
+              },
+              "source": "model_Bank",
+              "target": "model_Trader",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "employees"
+                  }
+                ],
+                "parameters": []
+              }
+            },
+            {
+              "_type": "purePropertyMapping",
+              "enumMappingId": "model_OrgType",
+              "property": {
+                "class": "model::Bank",
+                "property": "type"
+              },
+              "source": "model_Bank",
+              "transform": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "property",
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "src"
+                      }
+                    ],
+                    "property": "type"
+                  }
+                ],
+                "parameters": []
+              }
+            }
+          ],
+          "root": true,
+          "srcClass": "model::Organization"
+        }
+      ],
+      "enumerationMappings": [
+        {
+          "enumValueMappings": [
+            {
+              "enumValue": "CORP",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "corporation"
+                }
+              ]
+            },
+            {
+              "enumValue": "LLC",
+              "sourceValues": [
+                {
+                  "_type": "stringSourceValue",
+                  "value": "limitted"
+                }
+              ]
+            }
+          ],
+          "enumeration": "model::OrgType"
+        }
+      ],
+      "includedMappings": [],
+      "name": "mapping",
+      "package": "model",
+      "tests": []
+    }
+  ]
+}

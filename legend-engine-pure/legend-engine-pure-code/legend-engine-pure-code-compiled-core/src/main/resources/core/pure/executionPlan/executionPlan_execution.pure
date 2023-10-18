@@ -16,6 +16,7 @@
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 
@@ -54,11 +55,11 @@ function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], 
 {
    if ($extensions.executionPlan_execution_buildVariableTemplateString->isEmpty(),
        | '',
-       | $runtime.connections->at(0)->match(
+       | $runtime.connectionStores.connection->at(0)->match(
              $extensions.executionPlan_execution_buildVariableTemplateString->map(e|$e->eval($name, $parameterVal, $type))->toOneMany()
          )
     )
-   
+
 }
 
 function meta::pure::executionPlan::buildVariableCollectionSizeString(name:String[1]): String[1]

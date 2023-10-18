@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.protocol.analytics.model;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+
 import java.util.List;
 
 public class MappingModelCoverageAnalysisResult
 {
     public List<MappedEntity> mappedEntities;
+    public PureModelContextData model;
 }

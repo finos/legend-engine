@@ -18,36 +18,70 @@ import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
 import meta::external::store::elasticsearch::executionTest::test::*;
 import meta::external::store::elasticsearch::executionTest::utils::*;
 
+// function 
+//   <<paramTest.Test>>
+//   {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
+// meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstant(config:TestConfig[1]):Boolean[1]
+// {
+//   $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | 'Hello World!', 'Bucket')]));
+// }
+
+// function 
+//   <<paramTest.Test>>
+//   {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
+// meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstantWithVariable(config:TestConfig[1]):Boolean[1]
+// {
+//   let val = 12345;
+//   $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $val, 'Bucket')]));
+// }
 
 function 
   <<paramTest.Test>>
-  {doc.doc = 'Test projection on Elasticsearch Keyword property mapping'} 
-meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectKeyword(config:TestConfig[1]):Boolean[1]
+  {doc.doc = 'Test projection on Elasticsearch with pure if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionIf(config:TestConfig[1]):Boolean[1]
 {
-  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getString('Title'), 'Hello')]));
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | if($x.getDate('ReleaseDate') >= %1990-01-01, |'90s and newer', |'Older than 90s'), 'Bucket')]));
 }
 
-
 function 
   <<paramTest.Test>>
-  {doc.doc = 'Test projection on Elasticsearch Integer property mapping'} 
-meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectInteger(config:TestConfig[1]):Boolean[1]
+  {doc.doc = 'Test projection on Elasticsearch with pure if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionIfWithVariables(config:TestConfig[1]):Boolean[1]
 {
-  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getInteger('Budget'), 'Hello')]));
+  let var = %1990-01-01;
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | if($x.getDate('ReleaseDate') >= $var, |'90s and newer', |'Older than 90s'), 'Bucket')]));
 }
 
 function 
   <<paramTest.Test>>
-  {doc.doc = 'Test projection on Elasticsearch Float property mapping'} 
-meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectFloat(config:TestConfig[1]):Boolean[1]
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionNestedIf(config:TestConfig[1]):Boolean[1]
 {
-  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getFloat('Revenue'), 'Hello')]));
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'Bucket')]));
 }
 
 function 
   <<paramTest.Test>>
-  {doc.doc = 'Test projection on Elasticsearch Date property mapping'} 
-meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectDate(config:TestConfig[1]):Boolean[1]
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionNestedIfWithVariables(config:TestConfig[1]):Boolean[1]
 {
-  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getDate('ReleaseDate'), 'Hello')]));
+  let var1 = %1990-01-01;
+  let var2 = %2000-01-01;
+  let var3 = %2010-01-01;
+  
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < $var1, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < $var2, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < $var3, 
+                |'Newer',
+                |'Newest'))), 'Bucket')]));
 }

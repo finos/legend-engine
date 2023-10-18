@@ -94,7 +94,7 @@ public abstract class LegendCompileTest
     public void testMapping()
     {
         test("let x =  meta::legend::compile('Class a::A{name:String[1];}\\n###Mapping\\nMapping a::M(a::A : Pure{~src a::A name : $src.name})')->filter(x | $x->instanceOf(meta::pure::mapping::Mapping))->cast(@meta::pure::mapping::Mapping);\n" +
-                  "assertEquals('name', $x.classMappings->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation).propertyMappings.property.name);");
+                  "assertEquals('name', $x.classMappings->cast(@meta::external::store::model::PureInstanceSetImplementation).propertyMappings.property.name);");
     }
 
     @Test

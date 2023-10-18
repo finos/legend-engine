@@ -15,6 +15,7 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
@@ -185,53 +186,53 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
 
 
 function <<test.ToFix>> meta::relational::tests::projection::qualifier::testFilterInQualifierAndMapping():Boolean[1]
-{  
+{
    let result = execute(|Product.all()->filter(p | $p.cusip == 'CUSIP1')
-                  ->project([p | $p.name, p | $p.cusip], ['name', 'cusip']), 
-               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+                  ->project([p | $p.name, p | $p.cusip], ['name', 'cusip']),
+               meta::relational::tests::projection::qualifier::productMappingWithFilter,
                testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 0);
-   
+
    assertEquals('select "root".NAME as "name", "synonymTable_d_1_d#5_d_m2".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymTable_d_1_d#5_d_m2" on ("synonymTable_d_1_d#5_d_m2".PRODID = "root".ID and "synonymTable_d_1_d#5_d_m2".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
-     
+
 }
 
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testFilterInQualifierWithFilterInMappingInAggGroupBy():Boolean[1]
-{  
+{
    let result = execute(|Product.all()->groupBy(
                            [p | $p.name]
-                           , 
-                           [agg(p | $p.cusip, y|$y->count())], 
-                           
+                           ,
+                           [agg(p | $p.cusip, y|$y->count())],
+
                            ['name', 'cusip']
-                           )->sort('name'), 
-               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+                           )->sort('name'),
+               meta::relational::tests::projection::qualifier::productMappingWithFilter,
                testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals(['Firm A', 1, 'Firm C', 1, 'Firm D', 0, 'Firm X', 0], $result.values.rows.values);
-   
+
    assertEquals('select "root".NAME as "name", count("synonymtable_0".NAME) as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "name" order by "name"', $result->sqlRemoveFormatting());
-     
+
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testFilterInQualifierWithFilterInMappingInProjectGroupBy():Boolean[1]
-{  
+{
    let result = execute(|Product.all()->groupBy(
                            [p | $p.cusip]
-                           , 
-                           [agg(p | $p.name, y|$y->count())], 
-                           
+                           ,
+                           [agg(p | $p.name, y|$y->count())],
+
                            ['cusip', 'count']
-                           )->sort('cusip'), 
-               meta::relational::tests::projection::qualifier::productMappingWithFilter, 
+                           )->sort('cusip'),
+               meta::relational::tests::projection::qualifier::productMappingWithFilter,
                testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
 
    assertEquals([^TDSNull(), 2, 'CUSIP2', 1, 'CUSIP3', 1], $result.values.rows.values);
-   
+
    assertEquals('select "synonymtable_0".NAME as "cusip", count("root".NAME) as "count" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "cusip" order by "cusip"', $result->sqlRemoveFormatting());
-     
+
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArg():Boolean[1]
@@ -247,7 +248,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
    let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeeByLastNameWhereVarIsFirstEqualArg($f.legalName).name],['firmId','employeeWithFirmLastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['Firm X~ ', 'Firm A~ ', 'Firm B~ ', 'Firm C~ '],$tds.rows->map(r|$r.values->makeString('~')));
-   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".LEGALNAME = "persontable_0".LASTNAME)', $result->sqlRemoveFormatting());   
+   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".LEGALNAME = "persontable_0".LASTNAME)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgWithComplexTypeProperty():Boolean[1]
@@ -271,7 +272,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
    let result = execute(|Trade.all()->filter(t|( ($t.tradeDateEvent().eventType->isNotEmpty() || $t.account.name == 'Account 1')
                                                    && $t.id == '1'))->project([col(t | $t.id, 'id'),
                                                                               col(t | $t.account.name,'acc')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertSize($result.values.rows, 1);
    assertEquals('select "root".ID as "id", "accounttable_0".name as "acc" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".trade_id = \'1\' and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where (("tradeeventtable_0".eventType is not null or "accounttable_0".name = \'Account 1\') and "root".ID = \'1\')', $result->sqlRemoveFormatting());
 }
@@ -279,6 +280,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 Mapping meta::relational::tests::projection::qualifier::productMappingWithFilter
 (
@@ -293,7 +295,7 @@ Mapping meta::relational::tests::projection::qualifier::productMappingWithFilter
    Synonym : Relational
              {
                 ~filter [db]ProductSynonymFilter
-                
+
                 scope([db]productSchema)
                 (
                     name : synonymTable.NAME
@@ -306,6 +308,7 @@ Mapping meta::relational::tests::projection::qualifier::productMappingWithFilter
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 Mapping meta::relational::tests::projection::qualifier::productSubMappingWithFilter
 (

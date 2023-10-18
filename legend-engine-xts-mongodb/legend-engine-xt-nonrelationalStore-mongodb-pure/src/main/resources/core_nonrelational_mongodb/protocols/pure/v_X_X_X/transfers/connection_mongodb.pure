@@ -20,7 +20,7 @@ import meta::external::store::mongodb::metamodel::pure::runtime::*;
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection(otherConnection: MongoDBConnection[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBConnection[1]
 {
    let _type = $otherConnection->class()->toString();
-   let element = $otherConnection.element->match([d:meta::pure::store::Store[1]|$d->elementToPath(),s:String[1]|$s]);
+   let element = '';
    let type = $otherConnection.type->toString();
    $otherConnection->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('mongoDB')->cast(@meta::protocols::pure::vX_X_X::extension::store::mongodb::MongoDBModuleSerializerExtension).transfers_connection_transformDatabaseConnection->map(f | $f->eval($_type, $element, $type))->concatenate([
 

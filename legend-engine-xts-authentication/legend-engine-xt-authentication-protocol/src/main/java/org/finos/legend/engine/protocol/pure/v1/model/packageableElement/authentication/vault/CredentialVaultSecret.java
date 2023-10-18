@@ -29,7 +29,13 @@ public abstract class CredentialVaultSecret extends PackageableElement
         // jackson
     }
 
-    public  <T> T accept(PackageableElementVisitor<T> visitor)
+    // TODO: @akphi - turn this into abstract, this default implementation is meant for backward compatibility
+    public String shortId()
+    {
+        return "CredentialVaultSecret";
+    }
+
+    public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);
     }

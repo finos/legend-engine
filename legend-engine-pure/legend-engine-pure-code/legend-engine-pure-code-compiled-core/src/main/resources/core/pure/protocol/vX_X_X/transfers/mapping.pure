@@ -18,6 +18,7 @@ import meta::flatten::metamodel::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelToModel::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::csv::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::*;
@@ -126,7 +127,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
               )
          )
    );
-   
+
    if($operation == meta::protocols::pure::vX_X_X::metamodel::mapping::MappingOperation.MERGE,
         |   ^meta::protocols::pure::vX_X_X::metamodel::mapping::MergeOperationClassMapping
                (

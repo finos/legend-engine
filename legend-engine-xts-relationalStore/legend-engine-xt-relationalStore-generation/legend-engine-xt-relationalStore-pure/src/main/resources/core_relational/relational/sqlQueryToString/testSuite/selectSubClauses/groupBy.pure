@@ -18,12 +18,16 @@ import meta::pure::test::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import  meta::relational::metamodel::relation::*;
 
 //Tests on groups
@@ -33,7 +37,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('cnt', x|$x, y| $y->count())),
                          simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-   
+
   runDataAssertion($result, $config,
   |let tds = $result.values->at(0);
    assertEquals([String, Integer], $result.values.columns.type);

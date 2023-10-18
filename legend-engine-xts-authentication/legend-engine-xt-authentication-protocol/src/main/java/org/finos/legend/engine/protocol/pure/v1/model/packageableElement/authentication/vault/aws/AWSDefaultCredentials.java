@@ -24,6 +24,12 @@ public class AWSDefaultCredentials extends AWSCredentials
     }
 
     @Override
+    public String shortId()
+    {
+        return "AWSDefaultCredentials";
+    }
+
+    @Override
     public <T> T accept(AWSCredentialsVisitor<T> visitor)
     {
         return visitor.visit(this);

@@ -310,6 +310,7 @@ Database meta::relational::tests::caseSensitiveTableNames
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 Mapping meta::relational::tests::caseSentitiveMapping
 (
    Firm: Relational
@@ -361,6 +362,7 @@ Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 Mapping meta::relational::tests::simpleRelationalMappingWithChainedUnions
 (
@@ -541,7 +543,7 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
       CITY:  1
     }
 
-    ValidPerson : Relational 
+    ValidPerson : Relational
     {
       scope([dbInc])
       (
@@ -549,7 +551,7 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
         age       : validPersonTable.AGE
       )
     }
-    
+
     Person : Relational
             {
                 //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
@@ -1036,6 +1038,7 @@ Mapping meta::relational::tests::TestViewWithDistinctAndJoins
 
 ###Mapping
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 
 Mapping meta::relational::tests::PersonOtherNamesMapping
@@ -1055,44 +1058,48 @@ import meta::relational::metamodel::*;
 import meta::json::*;
 import meta::json::tests::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 
-function meta::relational::tests::testRuntime():Runtime[1]
+function meta::external::store::relational::tests::testRuntime():Runtime[1]
 {
-   testRuntime(db);
+   meta::external::store::relational::tests::testRuntime(db);
 }
 
-function meta::relational::tests::testRuntimeForBQ():Runtime[1]
+function meta::external::store::relational::tests::testRuntimeForBQ():Runtime[1]
 {
-   testRuntime(dbForBQ);
+   meta::external::store::relational::tests::testRuntime(dbForBQ);
 }
 
-function meta::relational::tests::testRuntime(timeZone:String[1]):Runtime[1]
+function meta::external::store::relational::tests::testRuntime(timeZone:String[1]):Runtime[1]
 {
-   testRuntime(testDatabaseConnection(db, $timeZone))
+   meta::external::store::relational::tests::testRuntime(testDatabaseConnection(db, $timeZone))
 }
 
-function meta::relational::tests::testRuntime(db:Database[1]):Runtime[1]
+function meta::external::store::relational::tests::testRuntime(db:Database[1]):Runtime[1]
 {
-   testRuntime(testDatabaseConnection($db, []))
+   meta::external::store::relational::tests::testRuntime(testDatabaseConnection($db, []))
 }
 
-function <<access.private>> meta::relational::tests::testRuntime(testConnection:TestDatabaseConnection[1]):Runtime[1]
+function meta::external::store::relational::tests::testRuntime(testConnection:ConnectionStore[1]):Runtime[1]
 {
-   ^Runtime(connections = $testConnection)
+   ^Runtime(connectionStores= $testConnection)
 }
 
-function <<access.private>> meta::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):TestDatabaseConnection[1]
+function meta::external::store::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):ConnectionStore[1]
 {
-    ^TestDatabaseConnection(
-        element = $db,
+  ^ConnectionStore(
+    connection=^TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
-    );
+    ),
+    element = $db);
 }
 
 

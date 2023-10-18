@@ -20,7 +20,7 @@ Class meta::relational::tests::tds::tdsJoin::testJoinTDS_Person
    age: Integer[0..1];
    employerID: Integer[0..1];
    managerID: Integer[0..1];
-   
+
    fullName() {
       $this.firstName + ' ' + $this.lastName;
    }:String[1];
@@ -42,6 +42,7 @@ Class meta::relational::tests::tds::tdsJoin::testJoinTDS_Address
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::tds::tdsJoin::*;
 
 Mapping meta::relational::tests::tds::tdsJoin::testJoinTDSMapping
@@ -68,7 +69,7 @@ Mapping meta::relational::tests::tds::tdsJoin::testJoinTDSMapping
                    firmAddrID: firmTable.ADDRESSID
                 )
           }
-   
+
    testJoinTDS_Address : Relational
           {
                 scope([dbInc])
@@ -102,13 +103,13 @@ Mapping meta::relational::tests::tds::tdsJoin::testJoinTDSMappingWithFilter
                    legalName : firmTable.LEGALNAME,
                    firmID : firmTable.ID,
                    firmAddrID: firmTable.ADDRESSID
-                ) 
+                )
           }
 )
 
 Mapping meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase
 (
-  
+
    testJoinTDS_Person : Relational
             {
                 scope([dbInc])
@@ -215,8 +216,10 @@ Mapping meta::relational::tests::tds::tdsJoin::testJoinTDSMappingThreeDatabase
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::metamodel::tds::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;
@@ -919,7 +922,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testTableToTDSWith
                                  )};
 
    let mapping = meta::relational::tests::tds::tabletds::EmptyMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
    let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "FIRST NAME", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."FIRST NAME_2" as "FIRST NAME_2", "tablewithquotedcolumns_0"."LAST NAME_2" as "LAST NAME_2" from (select "tablewithquotedcolumns_1"."FIRST NAME" as "FIRST NAME", "tablewithquotedcolumns_1"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_3"."FIRST NAME_2" as "FIRST NAME_2", "tablewithquotedcolumns_3"."LAST NAME_2" as "LAST NAME_2" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_1" left outer join (select "root"."FIRST NAME" as "FIRST NAME_2", "root"."LAST NAME" as "LAST NAME_2" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_3" on ("tablewithquotedcolumns_1"."FIRST NAME" = "tablewithquotedcolumns_3"."FIRST NAME_2")) as "tablewithquotedcolumns_0"';
@@ -1003,17 +1006,17 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testJoinByColAfter
 }
 
 
-function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::pure::runtime::Runtime[1]
+function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::core::runtime::Runtime[1]
 {
-   ^meta::pure::runtime::Runtime
+   ^meta::core::runtime::Runtime
    (
-      connections = [^TestDatabaseConnection(
-                        element = dbInc,
+      connectionStores = [
+        ^meta::core::runtime::ConnectionStore(element=dbInc,connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    ),^TestDatabaseConnection(
-                        element = database2,
+                    )),
+                    ^meta::core::runtime::ConnectionStore(element=database2, connection=^TestDatabaseConnection(
                         type=DatabaseType.H2
-                    )]
+                    ))]
    );
 }
 
@@ -1093,7 +1096,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::al
                   ->join(testJoinTDS_Firm.all()->project([p|$p.legalName, p|$p.firmID], ['firmName','fID']), JoinType.RIGHT_OUTER, {a,b|$a.getInteger('eID')  == $b.getInteger('fID')})
                   ->restrict('personName'))
                   }, testJoinTDSMappingTwoDatabase, twoDBRunTime(), meta::relational::extension::relationalExtensions());
-    
+
   assertSize($result.values.rows, 14 );
   assertSameElements(['Smith','Johnson','Hill','Allen','Roberts','Hill','Harris','Peter','John','John','Anthony','Fabrice','Oliver','David'], $result.values.rows->map(r|$r.values->makeString(',')));
 }

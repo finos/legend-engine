@@ -14,6 +14,8 @@
 
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::functions::sqlstring::*;
@@ -129,7 +131,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testSortQuotesSqlServ
    assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
 }
 
-function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]      
+function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]
 {
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -148,6 +150,6 @@ function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithO
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
+
    assertPlanGenerationForOptionalParameter(DatabaseType.SqlServer, $expectedPlan);
 }

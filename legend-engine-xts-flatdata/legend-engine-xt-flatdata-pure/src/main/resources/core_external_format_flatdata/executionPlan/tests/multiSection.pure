@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::external::format::shared::functions::*;
@@ -138,7 +139,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                 }}#;
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/pricesWithFooter.csv')->toOne();
-  
+
   let query   = {data:Byte[*]|LoanPrice.all()->graphFetch($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
 
   let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
@@ -157,7 +158,7 @@ import meta::external::format::flatdata::executionPlan::test::multiSection::*;
 
 function meta::external::format::flatdata::executionPlan::test::multiSection::getWholeLoanPriceFileBinding():Binding[1]
 {
-  let schema = 
+  let schema =
     '###ExternalFormat\n' +
     'Binding meta::external::format::flatdata::executionPlan::test::multiSection::WholeLoanPriceFileBinding\n' +
     '{\n' +
@@ -182,13 +183,13 @@ function meta::external::format::flatdata::executionPlan::test::multiSection::ge
     '    }\n' +
     '  ];\n' +
     '}\n';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 
 function meta::external::format::flatdata::executionPlan::test::multiSection::getWholeLoanPriceFileWithFooterBinding():Binding[1]
 {
-  let schema = 
+  let schema =
     '###ExternalFormat\n' +
     'Binding meta::external::format::flatdata::executionPlan::test::multiSection::WholeLoanPriceFileBinding\n' +
     '{\n' +
@@ -213,7 +214,7 @@ function meta::external::format::flatdata::executionPlan::test::multiSection::ge
     '    }\n' +
     '  ];\n' +
     '}\n';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 

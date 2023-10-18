@@ -103,4 +103,31 @@ public class DataSpaceAnalytics
             }
         }
     }
+
+    @POST
+    @Path("coverage")
+    @ApiOperation(value = "Analyze the data space to get the model coverage")
+    @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response analyzeDataSpaceCoverage(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
+        Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + input.dataSpace + "'");
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = HelperDataSpaceBuilder.getDataSpace(input.dataSpace, null, pureModel.getContext());
+
+        try (Scope scope = GlobalTracer.get().buildSpan("Analytics: data space model coverage").startActive(true))
+        {
+            try
+            {
+                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions), objectMapper);
+            }
+            catch (Exception e)
+            {
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+            }
+        }
+    }
 }

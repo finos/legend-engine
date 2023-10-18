@@ -29,8 +29,10 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 // To be removed when external format is ready
@@ -49,21 +51,21 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let class       = $node.graphFetchTree.class;
    let simpleType  = ^SimpleJavaType(pureType = $class, javaType = $conventions->className($class));
    let returnType  = if($node.checked, | ^CheckedJavaType(checkedOf = $simpleType, source = $node.connection->sourceTypeFromConnection($conventions, $extensions)), | $simpleType);
-   
+
    let newTypeInfos = $context.typeInfos
       ->addForGraphFetchTree($node.graphFetchTree)
       ->map(ti| if($node.enableConstraints, |$ti->addConstraintsForGraphFetchTree($node.graphFetchTree), |$ti))
-      ->addForClassesWithAllProperties($node.connection->map({c | 
+      ->addForClassesWithAllProperties($node.connection->map({c |
          $c->match([
             json : JsonModelConnection[1] | JsonDataRecord,
             xml  : XmlModelConnection[1]  | XmlDataRecord,
             a    : Any[1]                 | JsonDataRecord
          ])
       })->removeDuplicates());
-   
+
    let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
    let connectionTree = $node.connection->match($streamReadingAdhocExtensions.dataRecordTreeFromConnectionExtractors->concatenate([a : Any[1] | []])->toOneMany());
-   
+
    let currentNodeInfo = ^NodeInfo(path = $path, returnType = $returnType, graphFetchTrees = [$node.graphFetchTree]->concatenate($connectionTree));
 
    ^$context(typeInfos = $newTypeInfos, nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo));
@@ -73,14 +75,14 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 {
    let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
    let dataRecordClass = $connection->match($streamReadingAdhocExtensions.dataRecordClassFromConnectionExtractors->concatenate([a : Any[1] | JsonDataRecord])->toOneMany());
-   
+
    ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
 }
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateStoreStreamReading\n', |''));
-   
+
    let conventions       = $context.conventions;
    let pureClass         = $node.graphFetchTree.class;
    let connection        = $node.connection;
@@ -92,9 +94,9 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                            ]);
    let readableClasses   = if($genReader, | $pureClass->concatenate($context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass, true)), | []);
    let readableEnums     = if($genReader, | $context.typeInfos->enumDependenciesViaProperties($pureClass), | []);
-   
+
    let constraintContext  = if($node.checked || $node.enableConstraints,
-                               |^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), 
+                               |^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false),
                                |[]);
    let dataClassesProject = $readableClasses->map(rc | $rc->createStreamReadingDataClass($path, $context, $constraintContext, $debug->indent()));
 
@@ -105,11 +107,11 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       other : Any[1]                 | []
    ]);
 
-   let storeStreamReadingContext = $conventions->iStoreStreamReadingExecutionNodeContextParam();   
+   let storeStreamReadingContext = $conventions->iStoreStreamReadingExecutionNodeContextParam();
 
    let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
    let streamReaderMethodCodes = $connection->match($streamReadingAdhocExtensions.streamReaderMethodCodeGenerators->map(f| $f->eval($conventions, $path, $pureClass, $storeStreamReadingContext))->toOneMany());
-   
+
    let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
       ->usingKnownPackages($conventions->knownPackages())
       ->imports($conventions->standardImports())
@@ -126,7 +128,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->concatenate($storeReaderProject)
       ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
       ->toOneMany();
-   
+
    $allProjects->mergeProjects()->generatedCode($executeClass);
 }
 
@@ -153,14 +155,14 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->imports(if($constraintContext->isNotEmpty(), | $conventions->constrainedImports(), | []))
       ->implements($conventions->className($class))
       ->addConstructor(javaConstructor([], [], ''))
-      ->map({dc | 
+      ->map({dc |
          $context.typeInfos->allProperties($class)->fold({p, c|
             let variable = $conventions->fieldName($p);
             let javaType = $conventions->pureTypeToJavaType($p);
 
             let withField = $c->addField(javaField([], $javaType, $variable));
             let field     = j_this($withField)->j_field($variable);
-         
+
             $withField->addMethod(
                javaMethod(
                   'public', $javaType, $conventions->getterName($p), [],

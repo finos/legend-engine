@@ -17,8 +17,10 @@ import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::json::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithMilestonedModelsWithAllVersions():Boolean[1]
 {
@@ -30,15 +32,16 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
 
   let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping;
-  let runtime = ^Runtime(connections = ^JsonModelConnection(
-                                        element=^ModelStore(), 
-                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner, 
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner,
                                         url='data:application/json,{"businessDate": "2020-10-15","name" : "Ram", "vehicleAllVersions": [{"name": "B", "businessDate" : "2020-10-15", "id" : "1"}]}'
-                                        )
+                                        ))
                         );
   let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
 
   let json = $result.values->toOne();
   let expected = '{"personName":"Ram","vehicleName":"B"}';
-  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON())); 
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }

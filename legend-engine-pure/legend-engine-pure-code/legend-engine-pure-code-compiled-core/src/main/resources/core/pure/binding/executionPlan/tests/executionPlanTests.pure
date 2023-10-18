@@ -25,7 +25,9 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::model::unit::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 
@@ -130,7 +132,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let binding    = testBinding();
   let planString = buildPlan({| Person->internalize($binding, 'FIRST_NAME,LAST_NAME\nFred,Bloggs')});
 
-  let expected = 
+  let expected =
         'ExternalFormat_Internalize\n' +
         '(\n' +
         '  type = Class[impls=]\n' +
@@ -449,7 +451,14 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
 {
   let binding    = testBinding();
   let tree       = #{TargetPerson{fullName}}#;
-  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
+  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes(
+    [
+      ^Runtime(
+        connectionStores = ^ConnectionStore(
+          element=^ModelStore(),
+          connection=^ModelChainConnection(mappings = M2MMapping1))
+      ),
+      getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
 
   let expected =
         'Sequence\n' +
@@ -552,7 +561,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::shared::exe
   let binding = testBinding();
   let tree    = #{TargetPerson{fullName}}#;
 
-  let query   = {data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);};
+  let query   = {data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^ModelChainConnection(mappings = M2MMapping1))), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);};
   assertEmpty($query->extractRuntimesFromFunctionDefinition(true));
 
   let query1 = {data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(_Person, $binding, $data))->externalize($binding, $tree);};

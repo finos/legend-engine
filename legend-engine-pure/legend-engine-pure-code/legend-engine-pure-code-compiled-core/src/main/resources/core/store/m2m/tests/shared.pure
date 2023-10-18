@@ -14,7 +14,9 @@
 
 import meta::pure::mapping::modelToModel::test::shared::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -247,7 +249,7 @@ Class meta::pure::mapping::modelToModel::test::shared::dest::TradeExtended exten
 
 Enum meta::pure::mapping::modelToModel::test::shared::dest::Side
 {
-   Buy, Sell   
+   Buy, Sell
 }
 
 Class meta::pure::mapping::modelToModel::test::shared::src::_FirmX

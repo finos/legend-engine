@@ -15,9 +15,11 @@
 import meta::relational::tests::mapping::filter::model::domain::*;
 import meta::relational::tests::mapping::filter::model::store::*;
 import meta::relational::tests::mapping::filter::model::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
@@ -112,13 +114,13 @@ Class meta::relational::tests::mapping::filter::model::domain::Org
     name : String[1];
     parent: Org[0..1];
     children: Org[*];
-    
+
     parentName: String[0..1];
 }
 
 function meta::relational::tests::mapping::filter::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 function meta::relational::tests::mapping::filter::model::store::createTablesAndFillDb():Boolean[1]
@@ -158,28 +160,28 @@ Database meta::relational::tests::mapping::filter::model::store::myDB
         parentId INT,
         name VARCHAR(200)
     )
-    
+
     Table otherTable
     (
        orgTableId INT PRIMARY KEY,
        filterVal INT
     )
-    
+
     Join OrgOrgParent
     (
        orgTable.parentId = {target}.id
     )
-    
+
     Join OrgParentOrg
     (
        orgTable.id = {target}.parentId
     )
-    
+
     Join OrgTableOtherTable
     (
        orgTable.id = otherTable.orgTableId
     )
-    
+
     Filter myFilter(orgTable.filterVal <= 4)
     Filter myFilter2(otherTable.filterVal <= 4)
 )
@@ -193,14 +195,14 @@ Mapping meta::relational::tests::mapping::filter::model::mapping::orgTestMapping
     Org: Relational
     {
        ~filter [myDB]myFilter
-       
+
        scope([myDB]orgTable)
        (
           name: [myDB]name,
           parent : @OrgOrgParent,
           children : @OrgParentOrg
        )
-       
+
     }
 )
 
@@ -221,9 +223,9 @@ Mapping meta::relational::tests::mapping::filter::model::mapping::orgTestMapping
     Org: Relational
     {
        ~filter [myDB]myFilter
-       
+
          name: [myDB]orgTable.name,
          parentName:  [myDB]@OrgOrgParent >  @OrgOrgParent | orgTable.name
-       
+
     }
 )

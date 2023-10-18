@@ -21,13 +21,15 @@ import io.dropwizard.setup.Environment;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.DefaultStoreInstanceProvider;
-import org.finos.legend.connection.LegendEnvironment;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.IdentityFactory;
+import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
 import org.finos.legend.connection.StoreInstanceProvider;
+import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 
 import java.util.List;
@@ -62,11 +64,10 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
                 .withVault(new SystemPropertiesCredentialVault())
                 .withVault(new EnvironmentCredentialVault())
                 .withVaults(this.credentialVaults)
-                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder()
+                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
                         .withIdentifier("Postgres")
-                        .withDatabase(DatabaseType.POSTGRES)
-                        .withAuthenticationMechanisms(
-                                AuthenticationMechanismType.USER_PASSWORD
+                        .withAuthenticationMechanismConfigurations(
+                                new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(UserPasswordAuthenticationConfiguration.class).build()
                         ).build())
                 .build();
 

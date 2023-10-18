@@ -31,4 +31,23 @@ public class SnowflakeConnectionSpecification extends ConnectionSpecification
     public String accountType;
 
     public String role;
+
+    @Override
+    public String shortId()
+    {
+        return "Snowflake" +
+                "--account=" + accountName +
+                "--region=" + region +
+                "--warehouse=" + warehouseName +
+                "--db=" + databaseName +
+                "--cloudType=" + cloudType +
+                "--proxyHost=" + proxyHost +
+                "--proxyPort=" + proxyPort +
+                "--nonProxyHosts=" + nonProxyHosts +
+                "--accountType=" + accountType +
+                "--organisation=" + organization +
+                "--quoteIdentifiers=" + quotedIdentifiersIgnoreCase +
+                "--role=" + role +
+                "--enableQueryTags=" + enableQueryTags;
+    }
 }

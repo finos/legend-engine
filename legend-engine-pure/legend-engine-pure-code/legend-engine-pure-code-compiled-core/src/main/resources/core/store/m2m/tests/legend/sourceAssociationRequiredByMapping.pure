@@ -17,16 +17,18 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::mapping::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a mapping that navigates an association on the source',
    doc.doc='When:  a mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the data is correctly transformed.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::canNavigateSourceAssociationToClassNotSeparatelyMapped() : Boolean[1]
 {
    let tree = #{NameList {names} }#;
@@ -34,12 +36,14 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canNavigateSourceAssocia
    let result = execute(
       |NameList.all()->graphFetch($tree)->serialize($tree),
       employeeNames,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=Firm, 
+      ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=Firm,
                                 url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
                              )
-      ),meta::pure::extension::defaultExtensions()
+      )),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"names":"Pierre,Dave"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -61,7 +65,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationR
 
 Association meta::pure::mapping::modelToModel::test::alloy::simple::sourceAssociationRequiredByMapping::model::FirmPerson
 {
-   firm      : Firm[1];        
+   firm      : Firm[1];
    employees : Person[*];
 }
 
