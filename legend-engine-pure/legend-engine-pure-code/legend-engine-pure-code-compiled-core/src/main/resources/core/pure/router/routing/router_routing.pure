@@ -132,11 +132,11 @@ function <<access.private>> meta::pure::router::routing::routeValueSpecification
                                                             |$state,
                                                             |let processedValues = processCollection($state, $i.values->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug);
                                                              let last            = $processedValues->last()->toOne();
-                                                             let shouldClean     = $processedValues.value->evaluateAndDeactivate()->forAll(p|$p->instanceOf(InstanceValue) && $p->cast(@InstanceValue).genericType.rawType != LambdaFunction);
-
+                                                             let shouldClean     = $processedValues->evaluateAndDeactivate().value->forAll(p|$p->instanceOf(InstanceValue) && $p->cast(@InstanceValue).genericType.rawType != LambdaFunction);
+                                                             
                                                              ^$last(value = if ($shouldClean,
-                                                                                | ^$i(values = $processedValues.value->evaluateAndDeactivate()->cast(@InstanceValue)->map(e|$e.values)),
-                                                                                | ^$i(values = $processedValues.value)));
+                                                                                | ^$i(values = $processedValues->evaluateAndDeactivate().value->cast(@InstanceValue)->map(e|$e.values)),
+                                                                                | ^$i(values = $processedValues->evaluateAndDeactivate().value)));
                                                         );
                                                    );,
          cs:ClassSetImplementationHolder[1]     | let param = $cs.value->cast(@InstanceValue).values->at(0)->cast(@Class<Any>);                                   // TODO: cleanup needed
