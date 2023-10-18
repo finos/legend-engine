@@ -38,8 +38,6 @@ public interface NontemporalDeltaAbstract extends IngestMode
 
     Auditing auditing();
 
-    Optional<String> dataSplitField();
-
     @Default
     default MergeStrategy mergeStrategy()
     {

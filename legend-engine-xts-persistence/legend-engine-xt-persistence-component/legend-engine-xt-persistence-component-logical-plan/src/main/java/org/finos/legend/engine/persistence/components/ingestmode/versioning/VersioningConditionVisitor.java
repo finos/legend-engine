@@ -43,14 +43,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     @Override
     public Condition visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
     {
-        if (invertComparison)
-        {
-            return LogicalPlanUtils.getDigestMatchCondition(mainDataset, stagingDataset, digestField);
-        }
-        else
-        {
-            return LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset, stagingDataset, digestField);
-        }
+        return getDigestBasedVersioningCondition();
     }
 
     @Override
@@ -58,8 +51,22 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     {
         FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
         FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
+        VersionResolver versionResolver = maxVersionStrategy.versionResolver();
+        return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
+    }
 
-        switch (maxVersionStrategy.versionResolver())
+    @Override
+    public Condition visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategy)
+    {
+        FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
+        FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
+        VersionResolver versionResolver = allVersionsStrategy.versionResolver();
+        return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
+    }
+
+    private Condition getVersioningCondition(FieldValue mainVersioningField, FieldValue stagingVersioningField, VersionResolver versionResolver)
+    {
+        switch (versionResolver)
         {
             case GREATER_THAN_ACTIVE_VERSION:
                 if (invertComparison)
@@ -79,14 +86,22 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
                 {
                     return GreaterThanEqualTo.of(stagingVersioningField, mainVersioningField);
                 }
+            case DIGEST_BASED:
+                return getDigestBasedVersioningCondition();
             default:
                 throw new IllegalStateException("Unsupported versioning comparator type");
         }
     }
 
-    @Override
-    public Condition visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+    private Condition getDigestBasedVersioningCondition()
     {
-        return null;
+        if (invertComparison)
+        {
+            return LogicalPlanUtils.getDigestMatchCondition(mainDataset, stagingDataset, digestField);
+        }
+        else
+        {
+            return LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset, stagingDataset, digestField);
+        }
     }
 }

@@ -60,7 +60,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+//                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -90,7 +90,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+//                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)

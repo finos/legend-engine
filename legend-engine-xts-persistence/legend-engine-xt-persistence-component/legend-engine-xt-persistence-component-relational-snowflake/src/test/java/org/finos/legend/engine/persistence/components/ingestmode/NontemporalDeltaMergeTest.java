@@ -35,7 +35,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -65,13 +65,13 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
-                "USING \"mydb\".\"staging\" as stage " +
+                "USING \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
                 "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
                 "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
                 "THEN UPDATE SET " +
@@ -95,7 +95,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
                 "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
@@ -143,7 +143,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingWithDeleteIndicatorNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();

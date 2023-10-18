@@ -34,7 +34,7 @@ public class NontemporalDeltaBasedDerivationTest
     @Test
     void testNontemporalDeltaNoAuditingNoDataSplit()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.NO_AUDTING__NO_DEDUP_NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField());
@@ -44,7 +44,7 @@ public class NontemporalDeltaBasedDerivationTest
     @Test
     void testNontemporalDeltaNoAuditingNoDataSplitWithDeleteInd()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT__WITH_DELETE_INDICATOR();
+        TestScenario scenario = scenarios.NO_AUDTING__WITH_DELETE_INDICATOR__NO_DEDUP_NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField());
@@ -57,7 +57,7 @@ public class NontemporalDeltaBasedDerivationTest
     @Test
     void testNontemporalDeltaNoAuditingWithDataSplit()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.NO_AUDTING__ALLOW_DUPS_ALL_VERSION();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
@@ -68,7 +68,7 @@ public class NontemporalDeltaBasedDerivationTest
     @Test
     void testNontemporalDeltaWithAuditingNoDataSplit()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FILTER_DUPLICATES_NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
@@ -80,7 +80,7 @@ public class NontemporalDeltaBasedDerivationTest
     @Test
     void testNontemporalSnapshotWithAuditingWithDataSplit()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FAIL_ON_DUPS_ALL_VERSION();
         assertDerivedMainDataset(scenario);
         NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);

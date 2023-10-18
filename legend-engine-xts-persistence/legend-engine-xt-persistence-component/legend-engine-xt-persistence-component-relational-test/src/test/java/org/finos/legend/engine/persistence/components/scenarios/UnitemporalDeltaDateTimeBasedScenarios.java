@@ -55,7 +55,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+//                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(TransactionDateTime.builder()
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
@@ -85,7 +85,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+//                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(TransactionDateTime.builder()
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)

@@ -58,6 +58,7 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
 import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler.COUNT;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS;
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -132,6 +133,8 @@ public abstract class Planner
         // Validation
         // 1. MaxVersion & AllVersion strategies must have primary keys
         ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
+        // 2. Validate if the versioningField is comparable if a versioningStrategy is present
+        validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
     }
 
     private Optional<Dataset> getTempStagingDataset()
@@ -475,6 +478,21 @@ public abstract class Planner
         nonPkDataFields.removeIf(field -> dedupField.isPresent() && field.equals(dedupField.get()));
         nonPkDataFields.removeIf(field -> versioningField.isPresent() && field.equals(versioningField.get()));
         return nonPkDataFields;
+    }
+
+    protected void validateVersioningField(VersioningStrategy versioningStrategy, Dataset dataset)
+    {
+        Optional<String> versioningField = versioningStrategy.accept(VersioningVisitors.EXTRACT_VERSIONING_FIELD);
+        if (versioningField.isPresent())
+        {
+            Field filterField = dataset.schema().fields().stream()
+                    .filter(field -> field.name().equals(versioningField.get()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Versioning field [%s] not found in Staging Schema", versioningField.get())));
+            if (!SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS.contains(filterField.type().dataType()))
+            {
+                throw new IllegalStateException(String.format("Versioning field's data type [%s] is not supported", filterField.type().dataType()));
+            }
+        }
     }
 
     // auditing visitor

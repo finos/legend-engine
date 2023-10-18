@@ -34,7 +34,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     protected String rowsDeleted = "SELECT 0 as `rowsDeleted`";
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -50,7 +50,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
-                "(SELECT * FROM `mydb`.`staging` as stage " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
@@ -66,13 +66,13 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
-                "INNER JOIN `mydb`.`staging` as stage " +
+                "INNER JOIN `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
                 "SET sink.`id` = stage.`id`," +
                 "sink.`name` = stage.`name`," +
@@ -84,7 +84,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000' " +
-                "FROM `mydb`.`staging` as stage " +
+                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
@@ -99,7 +99,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN " +
@@ -163,7 +163,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingWithDeleteIndicatorNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -184,8 +184,8 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
         String deleteSql = "DELETE FROM `mydb`.`main` as sink " +
-                "WHERE EXISTS (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` " +
-                "FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) " +
+                "WHERE EXISTS (" +
+                "SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) " +
                 "AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));

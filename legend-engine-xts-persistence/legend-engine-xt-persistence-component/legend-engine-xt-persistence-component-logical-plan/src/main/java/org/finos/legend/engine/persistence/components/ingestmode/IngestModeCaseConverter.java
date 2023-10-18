@@ -98,7 +98,6 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return NontemporalDelta
                 .builder()
                 .digestField(applyCase(nontemporalDelta.digestField()))
-                .dataSplitField(applyCase(nontemporalDelta.dataSplitField()))
                 .mergeStrategy(nontemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
                 .auditing(nontemporalDelta.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(nontemporalDelta.deduplicationStrategy())
@@ -127,7 +126,6 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return UnitemporalDelta
                 .builder()
                 .digestField(applyCase(unitemporalDelta.digestField()))
-                .dataSplitField(applyCase(unitemporalDelta.dataSplitField()))
                 .addAllOptimizationFilters(unitemporalDelta.optimizationFilters().stream().map(filter -> applyCase(filter)).collect(Collectors.toList()))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .mergeStrategy(unitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))

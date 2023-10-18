@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -30,7 +29,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
@@ -56,10 +54,8 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 {
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
-    private final Dataset enrichedStagingDataset;
     private final Condition versioningCondition;
     private final Condition inverseVersioningCondition;
-
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
     private final Optional<Condition> deleteIndicatorIsSetCondition;
     private final Optional<Condition> dataSplitInRangeCondition;
@@ -73,8 +69,6 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         {
             validateOptimizationFilters(ingestMode.optimizationFilters(), stagingDataset());
         }
-        // Validate if the versioningField is comparable if a versioningStrategy is present
-        validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
 
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
@@ -82,9 +76,6 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
-        // Perform Deduplication & Filtering of Staging Dataset
-        this.enrichedStagingDataset = ingestMode().versioningStrategy()
-            .accept(new DatasetDeduplicator(stagingDataset(), primaryKeys));
         this.versioningCondition = ingestMode().versioningStrategy()
             .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
         this.inverseVersioningCondition = ingestMode.versioningStrategy()
@@ -127,10 +118,10 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
      */
     private Insert getUpsertLogic()
     {
-        List<Value> columnsToInsert = new ArrayList<>();
-        List<Value> stagingColumns = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> dataFields = getDataFields();
+        List<Value> columnsToInsert = new ArrayList<>(dataFields);
+        List<Value> stagingColumns = new ArrayList<>(dataFields);
         List<FieldValue> milestoneColumns = transactionMilestoningFields();
-        columnsToInsert.addAll(stagingColumns);
         columnsToInsert.addAll(milestoneColumns);
 
         List<Value> columnsToSelect = new ArrayList<>(stagingColumns);
@@ -139,12 +130,6 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
             LogicalPlanUtils.removeField(columnsToSelect, deleteIndicatorField);
             LogicalPlanUtils.removeField(columnsToInsert, deleteIndicatorField);
         });
-
-        if (ingestMode().dataSplitField().isPresent())
-        {
-            LogicalPlanUtils.removeField(columnsToSelect, ingestMode().dataSplitField().get());
-            LogicalPlanUtils.removeField(columnsToInsert, ingestMode().dataSplitField().get());
-        }
 
         List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
         columnsToSelect.addAll(milestoneUpdateValues);
@@ -188,7 +173,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
             }
         }
 
-        Dataset selectStage = Selection.builder().source(enrichedStagingDataset).condition(selectCondition).addAllFields(columnsToSelect).build();
+        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(columnsToSelect).build();
         return Insert.of(mainDataset(), selectStage, columnsToInsert);
     }
 
@@ -223,7 +208,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 
         Condition existsCondition = Exists.of(
             Selection.builder()
-                .source(enrichedStagingDataset)
+                .source(stagingDataset())
                 .condition(selectCondition)
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build());

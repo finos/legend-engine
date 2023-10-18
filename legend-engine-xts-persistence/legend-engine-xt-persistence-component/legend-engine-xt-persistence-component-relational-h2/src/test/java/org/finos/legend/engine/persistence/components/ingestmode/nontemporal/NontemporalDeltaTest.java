@@ -296,7 +296,7 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestName)
-                .dataSplitField(dataSplitName)
+//                .dataSplitField(dataSplitName)
                 .auditing(NoAuditing.builder().build())
                 .build();
 

@@ -33,7 +33,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
     protected String rowsTerminated = "SELECT 0 as `rowsTerminated`";
     protected String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink WHERE EXISTS (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
+    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink WHERE EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
 
 
     @Override
@@ -43,7 +43,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -73,13 +73,13 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
-                "USING `mydb`.`staging` as stage " +
+                "USING `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
                 "WHEN MATCHED AND sink.`digest` <> stage.`digest` " +
                 "THEN UPDATE SET " +
@@ -103,7 +103,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
                 "USING (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
@@ -151,7 +151,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingWithDeleteIndicatorNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();

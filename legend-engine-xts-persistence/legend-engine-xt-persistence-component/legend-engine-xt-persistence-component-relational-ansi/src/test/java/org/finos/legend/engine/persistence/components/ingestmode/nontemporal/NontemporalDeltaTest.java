@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockAcquiredQuery;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.lockInitializedQuery;
@@ -32,19 +34,21 @@ import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.l
 public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 {
     protected String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
-    protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE " +
+    protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE " +
             "(stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
     protected String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
     protected String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
-    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as \"rowsDeleted\" FROM \"mydb\".\"main\" as sink WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\") AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
+    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as \"rowsDeleted\" FROM \"mydb\".\"main\" as sink WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\") AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> initializeLockSql = operations.initializeLockSql();
         List<String> acquireLockSql = operations.acquireLockSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
             "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
@@ -57,13 +61,16 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
-            "(SELECT * FROM \"mydb\".\"staging\" as stage " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
             "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedStagingTableWithDigestCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedLockInfoTableCreateQuery, preActionsSqlList.get(2));
+
+        Assertions.assertTrue(deduplicationAndVersioningSql.isEmpty());
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
 
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
@@ -78,24 +85,26 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink " +
-            "SET sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-            "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-            "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-            "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+            "SET sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+            "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+            "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+            "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
             "sink.\"batch_update_time\" = '2000-01-01 00:00:00.000000' " +
-            "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))";
+            "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))";
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00.000000' " +
-            "FROM \"mydb\".\"staging\" as stage " +
+            "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
             "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
@@ -103,6 +112,9 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
@@ -110,26 +122,29 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
-                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
-                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
-                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
-                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
-                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) " +
-                "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE " +
+                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
+                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
+                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
+                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
+                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) " +
+                "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE " +
                 "(((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) " +
                 "AND ((stage.\"data_split\" >= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))";
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
                 "WHERE ((stage.\"data_split\" >= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
@@ -172,7 +187,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingWithDeleteIndicatorNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -193,8 +208,8 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
-                "WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" " +
-                "FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
+                "WHERE EXISTS " +
+                "(SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
                 "AND (sink.\"digest\" = stage.\"digest\") AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));

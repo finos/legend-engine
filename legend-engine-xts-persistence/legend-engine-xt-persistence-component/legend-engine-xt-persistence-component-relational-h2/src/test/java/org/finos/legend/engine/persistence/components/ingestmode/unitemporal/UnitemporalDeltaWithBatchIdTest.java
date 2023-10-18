@@ -309,7 +309,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestName)
-                .dataSplitField(dataSplitName)
+//                .dataSplitField(dataSplitName)
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInName)
                         .batchIdOutName(batchIdOutName)

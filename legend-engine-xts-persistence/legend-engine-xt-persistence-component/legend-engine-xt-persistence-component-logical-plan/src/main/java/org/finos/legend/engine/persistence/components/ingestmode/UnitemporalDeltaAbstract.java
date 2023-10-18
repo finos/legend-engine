@@ -39,8 +39,6 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
 {
     String digestField();
 
-    Optional<String> dataSplitField();
-
     List<OptimizationFilter> optimizationFilters();
 
     @Override
