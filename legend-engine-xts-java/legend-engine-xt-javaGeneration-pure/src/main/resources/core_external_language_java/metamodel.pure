@@ -799,14 +799,14 @@ function meta::external::language::java::metamodel::javaKeywords(): String[*]
    ];
 }
 
-function meta::external::language::java::metamodel::pureKeywords(): String[*]
+function meta::external::language::java::metamodel::modelPropertyKeywords(): String[*]
 {
    ['com', 'org'];
 }
 
 function meta::external::language::java::metamodel::reservedKeywords(): String[*]
 {
-  javaKeywords()->concatenate(pureKeywords());
+  javaKeywords()->concatenate(modelPropertyKeywords());
 }
 
 function meta::external::language::java::metamodel::isJavaLang(pkg: meta::external::language::java::metamodel::Package[1]):Boolean[1]
