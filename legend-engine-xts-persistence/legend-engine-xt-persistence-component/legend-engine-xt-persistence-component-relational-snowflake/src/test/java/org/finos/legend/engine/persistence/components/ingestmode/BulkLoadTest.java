@@ -42,8 +42,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.*;
 
@@ -54,7 +52,6 @@ public class BulkLoadTest
     private static Field col1 = Field.builder()
             .name("col_int")
             .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-            .primaryKey(true)
             .build();
     private static Field col2 = Field.builder()
             .name("col_integer")
@@ -104,7 +101,8 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadBatchIdValue("batch123")
+                .bulkLoadTaskIdValue("task123")
+                .batchIdPattern("{NEXT_BATCH_ID}")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -114,16 +112,16 @@ public class BulkLoadTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER,\"batch_id\" VARCHAR,\"append_time\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER,\"col_integer\" INTEGER,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_int\", \"col_integer\", \"batch_id\", \"append_time\") " +
                 "FROM " +
-                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",'batch123','2000-01-01 00:00:00' " +
+                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",{NEXT_BATCH_ID},'2000-01-01 00:00:00' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage)" +
                 " on_error = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT 'batch123','my_name','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+                "(SELECT {NEXT_BATCH_ID},'my_name','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"task123\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -163,7 +161,7 @@ public class BulkLoadTest
                 .ingestMode(bulkLoad)
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
-                .bulkLoadBatchIdValue("batch123")
+                .bulkLoadTaskIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -172,11 +170,11 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"batch_id\" VARCHAR)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"batch_id\" INTEGER)";
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_bigint\", \"col_variant\", \"batch_id\") " +
                 "FROM " +
-                "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",'batch123' " +
+                "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME') " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as t) " +
                 "on_error = 'ABORT_STATEMENT'";
 
@@ -189,7 +187,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithUpperCaseConversionAndDefaultBatchId()
+    public void testBulkLoadWithUpperCaseConversionAndNoTaskId()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
                 .batchIdField("batch_id")
@@ -223,31 +221,28 @@ public class BulkLoadTest
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        // Extract the generated UUID
-        Pattern pattern = Pattern.compile("[a-f0-9]{8}(?:-[a-f0-9]{4}){4}[a-f0-9]{8}");
-        Matcher matcher = pattern.matcher(ingestSql.get(0));
-        String uuid = "";
-        if (matcher.find())
-        {
-            uuid = matcher.group();
-        }
-
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
-                "\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"BATCH_ID\" VARCHAR,\"APPEND_TIME\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME\"(\"COL_INT\" INTEGER," +
+                "\"COL_INTEGER\" INTEGER,\"DIGEST\" VARCHAR,\"BATCH_ID\" INTEGER,\"APPEND_TIME\" DATETIME)";
         String expectedIngestSql = "COPY INTO \"MY_DB\".\"MY_NAME\" " +
                 "(\"COL_INT\", \"COL_INTEGER\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "'%s','2000-01-01 00:00:00' " +
+                "(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', " +
                 "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
 
+        String expectedMetadataIngestSql = "INSERT INTO BULK_LOAD_BATCH_METADATA (\"BATCH_ID\", \"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
+            "(SELECT (SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
+            "'MY_NAME','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(String.format(expectedIngestSql, uuid), ingestSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
         Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
@@ -317,7 +312,7 @@ public class BulkLoadTest
                     .relationalSink(SnowflakeSink.get())
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
-                    .bulkLoadBatchIdValue("batch123")
+                    .bulkLoadTaskIdValue("batch123")
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
@@ -357,7 +352,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadBatchIdValue("batch123")
+                .bulkLoadTaskIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -366,14 +361,14 @@ public class BulkLoadTest
         List<String> ingestSql = operations.ingestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER,\"digest\" VARCHAR,\"batch_id\" VARCHAR,\"append_time\" DATETIME)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER,\"col_integer\" INTEGER,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
 
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_int\", \"col_integer\", \"digest\", \"batch_id\", \"append_time\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
                 "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-                "'batch123','2000-01-01 00:00:00' " +
+                "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', " +
                 "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";

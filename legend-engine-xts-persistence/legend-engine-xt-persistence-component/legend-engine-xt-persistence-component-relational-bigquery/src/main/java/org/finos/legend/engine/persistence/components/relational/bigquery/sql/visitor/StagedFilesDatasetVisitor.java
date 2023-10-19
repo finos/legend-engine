@@ -12,20 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
+package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-public class BulkLoadBatchIdValueVisitor implements LogicalPlanVisitor<BulkLoadBatchIdValue>
+public class StagedFilesDatasetVisitor implements LogicalPlanVisitor<StagedFilesDataset>
 {
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, BulkLoadBatchIdValue current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, StagedFilesDataset current, VisitorContext context)
     {
-        prev.push(new StringValue(context.bulkLoadBatchIdValue().orElseThrow(IllegalStateException::new), context.quoteIdentifier()));
-        return new VisitorResult();
+        return new StagedFilesDatasetReferenceVisitor().visit(prev, (StagedFilesDatasetReference) current.datasetReference(), context);
     }
 }

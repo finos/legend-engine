@@ -203,7 +203,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
         TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT();
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Resources resources = Resources.builder().externalDatasetImported(true).build();
-        Planner planner = Planners.get(testScenario.getDatasets(), testScenario.getIngestMode(), options);
+        Planner planner = Planners.get(testScenario.getDatasets(), testScenario.getIngestMode(), options, getRelationalSink().capabilities());
         RelationalTransformer transformer = new RelationalTransformer(getRelationalSink());
 
         // post actions

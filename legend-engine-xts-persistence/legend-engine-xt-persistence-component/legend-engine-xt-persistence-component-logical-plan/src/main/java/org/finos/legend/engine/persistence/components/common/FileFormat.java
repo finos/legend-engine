@@ -19,5 +19,5 @@ public enum FileFormat
     CSV,
     JSON,
     AVRO,
-    PARQUET
+    PARQUET;
 }

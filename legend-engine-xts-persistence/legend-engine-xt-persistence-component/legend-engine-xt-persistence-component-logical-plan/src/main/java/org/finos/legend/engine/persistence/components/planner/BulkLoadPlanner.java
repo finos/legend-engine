@@ -26,7 +26,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigest
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -38,12 +42,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataUtils;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -53,26 +55,53 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_DATASET_BASE_NAME;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
 
 class BulkLoadPlanner extends Planner
 {
 
+    private boolean transformWhileCopy;
+    private Dataset tempDataset;
     private StagedFilesDataset stagedFilesDataset;
-
     private BulkLoadMetadataDataset bulkLoadMetadataDataset;
+    private Optional<String> bulkLoadTaskIdValue;
 
-    BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions)
+    BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validation
+        validateNoPrimaryKeysInStageAndMain();
         if (!(datasets.stagingDataset() instanceof StagedFilesDataset))
         {
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
 
+        bulkLoadTaskIdValue = plannerOptions.bulkLoadTaskIdValue();
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
         bulkLoadMetadataDataset = bulkLoadMetadataDataset().orElseThrow(IllegalStateException::new);
+
+        transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
+        if (!transformWhileCopy)
+        {
+            tempDataset = DatasetDefinition.builder()
+                .schema(datasets.stagingDataset().schema())
+                .database(datasets.mainDataset().datasetReference().database())
+                .group(datasets.mainDataset().datasetReference().group())
+                .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
+                .alias(TEMP_DATASET_BASE_NAME)
+                .build();
+        }
+    }
+
+    private void validateNoPrimaryKeysInStageAndMain()
+    {
+        List<String> primaryKeysFromMain = mainDataset().schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toList());
+        validatePrimaryKeysIsEmpty(primaryKeysFromMain);
+
+        List<String> primaryKeysFromStage = stagingDataset().schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toList());
+        validatePrimaryKeysIsEmpty(primaryKeysFromStage);
     }
 
     @Override
@@ -82,28 +111,80 @@ class BulkLoadPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
+    {
+        if (transformWhileCopy)
+        {
+            return buildLogicalPlanForTransformWhileCopy(resources);
+        }
+        else
+        {
+            return buildLogicalPlanForCopyAndTransform(resources);
+        }
+    }
+
+    private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
     {
         List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
-        // Digest Generation
+        // Add digest
         ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
-        fieldsToSelect.add(BulkLoadBatchIdValue.INSTANCE);
+        fieldsToSelect.add(new BulkLoadMetadataUtils(bulkLoadMetadataDataset).getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
+        // Add auditing
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
-            BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
-            fieldsToSelect.add(batchStartTimestamp);
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+            addAuditing(fieldsToInsert, fieldsToSelect);
         }
 
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
         return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
+    }
+
+    private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+
+
+        // Operation 1: Copy into a temp table
+        List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
+        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
+        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage));
+
+
+        // Operation 2: Transfer from temp table into target table, adding extra columns at the same time
+        List<Value> fieldsToSelect = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+
+        // Add digest
+        ingestMode().digestGenStrategy().accept(new DigestGeneration(mainDataset(), tempDataset, fieldsToSelect, fieldsToInsertIntoMain));
+
+        // Add batch_id field
+        fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(new BulkLoadMetadataUtils(bulkLoadMetadataDataset).getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
+
+        // Add auditing
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            addAuditing(fieldsToInsertIntoMain, fieldsToSelect);
+        }
+
+        operations.add(Insert.of(mainDataset(), Selection.builder().source(tempDataset).addAllFields(fieldsToSelect).build(), fieldsToInsertIntoMain));
+
+
+        return LogicalPlan.of(operations);
+    }
+
+    private void addAuditing(List<Value> fieldsToInsert, List<Value> fieldsToSelect)
+    {
+        BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
+        String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+        fieldsToSelect.add(batchStartTimestamp);
     }
 
     @Override
@@ -112,13 +193,29 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         operations.add(Create.of(true, mainDataset()));
         operations.add(Create.of(true, bulkLoadMetadataDataset.get()));
+        if (!transformWhileCopy)
+        {
+            operations.add(Create.of(true, tempDataset));
+        }
         return LogicalPlan.of(operations);
     }
 
     @Override
     public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
     {
+        // there is no need to delete from the temp table for big query because we always use "overwrite" when loading
         List<Operation> operations = new ArrayList<>();
+        return LogicalPlan.of(operations);
+    }
+
+    @Override
+    public LogicalPlan buildLogicalPlanForPostCleanup(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (!transformWhileCopy)
+        {
+            operations.add(Drop.of(true, tempDataset, false));
+        }
         return LogicalPlan.of(operations);
     }
 
@@ -162,9 +259,10 @@ class BulkLoadPlanner extends Planner
 
     private String jsonifyBatchSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties)
     {
-        List<String> files = stagedFilesDatasetProperties.files();
         Map<String, Object> batchSourceMap = new HashMap();
+        List<String> files = stagedFilesDatasetProperties.files();
         batchSourceMap.put("files", files);
+        bulkLoadTaskIdValue.ifPresent(taskId -> batchSourceMap.put("task_id", taskId));
         ObjectMapper objectMapper = new ObjectMapper();
         try
         {
@@ -206,6 +304,7 @@ class BulkLoadPlanner extends Planner
                     .udfName(udfBasedDigestGenStrategy.digestUdfName())
                     .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
                     .addAllValues(fieldsToSelect)
+                    .dataset(stagingDataset)
                     .build();
             String digestField = udfBasedDigestGenStrategy.digestField();
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());

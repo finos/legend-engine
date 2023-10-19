@@ -68,9 +68,9 @@ class NontemporalDeltaPlanner extends Planner
 
     private final Optional<Condition> dataSplitInRangeCondition;
 
-    NontemporalDeltaPlanner(Datasets datasets, NontemporalDelta ingestMode, PlannerOptions plannerOptions)
+    NontemporalDeltaPlanner(Datasets datasets, NontemporalDelta ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
         validatePrimaryKeysNotEmpty(primaryKeys);
@@ -103,7 +103,7 @@ class NontemporalDeltaPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
         // Op1: Merge data from staging to main

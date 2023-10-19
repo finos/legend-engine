@@ -85,6 +85,7 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.ArrayList;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class SnowflakeSink extends AnsiSqlSink
@@ -109,6 +110,7 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -254,29 +256,32 @@ public class SnowflakeSink extends AnsiSqlSink
                 totalRowsWithError += (Long) row.get(ERRORS_SEEN);
             }
         }
+
+        Map<StatisticName, Object> stats = new HashMap<>();
+        stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
+        stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+
+        IngestorResult.Builder resultBuilder = IngestorResult.builder()
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
         IngestorResult result;
+
         if (dataFilePathsWithFailedBulkLoad.isEmpty())
         {
-            Map<StatisticName, Object> stats = new HashMap<>();
-            stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
-            stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
-            stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
-            result = IngestorResult.builder()
-                    .status(IngestStatus.SUCCEEDED)
-                    .updatedDatasets(datasets)
-                    .putAllStatisticByName(stats)
-                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-                    .build();
+            result = resultBuilder
+                .status(IngestStatus.SUCCEEDED)
+                .build();
         }
         else
         {
             String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
-            result = IngestorResult.builder()
-                    .status(IngestStatus.FAILED)
-                    .message(errorMessage)
-                    .updatedDatasets(datasets)
-                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-                    .build();
+            result = resultBuilder
+                .status(IngestStatus.FAILED)
+                .message(errorMessage)
+                .build();
         }
         return result;
     }

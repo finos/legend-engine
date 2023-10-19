@@ -25,17 +25,19 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 abstract class BitemporalPlanner extends UnitemporalPlanner
 {
-    BitemporalPlanner(Datasets datasets, BitemporalMilestoned bitemporalMilestoned, PlannerOptions plannerOptions)
+    BitemporalPlanner(Datasets datasets, BitemporalMilestoned bitemporalMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, bitemporalMilestoned, plannerOptions);
+        super(datasets, bitemporalMilestoned, plannerOptions, capabilities);
 
         // validate
         String targetValidDateTimeFrom = bitemporalMilestoned.validityMilestoning().accept(EXTRACT_TARGET_VALID_DATE_TIME_FROM);
