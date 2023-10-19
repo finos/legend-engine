@@ -24,10 +24,11 @@ import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentT
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
@@ -50,6 +51,8 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
     private PlanExecutor planExecutor;
     private ConnectionManagerSelector connectionManager;
+    private static final String deploymentSchema = "LEGEND_GOVERNANCE";
+    private static final  String deploymentTable = "BUSINESS_OBJECTS";
 
     public SnowflakeDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
@@ -59,7 +62,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     public SnowflakeDeploymentManager(PlanExecutor planExecutor)
     {
         this.planExecutor = planExecutor;
-        connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
+        connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
     }
 
     @Override
@@ -83,7 +86,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         {
             String appName = ((SnowflakeAppContent)artifact.content).applicationName;
             jdbcConnection.setAutoCommit(false);
-            this.deployImpl(jdbcConnection, appName);
+            this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
             result = new SnowflakeDeploymentResult(appName, true);
@@ -121,21 +124,21 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         return this.connectionManager.getDatabaseConnection(profiles, (DatabaseConnection) connection);
     }
 
-    public void deployImpl(Connection jdbcConnection, String context) throws Exception
+    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws Exception
     {
         Statement statement = jdbcConnection.createStatement();
         String deploymentTableName = this.getDeploymentTableName(jdbcConnection);
-        String createTableSQL = String.format("create table %s (id INTEGER, message VARCHAR(1000)) if not exists", deploymentTableName);
-        boolean createTableStatus = statement.execute(createTableSQL);
-        String insertSQL = String.format("insert into %s(id, message) values(%d, '%s')", deploymentTableName, System.currentTimeMillis(), context);
+
+        //String createTableSQL = String.format("create table %s (id INTEGER, message VARCHAR(1000)) if not exists", deploymentTableName);
+        //boolean createTableStatus = statement.execute(createTableSQL);
+        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER) values('%s', '%s', '%s', '%s', '%s')", deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","));
         boolean insertStatus = statement.execute(insertSQL);
     }
 
     public String getDeploymentTableName(Connection jdbcConnection) throws SQLException
     {
         String catalogName = jdbcConnection.getCatalog();
-        String schema = "NATIVE_APP";
-        return String.format("%s.%s.LEGEND_SNOWFLAKE_APP_DEPLOYMENT", catalogName, schema);
+        return String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
     }
 
     public java.sql.Connection getDeploymentConnection(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact)

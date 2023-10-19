@@ -20,4 +20,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 public class SnowflakeAppDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
     RelationalDatabaseConnection connection;
+
+    public SnowflakeAppDeploymentConfiguration(RelationalDatabaseConnection connection)
+    {
+        this.connection = connection;
+    }
 }

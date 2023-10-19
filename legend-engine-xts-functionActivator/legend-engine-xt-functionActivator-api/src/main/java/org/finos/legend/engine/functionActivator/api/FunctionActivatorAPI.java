@@ -65,6 +65,7 @@ public class FunctionActivatorAPI
     private final PureModel emptyModel;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
+    private MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>>  availableActivatorServices = Lists.mutable.empty();
 
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
@@ -73,10 +74,11 @@ public class FunctionActivatorAPI
         this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
     }
 
-    public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>> availableActivatorServices, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this(modelManager, routerExtensions);
         this.runtimeDeploymentConfig = activatorConfigurations;
+        this.availableActivatorServices = availableActivatorServices;
     }
 
     @GET
@@ -87,7 +89,7 @@ public class FunctionActivatorAPI
     public Response list(@ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        MutableList<FunctionActivatorInfo> values = FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X"));
+        MutableList<FunctionActivatorInfo> values = this.availableActivatorServices.isEmpty() ? FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X")) : availableActivatorServices.collect(c -> c.info(emptyModel,"vX_X_X"));
         return ManageConstantResult.manageResult(profiles, values, objectMapper);
     }
 
@@ -162,7 +164,11 @@ public class FunctionActivatorAPI
 
     public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
     {
-        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = (FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult>)this.availableActivatorServices.select(c -> c.supports(activator)).getFirst();
+        if (service == null)
+        {
+            service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        }
         if (service == null)
         {
             throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");

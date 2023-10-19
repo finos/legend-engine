@@ -21,24 +21,51 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionNode;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 
 public class SnowflakeAppGenerator
 {
 
-    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
-        return new SnowflakeAppArtifact(activator._applicationName(), Lists.mutable.withAll(sqlExpressions));
+
+        RelationalDatabaseConnection connection;
+        AlloySDLC sdlc = null;
+        if (((PureModelContextData)inputModel).getOrigin() != null)
+        {
+            SDLC sdlcInfo = ((PureModelContextData)inputModel).origin.sdlcInfo;
+            if (sdlcInfo instanceof AlloySDLC)
+            {
+                sdlc = (AlloySDLC) sdlcInfo;
+            }
+        }
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), Lists.mutable.with(activator._owner()), sdlc);
+        if (activator._activationConfiguration() != null)
+        {
+            //identify connection
+            SnowflakeApp protocolActivator = Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(SnowflakeApp.class))
+                    .select(c -> c.getPath().equals(platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
+                    .getFirst();
+            connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
+                    .select(c -> c.getPath().equals(((SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
+            return new SnowflakeAppArtifact(content, new org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration(connection));
+        }
+
+        return new SnowflakeAppArtifact(content);
     }
 
     private static RichIterable<String> extractSQLExpressions(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -70,6 +97,30 @@ public class SnowflakeAppGenerator
         Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy as = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) relCOnn._authenticationStrategy();
 
         return new Object[]{expressions, ds, as};
+    }
+
+    private RelationalDatabaseConnection adaptConnection(Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification datasourceSpecification, Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy)
+    {
+        RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
+
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
+        snowflakeDatasourceSpecification.accountName = datasourceSpecification._accountName();
+        snowflakeDatasourceSpecification.databaseName = datasourceSpecification._databaseName();
+        snowflakeDatasourceSpecification.role = datasourceSpecification._role();
+        snowflakeDatasourceSpecification.warehouseName = datasourceSpecification._warehouseName();
+        snowflakeDatasourceSpecification.region = datasourceSpecification._region();
+        snowflakeDatasourceSpecification.cloudType = datasourceSpecification._cloudType();
+
+        SnowflakePublicAuthenticationStrategy snowflakeAuthenticationStrategy = new SnowflakePublicAuthenticationStrategy();
+        snowflakeAuthenticationStrategy.privateKeyVaultReference = authenticationStrategy._privateKeyVaultReference();
+        snowflakeAuthenticationStrategy.passPhraseVaultReference = authenticationStrategy._passPhraseVaultReference();
+        snowflakeAuthenticationStrategy.publicUserName = authenticationStrategy._publicUserName();
+
+        connection.authenticationStrategy = snowflakeAuthenticationStrategy;
+        connection.datasourceSpecification = snowflakeDatasourceSpecification;
+        connection.type = DatabaseType.Snowflake;
+
+        return connection;
     }
 
     private static RichIterable<Root_meta_pure_executionPlan_ExecutionNode> collectAllNodes(Root_meta_pure_executionPlan_ExecutionNode node)

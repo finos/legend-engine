@@ -27,14 +27,15 @@ public class SnowflakeAppArtifact extends FunctionActivatorArtifact
         //empty artifact
     }
 
-    public SnowflakeAppArtifact(String name, MutableList<String> sqlExpressions)
+    public SnowflakeAppArtifact(SnowflakeAppContent content)
     {
-        this.content = new SnowflakeAppContent(name, sqlExpressions);
+        this.content = content;
     }
 
-    public SnowflakeAppArtifact(String name, MutableList<String> sqlExpressions, SnowflakeAppDeploymentConfiguration config)
+    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config)
     {
-        this.content = new SnowflakeAppContent(name, sqlExpressions);
+        this(content);
         this.deploymentConfiguration = config;
     }
+
 }
