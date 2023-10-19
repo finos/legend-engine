@@ -15,7 +15,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::s
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sparkSQL::createDbExtensionForSparkSQL():DbExtension[1]
 {
-   let reservedWords = sybaseReservedWords();
+   let reservedWords = sparkReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSparkSQL());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
@@ -304,7 +304,8 @@ function meta::relational::functions::sqlQueryToString::sparkSQL::loadValuesToDb
                               ,| $l->meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($dbConfig));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::sparkSQL::sybaseReservedWords():String[*]
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sparkSQL::sparkReservedWords():String[*]
 {
    //Based on
    // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1510/html/iqrefbb/Alhakeywords.htm
