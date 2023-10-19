@@ -36,8 +36,7 @@ import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.engine.datapush.DataPusher;
 import org.finos.legend.engine.datapush.DataPusherProvider;
-import org.finos.legend.engine.datapush.impl.S3DataStager;
-import org.finos.legend.engine.datapush.impl.SnowflakeJDBCDataPusher;
+import org.finos.legend.engine.datapush.impl.SnowflakeWithS3StageDataPusher;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
@@ -206,25 +205,15 @@ public class DataPushServer extends BaseDataPushServer
                 String storeSupport = connectionInstance.getStoreSupport().getIdentifier();
                 if (storeSupport.equals("Snowflake"))
                 {
-                    return this.buildDataPusherForSnowflake();
+                    String tableName = "DEMO_DB.SCHEMA1.TABLE1";
+                    String stageName = "DEMO_DB.SCHEMA1.STAGE1";
+                    return new SnowflakeWithS3StageDataPusher("legend-dpsh1", null, StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(
+                                    "xxxxx", // NOTE: secret - to be removed when committed
+                                    "xxxxx" // NOTE: secret - to be removed when committed
+                            )), tableName, stageName);
                 }
                 throw new UnsupportedOperationException("Unsupported store support: " + storeSupport);
-            }
-
-            private DataPusher buildDataPusherForSnowflake()
-            {
-                S3DataStager s3DataStager = new S3DataStager(
-                        "legend-dpsh1",
-                        "https://s3.us-east-1/",
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(
-                                        "xxxxx", // NOTE: secret - to be removed when committed
-                                        "xxxxx") // NOTE: secret - to be removed when committed
-                        )
-                );
-                String tableName = "DPSH_DB1.SCHEMA1.TABLE1";
-                String stageName = "DPSH_DB1.SCHEMA1.STAGE1";
-                return new SnowflakeJDBCDataPusher(s3DataStager, tableName, stageName);
             }
         };
     }
