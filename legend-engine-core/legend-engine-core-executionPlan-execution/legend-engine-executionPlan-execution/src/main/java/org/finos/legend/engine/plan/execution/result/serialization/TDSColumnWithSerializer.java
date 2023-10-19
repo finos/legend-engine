@@ -15,13 +15,12 @@
 package org.finos.legend.engine.plan.execution.result.serialization;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure2;
-import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Objects;
+import org.eclipse.collections.impl.block.procedure.checked.ThrowingProcedure2;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
 
 public class TDSColumnWithSerializer<T>
 {
@@ -51,9 +50,16 @@ public class TDSColumnWithSerializer<T>
                 return (ThrowingProcedure2<JsonGenerator, Boolean>) JsonGenerator::writeBoolean;
             case "Date":
             case "DateTime":
-                return (ThrowingProcedure2<JsonGenerator, PureDate>) (jg, d) -> jg.writeString(d.toInstant().toString());
             case "StrictDate":
-                return (ThrowingProcedure2<JsonGenerator, PureDate>) (jg, d) -> jg.writeString(d.toLocalDate().toString());
+                return (ThrowingProcedure2<JsonGenerator, PureDate>) (jg, d) ->
+                {
+                    String formatted = d.toString();
+                    if (d.hasMinute())
+                    {
+                        formatted += "Z";
+                    }
+                    jg.writeString(formatted);
+                };
             default:
                 throw new UnsupportedOperationException("TDS type not supported: " + type);
         }

@@ -13,9 +13,11 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 
@@ -71,6 +73,7 @@ function <<test.Test>> meta::relational::tests::mapping::association::embedded::
 import meta::relational::tests::mapping::embedded::model::store::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 
 Mapping meta::relational::tests::mapping::association::embedded::associationMapping
@@ -81,9 +84,9 @@ Mapping meta::relational::tests::mapping::association::embedded::associationMapp
     {
 
        name:[myDB]ORGANIZATIONS.NAME
-     
-    } 
-   
+
+    }
+
     FirmOrganizations: Relational
     {
       AssociationMapping
@@ -95,7 +98,7 @@ Mapping meta::relational::tests::mapping::association::embedded::associationMapp
 
 Mapping meta::relational::tests::mapping::association::embedded::associationMappingInlinedEmbedded
 (
-  
+
     GeographicEntityType: EnumerationMapping GE
     {
         CITY:  1,
@@ -115,9 +118,9 @@ Mapping meta::relational::tests::mapping::association::embedded::associationMapp
              type : EnumerationMapping GE : PERSON_ADDRESS_TYPE
           )
        )
-       
+
     }
-  
+
     Firm[f1]: Relational
     {
        scope([myDB]PERSON_FIRM_DENORM)
@@ -130,33 +133,33 @@ Mapping meta::relational::tests::mapping::association::embedded::associationMapp
           )
        ),
        employees: [myDB]@firmEmployees
-    } 
-   
+    }
+
     Organization[org1]: Relational
     {
 
        name:[myDB]ORGANIZATIONS.NAME
-     
-    } 
-   
+
+    }
+
     Location[loc]: Relational
     {
 
        place:[myDB]LOCATIONS.PLACE
-     
+
     }
-              
+
 
     FirmOrganizations: Relational
     {
       AssociationMapping
       (
          organizations[p_firm, org1] : [myDB]@Firm_Organizations,
-         
+
          organizations[f1, org1] : [myDB]@Firm_Organizations
       )
     }
-   
+
     AddressLocation : Relational
     {
       AssociationMapping
@@ -164,6 +167,6 @@ Mapping meta::relational::tests::mapping::association::embedded::associationMapp
          location[f1_address,loc]: [myDB]@Firm_Address_location > @Address_location
       )
     }
-   
+
 )
 

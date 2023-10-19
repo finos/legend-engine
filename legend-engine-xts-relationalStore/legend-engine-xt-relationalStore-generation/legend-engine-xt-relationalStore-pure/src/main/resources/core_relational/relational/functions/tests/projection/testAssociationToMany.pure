@@ -16,6 +16,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
 

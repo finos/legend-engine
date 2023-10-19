@@ -17,6 +17,7 @@ import meta::relational::functions::asserts::*;
 import meta::relational::tests::mapping::union::sqlQueryMerging::model::*;
 import meta::relational::tests::mapping::union::sqlQueryMerging::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForFilters():Boolean[1]
 {
@@ -24,7 +25,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
                                 ->filter(a|$a.b.c.pk == 111)
                                 ->project([a|$a.pk],
                                           ['a_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk" from (select "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) where "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionalias_2"."cTable1pk_cTable2pk" = 111', $result);
@@ -38,7 +39,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
                                 ->filter(a|$a.b.c.d.pk == 1111)
                                 ->project([a|$a.pk],
                                           ['a_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk" from (select "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1) where "unionalias_2"."cTable1pk_cTable2pk" = 111 and "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionalias_3"."dTable1pk_dTable2pk" = 1111', $result);
@@ -47,13 +48,13 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
 
 function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForProjections():Boolean[1]
 {
-   let result = execute(|A.all()->project([a|$a.pk, 
-                                           a|$a.b.pk, 
+   let result = execute(|A.all()->project([a|$a.pk,
+                                           a|$a.b.pk,
                                            a|$a.b.c.pk],
-                                          ['a_pk', 
-                                           'b_pk', 
+                                          ['a_pk',
+                                           'b_pk',
                                            'c_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1 from aTable1 as "root" UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1 from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1)', $result);
@@ -64,15 +65,15 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
 
 function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging::testSQLQueryMergingForProjectionsDeep():Boolean[1]
 {
-   let result = execute(|A.all()->project([a|$a.pk, 
-                                           a|$a.b.pk, 
-                                           a|$a.b.c.pk, 
+   let result = execute(|A.all()->project([a|$a.pk,
+                                           a|$a.b.pk,
+                                           a|$a.b.c.pk,
                                            a|$a.b.c.d.pk],
-                                          ['a_pk', 
-                                           'b_pk', 
-                                           'c_pk', 
+                                          ['a_pk',
+                                           'b_pk',
+                                           'c_pk',
                                            'd_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk", "unionalias_3"."dTable1pk_dTable2pk" as "d_pk" from (select "root".pk as "pk_0_0", null as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1 from aTable1 as "root" UNION ALL select null as "pk_0_0", "root".pk as "pk_0_1", "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1 from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1)', $result);
@@ -87,13 +88,13 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
    let result = execute(|A.all()->filter(a|$a.pk == 1)
                                 ->filter(a|$a.b.pk == 11)
                                 ->filter(a|$a.b.c.pk == 111)
-                                ->project([a|$a.pk, 
-                                           a|$a.b.pk, 
+                                ->project([a|$a.pk,
+                                           a|$a.b.pk,
                                            a|$a.b.c.pk],
-                                          ['a_pk', 
-                                           'b_pk', 
+                                          ['a_pk',
+                                           'b_pk',
                                            'c_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk" from (select "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1" from aTable1 as "root" UNION ALL select "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) where "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionBase"."aTable1pk_aTable2pk" = 1 and "unionalias_2"."cTable1pk_cTable2pk" = 111', $result);
@@ -108,15 +109,15 @@ function <<test.Test>> meta::relational::tests::mapping::union::sqlQueryMerging:
                                 ->filter(a|$a.b.pk == 11)
                                 ->filter(a|$a.b.c.pk == 111)
                                 ->filter(a|$a.b.c.d.pk == 1111)
-                                ->project([a|$a.pk, 
-                                           a|$a.b.pk, 
-                                           a|$a.b.c.pk, 
+                                ->project([a|$a.pk,
+                                           a|$a.b.pk,
+                                           a|$a.b.c.pk,
                                            a|$a.b.c.d.pk],
-                                          ['a_pk', 
-                                           'b_pk', 
-                                           'c_pk', 
+                                          ['a_pk',
+                                           'b_pk',
+                                           'c_pk',
                                            'd_pk']
-                                  ), 
+                                  ),
                         unionMapping, testRuntime()
    , meta::relational::extension::relationalExtensions());
    assertSameSQL('select "unionBase"."aTable1pk_aTable2pk" as "a_pk", "unionalias_1"."bTable1pk_bTable2pk" as "b_pk", "unionalias_2"."cTable1pk_cTable2pk" as "c_pk", "unionalias_3"."dTable1pk_dTable2pk" as "d_pk" from (select "root".pk as "aTable1pk_aTable2pk", "root".fk as fk_0, null as fk_1, "root".pk as "pk_0_0", null as "pk_0_1" from aTable1 as "root" UNION ALL select "root".pk as "aTable1pk_aTable2pk", null as fk_0, "root".fk as fk_1, null as "pk_0_0", "root".pk as "pk_0_1" from aTable2 as "root") as "unionBase" left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "bTable1pk_bTable2pk" from bTable2 as "root") as "unionalias_1" on ("unionBase".fk_0 = "unionalias_1".fk_0 or "unionBase".fk_1 = "unionalias_1".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "cTable1pk_cTable2pk" from cTable2 as "root") as "unionalias_2" on ("unionalias_1".fk_0 = "unionalias_2".fk_0 or "unionalias_1".fk_1 = "unionalias_2".fk_1) left outer join (select "root".fk as fk_0, null as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable1 as "root" UNION ALL select null as fk_0, "root".fk as fk_1, "root".pk as "dTable1pk_dTable2pk" from dTable2 as "root") as "unionalias_3" on ("unionalias_2".fk_0 = "unionalias_3".fk_0 or "unionalias_2".fk_1 = "unionalias_3".fk_1) where "unionalias_2"."cTable1pk_cTable2pk" = 111 and "unionalias_1"."bTable1pk_bTable2pk" = 11 and "unionBase"."aTable1pk_aTable2pk" = 1 and "unionalias_3"."dTable1pk_dTable2pk" = 1111', $result);
@@ -296,14 +297,16 @@ Mapping meta::relational::tests::mapping::union::sqlQueryMerging::mapping::union
 )
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::union::sqlQueryMerging::store::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::sqlQueryMerging::setup():Runtime[1]
 {
-   let connection = meta::relational::tests::testRuntime(database).connectionByElement(database)->cast(@DatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(database).connectionByElement(database)->cast(@DatabaseConnection);
 
    executeInDb('drop table if exists aTable1;', $connection);
    executeInDb('create table aTable1 (pk INTEGER, fk INTEGER)', $connection);
@@ -339,11 +342,11 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::union::sqlQuer
    executeInDb('create table cTable2 (pk INTEGER, c1 VARCHAR(10), c2 VARCHAR(10), fk INTEGER)', $connection);
    executeInDb('insert into cTable2 values(111, \'8\', \'8\', 8);', $connection);
    executeInDb('insert into cTable2 values(222, \'9\', \'9\', 9);', $connection);
-   
+
    executeInDb('drop table if exists dTable2;', $connection);
    executeInDb('create table dTable2 (pk INTEGER, fk INTEGER)', $connection);
    executeInDb('insert into dTable2 values(1111, 8);', $connection);
    executeInDb('insert into dTable2 values(2222, 9);', $connection);
-   
-   ^Runtime(connections = $connection);
+
+   ^Runtime(connectionStores=^ConnectionStore(connection=$connection, element=database));
 }

@@ -14,6 +14,7 @@
 
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::ExtendedRoutedValueSpecification extends RoutedValueSpecification
@@ -31,6 +32,7 @@ Class <<typemodifiers.abstract>> meta::pure::router::metamodel::ExtendedRoutedVa
 import meta::pure::extension::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
@@ -39,21 +41,21 @@ Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
    processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
    processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
    {
-     $this.processClass->eval($c, $i, $state, $executionContext, $debug)  
+     $this.processClass->eval($c, $i, $state, $executionContext, $debug)
    }: RoutingState[1];
 
    // Process Property
    processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
    processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1])
    {
-     $this.processProperty->evaluate([list($p), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);  
+     $this.processProperty->evaluate([list($p), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);
    }: RoutingState[1];
 
    // Wrap VS into ExtendedRoutedValueSpecification
    wrapValueSpec : Function<{ValueSpecification[1], RoutingStrategy[1], String[1], ExecutionContext[1], Extension[*], DebugContext[1] -> ExtendedRoutedValueSpecification[1]}>[1];
    wrapValueSpec(value:ValueSpecification[1], id:String[1], executionContext:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
    {
-     $this.wrapValueSpec->eval($value, $this, $id, $executionContext, $extensions, $debug);  
+     $this.wrapValueSpec->eval($value, $this, $id, $executionContext, $extensions, $debug);
    }:ExtendedRoutedValueSpecification[1];
 
    toString : Function<{RoutingStrategy[1]->String[1]}>[1];

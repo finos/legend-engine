@@ -25,7 +25,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Strings;
 import org.finos.legend.connection.CredentialBuilder;
-import org.finos.legend.connection.EnvironmentConfiguration;
+import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
@@ -42,10 +42,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 public class KeyPairCredentialBuilder extends CredentialBuilder<EncryptedPrivateKeyPairAuthenticationConfiguration, Credential, PrivateKeyCredential>
 {
     @Override
-    public PrivateKeyCredential makeCredential(Identity identity, EncryptedPrivateKeyPairAuthenticationConfiguration authenticationConfiguration, Credential credential, EnvironmentConfiguration environmentConfiguration) throws Exception
+    public PrivateKeyCredential makeCredential(Identity identity, EncryptedPrivateKeyPairAuthenticationConfiguration authenticationConfiguration, Credential credential, LegendEnvironment environment) throws Exception
     {
-        String encryptedPrivateKey = environmentConfiguration.lookupVaultSecret(authenticationConfiguration.privateKey, identity);
-        String passphrase = environmentConfiguration.lookupVaultSecret(authenticationConfiguration.passphrase, identity);
+        String encryptedPrivateKey = environment.lookupVaultSecret(authenticationConfiguration.privateKey, identity);
+        String passphrase = environment.lookupVaultSecret(authenticationConfiguration.passphrase, identity);
         PrivateKey privateKey = this.getDecryptedPrivateKey(encryptedPrivateKey, passphrase);
         return new PrivateKeyCredential(authenticationConfiguration.userName, privateKey);
     }

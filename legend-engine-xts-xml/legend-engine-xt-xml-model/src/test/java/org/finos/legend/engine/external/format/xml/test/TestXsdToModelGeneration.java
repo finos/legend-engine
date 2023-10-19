@@ -107,7 +107,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::LinkId\n" +
                 "Class {meta::pure::profiles::doc.doc = 'The data type used for link identifiers.'} test::gen::LinkId\n" +
                 "[\n" +
-                "  c1_length: $this.value->length() <= 255\n" +
+                "  c1_length_LinkId: $this.value->length() <= 255\n" +
                 "]\n" +
                 "{\n" +
                 "  id: String[0..1];\n" +
@@ -208,20 +208,20 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::ShowValidations\n" +
                 "Class test::gen::ShowValidations\n" +
                 "[\n" +
-                "  c1_length: $this.fixedLengthString->forAll(x: String[1]|$x->length() == 12),\n" +
-                "  c2_length: $this.minLengthString->length() >= 5,\n" +
-                "  c3_length: $this.maxLengthString->forAll(x: String[1]|$x->length() <= 20),\n" +
-                "  c4_length: $this.rangeLengthString->forAll(x: String[1]|$x->length() >= 5),\n" +
-                "  c5_length: $this.rangeLengthString->forAll(x: String[1]|$x->length() <= 20),\n" +
-                "  c6_range: $this.minValInteger >= 1,\n" +
-                "  c7_range: $this.minValFloat > 2.4,\n" +
-                "  c8_range: $this.maxValInteger <= 100,\n" +
-                "  c9_range: $this.maxValFloat < 10.12,\n" +
-                "  c10_range: $this.rangeValInteger > 10,\n" +
-                "  c11_range: $this.rangeValInteger <= 100,\n" +
-                "  c12_range: $this.rangeValFloat > 2.7,\n" +
-                "  c13_range: $this.rangeValFloat < 10.99,\n" +
-                "  c14_values: $this.fixedValuesString->in(['AUD', 'USD'])\n" +
+                "  c1_length_ShowValidations: $this.fixedLengthString->forAll(x: String[1]|$x->length() == 12),\n" +
+                "  c2_length_ShowValidations: $this.minLengthString->length() >= 5,\n" +
+                "  c3_length_ShowValidations: $this.maxLengthString->forAll(x: String[1]|$x->length() <= 20),\n" +
+                "  c4_length_ShowValidations: $this.rangeLengthString->forAll(x: String[1]|$x->length() >= 5),\n" +
+                "  c5_length_ShowValidations: $this.rangeLengthString->forAll(x: String[1]|$x->length() <= 20),\n" +
+                "  c6_range_ShowValidations: $this.minValInteger >= 1,\n" +
+                "  c7_range_ShowValidations: $this.minValFloat > 2.4,\n" +
+                "  c8_range_ShowValidations: $this.maxValInteger <= 100,\n" +
+                "  c9_range_ShowValidations: $this.maxValFloat < 10.12,\n" +
+                "  c10_range_ShowValidations: $this.rangeValInteger > 10,\n" +
+                "  c11_range_ShowValidations: $this.rangeValInteger <= 100,\n" +
+                "  c12_range_ShowValidations: $this.rangeValFloat > 2.7,\n" +
+                "  c13_range_ShowValidations: $this.rangeValFloat < 10.99,\n" +
+                "  c14_values_ShowValidations: $this.fixedValuesString->in(['AUD', 'USD'])\n" +
                 "]\n" +
                 "{\n" +
                 "  fixedLengthString: String[*];\n" +
@@ -260,7 +260,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::Choice\n" +
                 "Class test::gen::Choice\n" +
                 "[\n" +
-                "  c1_choice: ($this.optionOne->isNotEmpty() && $this.optionTwo->isEmpty()) || ($this.optionOne->isEmpty() && $this.optionTwo->isNotEmpty())\n" +
+                "  c1_choice_Choice: ($this.optionOne->isNotEmpty() && $this.optionTwo->isEmpty()) || ($this.optionOne->isEmpty() && $this.optionTwo->isNotEmpty())\n" +
                 "]\n" +
                 "{\n" +
                 "  optionOne: Integer[0..1];\n" +
@@ -298,7 +298,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::Account\n" +
                 "Class test::gen::Account\n" +
                 "[\n" +
-                "  c1_choice: $this.beneficiaryId->isNotEmpty() || ($this.beneficiaryId->isEmpty() && $this.servicerId->isNotEmpty())\n" +
+                "  c1_choice_Account: $this.beneficiaryId->isNotEmpty() || ($this.beneficiaryId->isEmpty() && $this.servicerId->isNotEmpty())\n" +
                 "]\n" +
                 "{\n" +
                 "  accountId: String[1];\n" +
@@ -454,8 +454,8 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::AttributeWithInlineType\n" +
                 "Class test::gen::AttributeWithInlineType\n" +
                 "[\n" +
-                "  c1_values: $this.fullOrDelta->forAll(x: String[1]|$x->in(['FULL', 'DELTA'])),\n" +
-                "  c2_length: $this.notTooLongString->forAll(x: String[1]|$x->length() <= 500)\n" +
+                "  c1_values_AttributeWithInlineType: $this.fullOrDelta->forAll(x: String[1]|$x->in(['FULL', 'DELTA'])),\n" +
+                "  c2_length_AttributeWithInlineType: $this.notTooLongString->forAll(x: String[1]|$x->length() <= 500)\n" +
                 "]\n" +
                 "{\n" +
                 "  fullOrDelta: String[0..1];\n" +
@@ -709,7 +709,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
                 ">>>test::gen::ExceptionType\n" +
                 "Class test::gen::ExceptionType\n" +
                 "[\n" +
-                "  c1_values: $this.type->in(['INFO', 'WARN', 'ERROR'])\n" +
+                "  c1_values_ExceptionType: $this.type->in(['INFO', 'WARN', 'ERROR'])\n" +
                 "]\n" +
                 "{\n" +
                 "  type: String[1];\n" +
@@ -847,8 +847,8 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::AccountId\n" +
                 "Class test::gen::AccountId\n" +
                 "[\n" +
-                "  c1_length: $this.value->length() >= 1,\n" +
-                "  c2_length: $this.value->length() <= 255\n" +
+                "  c1_length_AccountId: $this.value->length() >= 1,\n" +
+                "  c2_length_AccountId: $this.value->length() <= 255\n" +
                 "]\n" +
                 "{\n" +
                 "  value: String[1];\n" +
@@ -967,6 +967,71 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
 
         PureModelContextData exchModel = generateModel(schemaCode, config("test::ngm::v2_6::NGM", "exch", "test::gen", true, true));
         assertModelTexts(modelTextsFromResource("ngm-sample/exchangeGenResult.txt"), modelTextsFromContextData(exchModel));
+    }
+
+    @Test
+    public void testContraintName()
+    {
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::simpleWithConstraint", "XSD")
+                .withSchemaText(null, "simpleWithConstraint.xsd", "<?xml version='1.0'?>\n" +
+                        "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n" +
+                        "    <xsd:simpleType name=\"NonNegativeDecimal\">\n" +
+                        "        <xsd:annotation>\n" +
+                        "            <xsd:documentation xml:lang=\"en\">\n" +
+                        "                A type defining a number specified as non negative decimal greater than 0 inclusive.\n" +
+                        "            </xsd:documentation>\n" +
+                        "        </xsd:annotation>\n" +
+                        "        <xsd:restriction base=\"xsd:decimal\">\n" +
+                        "            <xsd:minInclusive value=\"0\" />\n" +
+                        "        </xsd:restriction>\n" +
+                        "    </xsd:simpleType>\n" +
+                        "    <xsd:complexType name=\"Shape\">\n" +
+                        "        <xsd:sequence>\n" +
+                        "            <xsd:element name=\"area\" type=\"NonNegativeDecimal\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n" +
+                        "        </xsd:sequence>\n" +
+                        "    </xsd:complexType>\n" +
+                        "    <xsd:complexType name=\"Rectangle\">\n" +
+                        "        <xsd:complexContent>\n" +
+                        "            <xsd:extension base=\"Shape\">\n" +
+                        "                <xsd:sequence>\n" +
+                        "                    <xsd:element name=\"height\" type=\"NonNegativeDecimal\" minOccurs=\"1\" maxOccurs=\"unbounded\">\n" +
+                        "                            <xsd:annotation>\n" +
+                        "                                <xsd:documentation xml:lang=\"en\">\n" +
+                        "                                    One of two dimensions of a rectangle\n" +
+                        "                                </xsd:documentation>\n" +
+                        "                            </xsd:annotation>\n" +
+                        "                    </xsd:element>\n" +
+                        "                    <xsd:element name=\"width\" type=\"NonNegativeDecimal\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n" +
+                        "                </xsd:sequence>\n" +
+                        "            </xsd:extension>\n" +
+                        "        </xsd:complexContent>\n" +
+                        "    </xsd:complexType>\n" +
+                        "</xsd:schema>\n")
+                .build();
+
+        PureModelContextData model = generateModel(schemaCode, config("test::simpleWithConstraint", "test::gen", true, true));
+
+        String expected = ">>>test::gen::Rectangle\n" +
+                "Class test::gen::Rectangle extends test::gen::Shape\n" +
+                "[\n" +
+                "  c1_range_Rectangle: $this.height->forAll(x: Decimal[1]|$x >= 0),\n" +
+                "  c2_range_Rectangle: $this.width->forAll(x: Decimal[1]|$x >= 0)\n" +
+                "]\n" +
+                "{\n" +
+                "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Decimal[1..*];\n" +
+                "  width: Decimal[*];\n" +
+                "}\n" +
+                "\n" +
+                ">>>test::gen::Shape\n" +
+                "Class test::gen::Shape\n" +
+                "[\n" +
+                "  c1_range_Shape: $this.area->forAll(x: Decimal[1]|$x >= 0)\n" +
+                "]\n" +
+                "{\n" +
+                "  area: Decimal[*];\n" +
+                "}";
+
+        Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
     }
 
     private XsdToModelConfiguration config(String sourceSchemaSet, String targetPackage)

@@ -24,6 +24,7 @@ import meta::pure::tds::schema::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::router::clustering::*;
@@ -51,7 +52,7 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
     ]
   );
 }
-  
+
 function meta::pure::extension::storeContractFromStore(extensions: Extension[*], s: Store[1]):StoreContract[1]
 {
   $extensions.availableStores
@@ -65,7 +66,7 @@ function <<access.private>> meta::pure::extension::unique(storeContracts:StoreCo
   let list = $storeContracts->removeDuplicates(x|$x.id,{a,b|$a==$b});
   assert($list->isNotEmpty(), |'The system can\'t find the appropriate StoreContract '+$message->eval());
   assert($list->size() == 1, |'The system found too many StoreContracts ['+$list.id->joinStrings(',')+'] '+$message->eval());
-  $list->toOne();  
+  $list->toOne();
 }
 // -------------------------------------------------------------------------- Store Extension
 
@@ -80,7 +81,7 @@ function meta::pure::extension::defaultExtensions():Extension[*]
 {
   ^Extension
   (
-    type = 'defaultExtensions',    
+    type = 'defaultExtensions',
     availableStores = [
                           meta::pure::mapping::modelToModel::contract::modelStoreContract(),
                           meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()

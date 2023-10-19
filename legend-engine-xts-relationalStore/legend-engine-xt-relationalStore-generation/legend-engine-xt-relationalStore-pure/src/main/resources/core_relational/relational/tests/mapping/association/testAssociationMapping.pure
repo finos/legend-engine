@@ -13,9 +13,11 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 
@@ -81,6 +83,7 @@ function <<test.Test>> meta::relational::tests::mapping::association::testPerson
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::association::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 
 Mapping meta::relational::tests::mapping::association::associationMappingWithIds
@@ -101,9 +104,9 @@ Mapping meta::relational::tests::mapping::association::associationMappingWithIds
 
    Firm[fir1] : Relational
           {
-             legalName : [dbInc]firmTable.LEGALNAME             
+             legalName : [dbInc]firmTable.LEGALNAME
           }
-              
+
    Employment : Relational
    {
       AssociationMapping
@@ -134,7 +137,7 @@ Mapping meta::relational::tests::mapping::association::associationMapping2
 (
       Firm[fir1] : Relational
           {
-             legalName : [dbInc]firmTable.LEGALNAME             
+             legalName : [dbInc]firmTable.LEGALNAME
           }
 )
 
@@ -142,7 +145,7 @@ Mapping meta::relational::tests::mapping::association::associationMapping3
 (
    include meta::relational::tests::mapping::association::associationMapping1
    include meta::relational::tests::mapping::association::associationMapping2
-   
+
 
    Employment : Relational
    {
@@ -179,9 +182,9 @@ Mapping meta::relational::tests::mapping::association::associationMappingWithDef
 
    Firm : Relational
           {
-             legalName : [dbInc]firmTable.LEGALNAME             
+             legalName : [dbInc]firmTable.LEGALNAME
           }
-              
+
    Employment : Relational
    {
       AssociationMapping
@@ -195,17 +198,17 @@ Mapping meta::relational::tests::mapping::association::associationMappingWithDef
 
 Mapping meta::relational::tests::mapping::association::associationMappingWithDifferentRoot
 (
-   
+
    *Person[rp] : Relational
    {
-      firstName : [dbInc]personTable.FIRSTNAME     
+      firstName : [dbInc]personTable.FIRSTNAME
    }
-   
+
    Firm[rf] : Relational
    {
       legalName : [dbInc]firmTable.LEGALNAME
    }
-              
+
    Employment : Relational
    {
       AssociationMapping
@@ -214,7 +217,7 @@ Mapping meta::relational::tests::mapping::association::associationMappingWithDif
          firm[rp, rf] : [dbInc]@Firm_Person
       )
    }
-   
+
    FirmCEO : Relational
    {
       AssociationMapping
@@ -222,7 +225,7 @@ Mapping meta::relational::tests::mapping::association::associationMappingWithDif
          ceo[rf, o] : [dbInc]@Firm_Ceo
       )
    }
-   
+
    Person[o] : Relational
    {
       firstName : [dbInc]personTable.FIRSTNAME

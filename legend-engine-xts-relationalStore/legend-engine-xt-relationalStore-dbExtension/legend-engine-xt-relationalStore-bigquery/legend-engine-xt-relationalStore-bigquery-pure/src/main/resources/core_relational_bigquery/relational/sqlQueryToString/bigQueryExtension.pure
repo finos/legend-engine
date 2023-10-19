@@ -4,6 +4,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -77,7 +78,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='CURRENT_DATE()')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)'))
   ];

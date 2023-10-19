@@ -309,10 +309,17 @@ function meta::relational::transform::autogen::buildPureModelFromClassesAssociat
 
 function meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(database:Database[1], targetPackage:String[1]):String[1]
 {
-   meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase($database, $targetPackage, $targetPackage, $targetPackage);
+  let allDatabases = meta::relational::transform::autogen::getAllDatabases($database, []);
+  let elements = $allDatabases->map(db | meta::relational::transform::autogen::generateModelsFromDatabase($db, $targetPackage, $targetPackage, $targetPackage));
+  meta::relational::transform::autogen::buildPMCD($elements);
 }
 
-function meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):String[1]
+function meta::relational::transform::autogen::getAllDatabases(database : Database[1], visited: Database[*]): Database[*]
+{
+   if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::relational::transform::autogen::getAllDatabases($visited->concatenate($database)))));
+}
+
+function meta::relational::transform::autogen::generateModelsFromDatabase(database:Database[1], classesPackage:String[1], associationsPackage:String[1], mappingPackage:String[1]):meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]
 {
    let allClasses = $database.schemas->map(schema | $schema->meta::relational::transform::autogen::schemaToModel($classesPackage));
    let allAssociationJoinPairs = meta::relational::transform::autogen::databaseToAssociationJoinPair($database, $associationsPackage);
@@ -320,6 +327,16 @@ function meta::relational::transform::autogen::classesAssociationsAndMappingFrom
    let mappingWithClassMappings = meta::relational::transform::autogen::databaseToMappingWithClassMappings($database, $mappingPackage, $classesPackage);
    let associationMappings = meta::relational::transform::autogen::associationsAndJoinsToAssociationMappings($database, $mappingWithClassMappings, $allAssociationJoinPairs);
    let mapping = ^$mappingWithClassMappings(associationMappings = $associationMappings);
-   let pmcd = meta::relational::transform::autogen::buildPureModelFromClassesAssociationsAndMapping($mapping, $allClasses, $allAssociations);
+   $mapping->concatenate($allClasses)->concatenate($allAssociations);
+}
+
+function meta::relational::transform::autogen::buildPMCD(elements: meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]):String[1]
+{
+   let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData
+   (
+     _type = 'data',
+     serializer = ^meta::protocols::Protocol(name='pure', version='vX_X_X'),
+     elements = $elements
+   );
    $pmcd->meta::alloy::metadataServer::alloyToJSON();
 }

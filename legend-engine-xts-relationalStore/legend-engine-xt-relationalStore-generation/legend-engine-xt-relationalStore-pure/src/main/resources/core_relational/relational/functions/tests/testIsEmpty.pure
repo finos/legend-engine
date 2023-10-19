@@ -26,8 +26,8 @@ Class meta::relational::tests::query::function::isempty::TestClass
 
 function <<test.BeforePackage>> meta::relational::tests::query::function::isempty::setUp():Boolean[1]
 {
-   let rt = meta::relational::tests::testRuntime();
-   let connection = $rt.connections->at(0)->cast(@meta::relational::runtime::DatabaseConnection);
+   let rt = meta::external::store::relational::tests::testRuntime();
+   let connection = $rt.connectionStores->at(0).connection->cast(@meta::external::store::relational::runtime::DatabaseConnection);
    dropAndCreateTableInDb(TestDB, 'testTable', $connection);
    executeInDb('insert into testTable (id, value) values (1, \'Bla\');', $connection);
    executeInDb('insert into testTable (id, value) values (2, null);', $connection);
@@ -36,7 +36,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::function::isempt
 
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedWithIsEmpty():Boolean[1]
 {
-   let result = execute(|TestClass.all()->filter(t|$t.isValued()), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|TestClass.all()->filter(t|$t.isValued()), TestMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(1, $result.values->size());
    assertEquals('select "root".id as "pk_0", "root".value as "myValue" from testTable as "root" where "root".value is null', $result->sqlRemoveFormatting());
@@ -49,7 +49,7 @@ Database meta::relational::tests::query::function::isempty::TestDB
 )
 
 ###Mapping
-import meta::relational::tests::query::function::isempty::*; 
+import meta::relational::tests::query::function::isempty::*;
 Mapping meta::relational::tests::query::function::isempty::TestMapping
 (
    TestClass : Relational

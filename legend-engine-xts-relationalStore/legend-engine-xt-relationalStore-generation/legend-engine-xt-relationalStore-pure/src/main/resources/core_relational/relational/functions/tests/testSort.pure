@@ -15,6 +15,7 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Boolean[1]

@@ -289,8 +289,19 @@ public class Milestoning
                 ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
                 ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
 
+        SimpleFunctionExpression finalExpression = filterExpression;
+        if (originalProperty._multiplicity() == context.pureModel.getMultiplicity("one"))
+        {
+            finalExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
+                    ._func(context.pureModel.getFunction("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true))
+                    ._functionName("toOne")
+                    ._genericType(qualifiedProperty._genericType())
+                    ._multiplicity(context.pureModel.getMultiplicity("one"))
+                    ._parametersValues(Lists.fixedSize.of(filterExpression));
+        }
+
         qualifiedProperty._classifierGenericType(classifierGenericType);
-        qualifiedProperty._expressionSequence(Lists.fixedSize.of(filterExpression));
+        qualifiedProperty._expressionSequence(Lists.fixedSize.of(finalExpression));
 
         return qualifiedProperty;
     }
@@ -357,12 +368,23 @@ public class Milestoning
                 ._multiplicity(context.pureModel.getMultiplicity("zeromany"))
                 ._parametersValues(Lists.fixedSize.of(filterLhs, filterInstanceValue));
 
+        SimpleFunctionExpression finalExpression = filterExpression;
+        if (originalProperty._multiplicity() == context.pureModel.getMultiplicity("one"))
+        {
+            finalExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
+                    ._func(context.pureModel.getFunction("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true))
+                    ._functionName("toOne")
+                    ._genericType(qualifiedProperty._genericType())
+                    ._multiplicity(context.pureModel.getMultiplicity("one"))
+                    ._parametersValues(Lists.fixedSize.of(filterExpression));
+        }
+
         GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
                 ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar).withAll(datesToCompare.collect(Functions.firstOfPair())), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
 
         qualifiedProperty._classifierGenericType(classifierGenericType);
-        qualifiedProperty._expressionSequence(Lists.fixedSize.of(filterExpression));
+        qualifiedProperty._expressionSequence(Lists.fixedSize.of(finalExpression));
 
         return Lists.mutable.of(qualifiedProperty);
     }

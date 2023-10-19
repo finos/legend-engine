@@ -288,6 +288,12 @@ public class TestSQLRoundTrip
         check("SELECT percentile_cont(0.1) WITHIN GROUP (ORDER BY a ASC) FROM myTable");
     }
 
+    @Test
+    public void testNested()
+    {
+        check("SELECT * from (select col from myTable)");
+    }
+
     private void fail(String sql, int start, int end, String message)
     {
         try

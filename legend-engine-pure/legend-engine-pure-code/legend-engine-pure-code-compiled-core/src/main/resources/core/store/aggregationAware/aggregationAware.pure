@@ -18,6 +18,7 @@ import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::mapping::aggregationAware::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::router::metamodel::*;

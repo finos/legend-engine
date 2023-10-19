@@ -26,6 +26,8 @@ import java.util.List;
 
 public class RelationalResultToPureTDSSerializer extends RelationalResultToPureFormatSerializer
 {
+    private final ValueTransformer valueTransformer = new ValueTransformer();
+
     public RelationalResultToPureTDSSerializer(RelationalResult relationalResult)
     {
         super(relationalResult, object_start, object_end);
@@ -85,11 +87,11 @@ public class RelationalResultToPureTDSSerializer extends RelationalResultToPureF
 
         for (int i = 1; i <= relationalResult.columnCount - 1; i++)
         {
-            objectMapper.writeValue(outputStream, transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
+            objectMapper.writeValue(outputStream, valueTransformer.transformRelationalValue(relationalResult.getValue(i), transformers.get(i - 1)));
             outputStream.write(b_comma);
         }
 
-        objectMapper.writeValue(outputStream, transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount)));
+        objectMapper.writeValue(outputStream, valueTransformer.transformRelationalValue(relationalResult.getValue(relationalResult.columnCount), transformers.get(relationalResult.columnCount - 1)));
 
         outputStream.write(b_array_close);
         outputStream.write(object_end);

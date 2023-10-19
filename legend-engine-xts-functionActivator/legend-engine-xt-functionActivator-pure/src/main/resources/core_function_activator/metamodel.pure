@@ -9,7 +9,6 @@ Class meta::external::function::activator::FunctionActivator extends Packageable
 
 Class meta::external::function::activator::DeploymentConfiguration extends PackageableElement
 {
-  stage: DeploymentStage[1];
 }
 
 Class meta::external::function::activator::DeploymentResult

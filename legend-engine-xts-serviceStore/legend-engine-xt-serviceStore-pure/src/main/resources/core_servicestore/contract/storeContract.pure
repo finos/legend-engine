@@ -20,6 +20,7 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::external::store::service::functions::pureToServiceStoreQuery::*;
 import meta::external::store::service::metamodel::mapping::*;

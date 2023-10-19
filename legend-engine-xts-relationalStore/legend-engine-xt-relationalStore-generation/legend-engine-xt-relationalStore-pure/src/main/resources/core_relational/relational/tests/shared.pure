@@ -13,23 +13,26 @@
 // limitations under the License.
 
 import meta::relational::transform::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::pure::mapping::modelToModel::test::shared::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
-function meta::pure::mapping::modelToModel::test::shared::getConnection():Connection[1]
+function meta::pure::mapping::modelToModel::test::shared::getConnection():ConnectionStore[1]
 {
-   ^TestDatabaseConnection(
-      element = relationalDB,
+  ^ConnectionStore(
+    element = relationalDB,
+    connection=^TestDatabaseConnection(
       type=DatabaseType.H2
-   )
+   ));
 }
 
 function meta::pure::mapping::modelToModel::test::shared::initData():Boolean[1]
 {
-   let connection = getConnection()->cast(@DatabaseConnection);
+   let connection = getConnection().connection->cast(@DatabaseConnection);
    dropAndCreateTableInDb(relationalDB, 'default', 'SPerson', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Person', $connection);
    dropAndCreateTableInDb(relationalDB, 'default', 'Firm', $connection);
@@ -124,7 +127,7 @@ Mapping meta::pure::mapping::modelToModel::test::shared::relationalMapping
    Address : Relational
            {
               street : [relationalDB]Address.street
-           }   
+           }
 )
 
 
@@ -152,17 +155,17 @@ Database meta::relational::transform::toPure::tests::SimpleDb1
        firstName VARCHAR(200),
        last_name VARCHAR(200),
        a VARCHAR(2),
-       B VARCHAR(2), 
-       is_valid BIT, 
+       B VARCHAR(2),
+       is_valid BIT,
        is_valid_not_nullable BIT NOT NULL
        )
-   
+
     Table FirmTable(
-       ID INT PRIMARY KEY, 
+       ID INT PRIMARY KEY,
        LEGALNAME VARCHAR(200) NOT NULL,
        ALTERNATIVE_NAME VARCHAR(200)
        )
-   
+
     Table Others(
        ID INT PRIMARY KEY,
        NAME VARCHAR(200) NOT NULL

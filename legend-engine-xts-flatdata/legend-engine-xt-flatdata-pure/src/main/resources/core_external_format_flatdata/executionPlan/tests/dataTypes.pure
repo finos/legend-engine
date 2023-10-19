@@ -14,6 +14,7 @@
 
 import meta::pure::dataQuality::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::external::format::shared::functions::*;
@@ -208,7 +209,7 @@ import meta::external::format::flatdata::executionPlan::test::types::*;
 
 function meta::external::format::flatdata::executionPlan::test::types::getAllTypesBinding():Binding[1]
 {
-  let schema = 
+  let schema =
       '###ExternalFormat\n' +
       'Binding meta::external::format::flatdata::executionPlan::test::types::AllTypesBinding\n' +
       '{\n' +
@@ -228,13 +229,13 @@ function meta::external::format::flatdata::executionPlan::test::types::getAllTyp
       '    }\n' +
       '  ];\n' +
       '}';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 
 function meta::external::format::flatdata::executionPlan::test::types::getEnumClassBinding():Binding[1]
 {
-  let schema = 
+  let schema =
       '###ExternalFormat\n' +
       'Binding meta::external::format::flatdata::executionPlan::test::types::EnumClassBinding\n' +
       '{\n' +
@@ -254,7 +255,7 @@ function meta::external::format::flatdata::executionPlan::test::types::getEnumCl
       '    }\n' +
       '  ];\n' +
       '}';
-  
+
   compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 }
 

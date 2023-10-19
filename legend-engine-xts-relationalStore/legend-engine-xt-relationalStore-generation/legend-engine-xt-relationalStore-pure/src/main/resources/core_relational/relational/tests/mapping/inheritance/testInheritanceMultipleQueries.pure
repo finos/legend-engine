@@ -17,9 +17,11 @@ import meta::relational::tests::mapping::inheritance::cross::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::tests::model::inheritance::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::cross::testAssociation():Boolean[1]
@@ -88,7 +90,7 @@ import meta::relational::tests::model::inheritance::*;
 Mapping meta::relational::tests::mapping::inheritance::cross::inheritanceMappingCross
 (
    include meta::relational::tests::mapping::inheritance::inheritanceMain
-           
+
    RoadVehicle : Operation
                  {
                     	meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(map1, map2)

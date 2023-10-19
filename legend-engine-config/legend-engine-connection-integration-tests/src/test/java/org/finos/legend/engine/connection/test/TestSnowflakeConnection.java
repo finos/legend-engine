@@ -16,6 +16,7 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.StoreInstance;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
@@ -29,14 +30,14 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestSnowflakeConnection
 {
     public static class WithKeyPair extends AbstractConnectionFactoryTest<Connection>
     {
-        private static final String TEST_SNOWFLAKE_PK = "TEST_SNOWFLAKE_PK";
-        private static final String TEST_SNOWFLAKE_PK_PASSPHRASE = "TEST_SNOWFLAKE_PK_PASSPHRASE";
+        private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK";
+        private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE";
         private String snowflakePrivateKey;
         private String snowflakePassPhrase;
 
@@ -45,12 +46,12 @@ public class TestSnowflakeConnection
         {
             try
             {
-                this.snowflakePrivateKey = this.environmentConfiguration.lookupVaultSecret(new EnvironmentCredentialVaultSecret(TEST_SNOWFLAKE_PK), null);
-                this.snowflakePassPhrase = this.environmentConfiguration.lookupVaultSecret(new EnvironmentCredentialVaultSecret(TEST_SNOWFLAKE_PK_PASSPHRASE), null);
+                this.snowflakePrivateKey = this.environment.lookupVaultSecret(new EnvironmentCredentialVaultSecret(CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK), null);
+                this.snowflakePassPhrase = this.environment.lookupVaultSecret(new EnvironmentCredentialVaultSecret(CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE), null);
             }
             catch (Exception e)
             {
-                assumeTrue("Can't retrieve Snowflake test instance key-pair info (TEST_SNOWFLAKE_PK, TEST_SNOWFLAKE_PK_PASSPHRASE)", false);
+                assumeTrue(false, String.format("Can't retrieve Snowflake connection key-pair info (%s, %s environment variables are expected)", CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK, CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE));
             }
         }
 
@@ -79,11 +80,11 @@ public class TestSnowflakeConnection
             connectionSpecification.region = "us-east-2";
             connectionSpecification.cloudType = "aws";
             connectionSpecification.role = "SUMMIT_DEV";
-            return new StoreInstance.Builder(this.environmentConfiguration)
+            return new StoreInstance.Builder(this.environment)
                     .withIdentifier(TEST_STORE_INSTANCE_NAME)
                     .withStoreSupportIdentifier("Snowflake")
-                    .withAuthenticationMechanisms(
-                            AuthenticationMechanismType.KEY_PAIR
+                    .withAuthenticationMechanismConfigurations(
+                            new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).build()
                     )
                     .withConnectionSpecification(connectionSpecification)
                     .build();

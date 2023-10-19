@@ -16,6 +16,7 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForRoot():Boolean[1]
 {
@@ -24,7 +25,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
    let data = $result.values.rows;
    assertSameElements([1, 2, 2, 3], $data.getInteger('id'));
    assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
-   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru'));
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForEmbedded():Boolean[1]
@@ -34,7 +35,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
    let data = $result.values.rows;
    assertSameElements(['OPTION', 'STOCK', 'STOCK', 'STOCK'], $data.getString('type'));
    assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
-   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru'));
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionForInlineEmbedded():Boolean[1]
@@ -44,7 +45,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
    let data = $result.values.rows;
    assertSameElements(['ISE', 'ISE', 'LNSE', 'LNSE'], $data.getString('name'));
    assertSameElements([%2015-08-15T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000], $data.getDate('from'));
-   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru')); 
+   assertSameElements([%2015-08-26T00:00:00.000000000+0000, %2015-10-16T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000, %9999-12-31T00:00:00.000000000+0000], $data.getDate('thru'));
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::projection::testMilestoningColumnProjectionWithNonMilestonedTable():Boolean[1]
@@ -54,7 +55,7 @@ function <<test.Test>> meta::relational::tests::milestoning::projection::testMil
    let data = $result.values.rows;
    assertSameElements([1, 2], $data.getInteger('id'));
    assertSameElements([^TDSNull(), ^TDSNull()], $data.get('from'));
-   assertSameElements([^TDSNull(), ^TDSNull()], $data.get('thru')); 
+   assertSameElements([^TDSNull(), ^TDSNull()], $data.get('thru'));
 }
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::projection::setUp():Any[0..1]

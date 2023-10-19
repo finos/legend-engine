@@ -21,11 +21,29 @@ public class PostgresTestContainerWrapper
 {
     private static final String IMAGE = "postgres";
     private static final String TAG = "9.6.12";
-    private final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse(IMAGE).withTag(TAG));
+    private final PostgreSQLContainer postgreSQLContainer;
+
+    private PostgresTestContainerWrapper()
+    {
+        this.postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse(IMAGE).withTag(TAG));
+    }
+
+    private PostgresTestContainerWrapper(String databaseName, String username, String password)
+    {
+        this.postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse(IMAGE).withTag(TAG))
+                .withDatabaseName(databaseName)
+                .withUsername(username)
+                .withPassword(password);
+    }
 
     public static PostgresTestContainerWrapper build()
     {
         return new PostgresTestContainerWrapper();
+    }
+
+    public static PostgresTestContainerWrapper build(String databaseName, String username, String password)
+    {
+        return new PostgresTestContainerWrapper(databaseName, username, password);
     }
 
     public void start()

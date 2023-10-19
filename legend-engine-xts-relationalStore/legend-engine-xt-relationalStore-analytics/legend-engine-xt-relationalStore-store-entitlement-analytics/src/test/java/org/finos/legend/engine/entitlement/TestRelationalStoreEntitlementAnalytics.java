@@ -26,7 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.generated.core_relational_store_entitlement_utility_relationalTableAnalyzer;
@@ -67,12 +67,12 @@ public class TestRelationalStoreEntitlementAnalytics
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
         PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
         Mapping mapping = pureModel.getMapping(mappingPath);
-        Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
+        Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
         List<DatasetSpecification> datasets = extension.generateDatasetSpecifications(null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel);
-        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(datasets), expectedDatasetResult);
+        Assert.assertEquals(expectedDatasetResult, entitlementObjectMapper.writeValueAsString(datasets));
         List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel, null);
-        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(reports), expectedReportResult);
+        Assert.assertEquals(expectedReportResult, entitlementObjectMapper.writeValueAsString(reports));
     }
 
     @Test
@@ -111,8 +111,8 @@ public class TestRelationalStoreEntitlementAnalytics
         testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure",
                 "runtime::CompoundRuntime",
                 "mapping::CovidDataMapping",
-                "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"},{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]",
-        "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}}]");
+                "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]",
+        "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}}]");
     }
 
     @Test

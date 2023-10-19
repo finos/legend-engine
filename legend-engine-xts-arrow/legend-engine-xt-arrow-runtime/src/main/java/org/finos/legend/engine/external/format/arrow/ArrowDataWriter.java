@@ -14,13 +14,16 @@
 
 package org.finos.legend.engine.external.format.arrow;
 
+import java.nio.charset.Charset;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.apache.arrow.adapter.jdbc.ArrowVectorIterator;
-import org.apache.arrow.adapter.jdbc.JdbcToArrow;
+
+import org.apache.arrow.adapter.jdbc.JdbcFieldInfo;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfig;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfigBuilder;
+import org.apache.arrow.adapter.jdbc.LegendArrowVectorIterator;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -34,22 +37,23 @@ import java.sql.SQLException;
 
 public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseable
 {
-    private final ArrowVectorIterator iterator;
+    private final LegendArrowVectorIterator iterator;
     private final BufferAllocator allocator;
 
-    public ArrowDataWriter(ResultSet resultSet) throws SQLException, IOException
+    public ArrowDataWriter(ResultSet resultSet) throws SQLException
     {
+
+        HashMap<Integer, JdbcFieldInfo> map = new HashMap<Integer, JdbcFieldInfo>();
+
         this.allocator = new RootAllocator();
         JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, Calendar.getInstance(TimeZone.getDefault(), Locale.ROOT)).build();
-        this.iterator = JdbcToArrow.sqlToArrowVectorIterator(resultSet, config);
+        this.iterator = LegendArrowVectorIterator.create(resultSet, config);
 
     }
-
 
     @Override
     public void writeData(OutputStream outputStream) throws IOException
     {
-
         try
         {
             while (this.iterator.hasNext())
@@ -69,6 +73,28 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
             throw e;
         }
 
+    }
+
+    @Override
+    public void writeDataAsString(OutputStream outputStream) throws IOException
+    {
+        try
+        {
+            while (this.iterator.hasNext())
+            {
+                try (VectorSchemaRoot vector = iterator.next())
+                {
+                    outputStream.write(vector.contentToTSVString().getBytes(Charset.forName("UTF-8")));
+                }
+
+            }
+            this.close();
+        }
+        catch (Exception e)
+        {
+            this.close();
+            throw e;
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::metamodel::constraint::*;
 
@@ -85,9 +86,9 @@ Class meta::pure::executionPlan::platformBinding::legendJava::GeneratedNode
 
 
 function meta::pure::executionPlan::platformBinding::legendJava::projectToImplementation(project:Project[1]):JavaPlatformImplementation[1]
-{   
+{
    let sfer = newStringifier($project);
-   
+
    ^JavaPlatformImplementation
     (
        classes = $project->allClasses()->map({cl |
@@ -104,7 +105,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::projectToImplem
 function meta::pure::executionPlan::platformBinding::legendJava::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
 {
    let cls = $context.typeInfos.typeInfos->filter(t|$t->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->filter(c| !$c.isNewInstanceAllowed); //TODO: remove the not in the last filter
-   let oldConventions = $context.conventions; 
+   let oldConventions = $context.conventions;
    ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = $cls->map(c|$c.class())));
 }
 
@@ -123,7 +124,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::generatedCode(p
 
 function meta::pure::executionPlan::platformBinding::legendJava::addNodeInfo(context:GenerationContext[1], nodeInfo:NodeInfo[1]): GenerationContext[1]
 {
-   ^$context(nodeInfos=$context.nodeInfos->concatenate($nodeInfo));   
+   ^$context(nodeInfos=$context.nodeInfos->concatenate($nodeInfo));
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::nodeInfosForPath(context:GenerationContext[1], path:String[1]): NodeInfo[*]
@@ -138,10 +139,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::childNodeInfosF
 
 function meta::pure::executionPlan::platformBinding::legendJava::setTypeInfos(context:GenerationContext[1], typeInfos:TypeInfoSet[1]): GenerationContext[1]
 {
-   ^$context(typeInfos=$typeInfos);   
+   ^$context(typeInfos=$typeInfos);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::setConventions(context:GenerationContext[1], conventions:Conventions[1]): GenerationContext[1]
 {
-   ^$context(conventions=$conventions);   
+   ^$context(conventions=$conventions);
 }

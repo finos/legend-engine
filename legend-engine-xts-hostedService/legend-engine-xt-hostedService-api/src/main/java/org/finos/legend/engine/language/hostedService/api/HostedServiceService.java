@@ -19,7 +19,9 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.language.hostedService.deployment.HostedServiceArtifact;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfoData;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
@@ -27,8 +29,8 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorServic
 import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentResult;
+//import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
@@ -95,9 +97,9 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
-    public List<HostedServiceDeploymentConfiguration> selectConfig(List<DeploymentConfiguration> configurations, DeploymentStage stage)
+    public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration && e.stage.equals(stage)).collect(e -> (HostedServiceDeploymentConfiguration)e);
+        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);
     }
 
 
@@ -106,7 +108,7 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     {
         GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
         HostedServiceArtifact artifact = new HostedServiceArtifact(generation, fetchHostedService(activator, (PureModelContextData)inputModel, pureModel));
-        return this.hostedServiceDeploymentManager.deploy(profiles, artifact, activator, runtimeConfigs);
+        return this.hostedServiceDeploymentManager.deploy(profiles, artifact, runtimeConfigs);
 //        return new HostedServiceDeploymentResult();
     }
 

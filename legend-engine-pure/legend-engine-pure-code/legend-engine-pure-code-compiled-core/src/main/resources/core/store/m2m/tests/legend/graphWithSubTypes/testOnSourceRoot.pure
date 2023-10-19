@@ -13,30 +13,35 @@
 // limitations under the License.
 
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
-import  meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_29_0'} meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::rootLevel::sourceRoot::testSingleSubType():Boolean[1]
 {
   let tree = #{
     Target{
-      targetZipCode, 
+      targetZipCode,
       targetAddress
     }
   }#;
 
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType;
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+            class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+            url = 'data:application/json,\n'+
+                    '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                    '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
+          )
+      )]);
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -50,22 +55,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -80,21 +88,24 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
       }
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "20000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "20000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -109,22 +120,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match_functionCall;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+            class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+            url = 'data:application/json,\n'+
+                    '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                    '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                    '{ "zipCode": "20000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+          )
+        )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -139,59 +153,62 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
     Target{
-      targetZipCode, 
+      targetZipCode,
       targetAddress
     }
   }#;
 
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType;
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                  '{ "zipCode": "20000000", "coordinates": "111.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'
+        )
+      )]);
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
-  let expected=    '[\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 1,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "10000000"\n' + 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "unknown",\n' + 
-                    '            "targetZipCode": "10000000"\n' + 
-                    '        }\n' + 
-                    '    },\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 2,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"111.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "20000000"\n' + 
-                    '                "street": "myStreet"\n' +                  // fix to add this filed 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "myStreet",\n' + 
-                    '            "targetZipCode": "20000000"\n' + 
-                    '        }\n' + 
-                    '    }\n' + 
+  let expected=    '[\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 1,\n' +
+                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "10000000"\n' +
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "unknown",\n' +
+                    '            "targetZipCode": "10000000"\n' +
+                    '        }\n' +
+                    '    },\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 2,\n' +
+                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"111.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "20000000"\n' +
+                    '                "street": "myStreet"\n' +                  // fix to add this filed
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "myStreet",\n' +
+                    '            "targetZipCode": "20000000"\n' +
+                    '        }\n' +
+                    '    }\n' +
                     ']\n';
   assertJsonStringsEqual($expected , $result);
 }
@@ -200,81 +217,84 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
 
-  let expected=    '[\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 1,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "10000000",\n' + 
-                    '                "coordinates": "111.1111"\n' + 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "111.1111",\n' + 
-                    '            "targetZipCode": "10000000"\n' + 
-                    '        }\n' + 
-                    '    },\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 2,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "20000000",\n' + 
-                    '                "street": "myStreet"\n' +                  // fix to add this filed 
+  let expected=    '[\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 1,\n' +
+                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "10000000",\n' +
+                    '                "coordinates": "111.1111"\n' +
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "111.1111",\n' +
+                    '            "targetZipCode": "10000000"\n' +
+                    '        }\n' +
+                    '    },\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 2,\n' +
+                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "20000000",\n' +
+                    '                "street": "myStreet"\n' +                  // fix to add this filed
                     '                "coordinates": "222.2222"\n' +
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "myStreet",\n' + 
-                    '            "targetZipCode": "20000000"\n' + 
-                    '        }\n' + 
-                    '    },\n' + 
-                     '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 3,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "30000000",\n' + 
-                    '                "road": "myRoad"\n' +                  // fix to add this filed 
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "myStreet",\n' +
+                    '            "targetZipCode": "20000000"\n' +
+                    '        }\n' +
+                    '    },\n' +
+                     '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 3,\n' +
+                    '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "30000000",\n' +
+                    '                "road": "myRoad"\n' +                  // fix to add this filed
                     '                "coordinates": "333.3333"\n' +
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "myRoad",\n' + 
-                    '            "targetZipCode": "30000000"\n' + 
-                    '        }\n' + 
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "myRoad",\n' +
+                    '            "targetZipCode": "30000000"\n' +
+                    '        }\n' +
                     '    }\n' +
                     ']\n';
 
@@ -287,22 +307,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnStringValue;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
-                                                  class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
-                                                          '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
-                                                          '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
-                                                )
-                            ]);
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
+          class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
+          url = 'data:application/json,\n'+
+                  '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
+                  '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
+                  '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
+        )
+      )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -317,7 +340,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target2{
-        targetZipCode, 
+        targetZipCode,
         isLocation,
         isStreet,
         isRoad
@@ -325,15 +348,18 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnBooleanValue;
   let query   = {|Target2.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -348,22 +374,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
    assertJsonStringsEqual(
@@ -378,22 +407,25 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match_functionCall;
   let query   = {|Target.all()->graphFetch($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
     assertJsonStringsEqual(
@@ -409,76 +441,79 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping =meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_instanceOf_returnStringValue;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
-  let expected=    '[\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 1,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "10000000",\n' + 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "location_valueFromMapping",\n' + 
-                    '            "targetZipCode": "10000000"\n' + 
-                    '        }\n' + 
-                    '    },\n' + 
-                    '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 2,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "20000000",\n' + 
-                    '                "street": "myStreet"\n' +                  // fix to add this filed 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "myStreet",\n' + 
-                    '            "targetZipCode": "20000000"\n' + 
-                    '        }\n' + 
-                    '    },\n' + 
-                     '    {\n' + 
-                    '        "defects": [],\n' + 
-                    '        "source": {\n' + 
-                    '            "defects": [],\n' + 
-                    '            "source": {\n' + 
-                    '                "number": 3,\n' + 
-                    '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' + 
-                    '            },\n' + 
-                    '            "value": {\n' + 
-                    '                "zipCode": "30000000",\n' + 
-                    '            }\n' + 
-                    '        },\n' + 
-                    '        "value": {\n' + 
-                    '            "targetAddress": "road_valueFromMapping",\n' + 
-                    '            "targetZipCode": "30000000"\n' + 
-                    '        }\n' + 
+  let expected=    '[\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 1,\n' +
+                    '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "10000000",\n' +
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "location_valueFromMapping",\n' +
+                    '            "targetZipCode": "10000000"\n' +
+                    '        }\n' +
+                    '    },\n' +
+                    '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 2,\n' +
+                    '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "20000000",\n' +
+                    '                "street": "myStreet"\n' +                  // fix to add this filed
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "myStreet",\n' +
+                    '            "targetZipCode": "20000000"\n' +
+                    '        }\n' +
+                    '    },\n' +
+                     '    {\n' +
+                    '        "defects": [],\n' +
+                    '        "source": {\n' +
+                    '            "defects": [],\n' +
+                    '            "source": {\n' +
+                    '                "number": 3,\n' +
+                    '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' +
+                    '            },\n' +
+                    '            "value": {\n' +
+                    '                "zipCode": "30000000",\n' +
+                    '            }\n' +
+                    '        },\n' +
+                    '        "value": {\n' +
+                    '            "targetAddress": "road_valueFromMapping",\n' +
+                    '            "targetZipCode": "30000000"\n' +
+                    '        }\n' +
                     '    }\n' +
                     ']\n';
 
@@ -490,75 +525,78 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let tree = #{
       Target{
-        targetZipCode, 
+        targetZipCode,
         targetAddress
 
       }
   }#;
   let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_noPropertyAccess_match_functionCall;
   let query   = {|Target.all()->graphFetchChecked($tree)->serialize($tree)};
-  let runtime = ^Runtime( connections= [
-                            ^JsonModelConnection(element = ^ModelStore(),
+  let runtime = ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(
+        element = ^ModelStore(),
+        connection= ^JsonModelConnection(
                                                   class = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location,
-                                                  url = 'data:application/json,\n'+ 
-                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' + 
+                                                  url = 'data:application/json,\n'+
+                                                          '{ "zipCode": "10000000", "coordinates": "111.1111"}\n' +
                                                           '{ "zipCode": "20000000", "coordinates": "222.2222" , "street" : "myStreet" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street"}\n'+
                                                           '{ "zipCode": "30000000", "coordinates": "333.3333" , "road" : "myRoad" , "@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road"}\n'
                                                 )
-                            ]);
+                            )]);
   let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
 
-  let expected=    '[\n' + 
-                  '    {\n' + 
-                  '        "defects": [],\n' + 
-                  '        "source": {\n' + 
-                  '            "defects": [],\n' + 
-                  '            "source": {\n' + 
-                  '                "number": 1,\n' + 
-                  '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' + 
-                  '            },\n' + 
-                  '            "value": {\n' + 
-                  '                "zipCode": "10000000",\n' + 
-                  '            }\n' + 
-                  '        },\n' + 
-                  '        "value": {\n' + 
-                  '            "targetAddress": "location_valueFromMapping",\n' + 
-                  '            "targetZipCode": "10000000"\n' + 
-                  '        }\n' + 
-                  '    },\n' + 
-                  '    {\n' + 
-                  '        "defects": [],\n' + 
-                  '        "source": {\n' + 
-                  '            "defects": [],\n' + 
-                  '            "source": {\n' + 
-                  '                "number": 2,\n' + 
-                  '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' + 
-                  '            },\n' + 
-                  '            "value": {\n' + 
-                  '                "zipCode": "20000000",\n' + 
-                  '            }\n' + 
-                  '        },\n' + 
-                  '        "value": {\n' + 
-                  '            "targetAddress": "street_valueFromMapping",\n' + 
-                  '            "targetZipCode": "20000000"\n' + 
-                  '        }\n' + 
-                  '    },\n' + 
-                    '    {\n' + 
-                  '        "defects": [],\n' + 
-                  '        "source": {\n' + 
-                  '            "defects": [],\n' + 
-                  '            "source": {\n' + 
-                  '                "number": 3,\n' + 
-                  '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' + 
-                  '            },\n' + 
-                  '            "value": {\n' + 
-                  '                "zipCode": "30000000",\n' + 
-                  '            }\n' + 
-                  '        },\n' + 
-                  '        "value": {\n' + 
-                  '            "targetAddress": "road_valueFromMapping",\n' + 
-                  '            "targetZipCode": "30000000"\n' + 
-                  '        }\n' + 
+  let expected=    '[\n' +
+                  '    {\n' +
+                  '        "defects": [],\n' +
+                  '        "source": {\n' +
+                  '            "defects": [],\n' +
+                  '            "source": {\n' +
+                  '                "number": 1,\n' +
+                  '                "record": "{\\"zipCode\\":\\"10000000\\",\\"coordinates\\":\\"111.1111\\"}"\n' +
+                  '            },\n' +
+                  '            "value": {\n' +
+                  '                "zipCode": "10000000",\n' +
+                  '            }\n' +
+                  '        },\n' +
+                  '        "value": {\n' +
+                  '            "targetAddress": "location_valueFromMapping",\n' +
+                  '            "targetZipCode": "10000000"\n' +
+                  '        }\n' +
+                  '    },\n' +
+                  '    {\n' +
+                  '        "defects": [],\n' +
+                  '        "source": {\n' +
+                  '            "defects": [],\n' +
+                  '            "source": {\n' +
+                  '                "number": 2,\n' +
+                  '                "record": "{\\"zipCode\\":\\"20000000\\",\\"coordinates\\":\\"222.2222\\",\\"street\\":\\"myStreet\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Street\\"}"\n' +
+                  '            },\n' +
+                  '            "value": {\n' +
+                  '                "zipCode": "20000000",\n' +
+                  '            }\n' +
+                  '        },\n' +
+                  '        "value": {\n' +
+                  '            "targetAddress": "street_valueFromMapping",\n' +
+                  '            "targetZipCode": "20000000"\n' +
+                  '        }\n' +
+                  '    },\n' +
+                    '    {\n' +
+                  '        "defects": [],\n' +
+                  '        "source": {\n' +
+                  '            "defects": [],\n' +
+                  '            "source": {\n' +
+                  '                "number": 3,\n' +
+                  '                "record": "{\\"zipCode\\":\\"30000000\\",\\"coordinates\\":\\"333.3333\\",\\"road\\":\\"myRoad\\",\\"@type\\":\\"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Road\\"}"\n' +
+                  '            },\n' +
+                  '            "value": {\n' +
+                  '                "zipCode": "30000000",\n' +
+                  '            }\n' +
+                  '        },\n' +
+                  '        "value": {\n' +
+                  '            "targetAddress": "road_valueFromMapping",\n' +
+                  '            "targetZipCode": "30000000"\n' +
+                  '        }\n' +
                   '    }\n' +
                   ']\n';
 

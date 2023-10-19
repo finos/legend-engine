@@ -15,6 +15,7 @@
 import meta::pure::mapping::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]

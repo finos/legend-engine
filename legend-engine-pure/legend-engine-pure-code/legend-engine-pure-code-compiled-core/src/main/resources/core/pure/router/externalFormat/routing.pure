@@ -22,6 +22,7 @@ import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 // =========================================================================================
@@ -123,7 +124,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
                                           binding         = $binding,
                                           value           = $processedExternalize
                                         );
-            print(if($debug.debug,|$debug.space+'~>Externalize Routing Done',|''));          
+            print(if($debug.debug,|$debug.space+'~>Externalize Routing Done',|''));
             ^$processedFirstParam(routingStrategy = getExternalFormatRoutingStrategy($binding),
                                   value           = $routedExternalize);
         }
@@ -147,7 +148,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
                                           binding         = $binding,
                                           value           = $processedInternalize
                                         );
-            print(if($debug.debug,|$debug.space+'~>Internalize Routing Done',|''));          
+            print(if($debug.debug,|$debug.space+'~>Internalize Routing Done',|''));
             ^$processedFirstParam(routingStrategy = $routingStrategy,
                                   value           = $routedInternalize);
         }
@@ -161,7 +162,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
 
 function meta::pure::router::externalFormat::routing::enrichExternalFormatRoutedValueSpecification(v:ValueSpecification[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-   $v->match([f:FunctionExpression[1]                | ^$f(parametersValues = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug))), 
+   $v->match([f:FunctionExpression[1]                | ^$f(parametersValues = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug))),
               i:InstanceValue[1]                     | let updatedValues = $i.values->map(val | $val->match([
                                                                                                         v:ValueSpecification[1]      | $v->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug),
                                                                                                         f:FunctionDefinition<Any>[1] | ^$f(expressionSequence = $f.expressionSequence->map(e | $e->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug))),
@@ -180,7 +181,7 @@ function meta::pure::router::externalFormat::routing::enrichExternalFormatRouted
 
 function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecification[1], binding:meta::external::format::shared::binding::Binding[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
 {
-   $v->match([f:FunctionExpression[1]                | let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($binding, $openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));    
+   $v->match([f:FunctionExpression[1]                | let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($binding, $openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));
                                                        if($f->externalFormatSupportsFunction(),
                                                          |wrapValueSpecByExternalFormatCluster(^$f(parametersValues = $params->map(p | $p->match([ef:ExternalFormatClusteredValueSpecification[1]|$ef.val, vs:ValueSpecification[1]| $vs]))), $binding, $openVariables, $exeCtx),
                                                          |let unwrappedPlatformClusterParams = $params->map(p | $p->match([pf:meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification[1] | $pf.val, vs:ValueSpecification[1]|$vs]));
@@ -227,7 +228,7 @@ function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecific
                                                        );,
                v:VariableExpression[1]               | $v,
                e:ExtendedRoutedValueSpecification[1] | $e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug),
-               c:ClusteredValueSpecification[1]      | $c 
+               c:ClusteredValueSpecification[1]      | $c
       ]
    );
 }

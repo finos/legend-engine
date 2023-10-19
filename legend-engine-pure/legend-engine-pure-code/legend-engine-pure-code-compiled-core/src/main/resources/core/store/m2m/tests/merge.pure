@@ -15,6 +15,8 @@
 
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::merge::*;
 import meta::pure::router::operations::*;
@@ -39,11 +41,15 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ExcludeAl
 {
    let instances = newMap(pair(SourcePersonWithFirstName, list([^SourcePersonWithFirstName(firstName='Pierre')])))
                          ->put(SourcePersonWithLastName, list([^SourcePersonWithLastName(lastName='Doe') ]))  ;
-   
+
    let res = execute(
             |Person.all(),
             meta::pure::mapping::modelToModel::test::merge::MergeModelMappingSource,
-            ^Runtime( connections = ^ModelConnection(element=^ModelStore(), instances=$instances)),
+            ^Runtime(
+              connectionStores = [
+                ^ConnectionStore(
+                  element=^ModelStore(),
+                  connection=^ModelConnection(instances=$instances))]),
             meta::pure::extension::defaultExtensions()
             );
        assertEquals(1, $res.values->size());

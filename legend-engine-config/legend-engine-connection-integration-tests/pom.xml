@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-config</artifactId>
-        <version>4.29.2-SNAPSHOT</version>
+        <version>4.32.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-connection-integration-tests</artifactId>
@@ -74,26 +74,7 @@
         </dependency>
         <!-- RUNTIME -->
 
-        <!-- ECLIPSE COLLECTIONS -->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections-api</artifactId>-->
-<!--        </dependency>-->
-        <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- Authentication -->
-<!--        <dependency>-->
-<!--            <groupId>org.pac4j</groupId>-->
-<!--            <artifactId>pac4j-core</artifactId>-->
-<!--        </dependency>-->
-        <!-- Authentication -->
-
         <!-- TEST -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -102,6 +83,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

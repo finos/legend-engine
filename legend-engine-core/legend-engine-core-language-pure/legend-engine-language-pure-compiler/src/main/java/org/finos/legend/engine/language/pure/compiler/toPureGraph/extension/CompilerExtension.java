@@ -102,12 +102,12 @@ public interface CompilerExtension
         return Collections.emptyList();
     }
 
-    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Collections.emptyList();
     }
 
-    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return Collections.emptyList();
     }

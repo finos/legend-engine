@@ -9,7 +9,7 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
 
  Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentConfiguration extends DeploymentConfiguration
  {
-    target:  meta::pure::alloy::connections::RelationalDatabaseConnection[1];
+    target:  meta::external::store::relational::runtime::RelationalDatabaseConnection[1];
  }
 
  Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentResult extends DeploymentResult
@@ -17,7 +17,7 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
 
  }
 
-// This section needs to be code generated from the section above 
+// This section needs to be code generated from the section above
 Class meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator
 {
   applicationName : String[1];

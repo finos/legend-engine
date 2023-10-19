@@ -14,6 +14,7 @@
 
 import meta::pure::milestoning::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::*;
 
 function meta::pure::milestoning::isMilestonedGeneratedDateProperty(f:FunctionExpression[1]):Boolean[1]
@@ -99,7 +100,7 @@ function meta::pure::milestoning::isNoArgMilestonedGeneratedQualifiedProperty(p:
 
 function meta::pure::milestoning::isDateArgMilestonedGeneratedQualifiedProperty(p:AbstractProperty<Any>[1]):Boolean[1]{
    $p->instanceOf(QualifiedProperty) && hasGeneratedMilestoningPropertyStereotype($p) && !$p.name->toOne()->endsWith('AllVersionsInRange')
-       && ($p->cast(@QualifiedProperty<Any>)->functionType().parameters->size() >1)  
+       && ($p->cast(@QualifiedProperty<Any>)->functionType().parameters->size() >1)
 }
 
 function meta::pure::milestoning::switchToNoArgMilestonedGeneratedQualifiedProperty(p:QualifiedProperty<Any>[1]):QualifiedProperty<Any>[*]

@@ -157,7 +157,7 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
 function meta::external::language::java::transform::pureTypeToJavaType(conventions:Conventions[1], g:GenericType[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
    if($g.rawType->isEmpty(),
-      {| 
+      {|
          let typeName = $g.typeParameter.name->toOne('Only one type parameter supported but found: ' + $g->printGenericType());
          $typeName->javaTypeVar()->listIfMulti($mult);
       },
@@ -218,9 +218,9 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
               |
            if($type == Map,
               | javaMap($typeArgs->at(0), $typeArgs->at(1))->listIfMulti($mult),
-              |   
+              |
            if($type->instanceOf(meta::pure::metamodel::type::Enumeration) || $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(Unit) || $type->instanceOf(Measure),
-              {| 
+              {|
                 let class = $conventions->className($type);
                 let classWithTypes = if($typeArgs->isEmpty(),
                   |$class,
@@ -1173,7 +1173,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       meta::vcs::metamodel::versionHistory_String_MANY__Revision_MANY_,
       profile_T_m__Boolean_1__ProfileResult_1_,
       readFile_String_1__String_$0_1$_,
-      
+
       meta::json::escape_String_1__String_1_,
       meta::json::fromJsonDeprecated_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
       meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
@@ -1197,7 +1197,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       'meta::pure::migration',
       'meta::pure::milestoning',
       'meta::pure::router',
-      'meta::pure::runtime',
+      'meta::core::runtime',
       'meta::pure::service',
       'meta::pure::store',
       'meta::pure::tools',

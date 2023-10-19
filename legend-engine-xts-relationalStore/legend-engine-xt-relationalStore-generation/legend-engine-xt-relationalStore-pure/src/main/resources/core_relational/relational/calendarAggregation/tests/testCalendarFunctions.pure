@@ -33,14 +33,18 @@ Mapping meta::relational::tests::functions::pureToSqlQuery::calendarAggregations
 )
 
 ###Pure
+import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::mapping::*;
 import meta::pure::functions::date::calendar::*;
 import meta::relational::extension::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::functions::pureToSqlQuery::calendarAggregations::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::csv::*;
 import meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::*;
 
@@ -785,7 +789,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','annualized'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInYear)) else null end) as "annualized" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInYear)) else null end) as "annualized" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,annualized,Campus,9.812850678733032,Lateral,9.267692307692307,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -798,7 +802,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | cme($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cme'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInMonth)) else null end) as "cme" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInMonth)) else null end) as "cme" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,cme,Campus,0.5131221719457013,Lateral,0.5644343891402714,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -811,7 +815,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | cw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cw'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 1 else 0 end) then "root".fteFactor else null end) as "cw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 1 else 0 end) then "root".fteFactor else null end) as "cw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 1 else 0 end) then "root".fteFactor else null end) as "cw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,cw,Campus,1.65,Lateral,2.2,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -824,7 +832,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | cw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cw_fm'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = "ny_calendar_1".fiscalWeekOffset then "root".fteFactor else null end) as "cw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = "ny_calendar_1".fiscalWeekOffset then "root".fteFactor else null end) as "cw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = "ny_calendar_1".fiscalWeekOffset then "root".fteFactor else null end) as "cw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,cw_fm,Campus,1.65,Lateral,2.2,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -837,7 +849,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | CYMinus2($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','CYMinus2'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 1) then "root".fteFactor else null end) as "CYMinus2" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 1) then "root".fteFactor else null end) as "CYMinus2" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 1) then "root".fteFactor else null end) as "CYMinus2" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,CYMinus2,Campus,0.17,Lateral,0.16,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -850,7 +866,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | CYMinus3($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','CYMinus3'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 2) then "root".fteFactor else null end) as "CYMinus3" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 2) then "root".fteFactor else null end) as "CYMinus3" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 2) then "root".fteFactor else null end) as "CYMinus3" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,CYMinus3,Campus,0.15,Lateral,0.14,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -863,7 +883,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','mtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,mtd,Campus,3.0,Lateral,3.5,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -876,7 +900,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p12wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12wa'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 12) else null end) as "p12wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 12) else null end) as "p12wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12wa,Campus,0.383333333333,Lateral,0.391666666667,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -889,7 +913,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p12wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12wtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p12wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p12wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12wtd,Campus,4.6,Lateral,4.7,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -902,7 +926,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p4wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p4wa'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 4) else null end) as "p4wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 4) else null end) as "p4wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p4wa,Campus,0.8575,Lateral,0.98,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -915,7 +939,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p4wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p4wtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p4wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p4wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p4wtd,Campus,3.43,Lateral,3.92,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -928,7 +952,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p52wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p52wtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p52wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p52wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p52wtd,Campus,6.84,Lateral,6.98,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -941,7 +965,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p52wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p52wa'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 52) else null end) as "p52wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 52) else null end) as "p52wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p52wa,Campus,0.131538461538,Lateral,0.134230769231,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -954,7 +978,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | p12mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12mtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date > dateadd(YEAR, -1, "ny_calendar_1".date) and "ny_calendar_0".date <= "ny_calendar_1".date then "root".fteFactor else null end) as "p12mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date > dateadd(YEAR, -1, "ny_calendar_1".date) and "ny_calendar_0".date <= "ny_calendar_1".date then "root".fteFactor else null end) as "p12mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12mtd,Campus,6.84,Lateral,7.24,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -968,7 +992,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pma($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pma'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentMonthNum = 1 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then ((1.0 * "root".fteFactor) / 12) else case when "ny_calendar_1".currentMonthNum > 1 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum <= "ny_calendar_1".previousFiscalMonth then ((1.0 * "root".fteFactor) / "ny_calendar_1".previousFiscalMonth) else null end end) as "pma" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentMonthNum = 1 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then ((1.0 * "root".fteFactor) / 12) else case when "ny_calendar_1".currentMonthNum > 1 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum <= "ny_calendar_1".previousFiscalMonth then ((1.0 * "root".fteFactor) / "ny_calendar_1".previousFiscalMonth) else null end end) as "pma" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pma,Campus,0.259,Lateral,0.222,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -981,7 +1005,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pmtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pmtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentMonthNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentMonthNum = "ny_calendar_1".previousFiscalMonth and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pmtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentMonthNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentMonthNum = "ny_calendar_1".previousFiscalMonth and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pmtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentMonthNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentMonthNum = "ny_calendar_1".previousFiscalMonth and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pmtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pmtd,Campus,0.39,Lateral,0.4,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -994,7 +1022,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pqtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentQuarterNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".previousFiscalQuarter and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentQuarterNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".previousFiscalQuarter and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentQuarterNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".previousFiscalQuarter and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pqtd,Campus,0.33,Lateral,0.34,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1007,7 +1039,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | priorDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','priorDay'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".previousBusinessDay then "root".fteFactor else null end) as "priorDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".previousBusinessDay then "root".fteFactor else null end) as "priorDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".previousBusinessDay then "root".fteFactor else null end) as "priorDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,priorDay,Campus,0.55,Lateral,,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1020,7 +1056,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | priorYear($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','priorYear'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then "root".fteFactor else null end) as "priorYear" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then "root".fteFactor else null end) as "priorYear" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,priorYear,Campus,2.84,Lateral,3.06,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1033,7 +1069,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pw'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 2 else 1 end) then "root".fteFactor else null end) as "pw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 2 else 1 end) then "root".fteFactor else null end) as "pw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 2 else 1 end) then "root".fteFactor else null end) as "pw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pw,Campus,1.47,Lateral,1.44,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1046,7 +1086,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pw_fm'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) then "root".fteFactor else null end) as "pw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) then "root".fteFactor else null end) as "pw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) then "root".fteFactor else null end) as "pw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pw_fm,Campus,1.47,Lateral,1.44,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1059,7 +1103,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pwa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pwa'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else case when "ny_calendar_1".currentWeek > 5 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek) then (((1.0 * "root".fteFactor) / ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek)) * 5) else null end end) as "pwa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else case when "ny_calendar_1".currentWeek > 5 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek) then (((1.0 * "root".fteFactor) / ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek)) * 5) else null end end) as "pwa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pwa,Campus,0.103440366973,Lateral,0.0940366972485,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1072,7 +1116,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pwtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pwtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pwtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pwtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pwtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pwtd,Campus,0.96,Lateral,0.94,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1085,7 +1133,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pymtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pymtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pymtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pymtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pymtd,Campus,0.69,Lateral,0.46,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1098,7 +1146,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pyqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pyqtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pyqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pyqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pyqtd,Campus,1.4,Lateral,1.36,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1111,7 +1159,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "pytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "pytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pytd,Campus,1.59,Lateral,1.54,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1124,7 +1172,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pywa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pywa'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else null end) as "pywa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else null end) as "pywa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else null end) as "pywa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pywa,Campus,,Lateral,,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1137,7 +1189,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | pywtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pywtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pywtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pywtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pywtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,pywtd,Campus,0.25,Lateral,0.5,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1150,7 +1206,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | qtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','qtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "qtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "qtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,qtd,Campus,4.23,Lateral,4.32,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1163,7 +1219,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | reportEndDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','reportEndDay'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".date then "root".fteFactor else null end) as "reportEndDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".date then "root".fteFactor else null end) as "reportEndDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".date then "root".fteFactor else null end) as "reportEndDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,reportEndDay,Campus,,Lateral,0.56,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1176,7 +1236,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','wtd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".dayOfCalendarYear <= "ny_calendar_1".dayOfCalendarYear then "root".fteFactor else null end) as "wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".dayOfCalendarYear <= "ny_calendar_1".dayOfCalendarYear then "root".fteFactor else null end) as "wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".dayOfCalendarYear <= "ny_calendar_1".dayOfCalendarYear then "root".fteFactor else null end) as "wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['hireType,wtd,Campus,1.08,Lateral,1.62,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1189,7 +1253,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
+  assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,ytd,Campus,5.59,Lateral,5.72,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1550,7 +1614,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'London', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "london_calendar_0".currentYear = "london_calendar_1".currentYear and "london_calendar_0".fiscalDay <= "london_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on ("root".hireDate = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on (\'2022-11-16\' = "london_calendar_1".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "london_calendar_0".currentYear = "london_calendar_1".currentYear and "london_calendar_0".fiscalDay <= "london_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on ("root".hireDate = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on (\'2022-11-16\' = "london_calendar_1".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "london_calendar_0".currentYear = "london_calendar_1".currentYear and "london_calendar_0".fiscalDay <= "london_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on ("root".hireDate = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on (DATE\'2022-11-16\' = "london_calendar_1".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::testDifferentEndDates():Boolean[1]
@@ -1563,7 +1631,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
          agg(p | ytd($p.hireDate, 'London', %2022-11-17, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd16', 'ytd17'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select "root".hireType as "hireType", sum(case when "london_calendar_1".currentYear = "london_calendar_0".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_0".fiscalDay then "root".fteFactor else null end) as "ytd16", sum(case when "london_calendar_1".currentYear = "london_calendar_2".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_2".fiscalDay then "root".fteFactor else null end) as "ytd17" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on (\'2022-11-16\' = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on ("root".hireDate = "london_calendar_1".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_2" on (\'2022-11-17\' = "london_calendar_2".date) group by "hireType"', $result);
+  assertEqualsH2Compatible(
+    'select "root".hireType as "hireType", sum(case when "london_calendar_1".currentYear = "london_calendar_0".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_0".fiscalDay then "root".fteFactor else null end) as "ytd16", sum(case when "london_calendar_1".currentYear = "london_calendar_2".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_2".fiscalDay then "root".fteFactor else null end) as "ytd17" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on (\'2022-11-16\' = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on ("root".hireDate = "london_calendar_1".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_2" on (\'2022-11-17\' = "london_calendar_2".date) group by "hireType"', 
+    'select "root".hireType as "hireType", sum(case when "london_calendar_1".currentYear = "london_calendar_0".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_0".fiscalDay then "root".fteFactor else null end) as "ytd16", sum(case when "london_calendar_1".currentYear = "london_calendar_2".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_2".fiscalDay then "root".fteFactor else null end) as "ytd17" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on (DATE\'2022-11-16\' = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on ("root".hireDate = "london_calendar_1".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_2" on (DATE\'2022-11-17\' = "london_calendar_2".date) group by "hireType"', 
+    $result->sqlRemoveFormatting()
+  );
 }
 
 
@@ -1576,7 +1648,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.employeeDetails.birthDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['ytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("employeedetailstable_0".birthDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', $result);
+  assertEqualsH2Compatible(
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("employeedetailstable_0".birthDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', 
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("employeedetailstable_0".birthDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date)', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['ytd,0.13,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1589,7 +1665,11 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.employeeDetails.yearsOfExperience), y | $y->sum()) ],
        ['ytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "employeedetailstable_0".yearsOfExperience else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id)', $result);
+  assertEqualsH2Compatible(
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "employeedetailstable_0".yearsOfExperience else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id)', 
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "employeedetailstable_0".yearsOfExperience else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id)', 
+    $result->sqlRemoveFormatting()
+  );
   assertEquals(['ytd,10.0,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1614,5 +1694,9 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactorDyna()), y | $y->sum()) ],
        ['ytd'])
    ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
-  assertSameSQL('select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then ((1.0 * "root".fteFactor) / 2) else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', $result);
+  assertEqualsH2Compatible(
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then ((1.0 * "root".fteFactor) / 2) else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', 
+    'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then ((1.0 * "root".fteFactor) / 2) else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date)', 
+    $result->sqlRemoveFormatting()
+  );
 }

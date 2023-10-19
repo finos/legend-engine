@@ -22,7 +22,9 @@ import meta::external::store::mongodb::runtime::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::router::clustering::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::mapping::*;
@@ -66,12 +68,13 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
         $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
       |
         // Normal Flow
-        let connections = $runtime.connections->filter(c | $c->instanceOf(MongoDBConnection));
+        let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(MongoDBConnection));
         let storeRuntime = if($connections->size() <= 1,
                                 | $runtime->toOne(),
                                 | let oldRuntime = $runtime->toOne();
-                                  let dbConn = $oldRuntime->connectionByElement($store)->cast(@MongoDBConnection);
-                                  ^$oldRuntime(connections = $dbConn);
+                                  let connectionStore = $oldRuntime.connectionStores->filter(c|$c.element==$store)->toOne();
+                                  let dbConn = $connectionStore->cast(@MongoDBConnection);
+                                  ^$oldRuntime(connectionStores = ^$connectionStore(connection=$dbConn));
                               );
 
         let databaseCommand = $sq.fe->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);

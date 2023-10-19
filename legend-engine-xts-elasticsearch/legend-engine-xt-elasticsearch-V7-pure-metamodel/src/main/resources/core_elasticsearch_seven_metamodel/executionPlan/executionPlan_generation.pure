@@ -19,6 +19,7 @@ import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
@@ -33,7 +34,7 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
 
   let tdsDetailsIndexed = $processOutput.tdsESDetails->toIndexed()->toOneMany('TDS operations should have at least one output column');
 
-  let esNode = ^Elasticsearch7RequestExecutionNode(    
+  let esNode = ^Elasticsearch7RequestExecutionNode(
     resultSizeRange = ZeroMany,
     request = $request,
     connection = $runtime->toOne('missing required runtime for ES plan execution').connectionByElement($sq.store)->cast(@Elasticsearch7StoreConnection),
@@ -42,7 +43,7 @@ function meta::external::store::elasticsearch::v7::executionPlan::generation::pl
   );
 
   if ($processOutput.extraNodes->isEmpty(),
-    |$esNode, 
+    |$esNode,
     |^SequenceExecutionNode(resultType = $esNode.resultType, executionNodes = $processOutput.extraNodes->removeDuplicates({x, y | $x.varName == $y.varName})->concatenate($esNode))
   );
 }

@@ -16,4 +16,5 @@ package org.finos.legend.connection.protocol;
 
 public abstract class ConnectionSpecification
 {
+    public abstract String shortId();
 }

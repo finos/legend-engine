@@ -123,7 +123,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::EvntGrpBlockT
 >>>test::gen::Fixml
 Class test::gen::Fixml
 [
-  c1_choice: ($this.message->isNotEmpty() && $this.batch->isEmpty()) || ($this.message->isEmpty() && $this.batch->isNotEmpty())
+  c1_choice_Fixml: ($this.message->isNotEmpty() && $this.batch->isEmpty()) || ($this.message->isEmpty() && $this.batch->isNotEmpty())
 ]
 {
   message: test::gen::AbstractMessageT[0..1];

@@ -237,7 +237,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
 
    let resolvedModel                       = $node.binding.modelUnit->resolve();
-   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties(meta::pure::mapping::modelToModel::JsonDataRecord)
+   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties(meta::external::store::model::JsonDataRecord)
                                                                ->map(ti| if($node.tree->isEmpty(),| $ti->addForClass($class)->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
 
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),
@@ -290,7 +290,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
 function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::removeUnusedImports(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    ^$class(additionalImports = $class.additionalImports
-    ->filter({m| $m->in(['com.fasterxml.jackson.core.JsonToken', 
+    ->filter({m| $m->in(['com.fasterxml.jackson.core.JsonToken',
       'com.fasterxml.jackson.core.filter.FilteringParserDelegate',
       'com.fasterxml.jackson.core.filter.JsonPointerBasedFilter',
       'com.fasterxml.jackson.core.JsonFactory'])->not()}));
@@ -330,7 +330,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
    //let exCheckExpression = $exception->j_throw();
 
    let cursorFinished = j_not($jThis->j_field('mCursor')->j_invoke('hasNext',[], javaBoolean()))->j_return()->j_try(j_catch($exception, $exCheckExpression));
-   
+
    let newIsFinishedMethod = javaMethod('public', javaBoolean(), 'isFinished', [],[$cursorFinished]);
    // Remove nextToken, getCurrentToken method as we don't need it.
    ^$class(methods = $class.methods->filter({m| $m.name->in(['isFinished', 'nextToken','getCurrentToken'])->not()})->concatenate($newIsFinishedMethod));
@@ -375,7 +375,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
 function  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::jsonNodeTypeForMongoDB(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): Code[*]
 {
    if($type == StrictDate || $type == DateTime || $type == Date,
-      | jsonNodeType()->j_invoke('valueOf', j_string('OBJECT'), jsonNodeType()), 
+      | jsonNodeType()->j_invoke('valueOf', j_string('OBJECT'), jsonNodeType()),
       | $conventions->jsonNodeTypesFor($type)
   );
 }
@@ -390,7 +390,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
    let sourceRead      = $pureClass->readMethodName($conv);
    let ioEx            = j_parameter(javaIOException(), 'e');
    let jThis           = j_this($proto);
-   let recordType      = $conv->className(meta::pure::mapping::modelToModel::JsonDataRecord);
+   let recordType      = $conv->className(meta::external::store::model::JsonDataRecord);
    let json            = j_variable(javaString(), 'json');
    let recordNumber    = j_variable(javaLong(), 'recordNumber');
    let source          = j_variable($recordType, 'source');

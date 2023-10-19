@@ -21,6 +21,7 @@ import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::platform::metamodel::clustering::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState
@@ -36,7 +37,7 @@ Class meta::pure::platform::executionPlan::generation::PureFunctionToProcessFunc
 function meta::pure::platform::executionPlan::generation::processValueSpecification(vs:ValueSpecification[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[0..1]
 {
    $vs->match([
-      f:SimpleFunctionExpression[1]         | $f->getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
+      f:SimpleFunctionExpression[1]         | $f->getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug),
       c:ClusteredValueSpecification[1]      | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
       i:InstanceValue[1]                    | [],
@@ -64,12 +65,12 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::def
 function <<access.private>> meta::pure::platform::executionPlan::generation::serializeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let params     = $fe.parametersValues->evaluateAndDeactivate();
-   let collection = $params->at(0);   
+   let collection = $params->at(0);
    let children   = $collection->processValueSpecification($state, $extensions, $debug);
 
    // Curtail the expression so that only the serialize part that is represented by the node is held
    let substitute = ^InstanceValue(values=[], genericType=$collection.genericType, multiplicity=ZeroMany);
-   
+
    ^PureExpressionPlatformExecutionNode
    (
       expression = ^$fe(parametersValues=$substitute->concatenate($params->tail())),
@@ -82,10 +83,10 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::ser
 function <<access.private>> meta::pure::platform::executionPlan::generation::unionFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v | $v->processValueSpecification($state, $extensions, $debug));
-   
+
    let nestedNodesFromChildUnion = $children->filter(ch | $ch->instanceOf(PlatformUnionExecutionNode));
    let updatedChildren = $children->filter(ch | !$ch->in($nestedNodesFromChildUnion))->concatenate($children->filter(ch | $ch->in($nestedNodesFromChildUnion)).executionNodes);
-   
+
    ^PlatformUnionExecutionNode
    (
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
@@ -122,16 +123,16 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::gen
 {
    ^PlatformClusteredValueSpecification(
       val = $fe,
-      executable=true, 
-      multiplicity = $fe.multiplicity, 
-      genericType  = $fe.genericType, 
+      executable=true,
+      multiplicity = $fe.multiplicity,
+      genericType  = $fe.genericType,
       openVars = $inScopeVars
    );
 }
 
 function <<access.private>> meta::pure::platform::executionPlan::generation::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
 {
-   let specificProcessorsForFunctions = 
+   let specificProcessorsForFunctions =
       newMap([
         ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_, second = unionFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::lang::letFunction_String_1__T_m__T_m_, second = letFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
@@ -139,9 +140,9 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::get
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_, second = unionFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)         
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_, second = unionFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
       ]);
-   
+
    if($specificProcessorsForFunctions->get($f.func)->isNotEmpty(),
       |$specificProcessorsForFunctions->get($f.func)->toOne(),
       |defaultFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_

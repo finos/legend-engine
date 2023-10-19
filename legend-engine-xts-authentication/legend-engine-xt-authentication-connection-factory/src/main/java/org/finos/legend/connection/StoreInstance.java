@@ -15,33 +15,104 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanism;
 import org.finos.legend.connection.protocol.ConnectionSpecification;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
-public class StoreInstance
+/**
+ * A StoreInstance represents a named instance of a Store.
+ */
+public final class StoreInstance
 {
     private final String identifier;
     private final StoreSupport storeSupport;
-    private final List<AuthenticationMechanism> authenticationMechanisms;
-    private final List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes;
     private final ConnectionSpecification connectionSpecification;
+    private final Map<AuthenticationMechanism, AuthenticationMechanismConfiguration> authenticationMechanismConfigurationIndex;
+    private final Map<Class<? extends AuthenticationConfiguration>, AuthenticationMechanism> authenticationMechanismIndex;
 
-    private StoreInstance(String identifier, StoreSupport storeSupport, List<AuthenticationMechanism> authenticationMechanisms, ConnectionSpecification connectionSpecification)
+    private StoreInstance(String identifier, StoreSupport storeSupport, List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations, ConnectionSpecification connectionSpecification)
     {
-        this.identifier = identifier;
+        this.identifier = Objects.requireNonNull(identifier, "Can't create store instance: identifier is missing");
         this.storeSupport = storeSupport;
-        this.authenticationMechanisms = authenticationMechanisms;
-        this.authenticationConfigurationTypes = ListIterate.collect(authenticationMechanisms, AuthenticationMechanism::getAuthenticationConfigurationType);
-        this.connectionSpecification = connectionSpecification;
+        this.connectionSpecification = Objects.requireNonNull(connectionSpecification, "Connection specification is missing");
+
+        Map<AuthenticationMechanism, AuthenticationMechanismConfiguration> authenticationMechanismConfigurationIndex = new LinkedHashMap<>();
+
+        if (authenticationMechanismConfigurations.isEmpty())
+        {
+            for (AuthenticationMechanism authenticationMechanism : this.storeSupport.getAuthenticationMechanisms())
+            {
+                authenticationMechanismConfigurationIndex.put(authenticationMechanism, this.storeSupport.getAuthenticationMechanismConfiguration(authenticationMechanism));
+            }
+        }
+        else
+        {
+            for (AuthenticationMechanismConfiguration authenticationMechanismConfiguration : authenticationMechanismConfigurations)
+            {
+                AuthenticationMechanism authenticationMechanism = authenticationMechanismConfiguration.getAuthenticationMechanism();
+                if (authenticationMechanismConfigurationIndex.containsKey(authenticationMechanism))
+                {
+                    throw new RuntimeException(String.format("Found multiple configurations for authentication mechanism '%s'", authenticationMechanism.getLabel()));
+                }
+                AuthenticationMechanismConfiguration configFromStoreSupport = this.storeSupport.getAuthenticationMechanismConfiguration(authenticationMechanism);
+                if (configFromStoreSupport == null)
+                {
+                    throw new RuntimeException(String.format("Authentication mechanism '%s' is not covered by store support '%s'. Supported mechanism(s):\n%s",
+                            authenticationMechanism.getLabel(),
+                            this.storeSupport.getIdentifier(),
+                            ListIterate.collect(this.storeSupport.getAuthenticationMechanisms(), mechanism -> "- " + mechanism.getLabel()).makeString("\n")
+                    ));
+                }
+                ImmutableList<Class<? extends AuthenticationConfiguration>> authenticationConfigTypesFromStoreSupport = configFromStoreSupport.getAuthenticationConfigurationTypes();
+                List<Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypes = Lists.mutable.empty();
+                for (Class<? extends AuthenticationConfiguration> authenticationConfigurationType : authenticationMechanismConfiguration.getAuthenticationConfigurationTypes())
+                {
+                    if (!authenticationConfigTypesFromStoreSupport.contains(authenticationConfigurationType))
+                    {
+                        throw new RuntimeException(String.format("Authentication configuration type '%s' is not covered by store support '%s' for authentication mechanism '%s'. Supported configuration type(s):\n%s",
+                                authenticationConfigurationType.getSimpleName(),
+                                this.storeSupport.getIdentifier(),
+                                authenticationMechanism.getLabel(),
+                                authenticationConfigTypesFromStoreSupport.collect(type -> "- " + type.getSimpleName()).makeString("\n")
+                        ));
+                    }
+                    else
+                    {
+                        authenticationConfigurationTypes.add(authenticationConfigurationType);
+                    }
+                }
+                authenticationMechanismConfigurationIndex.put(authenticationMechanism, new AuthenticationMechanismConfiguration.Builder(authenticationMechanism)
+                        // NOTE: if no configuration type is specified, it means the store instance supports all configuration types configured for that mechanism in the store support
+                        .withAuthenticationConfigurationTypes(!authenticationConfigurationTypes.isEmpty() ? authenticationConfigurationTypes : authenticationConfigTypesFromStoreSupport.toList())
+                        .withDefaultAuthenticationConfigurationGenerator(authenticationMechanismConfiguration.getDefaultAuthenticationConfigurationGenerator() != null ? authenticationMechanismConfiguration.getDefaultAuthenticationConfigurationGenerator() : configFromStoreSupport.getDefaultAuthenticationConfigurationGenerator())
+                        .build());
+
+            }
+
+        }
+
+        this.authenticationMechanismConfigurationIndex = authenticationMechanismConfigurationIndex;
+        Map<Class<? extends AuthenticationConfiguration>, AuthenticationMechanism> authenticationMechanismIndex = new LinkedHashMap<>();
+        authenticationMechanismConfigurationIndex.forEach((authenticationMechanism, authenticationMechanismConfiguration) ->
+        {
+            if (authenticationMechanismConfiguration.getAuthenticationConfigurationTypes().isEmpty())
+            {
+                throw new RuntimeException(String.format("No authentication configuration type is associated with authentication mechanism '%s'", authenticationMechanism.getLabel()));
+            }
+            authenticationMechanismConfiguration.getAuthenticationConfigurationTypes().forEach(configurationType ->
+            {
+                authenticationMechanismIndex.put(configurationType, authenticationMechanism);
+            });
+        });
+        this.authenticationMechanismIndex = authenticationMechanismIndex;
     }
 
     public String getIdentifier()
@@ -56,12 +127,17 @@ public class StoreInstance
 
     public List<AuthenticationMechanism> getAuthenticationMechanisms()
     {
-        return authenticationMechanisms;
+        return new ArrayList<>(this.authenticationMechanismConfigurationIndex.keySet());
     }
 
     public List<Class<? extends AuthenticationConfiguration>> getAuthenticationConfigurationTypes()
     {
-        return authenticationConfigurationTypes;
+        return new ArrayList<>(this.authenticationMechanismIndex.keySet());
+    }
+
+    public AuthenticationMechanism getAuthenticationMechanism(Class<? extends AuthenticationConfiguration> authenticationConfigurationType)
+    {
+        return this.authenticationMechanismIndex.get(authenticationConfigurationType);
     }
 
     public ConnectionSpecification getConnectionSpecification()
@@ -69,17 +145,31 @@ public class StoreInstance
         return connectionSpecification;
     }
 
+    public AuthenticationMechanismConfiguration getAuthenticationMechanismConfiguration(AuthenticationMechanism authenticationMechanism)
+    {
+        return authenticationMechanismConfigurationIndex.get(authenticationMechanism);
+    }
+
+    public <T extends ConnectionSpecification> T getConnectionSpecification(Class<T> clazz)
+    {
+        if (!this.connectionSpecification.getClass().equals(clazz))
+        {
+            throw new RuntimeException(String.format("Can't get connection specification of type '%s' for store '%s'", clazz.getSimpleName(), this.identifier));
+        }
+        return (T) this.connectionSpecification;
+    }
+
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
+        private final LegendEnvironment environment;
         private String identifier;
         private String storeSupportIdentifier;
-        private final Set<AuthenticationMechanism> authenticationMechanisms = new LinkedHashSet<>();
+        private final List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations = Lists.mutable.empty();
         private ConnectionSpecification connectionSpecification;
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
         public Builder withIdentifier(String identifier)
@@ -94,21 +184,21 @@ public class StoreInstance
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(List<AuthenticationMechanism> authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfiguration(AuthenticationMechanismConfiguration authenticationMechanismConfiguration)
         {
-            this.authenticationMechanisms.addAll(authenticationMechanisms);
+            this.authenticationMechanismConfigurations.add(authenticationMechanismConfiguration);
             return this;
         }
 
-        public Builder withAuthenticationMechanism(AuthenticationMechanism authenticationMechanism)
+        public Builder withAuthenticationMechanismConfigurations(List<AuthenticationMechanismConfiguration> authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.add(authenticationMechanism);
+            this.authenticationMechanismConfigurations.addAll(authenticationMechanismConfigurations);
             return this;
         }
 
-        public Builder withAuthenticationMechanisms(AuthenticationMechanism... authenticationMechanisms)
+        public Builder withAuthenticationMechanismConfigurations(AuthenticationMechanismConfiguration... authenticationMechanismConfigurations)
         {
-            this.authenticationMechanisms.addAll(Lists.mutable.of(authenticationMechanisms));
+            this.authenticationMechanismConfigurations.addAll(Lists.mutable.of(authenticationMechanismConfigurations));
             return this;
         }
 
@@ -120,18 +210,11 @@ public class StoreInstance
 
         public StoreInstance build()
         {
-            StoreSupport storeSupport = this.environmentConfiguration.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store instance store support identifier is required"));
-            MutableList<AuthenticationMechanism> unsupportedAuthenticationMechanisms = ListIterate.select(new ArrayList<>(this.authenticationMechanisms), mechanism -> !storeSupport.getAuthenticationMechanisms().contains(mechanism));
-            if (!unsupportedAuthenticationMechanisms.isEmpty())
-            {
-                throw new RuntimeException(String.format("Store instance specified with authentication configuration types (%s) which are not covered by its store support '%s'", unsupportedAuthenticationMechanisms.makeString(", "), storeSupport.getIdentifier()));
-            }
             return new StoreInstance(
-                    Objects.requireNonNull(this.identifier, "Store instance identifier is required"),
-                    storeSupport,
-                    // NOTE: if no mechanism is specified, it means the store instance supports all mechanisms
-                    this.authenticationMechanisms.isEmpty() ? storeSupport.getAuthenticationMechanisms() : new ArrayList<>(this.authenticationMechanisms),
-                    Objects.requireNonNull(this.connectionSpecification, "Store instance connection specification is required")
+                    this.identifier,
+                    this.environment.findStoreSupport(Objects.requireNonNull(this.storeSupportIdentifier, "Store support identifier is missing")),
+                    this.authenticationMechanismConfigurations,
+                    this.connectionSpecification
             );
         }
     }

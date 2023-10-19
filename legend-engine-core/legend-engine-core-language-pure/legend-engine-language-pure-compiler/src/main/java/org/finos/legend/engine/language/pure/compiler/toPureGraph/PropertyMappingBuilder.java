@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_PurePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
@@ -39,7 +39,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -98,7 +98,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(PurePropertyMapping propertyMapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("", null, context.pureModel.getType("meta::pure::mapping::modelToModel::PurePropertyMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping pm = new Root_meta_external_store_model_PurePropertyMapping_Impl("", null, context.pureModel.getType("meta::external::store::model::PurePropertyMapping"));
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)

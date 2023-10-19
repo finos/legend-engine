@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import java.util.Map;
 
 public class TestPlanExecutionForIn extends AlloyTestServer
 {
+    private static final int LEGACY_H2_VERSION = 1;
 
     public static final String LOGICAL_MODEL = "###Pure\n" +
             "Class test::Person\n" +
@@ -276,8 +278,15 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Map<String, ?> paramWithMultipleValues = Maps.mutable.with("birthTime", Lists.mutable.with("2020-12-12 20:00:00", "2020-12-13 20:00:00"));
 
         String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (null)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
-        String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
-        String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+        String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (TIMESTAMP'2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
+        String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (TIMESTAMP'2020-12-12 20:00:00',TIMESTAMP'2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+
+        int h2MajorVersion = H2Manager.getMajorVersion();
+        if (h2MajorVersion == LEGACY_H2_VERSION)
+        {
+            expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
+            expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+        }
 
         Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
@@ -301,8 +310,15 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Map<String, ?> paramWithMultipleValues = Maps.mutable.with("birthTime", Lists.mutable.with("2020-12-13 03:00:00", "2020-12-14 03:00:00"));
 
         String expectedResWithEmptyList = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (null)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
-        String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
-        String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+        String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (TIMESTAMP'2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
+        String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (TIMESTAMP'2020-12-12 20:00:00',TIMESTAMP'2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+
+        int h2MajorVersion = H2Manager.getMajorVersion();
+        if (h2MajorVersion == LEGACY_H2_VERSION)
+        {
+            expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]}]}}";
+            expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"SpecialName'1\"]},{\"values\":[\"SpecialName'2\"]}]}}";
+        }
 
         Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));

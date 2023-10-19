@@ -12,16 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::*;
 import meta::analytics::mapping::modelCoverage::*;
 import meta::pure::mapping::*;
 import meta::pure::router::routing::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
+import meta::analytics::class::modelCoverage::*;
+import meta::analytics::class::modelCoverage::utility::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::pure::milestoning::*;
 
 
 Class meta::analytics::mapping::modelCoverage::MappingModelCoverageAnalysisResult
 {
    mappedEntities : MappedEntity[*];
+   classes: Class<Any>[*];
+   enumerations: Enumeration<Enum>[*];
+   associations: Association[*];
+   profiles: Profile[*];
 }
 
 Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
@@ -39,9 +48,10 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
     Unknown
 }
 
-Class meta::analytics::mapping::modelCoverage::MappedEntityInfo 
+Class meta::analytics::mapping::modelCoverage::MappedEntityInfo
 {
    isRootEntity : Boolean[0..1];
+   classPath: String[1];
    subClasses : String[*];
 }
 
@@ -52,7 +62,7 @@ Class meta::analytics::mapping::modelCoverage::MappedEntity
    info: MappedEntityInfo[0..1];
 }
 
-Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo 
+Class meta::analytics::mapping::modelCoverage::MappedPropertyInfo
 {
   type : MappedPropertyType[1];
   multiplicity: Multiplicity[1];
@@ -95,7 +105,8 @@ Class <<access.private>> meta::analytics::mapping::modelCoverage::MultiInheritan
 function meta::analytics::mapping::modelCoverage::analyze(
   mapping: Mapping[1],
   returnMappedEntityInfo: Boolean[1],
-  returnMappedPropertyInfo: Boolean[1]
+  returnMappedPropertyInfo: Boolean[1],
+  returnLightGraph: Boolean[1]
 ): MappingModelCoverageAnalysisResult[1]
 {
   let config = ^AnalysisConfiguration(
@@ -142,11 +153,23 @@ function meta::analytics::mapping::modelCoverage::analyze(
          let uniqueTypes = $subTypes->concatenate($superTypes)->removeDuplicatesBy(t | $t.class);
          buildInheritanceEntities($op, $op, [], $uniqueTypes, $namePrefix, $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, false, false, $config);
       )->removeDuplicatesBy(x | $x.path);
-
-  ^MappingModelCoverageAnalysisResult(
-    mappedEntities = $entities->concatenate($inheritanceEntities)
-  );
+  let mappedEntities = $entities->concatenate($inheritanceEntities);
+  if ($returnLightGraph == true,
+        | let mappedEntityPaths = $mappedEntities->map(m | $m.info->toOne().classPath)->removeDuplicates();
+          let mappedClasses = $allClasses->keyValues()->map(c | $c.first)->filter(c | $mappedEntityPaths->contains($c->elementToPath()));
+          let classCoverageAnalysis = getClassModelCoverage($mappedClasses);
+          ^MappingModelCoverageAnalysisResult(
+            mappedEntities = $mappedEntities,
+            classes = $classCoverageAnalysis.classes,
+            enumerations = $classCoverageAnalysis.enumerations,
+            associations = $classCoverageAnalysis.associations,
+            profiles = $classCoverageAnalysis.profiles
+          );,
+        | ^MappingModelCoverageAnalysisResult(
+            mappedEntities = $mappedEntities,
+            classes = [],
+            enumerations = [],
+            associations = [],
+            profiles = []
+          ););
 }
-
-
-

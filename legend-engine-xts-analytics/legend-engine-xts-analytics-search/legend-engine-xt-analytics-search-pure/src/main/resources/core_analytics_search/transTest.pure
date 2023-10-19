@@ -139,9 +139,8 @@ function meta::analytics::search::transformation::test::getTestDataSpaceWithoutD
     mapping = meta::analytics::search::transformation::test::sampleRelationalMapping,
     defaultRuntime = ^meta::pure::runtime::PackageableRuntime(
       name = 'meta::analytics::search::transformation::test::TestRuntime',
-      runtimeValue = ^meta::pure::runtime::EngineRuntime(
-        mappings = [meta::analytics::search::transformation::test::sampleRelationalMapping],
-        connections = []
+      runtimeValue = ^meta::core::runtime::EngineRuntime(
+        mappings = [meta::analytics::search::transformation::test::sampleRelationalMapping]
       )
     )
   );
@@ -409,7 +408,7 @@ Mapping meta::analytics::search::transformation::test::sampleRelationalMapping
     ~mainTable [meta::analytics::search::transformation::test::sampleDB]PersonTable
     firstName: [meta::analytics::search::transformation::test::sampleDB]PersonTable.firstName,
     lastName: [meta::analytics::search::transformation::test::sampleDB]PersonTable.lastName
-  }  
+  }
   *meta::analytics::search::transformation::test::LegalEntity: Operation
   {
     meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()

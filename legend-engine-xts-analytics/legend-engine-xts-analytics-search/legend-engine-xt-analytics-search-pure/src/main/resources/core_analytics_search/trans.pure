@@ -114,7 +114,7 @@ function meta::analytics::search::transformation::dataspace::buildExecutionConte
 
 function meta::analytics::search::transformation::dataspace::buildClassDocuments(mapping: meta::pure::mapping::Mapping[1]): meta::analytics::search::metamodel::class::SimpleClassElement[*]
 {
-  let analysedMapping = meta::analytics::mapping::modelCoverage::analyze($mapping, true, true);
+  let analysedMapping = meta::analytics::mapping::modelCoverage::analyze($mapping, true, true, false);
   $analysedMapping.mappedEntities->filter(e|$e.info.isRootEntity == true)->map(e|
     ^meta::analytics::search::metamodel::class::SimpleClassElement(
       name = $e.path->split('::')->last()->toOne(),
@@ -232,7 +232,7 @@ function meta::analytics::search::transformation::getExtensions(): meta::pure::e
   meta::pure::extension::defaultExtensions()->concatenate(meta::relational::extension::relationalExtensions());
 }
 
-function meta::analytics::search::transformation::service::buildDatabaseColumnDocuments(funcDefinition: FunctionDefinition<Any>[1], mapping: meta::pure::mapping::Mapping[1], runtime: meta::pure::runtime::Runtime[1]): meta::analytics::search::metamodel::mapping::DatabaseColumn[*]
+function meta::analytics::search::transformation::service::buildDatabaseColumnDocuments(funcDefinition: FunctionDefinition<Any>[1], mapping: meta::pure::mapping::Mapping[1], runtime: meta::core::runtime::Runtime[1]): meta::analytics::search::metamodel::mapping::DatabaseColumn[*]
 {
   let lineage = $funcDefinition->meta::analytics::lineage::computeLineage($mapping, $runtime, meta::analytics::search::transformation::getExtensions());
 
