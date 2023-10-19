@@ -286,7 +286,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | ^$query(expression = processRestrict($expected.alias, $renamed)),
     | $renamed);
 
-  let aliases = $c.columns.name->map(c | ^SQLColumnAlias(name=$c));
+  let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name=$c));
 
   ^$final(aliases = $aliases);
 }
