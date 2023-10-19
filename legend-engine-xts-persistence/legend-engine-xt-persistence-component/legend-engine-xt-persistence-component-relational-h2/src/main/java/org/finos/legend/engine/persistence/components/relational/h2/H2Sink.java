@@ -77,6 +77,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class H2Sink extends AnsiSqlSink
@@ -97,6 +98,7 @@ public class H2Sink extends AnsiSqlSink
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -200,6 +202,7 @@ public class H2Sink extends AnsiSqlSink
         }
     }
 
+    @Override
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
@@ -224,6 +227,7 @@ public class H2Sink extends AnsiSqlSink
         IngestorResult result;
         result = IngestorResult.builder()
             .status(IngestStatus.SUCCEEDED)
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
             .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))

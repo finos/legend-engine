@@ -60,9 +60,9 @@ class AppendOnlyPlanner extends Planner
 {
     private final Optional<Condition> dataSplitInRangeCondition;
 
-    AppendOnlyPlanner(Datasets datasets, AppendOnly ingestMode, PlannerOptions plannerOptions)
+    AppendOnlyPlanner(Datasets datasets, AppendOnly ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
         ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty,
@@ -83,7 +83,7 @@ class AppendOnlyPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());

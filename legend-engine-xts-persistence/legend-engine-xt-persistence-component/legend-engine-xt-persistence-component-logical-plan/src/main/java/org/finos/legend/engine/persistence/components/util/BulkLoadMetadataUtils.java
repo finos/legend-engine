@@ -14,17 +14,23 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
-import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 
 import java.util.ArrayList;
@@ -39,6 +45,27 @@ public class BulkLoadMetadataUtils
     {
         this.bulkLoadMetadataDataset = bulkLoadMetadataDataset;
         this.dataset = bulkLoadMetadataDataset.get();
+    }
+
+    /*
+    SELECT COALESCE(MAX("table_batch_id"),0)+1 FROM batch_metadata WHERE "table_name" = mainTableName
+    */
+    public BatchIdValue getBatchId(StringValue mainTableName)
+    {
+        FieldValue tableNameFieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(bulkLoadMetadataDataset.tableNameField()).build();
+        FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameFieldValue).build();
+        StringValue mainTableNameInUpperCase = StringValue.builder().value(mainTableName.value().map(field -> field.toUpperCase()))
+            .alias(mainTableName.alias()).build();
+        Condition whereCondition = Equals.of(tableNameInUpperCase, mainTableNameInUpperCase);
+        FieldValue tableBatchIdFieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(bulkLoadMetadataDataset.batchIdField()).build();
+        FunctionImpl maxBatchId = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(tableBatchIdFieldValue).build();
+        FunctionImpl coalesce = FunctionImpl.builder().functionName(FunctionName.COALESCE).addValue(maxBatchId, NumericalValue.of(0L)).build();
+
+        return BatchIdValue.of(Selection.builder()
+            .source(dataset)
+            .condition(whereCondition)
+            .addFields(SumBinaryValueOperator.of(coalesce, NumericalValue.of(1L)))
+            .build());
     }
 
     /*
@@ -63,7 +90,7 @@ public class BulkLoadMetadataUtils
         List<Value> metaSelectFields = new ArrayList<>();
 
         metaInsertFields.add(batchId);
-        metaSelectFields.add(BulkLoadBatchIdValue.INSTANCE);
+        metaSelectFields.add(getBatchId(tableNameValue));
 
         metaInsertFields.add(tableName);
         metaSelectFields.add(tableNameValue);

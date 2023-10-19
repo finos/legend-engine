@@ -46,6 +46,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
@@ -57,6 +58,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
@@ -76,13 +78,14 @@ abstract class UnitemporalPlanner extends Planner
 
     protected Condition primaryKeysMatchCondition;
 
-    UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions)
+    UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets.metadataDataset().isPresent()
                 ? datasets
                 : datasets.withMetadataDataset(MetadataDataset.builder().build()),
             transactionMilestoned,
-            plannerOptions);
+            plannerOptions,
+            capabilities);
 
         // validate
         validatePrimaryKeysNotEmpty(primaryKeys);

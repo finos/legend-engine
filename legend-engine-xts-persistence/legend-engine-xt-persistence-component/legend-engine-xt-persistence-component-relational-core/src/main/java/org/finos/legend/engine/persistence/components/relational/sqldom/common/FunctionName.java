@@ -45,7 +45,8 @@ public enum FunctionName
     PARSE_DATETIME("PARSE_DATETIME"),
     PARSE_JSON("PARSE_JSON"),
     TO_VARIANT("TO_VARIANT"),
-    OBJECT_CONSTRUCT("OBJECT_CONSTRUCT");
+    OBJECT_CONSTRUCT("OBJECT_CONSTRUCT"),
+    TO_JSON("TO_JSON");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays
         .stream(FunctionName.values())

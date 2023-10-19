@@ -42,22 +42,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.getPrimaryKeyMatchCondition;
 
 class NontemporalSnapshotPlanner extends Planner
 {
-    NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
     }
 
     @Override
@@ -67,7 +63,7 @@ class NontemporalSnapshotPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         Dataset stagingDataset = stagingDataset();
         List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
