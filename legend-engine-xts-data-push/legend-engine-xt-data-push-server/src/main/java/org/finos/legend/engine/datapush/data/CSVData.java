@@ -16,6 +16,5 @@ package org.finos.legend.engine.datapush.data;
 
 public class CSVData extends Data
 {
-    public String name;
     public String value;
 }

@@ -208,7 +208,6 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sdk-core</artifactId>
-            <version>${amazon.awssdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -217,6 +216,16 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>auth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-csv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-csv-fast-double-parser</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- RUNTIME -->

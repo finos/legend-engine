@@ -42,10 +42,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -57,6 +59,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class DataPushResource extends BaseResource
 {
+    private static final String TEXT_CSV = "text/csv";
     private static final Logger LOGGER = LoggerFactory.getLogger(DataPushResource.class);
 
     private final ConnectionModelLoader connectionModelLoader;
@@ -78,17 +81,23 @@ public class DataPushResource extends BaseResource
         this.connectionModelLoader = new ConnectionModelLoader(metadataserver);
     }
 
-    @Path("/push/{groupId}/{artifactId}/{versionId}/{connectionPath}/{dataRef}")
+    @Path("/push/{groupId}/{artifactId}/{versionId}/{connectionPath}")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes({
+            // TODO: content type will drive how we interpret the data, right nowe
+            // we only support CSV
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_XML,
+            MediaType.APPLICATION_JSON,
+            TEXT_CSV
+    })
+    @Produces(MediaType.APPLICATION_JSON)
     public Response pushData(
             @PathParam("groupId") String groupId,
             @PathParam("artifactId") String artifactId,
             @PathParam("versionId") String versionId,
             @PathParam("connectionPath") String connectionPath,
-            @PathParam("dataRef") String dataRef,
-            String rawData,
+            String data,
             @Context HttpServletRequest request,
             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
@@ -100,8 +109,7 @@ public class DataPushResource extends BaseResource
         ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromProject(profiles, groupId, artifactId, versionId, connectionPath);
 
         CSVData csvData = new CSVData();
-        csvData.name = dataRef;
-        csvData.value = rawData;
+        csvData.value = data;
 
         return executeWithLogging(
                 "pushing data to connection " + connectionPath,
@@ -113,16 +121,23 @@ public class DataPushResource extends BaseResource
         );
     }
 
-    @Path("/pushDev/{projectId}/{workspaceId}/{connectionPath}/{dataRef}")
+    @Path("/pushDev/{projectId}/{workspaceId}/{connectionPath}")
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes({
+            // TODO: content type will drive how we interpret the data, right nowe
+            // we only support CSV
+            MediaType.TEXT_PLAIN,
+            MediaType.TEXT_XML,
+            MediaType.APPLICATION_JSON,
+            TEXT_CSV
+    })
+    @Produces(MediaType.APPLICATION_JSON)
     public Response pushData_Dev(
             @PathParam("projectId") String projectId,
             @PathParam("workspaceId") String workspaceId,
             @PathParam("connectionPath") String connectionPath,
-            @PathParam("dataRef") String dataRef,
-            String rawData,
+            @QueryParam("isGroupWorkspace") @DefaultValue("false") boolean isGroupWorkspace,
+            String data,
             @Context HttpServletRequest request,
             @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
     )
@@ -131,45 +146,10 @@ public class DataPushResource extends BaseResource
         Identity identity = this.identityFactory.createIdentity(
                 new IdentitySpecification.Builder().withProfiles(profiles).build()
         );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, false, connectionPath);
+        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, isGroupWorkspace, connectionPath);
 
         CSVData csvData = new CSVData();
-        csvData.name = dataRef;
-        csvData.value = rawData;
-
-        return executeWithLogging(
-                "pushing data to connection " + connectionPath,
-                () ->
-                {
-                    this.pushCSVData(identity, connectionDemo, csvData);
-                    return Response.noContent().build();
-                }
-        );
-    }
-
-    @Path("/pushDevGroup/{projectId}/{workspaceId}/{connectionPath}/{dataRef}")
-    @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response pushData_DevGroup(
-            @PathParam("projectId") String projectId,
-            @PathParam("workspaceId") String workspaceId,
-            @PathParam("connectionPath") String connectionPath,
-            @PathParam("dataRef") String dataRef,
-            String rawData,
-            @Context HttpServletRequest request,
-            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
-    )
-    {
-        List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
-        Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(profiles).build()
-        );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, true, connectionPath);
-
-        CSVData csvData = new CSVData();
-        csvData.name = dataRef;
-        csvData.value = rawData;
+        csvData.value = data;
 
         return executeWithLogging(
                 "pushing data to connection " + connectionPath,
