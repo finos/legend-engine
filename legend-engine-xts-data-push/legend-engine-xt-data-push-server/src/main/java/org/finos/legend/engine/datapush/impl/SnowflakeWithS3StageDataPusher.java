@@ -61,13 +61,7 @@ public class SnowflakeWithS3StageDataPusher extends DataPusher
         CSVData csvData = (CSVData) data;
         CsvSpecs specs = CsvSpecs.csv();
         CsvReader.Result csvParserResult = CsvReader.read(specs, new ByteArrayInputStream(csvData.value.getBytes()), SinkFactory.arrays());
-
-        CSVData newData = new CSVData();
-        MutableList<String> lines = Lists.mutable.of(csvData.value.split("\\n"));
-        lines.remove(0);
-        newData.value = lines.makeString("\n");
-        String filePath = this.s3DataStage.write(identity, newData);
-
+        String filePath = this.s3DataStage.write(identity, csvData);
         this.uploadCSVToSnowflake(identity, connectionInstance, authenticationConfiguration, filePath, csvParserResult);
     }
 
@@ -106,10 +100,13 @@ public class SnowflakeWithS3StageDataPusher extends DataPusher
                         case CUSTOM:
                             throw new RuntimeException("Not possible");
                     }
-                    return String.format("%s %s", column.name(), dataType);
+                    // Put quote around table name to avoid problems with column names with spaces
+                    return String.format("\"%s\" %s", column.name(), dataType);
                 }
         ).makeString(","));
-        String insertQuery = String.format("COPY INTO %s FROM @%s PATTERN='%s';", this.tableName, this.stageName, filePath);
+        // Give Snowflake the full s3 path to improve performance as no lookup is necessary
+        // See https://community.snowflake.com/s/question/0D50Z00009Y7eCRSAZ/copy-from-s3-into-table-command-is-extremely-slow
+        String insertQuery = String.format("COPY INTO %s FROM @%s/%s file_format = (type = csv skip_header = 1);", this.tableName, this.stageName, filePath);
 
         try
         {
