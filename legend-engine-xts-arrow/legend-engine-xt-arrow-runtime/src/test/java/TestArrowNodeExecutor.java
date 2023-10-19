@@ -14,6 +14,7 @@
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.TimeZone;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -31,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -45,7 +47,6 @@ public class TestArrowNodeExecutor
 
 {
 
-
     @Test
     public void testExternalize() throws Exception
     {
@@ -57,7 +58,7 @@ public class TestArrowNodeExecutor
 
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
         {
             //setup table
@@ -70,7 +71,7 @@ public class TestArrowNodeExecutor
             conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,null, '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
             conn.createStatement().execute("INSERT INTO  testtableJoin (testIntR, testStringR) VALUES(6,'A'), (1,'B')");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable left join  testtableJoin on testtable.testInt=testtableJoin.testIntR", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testStringR", "VARCHAR"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "GMT", conn, null, null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable left join  testtableJoin on testtable.testInt=testtableJoin.testIntR", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testStringR", "VARCHAR"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, null, null, null, new RequestContext());
 
             ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
 
@@ -97,7 +98,7 @@ public class TestArrowNodeExecutor
 
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
         )
 
         {
@@ -106,7 +107,7 @@ public class TestArrowNodeExecutor
             conn.createStatement().execute("Create Table testtable (testInt INTEGER, testString VARCHAR(255), testDate TIMESTAMP, testBool BOOLEAN)");
             conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,'B', '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "GMT", conn, null, null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, null, null, null, new RequestContext());
 
             ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
 
