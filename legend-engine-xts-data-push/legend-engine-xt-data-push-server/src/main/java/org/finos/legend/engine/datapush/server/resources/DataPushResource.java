@@ -34,6 +34,9 @@ import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDem
 import org.finos.legend.engine.server.support.server.resources.BaseResource;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
+import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -111,14 +114,15 @@ public class DataPushResource extends BaseResource
         CSVData csvData = new CSVData();
         csvData.value = data;
 
-        return executeWithLogging(
-                "pushing data to connection " + connectionPath,
-                () ->
-                {
-                    this.pushCSVData(identity, connectionDemo, csvData);
-                    return Response.noContent().build();
-                }
-        );
+        try
+        {
+            this.pushCSVData(identity, connectionDemo, csvData);
+            return Response.noContent().build();
+        }
+        catch (Exception exception)
+        {
+            return handleException(profiles, exception);
+        }
     }
 
     @Path("/pushDev/{projectId}/{workspaceId}/{connectionPath}")
@@ -151,14 +155,21 @@ public class DataPushResource extends BaseResource
         CSVData csvData = new CSVData();
         csvData.value = data;
 
-        return executeWithLogging(
-                "pushing data to connection " + connectionPath,
-                () ->
-                {
-                    this.pushCSVData(identity, connectionDemo, csvData);
-                    return Response.noContent().build();
-                }
-        );
+        try
+        {
+            this.pushCSVData(identity, connectionDemo, csvData);
+            return Response.noContent().build();
+        }
+        catch (Exception exception)
+        {
+            return handleException(profiles, exception);
+        }
+    }
+
+    private Response handleException(List<CommonProfile> profiles, Exception exception)
+    {
+        Response.Status status = exception instanceof EngineException ? Response.Status.BAD_REQUEST : Response.Status.INTERNAL_SERVER_ERROR;
+        return ExceptionTool.exceptionManager(exception, LoggingEventType.ERROR_MANAGEMENT_ERROR, status, profiles);
     }
 
     private void pushCSVData(Identity identity, ConnectionDemo connectionDemo, CSVData csvData)
@@ -175,7 +186,6 @@ public class DataPushResource extends BaseResource
         }
         catch (Exception e)
         {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
