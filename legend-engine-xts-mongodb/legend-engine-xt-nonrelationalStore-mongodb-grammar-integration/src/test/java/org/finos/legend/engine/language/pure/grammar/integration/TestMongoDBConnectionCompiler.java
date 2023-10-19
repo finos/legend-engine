@@ -28,7 +28,6 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
                 "MongoDBConnection test::mongodb::connection" +
                 "{\n" +
                 "  database: legend_db;\n" +
-                "  store: mongo::test::db;\n" +
                 "  serverURLs: [localhost:27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +
@@ -60,7 +59,6 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
                 "MongoDBConnection test::testConnection\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
-                "  store: meta::external::store::mongodb::showcase::store::PersonDatabase;\n" +
                 "  serverURLs: [localhost:27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +
