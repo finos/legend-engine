@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -34,6 +35,9 @@ public class SnowflakeAppProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(SnowflakeApp.class, packageJSONType)
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
+                        .withSubtype(SnowflakeAppDeploymentConfiguration.class, "snowflakeDeploymentConfiguration")
                         .build()
         ));
     }
