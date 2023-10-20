@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.F
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 
 import java.util.Arrays;
 import java.util.logging.Filter;
@@ -58,7 +59,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                         .dateTimeOutName(batchTimeOutField)
                         .build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(false).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performVersioning(false).build())
                 .build();
 
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
@@ -93,7 +94,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(true).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performVersioning(true).build())
                 .build();
 
         return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);

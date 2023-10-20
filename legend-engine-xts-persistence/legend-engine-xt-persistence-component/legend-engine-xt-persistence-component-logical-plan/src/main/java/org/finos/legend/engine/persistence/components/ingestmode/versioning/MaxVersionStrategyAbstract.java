@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -32,11 +34,7 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     @Value.Parameter(order = 0)
     String versioningField();
 
-    @Value.Default
-    default VersionResolver versionResolver()
-    {
-        return VersionResolver.DIGEST_BASED;
-    }
+    Optional<VersionResolver> versionResolver();
 
     @Value.Default
     default boolean performVersioning()

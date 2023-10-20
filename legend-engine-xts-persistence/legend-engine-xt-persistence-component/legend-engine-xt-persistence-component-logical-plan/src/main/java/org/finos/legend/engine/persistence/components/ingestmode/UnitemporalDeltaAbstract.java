@@ -19,6 +19,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStra
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,4 +60,39 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
     {
         return visitor.visitUnitemporalDelta(this);
     }
+
+    @Value.Check
+    default void validate()
+    {
+        versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                if (!maxVersionStrategy.versionResolver().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                if (!allVersionsStrategyAbstract.versionResolver().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
+                }
+                return null;
+            }
+        });
+    }
+
 }

@@ -68,7 +68,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
@@ -79,7 +79,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(false).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
@@ -100,7 +100,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);

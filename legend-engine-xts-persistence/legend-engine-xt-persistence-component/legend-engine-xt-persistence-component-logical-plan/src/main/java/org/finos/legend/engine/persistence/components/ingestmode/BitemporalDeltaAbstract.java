@@ -29,6 +29,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Vers
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -89,7 +91,12 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                if (allVersionsStrategyAbstract.versionResolver() != VersionResolver.DIGEST_BASED)
+                Optional<VersionResolver> versionResolver = allVersionsStrategyAbstract.versionResolver();
+                if (!versionResolver.isPresent())
+                {
+                    throw new IllegalStateException("Cannot build BitemporalDelta, VersioningResolver is mandatory");
+                }
+                if (versionResolver.orElseThrow(IllegalStateException::new) != VersionResolver.DIGEST_BASED)
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }

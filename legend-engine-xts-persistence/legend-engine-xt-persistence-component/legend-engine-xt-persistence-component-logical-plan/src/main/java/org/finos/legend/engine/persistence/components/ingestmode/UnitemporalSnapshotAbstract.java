@@ -27,6 +27,7 @@ import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.immutables.value.Value.Derived;
@@ -101,7 +102,12 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                if (maxVersionStrategy.versionResolver() != VersionResolver.DIGEST_BASED)
+                Optional<VersionResolver> versionResolver = maxVersionStrategy.versionResolver();
+                if (!versionResolver.isPresent())
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, VersioningResolver is mandatory for MaxVersionStrategy");
+                }
+                if (versionResolver.orElseThrow(IllegalStateException::new) != VersionResolver.DIGEST_BASED)
                 {
                     throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }

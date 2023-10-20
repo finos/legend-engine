@@ -51,7 +51,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     {
         FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
         FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
-        VersionResolver versionResolver = maxVersionStrategy.versionResolver();
+        VersionResolver versionResolver = maxVersionStrategy.versionResolver().orElseThrow(IllegalStateException::new);
         return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
     }
 
@@ -60,7 +60,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     {
         FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
         FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
-        VersionResolver versionResolver = allVersionsStrategy.versionResolver();
+        VersionResolver versionResolver = allVersionsStrategy.versionResolver().orElseThrow(IllegalStateException::new);
         return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
     }
 

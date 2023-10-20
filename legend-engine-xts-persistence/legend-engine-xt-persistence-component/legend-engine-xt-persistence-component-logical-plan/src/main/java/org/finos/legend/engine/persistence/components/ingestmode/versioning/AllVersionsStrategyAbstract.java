@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -29,17 +31,11 @@ import static org.immutables.value.Value.Style;
 )
 public interface AllVersionsStrategyAbstract extends VersioningStrategy
 {
+    String DATA_SPLIT = "legend_persistence_data_split";
 
-    public static final String DATA_SPLIT = "legend_persistence_data_split";
-
-    @Value.Parameter(order = 0)
     String versioningField();
 
-    @Value.Default
-    default VersionResolver versionResolver()
-    {
-        return VersionResolver.DIGEST_BASED;
-    }
+    Optional<VersionResolver> versionResolver();
 
     @Value.Default
     default boolean performVersioning()
