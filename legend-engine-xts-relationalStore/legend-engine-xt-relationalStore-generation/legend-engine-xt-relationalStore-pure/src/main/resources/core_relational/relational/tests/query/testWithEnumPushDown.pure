@@ -24,6 +24,7 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
+import meta::external::store::relational::tests::*;
 
 
 function <<test.Test>> meta::relational::tests::query::enumPushDown::testPushDownProject():Boolean[1]
